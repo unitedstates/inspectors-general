@@ -1,4 +1,3 @@
-inspectors-general
-==================
+## Inspectors General
 
-Collecting reports from Inspector Generals across the federal government.
+A project to collect reports from the offices of Inspectors General across the federal government.
