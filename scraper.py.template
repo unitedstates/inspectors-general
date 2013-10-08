@@ -4,8 +4,10 @@ import utils, PyQuery
 
 
 def run(options):
+  # Delete all this when you start!
   print "The scraper starts running here!"
-
+  print "Use utils.download(url) to download from the web."
+  print "Add some comments above with whatever options you want the scraper to take."
 
 
 utils.run(run)
