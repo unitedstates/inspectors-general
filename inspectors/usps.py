@@ -1,4 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
+import utils
 
 # options:
 #   since - date (YYYY-MM-DD) to fetch reports from, or "all" to go back indefinitely.
@@ -13,11 +15,11 @@
 #             congress - Semiannual Report to Congress
 #          defaults to None (will fetch all reports)
 
-import utils
+# import PyQuery
 
 def run(options):
-  print "Running: %s" % options.get('message', "None given")
+  print utils.download("http://www.uspsoig.gov/document-library")
 
 
 
-run(utils.options())
+utils.run(run)
