@@ -27,8 +27,10 @@ def run(options):
   results = doc.select(".views-row")
   for result in results:
     report = report_from(result)
-    # write_report(report)
-    print "[%s][%s] %s" % (report['type'], report['published_on'], report['title'])
+    data_path = write_report(report)
+    print "[%s][%s] %s" % (report['type'], report['published_on'], data_path)
+    report_path = download_report(report)
+    print "\t%s" % report_path
 
 
 # result is a BeautifulSoup elem
@@ -44,8 +46,11 @@ def report_from(result):
   elif len(pieces) == 2:
     timestamp = pieces[1].text.strip()
 
+  published_on = datetime.strptime(timestamp, "%m/%d/%Y")
+
   report['type'] = report_type
-  report['published_on'] = date_for(timestamp)
+  report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
+  report['year'] = published_on.year
 
   # if there's only one button, use that URL
   # otherwise, look for "Read Full Report" (could be first or last)
@@ -59,13 +64,34 @@ def report_from(result):
     link = buttons[0]['href']
   report['url'] = link
 
+  # get filename, use name as slug, extension for type
+  filename = link.split("/")[-1]
+  extension = filename.split(".")[-1]
+  report['slug'] = filename.replace("." + extension, "")
+  report['file_type'] = extension
+
   report['title'] = result.select("h3")[0].text.strip()
 
   return report
 
-def date_for(timestamp):
-  date = datetime.strptime(timestamp, "%m/%d/%Y")
-  return datetime.strftime(date, "%Y-%m-%d")
+
+def write_report(report):
+  data_path = "usps/%s/%s/data.json" % (report['year'], report['slug'])
+  utils.save(
+    utils.json_for(report),
+    data_path
+  )
+  return data_path
+
+def download_report(report):
+  report_path = "usps/%s/%s/report.%s" % (report['year'], report['slug'], report['file_type'])
+  utils.download(
+    report['url'],
+    report_path,
+    {'binary': True}
+  )
+  return report_path
+
 
 def type_for(original_type):
   original = original_type.lower()

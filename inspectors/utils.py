@@ -1,6 +1,7 @@
 import os, os.path, errno, sys, traceback
 import re, htmlentitydefs
-
+import json
+import logging
 
 # scraper should be instantiated at class-load time, so that it can rate limit appropriately
 import scrapelib
@@ -34,37 +35,110 @@ def options():
 
 
 # download the data at url
-def download(url, options={}):
-  try:
-    print "Downloading: %s" % url
+def download(url, destination=None, options={}):
+  # default to use a cached copy, if one exists
+  cache = options.get('cache', True)
 
-    response = scraper.urlopen(url)
+  # binary file?
+  binary = options.get('binary', False)
 
-    body = response # a subclass of a 'unicode' instance
-    if not isinstance(body, unicode):
-      raise ValueError("Content not decoded.")
+  if destination:
+    actual_dest = os.path.join(data_dir(), destination)
+
+  # check cache first
+  if destination and cache and os.path.exists(actual_dest):
+    logging.info("## Cached: (%s, %s)" % (destination, url))
+
+    # if a binary file is cached, we're done
+    if binary:
+      return True
+
+    # otherwise, decode it for return
+    with open(actual_dest, 'r') as f:
+      body = f.read()
+      body = body.decode("utf8")
+
+  # otherwise, download from the web
+  else:
+    try:
+      logging.info("## Downloading: %s" % url)
+      if destination: logging.info("## \tto: %s" % destination)
+      response = scraper.urlopen(url)
+    except scrapelib.HTTPError as e:
+      print "Error downloading %s:\n\n%s" % (url, format_exception(e))
+      return None
+
+    if binary:
+      body = response.bytes # a 'str' instance
+      if isinstance(body, unicode): raise ValueError("Binary content improperly decoded.")
+    else:
+      body = response # a subclass of a 'unicode' instance
+      if not isinstance(body, unicode): raise ValueError("Content not decoded.")
 
     # don't allow 0-byte files
     if (not body) or (not body.strip()):
       return None
 
-    # unescape HTML entities
-    body = unescape(body)
+    # cache content to disk
+    if destination:
+      print actual_dest
+      if binary:
+        write(body, actual_dest)
+      else:
+        write(body.encode("utf8"), actual_dest)
 
-    return body
+  # don't return binary content
+  if binary:
+    return True
+  else:
+    # whether from disk or web, unescape HTML entities
+    return unescape(body)
 
-  except scrapelib.HTTPError as e:
-    logging.error("Error downloading %s:\n\n%s" % (url, format_exception(e)))
-    return None
+
 
 def format_exception(exception):
   exc_type, exc_value, exc_traceback = sys.exc_info()
   return "\n".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
+# assumes working dir is the inspectors dir
 def data_dir():
-  return "data"
+  return os.path.join(os.getcwd(), "../data")
+def cache_dir():
+  return os.path.join(os.getcwd(), "../cache")
 
+def write(content, destination):
+  mkdir_p(os.path.dirname(destination))
+  f = open(destination, 'w')
+  f.write(content)
+  f.close()
 
+# writes file to path inside data_dir
+def save(content, destination):
+  return write(content, os.path.join(data_dir(), destination))
+
+def json_for(object):
+  return json.dumps(object, sort_keys=True, indent=2, default=format_datetime)
+
+def format_datetime(obj):
+  if isinstance(obj, datetime.datetime):
+    return eastern_time_zone.localize(obj.replace(microsecond=0)).isoformat()
+  elif isinstance(obj, datetime.date):
+    return obj.isoformat()
+  elif isinstance(obj, (str, unicode)):
+    return obj
+  else:
+    return None
+
+# mkdir -p in python, from:
+# http://stackoverflow.com/questions/600268/mkdir-p-functionality-in-python
+def mkdir_p(path):
+  try:
+    os.makedirs(path)
+  except OSError as exc: # Python >2.5
+    if exc.errno == errno.EEXIST:
+      pass
+    else:
+      raise
 
 # taken from http://effbot.org/zone/re-sub.htm#unescape-html
 def unescape(text):
