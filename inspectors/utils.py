@@ -1,4 +1,4 @@
-import os, os.path, errno, sys, traceback
+import os, os.path, errno, sys, traceback, subprocess
 import re, htmlentitydefs
 import json
 import logging
@@ -81,7 +81,6 @@ def download(url, destination=None, options={}):
 
     # cache content to disk
     if destination:
-      print actual_dest
       if binary:
         write(body, actual_dest)
       else:
@@ -95,6 +94,27 @@ def download(url, destination=None, options={}):
     return unescape(body)
 
 
+# uses pdftotext to get text out of PDFs
+def extract_text(pdf_path):
+  if not pdf_path.endswith(".pdf"):
+    logging.warn("Report is not a PDF!")
+    return None
+
+  pdftotext = subprocess.Popen(["which", "pdftotext"], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+  if not pdftotext.strip():
+    logging.warn("Install pdftotext to extract text!")
+    return None
+
+  real_pdf_path = os.path.join(data_dir(), pdf_path)
+  text_path = re.sub("\\.pdf$", ".txt", pdf_path)
+  real_text_path = os.path.join(data_dir(), text_path)
+
+  subprocess.Popen(["pdftotext", "-layout", real_pdf_path, real_text_path], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  if os.path.exists(real_text_path):
+    return text_path
+  else:
+    logging.warn("Error extracting text to %s" % text_path)
+    return None
 
 def format_exception(exception):
   exc_type, exc_value, exc_traceback = sys.exc_info()

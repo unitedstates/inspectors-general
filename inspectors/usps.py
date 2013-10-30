@@ -13,7 +13,7 @@ from datetime import datetime
 #             testimony - Congressional Testimony
 #             press - Press Releases
 #             research - Risk Analysis Research Papers
-#             sarc - SARC (Interactive)
+#             interactive - SARC (Interactive)
 #             congress - Semiannual Report to Congress
 #          defaults to
 #             including audits, reports to Congress, and research
@@ -27,10 +27,16 @@ def run(options):
   results = doc.select(".views-row")
   for result in results:
     report = report_from(result)
+    print "[%s][%s]" % (report['type'], report['published_on'])
+
+    report['report_path'] = download_report(report)
+    print "\treport: %s" % report['report_path']
+
+    report['text_path'] = extract_report(report)
+    print "\ttext: %s" % report['text_path']
+
     data_path = write_report(report)
-    print "[%s][%s] %s" % (report['type'], report['published_on'], data_path)
-    report_path = download_report(report)
-    print "\t%s" % report_path
+    print "\tdata: %s" % data_path
 
 
 # result is a BeautifulSoup elem
@@ -75,6 +81,20 @@ def report_from(result):
   return report
 
 
+def download_report(report):
+  report_path = "usps/%s/%s/report.%s" % (report['year'], report['slug'], report['file_type'])
+  binary = (report['file_type'] == 'pdf')
+
+  utils.download(
+    report['url'],
+    report_path,
+    {'binary': binary}
+  )
+  return report_path
+
+def extract_report(report):
+  return utils.extract_text(report['report_path'])
+
 def write_report(report):
   data_path = "usps/%s/%s/data.json" % (report['year'], report['slug'])
   utils.save(
@@ -82,16 +102,6 @@ def write_report(report):
     data_path
   )
   return data_path
-
-def download_report(report):
-  report_path = "usps/%s/%s/report.%s" % (report['year'], report['slug'], report['file_type'])
-  utils.download(
-    report['url'],
-    report_path,
-    {'binary': True}
-  )
-  return report_path
-
 
 def type_for(original_type):
   original = original_type.lower()
@@ -104,7 +114,7 @@ def type_for(original_type):
   elif "research" in original:
     return "research"
   elif "sarc" in original:
-    return "sarc"
+    return "interactive"
   elif "report to congress":
     return "congress"
   else:
@@ -132,7 +142,7 @@ CATEGORIES = {
   'testimony': '1933',
   'press': '1921',
   'research': '1922',
-  'sarc': '3487',
+  'interactive': '3487',
   'congress': '1923'
 }
 
