@@ -29,24 +29,16 @@ def run(options):
     print "## Downloading page %i" % page
     url = url_for(options, page)
     body = utils.download(url)
-    doc = BeautifulSoup(body)
 
+    doc = BeautifulSoup(body)
     results = doc.select(".views-row")
+
     for result in results:
       report = report_from(result)
       inspector.save_report(report)
 
 
-# must return a dict with the following fields:
-#   inspector: 'usps' (hardcoded)
-#   slug: a unique ID for the report
-#   title: title of report
-#   url: link to report
-#   published_on: date of publication
-#   year: year of publication
-#   file_type: 'pdf' or other file extension
-#
-# any additional fields will be retained.
+# extract fields from HTML, return dict
 def report_from(result):
   report = {}
 

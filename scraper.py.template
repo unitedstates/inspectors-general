@@ -1,14 +1,54 @@
 #!/usr/bin/env python
 
-import utils
-from pyquery import PyQuery
+from utils import utils, inspector
 
+# Copy this file into inspectors, and rename it to [agency].py,
+# where [agency] is an unclaimed handle for an agency,
+#   e.g. "usps.py" for the USPS.
+# Use this handle for the 'inspector' field on report dicts.
+
+# This script's "run" function will be run with command line options,
+# and you can do anything you want that eventually results in calling:
+#
+#   inspector.save_report(report)
+#
+# Where report is a dict with the following required fields:
+#
+#   inspector: the handle you chose for the agency, e.g. "usps"
+#   slug: a unique ID for the report
+#   title: title of report
+#   url: link to report
+#   published_on: date of publication
+#   year: year of publication
+#   file_type: 'pdf' or other file extension
+#
+# Any additional fields are fine, and will be kept.
 
 def run(options):
-  # Delete all this when you start!
-  print "The scraper starts running here!"
-  print "Use utils.download(url) to download from the web."
-  print "Add some comments above with whatever options you want the scraper to take."
+
+  # Suggested flow, for an agency which paginates results.
+  pages = options.get('pages', 1)
+
+  for page in range(1, (int(pages) + 1)):
+    url = url_for(options, page)
+    body = utils.download(url)
+
+    # Suggested parser, Beautiful Soup 4.
+    doc = BeautifulSoup(body)
+    results = doc.select("some-selector")
+
+    for result in results:
+      report = report_from(result)
+      inspector.save_report(report)
+
+
+# suggested: construct URL based on options
+def url_for(options, page = 1):
+  pass
+
+# suggested: a function that gets details from a parent element
+def report_from(result):
+  pass
 
 
 utils.run(run)
