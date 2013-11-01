@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 
-import utils
+from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
 
+
 # options:
-#   since - date (YYYY-MM-DD) to fetch reports from, or "all" to go back indefinitely.
+#   since - date (YYYY-MM-DD) to fetch reports from.
 #           defaults to 2 days ago.
+#   pages - number of pages to fetch. "all" uses a very high number.
+#           defaults to 1.
 #   only - limit reports fetched to one or more types, comma-separated. e.g. "audit,testimony"
 #          can include:
 #             audit - Audit Reports
@@ -20,26 +23,30 @@ from datetime import datetime
 #             excluding press releases, SARC, and testimony to Congress
 
 def run(options):
-  url = url_for(options)
-  body = utils.download(url)
-  doc = BeautifulSoup(body)
+  pages = options.get('pages', 1)
 
-  results = doc.select(".views-row")
-  for result in results:
-    report = report_from(result)
-    print "[%s][%s]" % (report['type'], report['published_on'])
+  for page in range(1, (int(pages) + 1)):
+    print "## Downloading page %i" % page
+    url = url_for(options, page)
+    body = utils.download(url)
+    doc = BeautifulSoup(body)
 
-    report['report_path'] = download_report(report)
-    print "\treport: %s" % report['report_path']
-
-    report['text_path'] = extract_report(report)
-    print "\ttext: %s" % report['text_path']
-
-    data_path = write_report(report)
-    print "\tdata: %s" % data_path
+    results = doc.select(".views-row")
+    for result in results:
+      report = report_from(result)
+      inspector.save_report(report)
 
 
-# result is a BeautifulSoup elem
+# must return a dict with the following fields:
+#   inspector: 'usps' (hardcoded)
+#   slug: a unique ID for the report
+#   title: title of report
+#   url: link to report
+#   published_on: date of publication
+#   year: year of publication
+#   file_type: 'pdf' or other file extension
+#
+# any additional fields will be retained.
 def report_from(result):
   report = {}
 
@@ -77,31 +84,9 @@ def report_from(result):
   report['file_type'] = extension
 
   report['title'] = result.select("h3")[0].text.strip()
+  report["inspector"] = "usps"
 
   return report
-
-
-def download_report(report):
-  report_path = "usps/%s/%s/report.%s" % (report['year'], report['slug'], report['file_type'])
-  binary = (report['file_type'] == 'pdf')
-
-  utils.download(
-    report['url'],
-    report_path,
-    {'binary': binary}
-  )
-  return report_path
-
-def extract_report(report):
-  return utils.extract_text(report['report_path'])
-
-def write_report(report):
-  data_path = "usps/%s/%s/data.json" % (report['year'], report['slug'])
-  utils.save(
-    utils.json_for(report),
-    data_path
-  )
-  return data_path
 
 def type_for(original_type):
   original = original_type.lower()
@@ -120,7 +105,7 @@ def type_for(original_type):
   else:
     return "unknown"
 
-def url_for(options):
+def url_for(options, page=1):
   url = "http://www.uspsoig.gov/document-library?"
 
   since = options.get('since', None)
@@ -134,6 +119,9 @@ def url_for(options):
   params = ["field_doc_cat_tid[]=%s" % CATEGORIES[id] for id in only]
   url += "&%s" % str.join("&", params)
 
+  if page > 1:
+    url += "&page=%i" % (page - 1)
+
   return url
 
 
@@ -145,5 +133,6 @@ CATEGORIES = {
   'interactive': '3487',
   'congress': '1923'
 }
+
 
 utils.run(run)

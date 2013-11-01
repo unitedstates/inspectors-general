@@ -28,19 +28,16 @@ def options():
         key, value = arg, True
 
       key = key.split("--")[1]
-      if value == 'True': value = True
-      elif value == 'False': value = False
+      if value.lower() == 'true': value = True
+      elif value.lower() == 'false': value = False
       options[key.lower()] = value
   return options
 
 
 # download the data at url
 def download(url, destination=None, options={}):
-  # default to use a cached copy, if one exists
-  cache = options.get('cache', True)
-
-  # binary file?
-  binary = options.get('binary', False)
+  cache = options.get('cache', True) # default to caching
+  binary = options.get('binary', False) # default to assuming text
 
   if destination:
     actual_dest = os.path.join(data_dir(), destination)
