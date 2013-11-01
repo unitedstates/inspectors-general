@@ -14,7 +14,7 @@ python inspectors/usps.py
 
 This will fetch the latest reports from the [Inspector General for the US Postal Service](http://uspsoig.gov) and write them to disk, along with JSON metadata.
 
-Reports are broken up by agency, and by year. So a USPS IG report from 2013 named `no-ar-13-010.pdf` will create the following files:
+Reports are broken up by agency, and by year. So a USPS IG report from 2013 with a scraper-determined ID of `no-ar-13-010` will create the following files:
 
 ```
 /data/usps/2013/no-ar-13-010/report.json
