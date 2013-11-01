@@ -27,19 +27,20 @@ def download_report(report):
 
   utils.download(
     report['url'],
-    report_path,
+    "%s/%s" % (utils.data_dir(), report_path),
     {'binary': binary}
   )
   return report_path
 
+# relies on putting text next to report_path
 def extract_report(report):
   return utils.extract_text(report['report_path'])
 
 def write_report(report):
   data_path = "%s/%s/%s/data.json" % (report['inspector'], report['year'], report['slug'])
-  utils.save(
+  utils.write(
     utils.json_for(report),
-    data_path
+    "%s/%s" % (utils.data_dir(), data_path)
   )
   return data_path
 

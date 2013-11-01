@@ -39,11 +39,8 @@ def download(url, destination=None, options={}):
   cache = options.get('cache', True) # default to caching
   binary = options.get('binary', False) # default to assuming text
 
-  if destination:
-    actual_dest = os.path.join(data_dir(), destination)
-
   # check cache first
-  if destination and cache and os.path.exists(actual_dest):
+  if destination and cache and os.path.exists(destination):
     logging.info("## Cached: (%s, %s)" % (destination, url))
 
     # if a binary file is cached, we're done
@@ -51,7 +48,7 @@ def download(url, destination=None, options={}):
       return True
 
     # otherwise, decode it for return
-    with open(actual_dest, 'r') as f:
+    with open(destination, 'r') as f:
       body = f.read()
       body = body.decode("utf8")
 
@@ -79,9 +76,9 @@ def download(url, destination=None, options={}):
     # cache content to disk
     if destination:
       if binary:
-        write(body, actual_dest)
+        write(body, destination)
       else:
-        write(body.encode("utf8"), actual_dest)
+        write(body.encode("utf8"), destination)
 
   # don't return binary content
   if binary:
@@ -133,10 +130,6 @@ def write(content, destination):
   f = open(destination, 'w')
   f.write(content)
   f.close()
-
-# writes file to path inside data_dir
-def save(content, destination):
-  return write(content, os.path.join(data_dir(), destination))
 
 def json_for(object):
   return json.dumps(object, sort_keys=True, indent=2, default=format_datetime)
