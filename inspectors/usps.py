@@ -40,7 +40,7 @@ def run(options):
 
 # extract fields from HTML, return dict
 def report_from(result):
-  report = {}
+  report = {'inspector': 'usps'}
 
   pieces = result.select("span span")
   report_type = type_for(pieces[0].text.strip())
@@ -76,7 +76,6 @@ def report_from(result):
   report['file_type'] = extension
 
   report['title'] = result.select("h3")[0].text.strip()
-  report["inspector"] = "usps"
 
   return report
 
