@@ -40,3 +40,13 @@ The template has a suggested workflow and set of methods, but all your task **ne
 * `file_type` - "pdf", or whatever file extension the report has.
 
 The `report_id` only needs to be unique within that agency, so you can make it up from other fields. It does need to come out the same every time you run the script. In other words, Don't auto-increment a number -- append other fields together if the agency doesn't give you anything.
+
+## Public domain
+
+This project is [dedicated to the public domain](LICENSE). As spelled out in [CONTRIBUTING](CONTRIBUTING.md):
+
+> The project is in the public domain within the United States, and copyright and related rights in the work worldwide are waived through the [CC0 1.0 Universal public domain dedication][CC0].
+
+> All contributions to this project will be released under the CC0 dedication. By submitting a pull request, you are agreeing to comply with this waiver of copyright interest.
+
+> [CC0]: http://creativecommons.org/publicdomain/zero/1.0/
