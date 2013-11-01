@@ -1,7 +1,11 @@
-import utils
+import utils, os
 
+# Save a report to disk, provide output along the way.
+#
 # 1) download report to disk
 # 2) extract text from downloaded report using report['file_type']
+# 3) write report metadata to disk
+#
 # fields used: file_type, url, inspector, year, slug
 # fields added: report_path, text_path
 
@@ -38,3 +42,6 @@ def write_report(report):
     data_path
   )
   return data_path
+
+def cache(inspector, path):
+  return os.path.join(utils.cache_dir(), inspector, path)

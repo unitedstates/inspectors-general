@@ -122,11 +122,11 @@ def format_exception(exception):
   exc_type, exc_value, exc_traceback = sys.exc_info()
   return "\n".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
-# assumes working dir is the inspectors dir
+# assumes working dir is the root dir
 def data_dir():
-  return os.path.join(os.getcwd(), "../data")
+  return "data"
 def cache_dir():
-  return os.path.join(os.getcwd(), "../cache")
+  return "cache"
 
 def write(content, destination):
   mkdir_p(os.path.dirname(destination))
