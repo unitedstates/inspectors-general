@@ -109,11 +109,16 @@ def extract_text(pdf_path):
   text_path = re.sub("\\.pdf$", ".txt", pdf_path)
   real_text_path = os.path.join(data_dir(), text_path)
 
-  subprocess.Popen(["pdftotext", "-layout", real_pdf_path, real_text_path], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  try:
+    subprocess.check_call("pdftotext -layout %s %s" % (real_pdf_path, real_text_path), shell=True)
+  except subprocess.CalledProcessError as exc:
+    logging.warn("Error extracting text to %s:\n\n%s" % (text_path, format_exception(exc)))
+    return None
+
   if os.path.exists(real_text_path):
     return text_path
   else:
-    logging.warn("Error extracting text to %s" % text_path)
+    logging.warn("Text not extracted to %s" % text_path)
     return None
 
 def format_exception(exception):
