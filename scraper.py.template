@@ -15,7 +15,7 @@ from utils import utils, inspector
 # Where report is a dict with the following required fields:
 #
 #   inspector: the handle you chose for the agency, e.g. "usps"
-#   slug: a unique ID for the report
+#   report_id: a unique ID for the report
 #   title: title of report
 #   url: link to report
 #   published_on: date of publication
@@ -46,7 +46,8 @@ def run(options):
 def url_for(options, page = 1):
   pass
 
-# suggested: a function that gets details from a parent element
+# suggested: a function that gets report details from a parent element,
+# extract a dict of details that are ready for inspector.save_report().
 def report_from(result):
   pass
 

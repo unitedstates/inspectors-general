@@ -69,10 +69,10 @@ def report_from(result):
     link = buttons[0]['href']
   report['url'] = link
 
-  # get filename, use name as slug, extension for type
+  # get filename, use name as report ID, extension for type
   filename = link.split("/")[-1]
   extension = filename.split(".")[-1]
-  report['slug'] = filename.replace("." + extension, "")
+  report['report_id'] = filename.replace("." + extension, "")
   report['file_type'] = extension
 
   report['title'] = result.select("h3")[0].text.strip()
