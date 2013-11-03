@@ -7,8 +7,8 @@ from utils import utils, inspector
 #   e.g. "usps.py" for the USPS.
 # Use this handle for the 'inspector' field on report dicts.
 
-# This script's "run" function will be run with command line options,
-# and you can do anything you want that eventually results in calling:
+# This script's "run" function will be run.
+# You can do anything you want that eventually results in calling:
 #
 #   inspector.save_report(report)
 #
