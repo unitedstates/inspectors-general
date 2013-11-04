@@ -25,7 +25,7 @@ def options():
       if "=" in arg:
         key, value = arg.split('=')
       else:
-        key, value = arg, True
+        key, value = arg, "True"
 
       key = key.split("--")[1]
       if value.lower() == 'true': value = True
