@@ -2,7 +2,11 @@
 
 A project to collect reports from the offices of Inspectors General across the federal government.
 
-**Currently**: Write scrapers for the highest priority IG offices, as highlighted in yellow [in this spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing).
+**Done so far**:
+
+* The [US Postal Service](http://www.uspsoig.gov/)
+
+Currently writing scrapers for the highest priority IG offices, as highlighted in yellow [in this spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing).
 
 ### Using
 
