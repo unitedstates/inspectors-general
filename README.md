@@ -44,7 +44,9 @@ This will save that report to disk in the right place.
 The `report` object must be a dict that contains the following required fields:
 
 * `inspector` - The handle you chose for the IG. e.g. "usps"
-* `agency` - The agency the report relates to. This can be the same value as `inspector`, but it may differ -- some IGs monitor multiple agencies.
+* `inspector_url` - The IG's primary website URL.
+* `agency` - The handle of the agency the report relates to. This can be the same value as `inspector`, but it may differ -- some IGs monitor multiple agencies.
+* `agency_name` - The full text name of an agency, e.g. "United States Postal Service"
 * `report_id` - A string usable as an ID for the report.
 * `title` - Title of report.
 * `url` - Link to report.

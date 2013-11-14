@@ -46,6 +46,7 @@ def run(options):
 def report_from(result, component, url):
   report = {
     'inspector': 'dhs',
+    'inspector_url': 'http://www.oig.dhs.gov',
     'type': 'report' # can't seem to find any easy distinctions
   }
 
@@ -55,6 +56,7 @@ def report_from(result, component, url):
     report['agency'] = 'dhs'
   else:
     report['agency'] = component
+  report['agency_name'] = COMPONENTS[component][2]
 
   timestamp = result.select("td")[0].text.strip()
   published_on = datetime.strptime(timestamp, "%m/%d/%y")
@@ -89,16 +91,16 @@ def url_for(options, component):
 #   for a report's 'agency' field.
 # Some additional info on DHS components: https://www.dhs.gov/department-components
 COMPONENTS = {
-  'secret_service': (58, 49),
-  'coast_guard': (19, 48),
-  'uscis': (20, 47),
-  'tsa': (22, 46),
-  'ice': (24, 44),
-  'fema': (25, 38),
-  'cbp': (26, 37),
-  'dhs_other': (59, 50),
-  'dhs_mgmt': (23, 45),
-  'dhs_cigie': (168, 150), # Council of the Inspectors General on Integrity and Efficiency
+  'secret_service': (58, 49, "U.S. Secret Service"),
+  'coast_guard': (19, 48, "U.S. Coast Guard"),
+  'uscis': (20, 47, "U.S. Citizenship and Immigration Services"),
+  'tsa': (22, 46, "Transportation Security Administration"),
+  'ice': (24, 44, "Immigration and Customs Enforcement"),
+  'fema': (25, 38, "Federal Emergency Management Agency"),
+  'cbp': (26, 37, "Customs & Border Protection"),
+  'dhs_other': (59, 50, "Department of Homeland Security"),
+  'dhs_mgmt': (23, 45, "Department of Homeland Security"),
+  'dhs_cigie': (168, 150, "Council of the Inspectors General on Integrity and Efficiency"),
 }
 
 # 'Oversight areas' as organized by DHS. This is unused now, but

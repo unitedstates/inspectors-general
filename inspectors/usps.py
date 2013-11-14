@@ -40,7 +40,12 @@ def run(options):
 
 # extract fields from HTML, return dict
 def report_from(result):
-  report = {'inspector': 'usps', 'agency': 'usps'}
+  report = {
+    'inspector': 'usps',
+    'inspector_url': 'http://uspsoig.gov/',
+    'agency': 'usps',
+    'agency_name': 'United States Postal Service'
+  }
 
   pieces = result.select("span span")
   report_type = type_for(pieces[0].text.strip())
