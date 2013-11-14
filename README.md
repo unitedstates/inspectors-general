@@ -10,7 +10,7 @@ Currently writing scrapers for the highest priority IG offices, as highlighted i
 
 ### Using
 
-To run an individual agency scraper, just execute its file directly. For example:
+To run an individual IG scraper, just execute its file directly. For example:
 
 ```bash
 python inspectors/usps.py
@@ -18,7 +18,7 @@ python inspectors/usps.py
 
 This will fetch the latest reports from the [Inspector General for the US Postal Service](http://uspsoig.gov) and write them to disk, along with JSON metadata.
 
-Reports are broken up by agency, and by year. So a USPS IG report from 2013 with a scraper-determined ID of `no-ar-13-010` will create the following files:
+Reports are broken up by IG, and by year. So a USPS IG report from 2013 with a scraper-determined ID of `no-ar-13-010` will create the following files:
 
 ```
 /data/usps/2013/no-ar-13-010/report.json
@@ -31,11 +31,19 @@ Metadata for a report is at `report.json`. The original report will be saved at 
 
 ### Contributing a Scraper
 
-The easiest way is to start by copying `scraper.py.template` to `inspectors/[agency].py`, where "[agency]" is the filename-friendly handle of the agency you want to scrape. For example, our scraper for the US Postal Service is [usps.py](https://github.com/unitedstates/inspectors-general/blob/master/inspectors/usps.py).
+The easiest way is to start by copying `scraper.py.template` to `inspectors/[inspector].py`, where "[inspector]" is the filename-friendly handle of the IG office you want to scrape. For example, our scraper for the US Postal Service's IG is [usps.py](https://github.com/unitedstates/inspectors-general/blob/master/inspectors/usps.py).
 
-The template has a suggested workflow and set of methods, but all your task **needs** to do is start execution in a `run` method, and call `inspector.save_report(report)` for every report, where `report` is a dict of details that contains the following required fields:
+The template has a suggested workflow and set of methods, but all your task **needs** to do is:
 
-* `inspector` - The handle you chose for the agency. e.g. "usps"
+* start execution in a `run` method, and
+* call `inspector.save_report(report)` for every report
+
+This will save that report to disk in the right place.
+
+The `report` object must be a dict that contains the following required fields:
+
+* `inspector` - The handle you chose for the IG. e.g. "usps"
+* `agency` - The agency the report relates to. This can be the same value as `inspector`, but it may differ -- some IGs monitor multiple agencies.
 * `report_id` - A string usable as an ID for the report.
 * `title` - Title of report.
 * `url` - Link to report.
@@ -43,7 +51,9 @@ The template has a suggested workflow and set of methods, but all your task **ne
 * `year` - Year of publication.
 * `file_type` - "pdf", or whatever file extension the report has.
 
-The `report_id` only needs to be unique within that agency, so you can make it up from other fields. It does need to come out the same every time you run the script. In other words, Don't auto-increment a number -- append other fields together if the agency doesn't give you anything.
+The `report_id` only needs to be unique within that IG, so you can make it up from other fields.
+
+It does need to come out the same every time you run the script. In other words, **don't auto-increment a number** -- if the IG doesn't give you a unique ID already, append other fields together into a consistent, unique ID.
 
 ## Public domain
 

@@ -2,9 +2,9 @@
 
 from utils import utils, inspector
 
-# Copy this file into inspectors, and rename it to [agency].py,
-# where [agency] is an unclaimed handle for an agency,
-#   e.g. "usps.py" for the USPS.
+# Copy this file into inspectors, and rename it to [inspector].py,
+# where [inspector] is an unclaimed handle for an IG office,
+#   e.g. "usps.py" for the USPS OIG.
 # Use this handle for the 'inspector' field on report dicts.
 
 # This script's "run" function will be run.
@@ -14,7 +14,10 @@ from utils import utils, inspector
 #
 # Where report is a dict with the following required fields:
 #
-#   inspector: the handle you chose for the agency, e.g. "usps"
+#   inspector: the handle you chose for the IG, e.g. "usps"
+#   agency: the agency the report relates to.
+#           This can be the same value as the inspector field, but it
+#           may differ -- some IGs monitor multiple agencies.
 #   report_id: a unique ID for the report
 #   title: title of report
 #   url: link to report
@@ -26,7 +29,7 @@ from utils import utils, inspector
 
 def run(options):
 
-  # Suggested flow, for an agency which paginates results.
+  # Suggested flow, for an IG which paginates results.
   pages = options.get('pages', 1)
 
   for page in range(1, (int(pages) + 1)):
