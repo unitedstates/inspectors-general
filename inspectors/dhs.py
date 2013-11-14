@@ -7,6 +7,7 @@ import urlparse
 
 # options:
 #   component: limit to a specific component. See COMPONENTS dict at bottom.
+#   limit: only download X number of reports (per component)
 
 
 def run(options):
