@@ -3,6 +3,7 @@
 from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
+import urlparse
 
 # options:
 #   component: limit to a specific component. See COMPONENTS dict at bottom.
@@ -14,6 +15,8 @@ def run(options):
     components = [component]
   else:
     components = COMPONENTS.keys()
+
+  limit = int(options.get('limit', 0))
 
   for component in components:
     print "## Fetching reports for component %s" % component
@@ -29,11 +32,50 @@ def run(options):
 
     count = 0
     for result in results:
-      # print result.select("td")[2].select("p a")[0].text
-      # report = report_from(result)
-      # inspector.save_report(report)
+      report = report_from(result, component, url)
+      inspector.save_report(report)
+
       count += 1
+      if limit and (count >= limit):
+        break
+
     print "## Fetched %i reports for component %s\n\n" % (count, component)
+
+
+def report_from(result, component, url):
+  report = {
+    'inspector': 'dhs',
+    'type': 'report' # can't seem to find any easy distinctions
+  }
+
+  # if component is a top-level DHS thing, file as 'dhs'
+  # otherwise, the component is the agency for our purposes
+  if component.startswith('dhs_'):
+    report['agency'] = 'dhs'
+  else:
+    report['agency'] = component
+
+  timestamp = result.select("td")[0].text.strip()
+  published_on = datetime.strptime(timestamp, "%m/%d/%y")
+  report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
+  report['year'] = published_on.year
+
+  link = result.select("td")[2].select("a")[0]
+  report_url = urlparse.urljoin(url, link['href'])
+  title = link.text.strip()
+  report['url'] = report_url
+  report['title'] = title
+
+  report_path = urlparse.urlsplit(report_url).path
+  extension = report_path.split(".")[-1]
+  report['file_type'] = extension
+
+  report['report_id'] = result.select("td")[1].text.strip()
+
+  print report
+
+  return report
+
 
 def url_for(options, component):
   base = "http://www.oig.dhs.gov/index.php?option=com_content&view=article"

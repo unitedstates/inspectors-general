@@ -12,11 +12,11 @@ import utils, os
 def save_report(report):
   print "[%s][%s]" % (report['type'], report['published_on'])
 
-  report['report_path'] = download_report(report)
-  print "\treport: %s" % report['report_path']
+  report_path = download_report(report)
+  print "\treport: %s" % report_path
 
-  report['text_path'] = extract_report(report)
-  print "\ttext: %s" % report['text_path']
+  text_path = extract_report(report_path)
+  print "\ttext: %s" % text_path
 
   data_path = write_report(report)
   print "\tdata: %s" % data_path
@@ -33,8 +33,8 @@ def download_report(report):
   return report_path
 
 # relies on putting text next to report_path
-def extract_report(report):
-  return utils.extract_text(report['report_path'])
+def extract_report(report_path):
+  return utils.extract_text(report_path)
 
 def write_report(report):
   data_path = "%s/%s/%s/report.json" % (report['inspector'], report['year'], report['report_id'])
