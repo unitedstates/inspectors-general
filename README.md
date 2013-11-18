@@ -5,7 +5,14 @@ A project to collect reports from the offices of Inspectors General across the f
 **Done so far**:
 
 * [US Postal Service](http://www.uspsoig.gov/)
-* [Department of Homeland Security](http://www.oig.dhs.gov/)
+* [Department of Homeland Security](http://www.oig.dhs.gov/), which includes:
+  * Secret Service
+  * Federal Emergency Management Service (FEMA)
+  * Transportation Security Administration (TSA)
+  * Immigration and Customs Enforcement (ICE)
+  * Customs and Border Protection (CBP)
+  * Citizenship and Immigration Services (CIS)
+  * Coast Guard
 
 Currently writing scrapers for the highest priority IG offices, as highlighted in yellow [in this spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing).
 
