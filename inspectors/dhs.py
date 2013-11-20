@@ -8,7 +8,7 @@ import urlparse
 # options:
 #   component: limit to a specific component. See COMPONENTS dict at bottom.
 #   limit: only download X number of reports (per component)
-
+#   report_id: use in conjunction with 'component' to get only one report
 
 def run(options):
   component = options.get('component', None)
@@ -16,6 +16,8 @@ def run(options):
     components = [component]
   else:
     components = COMPONENTS.keys()
+
+  report_id = options.get('report_id', None)
 
   limit = int(options.get('limit', 0))
 
@@ -34,6 +36,9 @@ def run(options):
     count = 0
     for result in results:
       report = report_from(result, component, url)
+      if report_id and (report_id != report['report_id']):
+        continue
+
       inspector.save_report(report)
 
       count += 1
@@ -50,6 +55,9 @@ def report_from(result, component, url):
     'type': 'report' # can't seem to find any easy distinctions
   }
 
+  report['report_id'] = result.select("td")[1].text.strip()
+
+
   # if component is a top-level DHS thing, file as 'dhs'
   # otherwise, the component is the agency for our purposes
   if component.startswith('dhs_'):
@@ -59,6 +67,9 @@ def report_from(result, component, url):
   report['agency_name'] = COMPONENTS[component][2]
 
   timestamp = result.select("td")[0].text.strip()
+  # can actually be just monthly, e.g. 12/03 (Dec 2003)
+  if len(timestamp.split("/")) == 2:
+    timestamp = "%s/01/%s" % tuple(timestamp.split("/"))
   published_on = datetime.strptime(timestamp, "%m/%d/%y")
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
   report['year'] = published_on.year
@@ -72,10 +83,6 @@ def report_from(result, component, url):
   report_path = urlparse.urlsplit(report_url).path
   extension = report_path.split(".")[-1]
   report['file_type'] = extension
-
-  report['report_id'] = result.select("td")[1].text.strip()
-
-  print report
 
   return report
 
