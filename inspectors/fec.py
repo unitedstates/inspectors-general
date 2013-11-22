@@ -31,6 +31,9 @@ def run(options):
 				if link:
 					links.append({'title': title, 'url': link })
 
+				# once you have a 'report' dict, call:
+				# 	inspector.save_report(report)
+
 #
 def report_from(li):
 	# process the li, and return a dict with these fields:
