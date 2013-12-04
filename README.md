@@ -59,6 +59,7 @@ The `report` object must be a dict that contains the following required fields:
 * `url` - Link to report.
 * `published_on` - Date of publication, in `YYYY-MM-DD` format.
 * `year` - Year of publication.
+* `type` - "report" or some other description. There's not yet a standard set of values for this field.
 * `file_type` - "pdf", or whatever file extension the report has.
 
 The `report_id` only needs to be unique within that IG, so you can make it up from other fields.
