@@ -7,6 +7,9 @@
 from bs4 import BeautifulSoup
 import urllib
 import urllib2
+import dateutil
+import dateutil.parser
+from datetime import datetime, date
 #from utils import utils, inspector
 
 report = {}
@@ -48,7 +51,39 @@ def extract_info(content, directory):
     blurbs = c.find_all("p")
   
   for b in blurbs:
-    ### date
+    # date
+    x = b.previous_sibling
+    y = b.previous_sibling.previous_sibling
+    try:
+      if y['class'] == ['date']:
+        date = y.string
+        date.strip()
+        date = dateutil.parser.parse(date)
+        date = datetime.strptime(date, "YYYY-MM-DD")
+        print date
+        published_on = date
+      elif x['class'] == ['date']:
+        date = x.string
+        date.strip()
+        date = dateutil.parser.parse(date)
+        date = datetime.strptime(date, "YYYY-MM-DD")
+        print date
+        published_on = date
+
+    except:
+      date = b.string
+      # get rid of the last (...)
+      date = re.sub(r'\([^)]*\)', '', date)
+      # get rid of the last [...]
+      date = re.sub(r'\[[^)]*\]', '', date)
+      # last chunk after the ","
+      date = date.rsplit(',')
+      date = date[-1]
+      date = dateutil.parser.parse(date)
+      date = datetime.strptime(date, "YYYY-MM-DD")
+      print date
+      published_on = date
+
     
     string_title = b.string
     if b.string == None:
@@ -123,6 +158,7 @@ def extract_info(content, directory):
 
         
         #still need date
+
         if file_type != "ignore":
           if report.has_key(doc_id):
             if file_type == "pdf":
@@ -134,13 +170,16 @@ def extract_info(content, directory):
                 report[doc_id]["file_type"] = "pdf"
                 report[doc_id]["url"] = url
                 report[doc_id]["categories"].append(directory)
-            else:#file_type == "html"
+            else:
               # current file html old file pdf OR both files html
               report[doc_id]["categories"].append(directory)
 
             # add url if new
-            if not report[doc_id]["url"][url].exists():
-              report[doc_id]["url"].append({
+            for n in report[doc_id]["urls"]:
+              if n.has_key(url):
+                old_url = True
+            if not "old_url" in locals():
+              report[doc_id]["urls"].append({
                 "url":url, 
                 "file_type": file_type, 
                 "indexed": indexed,
@@ -166,6 +205,7 @@ def extract_info(content, directory):
                   "file_type": file_type, 
                   "indexed": indexed,
                 }]
+              "published_on": published_on,  
               }             
 
 def get_content(url):
@@ -193,4 +233,4 @@ def run():
 
 run()
 
-print report
+#print report
