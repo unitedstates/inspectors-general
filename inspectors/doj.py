@@ -90,6 +90,7 @@ def extract_info(content, directory):
       date_string = date_string.replace(" ", " 1, ")
 
     date = datetime.strptime(date_string, "%B %d, %Y")
+    year = datetime.strftime(date, "%Y")
     published_on = datetime.strftime(date, "%Y-%m-%d")
 
     string_title = b.string
@@ -195,7 +196,6 @@ def extract_info(content, directory):
               report[doc_id]["agency_name"] = agency_name
 
           else:
-            print title, "\n"
             report[doc_id] = {
               "report_id": doc_id,
               "inspector": "doj", 
@@ -211,7 +211,10 @@ def extract_info(content, directory):
                   "file_type": file_type, 
                   "indexed": indexed,
                 }],
-              "published_on": published_on,  
+              "published_on": published_on,
+              "year": year,  
+              # perhaps elaborate on this later
+              "type": "report",
               }             
 
 def get_content(url):
@@ -236,14 +239,14 @@ def run():
     content = get_content(l)
     extract_info(content, source_links[l])
 
-  # for debugging I am using a test file
-  # f = open("USDOscraper_practice.html","r")
+  # # for debugging I am using a test file
+  # f = open("inspectors/USDOJscraper_practice.html","r")
   # data = f.read()
   # page = BeautifulSoup(data)
   # content = page.select(".content-left")
   # extract_info(content, "Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF)")
   
-  for key in report.keys:
+  for key in report.keys():
     inspector.save_report(report[key])
 
 run()
