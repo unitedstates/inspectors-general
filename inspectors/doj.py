@@ -3,14 +3,10 @@
 # Recovery docs have their own system for ids. 
 # Annual reports before 2006 are not included because of broken links and unique formatting 
 # Still need a plan for "indexed" forms
-
+import re
 from bs4 import BeautifulSoup
-import urllib
-import urllib2
-import dateutil
-import dateutil.parser
 from datetime import datetime, date
-#from utils import utils, inspector
+from utils import utils, inspector
 
 report = {}
 source_links = {}
@@ -56,42 +52,52 @@ def extract_info(content, directory):
     y = b.previous_sibling.previous_sibling
     try:
       if y['class'] == ['date']:
-        date = y.string
-        date.strip()
-        date = dateutil.parser.parse(date)
-        date = datetime.strptime(date, "YYYY-MM-DD")
-        print date
-        published_on = date
+        date_string = y.string
       elif x['class'] == ['date']:
-        date = x.string
-        date.strip()
-        date = dateutil.parser.parse(date)
-        date = datetime.strptime(date, "YYYY-MM-DD")
-        print date
-        published_on = date
-
+        date_string = x.string
     except:
-      date = b.string
-      # get rid of the last (...)
-      date = re.sub(r'\([^)]*\)', '', date)
-      # get rid of the last [...]
-      date = re.sub(r'\[[^)]*\]', '', date)
-      # last chunk after the ","
+      date_string = None
+    
+    if date_string == None:
+      try:
+        date = b.string
+        # get rid of the last (...)
+        date = re.sub(r'\([^)]*\)', '', date)
+        # get rid of the last [...]
+        date = re.sub(r'\[[^)]*\]', '', date)
+        # last chunk after the ","
+        date = date.rsplit(',')
+        date = date[-1]
+        date_string = date
+
+        # date = datetime.strptime(date, "YYYY-MM-DD")
+        # published_on = date
+      except:
+        date_string = None
+    
+    if date_string == None:
+      date = b.contents[0].string
+      date = date.replace(" [", "")
+      date = date.replace("[", "")
       date = date.rsplit(',')
       date = date[-1]
-      date = dateutil.parser.parse(date)
-      date = datetime.strptime(date, "YYYY-MM-DD")
-      print date
-      published_on = date
+      date_string = date
+
+    date_string = date_string.strip()
 
     
+    if "," not in date_string:
+      date_string = date_string.replace(" ", " 1, ")
+
+    date = datetime.strptime(date_string, "%B %d, %Y")
+    published_on = datetime.strftime(date, "%Y-%m-%d")
+
     string_title = b.string
     if b.string == None:
       string_title = b.contents
       if "<a href=" in str(string_title):
         string_title = b.contents[0]
 
-  
     for l in b.find_all("a"):
       link = l.get("href")
       if link != None:
@@ -104,8 +110,9 @@ def extract_info(content, directory):
           if str(b) == '<p><a href="/oig/press/2012/2012_09_25.pdf">Report on Activities Under Section 702 of the <em>FISA Amendments Act of 2008</em></a></p>':
             title = "Report on Activities Under Section 702 of the FISA Amendments Act of 2008"
         
-        if title[-2:] == " [":
-          title = title[:-2]
+        if "[" in title[-5:]:
+          title = title.replace("[", '')
+        title = title.strip()
 
         # formating links consistently
         if link[:1] != "/":
@@ -156,9 +163,6 @@ def extract_info(content, directory):
           # these include a few navigation links  
           file_type = "ignore"
 
-        
-        #still need date
-
         if file_type != "ignore":
           if report.has_key(doc_id):
             if file_type == "pdf":
@@ -191,7 +195,9 @@ def extract_info(content, directory):
               report[doc_id]["agency_name"] = agency_name
 
           else:
+            print title, "\n"
             report[doc_id] = {
+              "report_id": doc_id,
               "inspector": "doj", 
               "inspector_url": "http://www.justice.gov/oig/reports/",
               "agency": agency,
@@ -204,12 +210,12 @@ def extract_info(content, directory):
                   "url":url, 
                   "file_type": file_type, 
                   "indexed": indexed,
-                }]
+                }],
               "published_on": published_on,  
               }             
 
 def get_content(url):
-  page = urllib2.urlopen(url).read()
+  page = utils.download(url)
   page = BeautifulSoup(page)
   content = page.select(".content-left")
   return content
@@ -229,8 +235,16 @@ def run():
   for l in source_links.keys():
     content = get_content(l)
     extract_info(content, source_links[l])
-  return report
+
+  # for debugging I am using a test file
+  # f = open("USDOscraper_practice.html","r")
+  # data = f.read()
+  # page = BeautifulSoup(data)
+  # content = page.select(".content-left")
+  # extract_info(content, "Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF)")
+  
+  for key in report.keys:
+    inspector.save_report(report[key])
 
 run()
 
-#print report
