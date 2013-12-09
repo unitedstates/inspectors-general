@@ -18,6 +18,8 @@ Currently writing scrapers for the highest priority IG offices, as highlighted i
 
 ### Using
 
+**Setup**: You'll need to have `pdftotext` installed. On Ubuntu, `apt-get install poppler-utils`. On Macs, install it via MacpPorts with `port install poppler`, or via Homebrew with `brew install poppler`.
+
 To run an individual IG scraper, just execute its file directly. For example:
 
 ```bash
