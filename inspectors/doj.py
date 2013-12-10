@@ -55,51 +55,65 @@ def extract_info(content, directory):
         date_string = y.string
       elif x['class'] == ['date']:
         date_string = x.string
+
     except:
       date_string = None
+
     
     if date_string == None:
       try:
         date = b.string
-        # get rid of the last (...)
         date = re.sub(r'\([^)]*\)', '', date)
-        # get rid of the last [...]
-        date = re.sub(r'\[[^)]*\]', '', date)
-        # last chunk after the ","
+        date = re.sub(r'\[(.*?)\]', '', date)
         date = date.rsplit(',')
+        print date, 1
         date = date[-1]
-        date_string = date
+        print date, 2
+        date_string = date.strip()
+        print date , 3
 
-        # date = datetime.strptime(date, "YYYY-MM-DD")
-        # published_on = date
       except:
         date_string = None
-    
+
     if date_string == None:
       date = b.contents[0].string
+      date = re.sub(r'\([^)]*\)', '', date)
+      date = re.sub(r'\[(.*?)\]', '', date)
       date = date.replace(" [", "")
       date = date.replace("[", "")
       date = date.rsplit(',')
       date = date[-1]
       date_string = date
 
+    print date_string, "THIS ONE"
     date_string = date_string.strip()
 
     
     if "," not in date_string:
       date_string = date_string.replace(" ", " 1, ")
-
-    date = datetime.strptime(date_string, "%B %d, %Y")
-    year = datetime.strftime(date, "%Y")
-    published_on = datetime.strftime(date, "%Y-%m-%d")
-
-    string_title = b.string
-    if b.string == None:
-      string_title = b.contents
-      if "<a href=" in str(string_title):
-        string_title = b.contents[0]
-
+    
+    # going through each link in a paragraph
     for l in b.find_all("a"):
+      try:
+        date = datetime.strptime(date_string, "%B %d, %Y")
+      except:
+        print l
+        print date
+        info = odd_link(b, date)
+        real_title = info["real_title"]
+        date_string = info["date_string"]
+        date = datetime.strptime(date_string, "%B %d, %Y")
+
+      year = datetime.strftime(date, "%Y")
+      published_on = datetime.strftime(date, "%Y-%m-%d")
+      
+      string_title = b.string
+      if b.string == None:
+        string_title = b.contents
+        if "<a href=" in str(string_title):
+          string_title = b.contents[0]
+
+      #for l in b.find_all("a"):
       link = l.get("href")
       if link != None:
         # title
@@ -111,6 +125,9 @@ def extract_info(content, directory):
           if str(b) == '<p><a href="/oig/press/2012/2012_09_25.pdf">Report on Activities Under Section 702 of the <em>FISA Amendments Act of 2008</em></a></p>':
             title = "Report on Activities Under Section 702 of the FISA Amendments Act of 2008"
         
+        if "real_title" in locals():
+          title = real_title
+
         if "[" in title[-5:]:
           title = title.replace("[", '')
         title = title.strip()
@@ -131,7 +148,7 @@ def extract_info(content, directory):
           indexed = False
 
         # there may be a better way to do this but I am just taking out all the things that are not the id
-        url_extras = ( "/final", "/press", "/fullpdf", "/ins_response", "oig/special/", "USMS/", "plus/", "oig/grants/", "oig/reports/", "EOUSA/", "BOP/", "ATF/", "COPS/", "FBI/", "OJP/", "INS/", "DEA/", "OBD", "Final/", "full/", "/analysis", "/report", "/PDF_list", "/exec", "/full_report", "/full", "_redacted", "oig", "r-summary", "/response", "/listpdf", "/memo", "/fullreport", "/Final", "/extradition")
+        url_extras = ( "/final", "/fullpdf", "/ins_response", "oig/special/", "USMS/", "plus/", "oig/grants/", "oig/reports/", "EOUSA/", "BOP/", "ATF/", "COPS/", "FBI/", "OJP/", "INS/", "DEA/", "OBD", "/analysis", "/report", "/PDF_list", "/full_report", "/full", "_redacted", "oig", "r-", "/response", "/listpdf", "/memo", "/fullreport", "/Final", "/extradition")
         for n in url_extras:
           if n in doc_id:
             doc_id = doc_id.replace(n, "")
@@ -148,21 +165,18 @@ def extract_info(content, directory):
         if doc_id in special_cases.keys():
           doc_id = special_cases[doc_id]
 
+        if "spanish" in link:
+          language = "Spanish"
+        else:
+          language = "English"
+
         # url
         if link[:5] == "/oig/":
           url = base_url + link
         else:
           url = base_url + "/oig/reports" + link
         # file_type
-        if url[-3:] == "pdf":
-          file_type = "pdf"
-        elif url[-3:] == "htm":
-          file_type = "html"
-        elif url[-4:] == "html":
-          file_type = "html"
-        else:
-          # these include a few navigation links  
-          file_type = "ignore"
+        file_type = find_file_type(link)
 
         if file_type != "ignore":
           if report.has_key(doc_id):
@@ -215,7 +229,116 @@ def extract_info(content, directory):
               "year": year,  
               # perhaps elaborate on this later
               "type": "report",
+              "language": language,
               }             
+
+def find_file_type(url):
+  if url[-3:] == "pdf":
+    file_type = "pdf"
+  elif url[-3:] == "htm":
+    file_type = "html"
+  elif url[-4:] == "html":
+    file_type = "html"
+  else:
+    # these include a few navigation links  
+    file_type = "ignore"
+  return file_type
+
+def date_format(date):
+  date = str(date)
+  date = re.sub(r'\([^)]*\)', '', date)
+  date = re.sub(r'\[(.*?)\]', '', date)
+  date = date.rsplit(',')
+  date = str(date[-2]).strip() + ", " + str(date[-1]).strip()
+  date_string = date
+  return date_string
+
+
+def odd_link(b, date):
+  #print date, "hello", b
+  if date.strip() =="Report of Investigation into Allegations Relating to the Selection of the":
+    return {"date_string":"June 1, 2006", "real_title": "Report of Investigation into Allegations Relating to the Selection of the U. S. Attorney for Guam and the Northern Mariana Islands, June 2006" }
+  if "Released Publicly" in date:
+    date =  date[18:].strip()
+    date = date.replace(" ", " 1, ")
+    t = str(b)
+    t = t[4:-4]
+    return{"date_string": date, "real_title": t}
+  if "(Unclassified Summary)" in date:
+    date = str(b)
+    date = date[4:-4]
+    date = re.sub(r'\([^)]*\)', '', date)
+    date = re.sub(r'\[(.*?)\]', '', date)
+    date = date.rsplit(',')
+    date = date[-1]
+    if "\r\n " in date:
+      date = re.sub(r'\r\n ', '', date)
+      date = date.strip()
+      date = date.replace(" ", " 1, ")
+    t = str(b)
+    t = t[4:-4]
+    t = re.sub(r'\[(.*?)\]', '', t)
+    return{"date_string": date, "real_title": t}
+  if "<i>" in str(b):
+    print "hello"
+    print date
+    text = str(b)[3:-4]
+    text = text.replace("<i>", "")
+    text = text.replace("</i>", "")
+    title = text.replace("<br/>", "")
+    title = title.replace("\r\n", "")
+    date = re.sub(r'\([^)]*\)', '', title)
+    date = re.sub(r'\[[^)]*\]', '', date)
+    date = date.rsplit(',')
+    #print date
+    date_string = date[-1]
+    date_string = date_string.strip()
+    #print date_string
+    if "," not in date_string:
+      date_string = date_string.replace(" ", " 1, ")
+
+    return{"date_string": date_string, "real_title": title}
+  if date.strip() == "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995":
+    print "WORKING"
+    return{"date_string": "June 1, 1996", "real_title": "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995"}
+  if date != None:
+    date = date.strip
+    # case 1, date is wrong because it is in the paragraph and completely written out
+    try:
+        date =  b.string
+        date_string = date_format(date)
+        title = b.string
+    except:
+      # these are lists of links that are different variants of the same report in a list
+      print "here"
+      # case where there is a list in a paragraph tag
+      listy = b.parent.parent
+      text = str(listy.previous_sibling)
+      if "<!--" in text: 
+        title = re.search(r"^.*?(?=<!--)", text)
+        title = title.group(0)
+        title =  str(title)[3:]
+      else:
+        title = text  
+      # case where there is a paragraph above a list
+      if len(text) < 4:
+        listy = b.parent.parent
+        text = listy.previous_sibling.previous_sibling
+        title = str(text)[3:-4]
+
+      date = re.sub(r'\([^)]*\)', '', title)
+      date = re.sub(r'\[[^)]*\]', '', date)
+      date = date.rsplit(',')
+      date_string = date[-1]
+      date_string = date_string.strip()
+      if "," not in date_string:
+        date_string = date_string.replace(" ", " 1, ")
+      #print date
+  else:
+    print "date = None", b
+
+  info = {"real_title":title, "date_string": date_string, }
+  return(info)
 
 def get_content(url):
   page = utils.download(url)
@@ -235,16 +358,16 @@ def find_pages():
 
 def run():
   find_pages()
-  for l in source_links.keys():
-    content = get_content(l)
-    extract_info(content, source_links[l])
+  # for l in source_links.keys():
+  #   content = get_content(l)
+  #   extract_info(content, source_links[l])
 
-  # # for debugging I am using a test file
-  # f = open("inspectors/USDOJscraper_practice.html","r")
-  # data = f.read()
-  # page = BeautifulSoup(data)
-  # content = page.select(".content-left")
-  # extract_info(content, "Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF)")
+  ## for debugging I am using a test file
+  f = open("inspectors/USDOJ_OIG_Special Report.html","r")
+  data = f.read()
+  page = BeautifulSoup(data)
+  content = page.select(".content-left")
+  extract_info(content, "Special Reports")
   
   for key in report.keys():
     inspector.save_report(report[key])
