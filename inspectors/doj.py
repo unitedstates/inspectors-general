@@ -358,16 +358,16 @@ def find_pages():
 
 def run():
   find_pages()
-  # for l in source_links.keys():
-  #   content = get_content(l)
-  #   extract_info(content, source_links[l])
+  for l in source_links.keys():
+    content = get_content(l)
+    extract_info(content, source_links[l])
 
   ## for debugging I am using a test file
-  f = open("inspectors/USDOJ_OIG_Special Report.html","r")
-  data = f.read()
-  page = BeautifulSoup(data)
-  content = page.select(".content-left")
-  extract_info(content, "Special Reports")
+  # f = open("inspectors/USDOJ_OIG_Special Report.html","r")
+  # data = f.read()
+  # page = BeautifulSoup(data)
+  # content = page.select(".content-left")
+  # extract_info(content, "Special Reports")
   
   for key in report.keys():
     inspector.save_report(report[key])
