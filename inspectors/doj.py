@@ -33,6 +33,7 @@ index_links = ["http://www.justice.gov/oig/reports/2012/s1209.htm"]
 
 
 def extract_info(content, directory):
+  print "\n\n\nStarting loop for--- ", directory
   if directory in not_agency:
     agency = "doj"
     agency_name = "Department of Justice"
@@ -47,65 +48,63 @@ def extract_info(content, directory):
     blurbs = c.find_all("p")
   
   for b in blurbs:
+    print "starting blurb loop--\n", b, "\n\n"
     # date
     x = b.previous_sibling
     y = b.previous_sibling.previous_sibling
+    print b
     try:
       if y['class'] == ['date']:
         date_string = y.string
-      elif x['class'] == ['date']:
-        date_string = x.string
-
+      print date, 0
     except:
       date_string = None
 
-    
+    try:
+      if x['class'] == ['date']:
+        date_string = x.string
+        print date, .5
+    except:
+      pass
+
     if date_string == None:
       try:
         date = b.string
         date = re.sub(r'\([^)]*\)', '', date)
         date = re.sub(r'\[(.*?)\]', '', date)
-        date = date.rsplit(',')
-        print date, 1
-        date = date[-1]
-        print date, 2
+        date_chopped = date.rsplit(',')
+        date = date_chopped[-1]
         date_string = date.strip()
-        print date , 3
-
+        date_string = date_string.replace("  ", " ")
+        print date, 1
+        date = date.strip()
+        if date.isdigit():
+          date_string = date_chopped[-2] + "," + date_chopped[-1]
+          print date_string, "re-combined"
+        if "," not in date_string:
+          date_string = date_string.replace(" ", " 1, ")
+        print date_string, "------86"
       except:
         date_string = None
+        print date, 2
 
-    if date_string == None:
-      date = b.contents[0].string
-      date = re.sub(r'\([^)]*\)', '', date)
-      date = re.sub(r'\[(.*?)\]', '', date)
-      date = date.replace(" [", "")
-      date = date.replace("[", "")
-      date = date.rsplit(',')
-      date = date[-1]
-      date_string = date
-
-    print date_string, "THIS ONE"
-    date_string = date_string.strip()
-
-    
-    if "," not in date_string:
-      date_string = date_string.replace(" ", " 1, ")
-    
     # going through each link in a paragraph
     for l in b.find_all("a"):
       try:
         date = datetime.strptime(date_string, "%B %d, %Y")
       except:
-        print l
-        print date
-        info = odd_link(b, date)
+        print "\n\n", "GOING ODD", "\n\n"
+        info = odd_link(b, date, l, directory)
         real_title = info["real_title"]
         date_string = info["date_string"]
-        date = datetime.strptime(date_string, "%B %d, %Y")
+        if date_string != "ignore":
+          print date_string, b, "\n\n", directory
+          date = datetime.strptime(date_string, "%B %d, %Y")
 
-      year = datetime.strftime(date, "%Y")
-      published_on = datetime.strftime(date, "%Y-%m-%d")
+      print date, "WHY U NO WORK"
+      if date_string != "ignore":
+        year = datetime.strftime(date, "%Y")
+        published_on = datetime.strftime(date, "%Y-%m-%d")
       
       string_title = b.string
       if b.string == None:
@@ -121,7 +120,7 @@ def extract_info(content, directory):
         if title == "HTML" or title == "PDF":
           title = string_title
         if title == None:
-          #this is the only one that doesn't work
+          #this doesn't work
           if str(b) == '<p><a href="/oig/press/2012/2012_09_25.pdf">Report on Activities Under Section 702 of the <em>FISA Amendments Act of 2008</em></a></p>':
             title = "Report on Activities Under Section 702 of the FISA Amendments Act of 2008"
         
@@ -254,10 +253,52 @@ def date_format(date):
   return date_string
 
 
-def odd_link(b, date):
-  #print date, "hello", b
-  if date.strip() =="Report of Investigation into Allegations Relating to the Selection of the":
-    return {"date_string":"June 1, 2006", "real_title": "Report of Investigation into Allegations Relating to the Selection of the U. S. Attorney for Guam and the Northern Mariana Islands, June 2006" }
+def odd_link(b, date, l, directory):
+  print date, "hello", b
+  print directory, 
+
+  try:
+    link = l.get("href")
+    if link[-4:] == ".gov":
+      return {"date_string":"ignore", "real_title":"ignore"}
+  except:
+    pass
+  #check for missing commas
+  try:
+    print "trying"
+    date_string = datetime.strptime(date, "%B %d %Y")
+    date_string = datetime.strftime(date_string, "%B %d, %Y")
+    t = str(b)
+    print date_string
+    return{"date_string": date_string, "real_title": t}
+  except:
+    pass
+  # for when there are line breaks in title
+  try:
+    print "Starting date in p search, odd"
+    date = str(b)[4:-4]
+    print date, "string version"
+    date = re.sub(r'\([^)]*\)', '', date)
+    date = re.sub(r'\[(.*?)\]', '', date)
+    print date, "Cleaner date"
+    date = date.replace(" [", "")
+    date = date.replace("[", "")
+    date_chopped = date.rsplit(',')
+    print "date chunks ----  ", date_chopped
+    date = date_chopped[-1]
+    date_string = date
+    t = str(b)
+    date = date.strip()
+    if date.isdigit():
+      date_string = date_chopped[-2] + "," + date_chopped[-1]
+      print date_string, "re-combined"
+    test = datetime.strptime(date_string, "%B %d, %Y")
+    print test
+    return{"date_string": date_string, "real_title": t}
+
+  except:
+    pass
+
   if "Released Publicly" in date:
     date =  date[18:].strip()
     date = date.replace(" ", " 1, ")
@@ -279,9 +320,14 @@ def odd_link(b, date):
     t = t[4:-4]
     t = re.sub(r'\[(.*?)\]', '', t)
     return{"date_string": date, "real_title": t}
+  if "Revised" in date:
+    date = date[7:] 
+    date = date.strip()
+    date_string = date.replace(" ", " 1, ")
+    real_title = str(b)
+    return{"date_string": date_string, "real_title": real_title}
+
   if "<i>" in str(b):
-    print "hello"
-    print date
     text = str(b)[3:-4]
     text = text.replace("<i>", "")
     text = text.replace("</i>", "")
@@ -289,18 +335,29 @@ def odd_link(b, date):
     title = title.replace("\r\n", "")
     date = re.sub(r'\([^)]*\)', '', title)
     date = re.sub(r'\[[^)]*\]', '', date)
+    print " 334 ---", date
     date = date.rsplit(',')
-    #print date
     date_string = date[-1]
     date_string = date_string.strip()
-    #print date_string
+
     if "," not in date_string:
       date_string = date_string.replace(" ", " 1, ")
 
     return{"date_string": date_string, "real_title": title}
   if date.strip() == "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995":
-    print "WORKING"
     return{"date_string": "June 1, 1996", "real_title": "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995"}
+  if date == "Audit Report GR-30-00-001":
+    return{"date_string": "November 1, 2000", "real_title":"McMechen, West Virginia Police Department, Audit Report GR-30-00-001"}
+  # no date, one other entry, giving it the same date
+  if date == "Georgia's Department of Corrections":
+   return{"date_string": "November 1, 2000", "real_title":"United States Marshals Service Cost Proposal for the Intergovernmental Service Agreement for Detention Facilities with the City of Atlanta, Georgia’s Department of Corrections"}
+  # Intergovernmental Agreements for Detention Space External Reports don't always have dates, not even on the douments, using today
+  if directory == "Intergovernmental Agreements for Detention Space (IGAs)":
+    real_title = str(b)
+    date_string = datetime.now()
+    date_string = datetime.strftime(date_string, "%B %d, %Y")
+    return{"date_string": date_string, "real_title": real_title}
+  print date, "mad it this far"
   if date != None:
     date = date.strip
     # case 1, date is wrong because it is in the paragraph and completely written out
@@ -308,34 +365,52 @@ def odd_link(b, date):
         date =  b.string
         date_string = date_format(date)
         title = b.string
+        print "tried"
     except:
       # these are lists of links that are different variants of the same report in a list
-      print "here"
       # case where there is a list in a paragraph tag
       listy = b.parent.parent
       text = str(listy.previous_sibling)
       if "<!--" in text: 
+        print "found comment"
         title = re.search(r"^.*?(?=<!--)", text)
         title = title.group(0)
         title =  str(title)[3:]
       else:
         title = text  
+
       # case where there is a paragraph above a list
+      print text, "----- text"
       if len(text) < 4:
         listy = b.parent.parent
         text = listy.previous_sibling.previous_sibling
         title = str(text)[3:-4]
 
+      print "title===== ", title
       date = re.sub(r'\([^)]*\)', '', title)
       date = re.sub(r'\[[^)]*\]', '', date)
       date = date.rsplit(',')
+      print "chunks === ", date
       date_string = date[-1]
       date_string = date_string.strip()
       if "," not in date_string:
         date_string = date_string.replace(" ", " 1, ")
-      #print date
+
   else:
     print "date = None", b
+
+  #I don't know why this doesn't work on the first passs for the first item on the page, dealing with it here
+  try:
+    print "427"
+    date_string.strip()
+    date = datetime.strptime(date_string, "%B %d, %Y")
+  except:
+    y = b.previous_sibling.previous_sibling
+    print b, "\n"
+    print y, "y"
+    print "\n"
+    date_string = y.string
+    print "work damn you!"
 
   info = {"real_title":title, "date_string": date_string, }
   return(info)
@@ -373,4 +448,3 @@ def run():
     inspector.save_report(report[key])
 
 run()
-
