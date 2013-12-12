@@ -1,8 +1,8 @@
 
 # This Python file uses the following encoding: utf-8
-# Recovery docs have their own system for ids. 
-# Annual reports before 2006 are not included because of broken links and unique formatting 
+# docs that have no date are given today's date
 # Still need a plan for "indexed" forms
+
 import re
 from bs4 import BeautifulSoup
 from datetime import datetime, date
@@ -49,9 +49,10 @@ def extract_info(content, directory):
   
   for b in blurbs:
     # date
+    # finding new dates that are just above the old ones
     x = b.previous_sibling
     y = b.previous_sibling.previous_sibling
-
+    
     try:
       if y['class'] == ['date']:
         date_string = y.string
@@ -66,20 +67,24 @@ def extract_info(content, directory):
     except:
       pass
 
+    # finding older date that are at the end of the text
     if date_string == None:
       try:
         date = b.string
+        # I don't know why .string doesn't always work
         if date == None:
-          date = hard_clean(b)
+            date = hard_clean(b)
         date = re.sub(r'\([^)]*\)', '', date)
         date = re.sub(r'\[(.*?)\]', '', date)
         date_chopped = date.rsplit(',')
         date = date_chopped[-1]
         date_string = date.strip()
         date_string = date_string.replace("  ", " ")
+        
         date = date.strip()
         if date.isdigit():
           date_string = date_chopped[-2] + "," + date_chopped[-1]
+      
       except:
         date_string = None
 
@@ -134,6 +139,26 @@ def extract_info(content, directory):
           title = title.replace("[", '')
         title = title.strip()
 
+        if title == 'id="content" name="content">':
+          title =  b.string
+          if title == None:
+            title = hard_clean(b)
+        
+        try:
+          title = title.strip()
+          title = title.replace('\n', "")
+          title = title.replace('\r', "")
+        except:
+          pass
+
+        file_type = find_file_type(link)
+
+        if title == "ignore" and file_type != "ignore":
+          title = b.string
+
+        if title == None and file_type != "ignore":
+          title = hard_clean(b)
+
         # formating links consistently
         if link[:1] != "/":
           link = "/" + link 
@@ -149,8 +174,9 @@ def extract_info(content, directory):
         else:
           indexed = False
 
+
         # there may be a better way to do this but I am just taking out all the things that are not the id
-        url_extras = ( "/final", "/fullpdf", "/ins_response", "oig/special/", "USMS/", "plus/", "oig/grants/", "oig/reports/", "EOUSA/", "BOP/", "ATF/", "COPS/", "FBI/", "OJP/", "INS/", "DEA/", "OBD", "/analysis", "/report", "/PDF_list", "/full_report", "/full", "_redacted", "oig", "r-", "/response", "/listpdf", "/memo", "/fullreport", "/Final", "/extradition")
+        url_extras = ( "/final", "/fullpdf", "/ins_response", "oig/special/", "USMS/", "plus/", "oig/grants/", "oig/reports/", "EOUSA/", "BOP/", "ATF/", "COPS/", "FBI/", "OJP/", "INS/", "DEA/", "OBD", "/analysis", "/report", "/PDF_list", "/full_report", "/full", "_redacted", "oig", "r-", "/response", "/listpdf", "/memo", "/fullreport", "/Final", "/extradition", "/oig", "/grants", "/index")
         for n in url_extras:
           if n in doc_id:
             doc_id = doc_id.replace(n, "")
@@ -178,7 +204,7 @@ def extract_info(content, directory):
         else:
           url = base_url + "/oig/reports" + link
         # file_type
-        file_type = find_file_type(link)
+        
 
         if file_type != "ignore":
           if report.has_key(doc_id):
@@ -232,7 +258,13 @@ def extract_info(content, directory):
               # perhaps elaborate on this later
               "type": "report",
               "language": language,
-              }             
+              }  
+
+            print "\n"
+            print doc_id
+            print title
+            print link
+            print "\n"
 
 def find_file_type(url):
   if url[-3:] == "pdf":
@@ -262,67 +294,44 @@ def odd_link(b, date, l, directory):
     link = l.get("href")
     if link[-4:] == ".gov":
       return {"date_string":"ignore", "real_title":"ignore"}
-    if link[-5:] == ".gov/":
+    elif link[-5:] == ".gov/":
       return {"date_string":"ignore", "real_title":"ignore"}
   except:
     pass
+
   #check for missing commas
   try:
     date_string = datetime.strptime(date, "%B %d %Y")
     date_string = datetime.strftime(date_string, "%B %d, %Y")
-    t = hard_clean(b)
-    return{"date_string": date_string, "real_title": t}
-  except:
-    pass
-
-  if date.strip() == "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995":
-    return{"date_string": "June 1, 1996", "real_title": "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995"}
-  if date == "Audit Report GR-30-00-001":
-    return{"date_string": "November 1, 2000", "real_title":"McMechen, West Virginia Police Department, Audit Report GR-30-00-001"}
-  # no date, one other entry, giving it the same date
-  if date == "Georgia's Department of Corrections":
-    return{"date_string": "November 1, 2000", "real_title":"United States Marshals Service Cost Proposal for the Intergovernmental Service Agreement for Detention Facilities with the City of Atlanta, Georgia’s Department of Corrections"}
-  
-  # confirmed no dates for these
-  no_dates = ("Audit Report GR-40-99-014", "Audit Report GR-40-99-011", "Evaluation and Inspections Report I-2000-021", "Evaluation and Inspections Report I-2000-018", "Audit Report 99-03")
-  if date.strip() in no_dates:
-    date_string = datetime.now()
-    date_string = datetime.strftime(date_string, "%B %d, %Y")
     return{"date_string": date_string, "real_title": hard_clean(b)}
-
-  # Intergovernmental Agreements for Detention Space External Reports don't always have dates, not even on the douments, using today
-  if directory == "Intergovernmental Agreements for Detention Space (IGAs)":
-    real_title = hard_clean(b)
-    date_string = datetime.now()
-    date_string = datetime.strftime(date_string, "%B %d, %Y")
-    return{"date_string": date_string, "real_title": real_title}
-
-  # for when there are line breaks in title
-  try:
-    date = hard_clean(b)
-    date = re.sub(r'\([^)]*\)', '', date)
-    date = re.sub(r'\[(.*?)\]', '', date)
-    date = date.replace(" [", "")
-    date = date.replace("[", "")
-    date_chopped = date.rsplit(',')
-    date = date_chopped[-1]
-    date_string = date
-    t = hard_clean(b)
-    date = date.strip()
-    if date.isdigit():
-      date_string = date_chopped[-2] + "," + date_chopped[-1]
-    test = datetime.strptime(date_string, "%B %d, %Y")
-    return{"date_string": date_string, "real_title": t}
-
   except:
     pass
+
+  #section for documents without dates:
+  if date != None:
+    if date.strip() == "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995":
+      return{"date_string": "June 1, 1996", "real_title": "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995"}
+    if date == "Audit Report GR-30-00-001":
+      return{"date_string": "November 1, 2000", "real_title":"McMechen, West Virginia Police Department, Audit Report GR-30-00-001"}
+    # no date, one other entry, giving it the same date
+    if date == "Georgia's Department of Corrections":
+      return{"date_string": "November 1, 2000", "real_title":"United States Marshals Service Cost Proposal for the Intergovernmental Service Agreement for Detention Facilities with the City of Atlanta, Georgia’s Department of Corrections"}
+    # confirmed no dates for these
+    no_dates = ("Audit Report GR-40-99-014", "Audit Report GR-40-99-011", "Evaluation and Inspections Report I-2000-021", "Evaluation and Inspections Report I-2000-018", "Audit Report 99-03")
+    if date.strip() in no_dates:
+      date_string = datetime.now()
+      date_string = datetime.strftime(date_string, "%B %d, %Y")
+      return{"date_string": date_string, "real_title": hard_clean(b)}
+    # Intergovernmental Agreements for Detention Space External Reports don't always have dates, not even on the douments, using today
+    if directory == "Intergovernmental Agreements for Detention Space (IGAs)":
+      date_string = datetime.now()
+      date_string = datetime.strftime(date_string, "%B %d, %Y")
+      return{"date_string": date_string, "real_title": hard_clean(b)}
 
   if "Released Publicly" in date:
     date =  date[18:].strip()
     date = date.replace(" ", " 1, ")
-    t = hard_clean(b)
-    t = t[4:-4]
-    return{"date_string": date, "real_title": t}
+    return{"date_string": date, "real_title": hard_clean(b)}
   if "(Unclassified Summary)" in date:
     date = hard_clean(b)
     date = date[4:-4]
@@ -342,22 +351,12 @@ def odd_link(b, date, l, directory):
     date = date[7:] 
     date = date.strip()
     date_string = date.replace(" ", " 1, ")
-    real_title = hard_clean(b)
-    return{"date_string": date_string, "real_title": real_title}
-  if "<i>" in str(b):
-    text = hard_clean(b)
-    title = title.replace("\r\n", "")
-    date = re.sub(r'\([^)]*\)', '', title)
-    date = re.sub(r'\[[^)]*\]', '', date)
-    date = date.rsplit(',')
-    date_string = date[-1]
-    date_string = date_string.strip()
+    return{"date_string": date_string, "real_title": hard_clean(b)}
 
     if "," not in date_string:
       date_string = date_string.strip()
       date_string = date_string.replace(" ", " 1, ")
-
-    return{"date_string": date_string, "real_title": title}
+    return{"date_string": date_string, "real_title": hard_clean(b)}
 
   if date != None:
     date = date.strip
@@ -383,7 +382,6 @@ def odd_link(b, date, l, directory):
         listy = b.parent.parent
         text = listy.previous_sibling.previous_sibling
         title = str(text)[3:-4]
-
       date = re.sub(r'\([^)]*\)', '', title)
       date = re.sub(r'\[[^)]*\]', '', date)
       date = date.rsplit(',')
@@ -391,9 +389,7 @@ def odd_link(b, date, l, directory):
       date_string = date_string.strip()
       if "," not in date_string:
         date_string = date_string.replace(" ", " 1, ")
-
-  else:
-    pass
+ 
 
   #I don't know why this doesn't work on the first pass for the first item on the page, dealing with it here
   try:
@@ -430,27 +426,40 @@ def odd_link(b, date, l, directory):
     d = stuff[0]
     date_string = d.strip()
 
+    # these guys have a lot of comments, .string doesn't work and don't get cleaned properly
+    if "=" in title:
+      c = str(b)
+      chunks = c.rsplit("<!--")
+      title = hard_clean(chunks[0])
+      title = hard_clean(title)
+      d = re.sub(r'\([^)]*\)', '', title)
+      d = re.sub(r'\[(.*?)\]', '', d)
+      date_chopped = d.rsplit(',')
+      d = date_chopped[-1]
+      if "\r" in d:
+        d = d.rsplit('\r')[0]
+      if "\n" in d:
+        d = d.rsplit('\n')[0]
+      d = d.strip()
+      d = d.replace("  ", " ")
+      d = d.strip()
+      if d.isdigit():
+        d = date_chopped[-2] + "," + date_chopped[-1]
+      date_string = d
+      if "'" not in d:
+        date_string = date_string.replace(" ", " 1, ")
+
+
   info = {"real_title":title, "date_string": date_string, }
   return(info)
 
 # sometimes I can't get .string to work
 def hard_clean(st):
   st = str(st)
-  st = st.replace("<p>", "")
-  st = st.replace("</p>", "")
-  st = st.replace("<a>", "")
-  st = st.replace("</a>", "")
-  st = st.replace("<i>", "")
-  st = st.replace("</i>", "")
-  st = st.replace("<br>", "")
-  st = st.replace("<br/>", "")
-  st = st.replace("<br />", "")
-  st = st.replace("<!-- ", "") 
-  st = st.replace("-->","")
+  st = re.sub(r'<([^>]+)>', "", st)
   st = re.sub(r'\([^)]*\)', "", st)
   st = re.sub(r'\[(.*?)\]', "", st)
   st = st.replace("  ", " ")
-  st = st.split("\r\n<!--<", 1)[0]
   return st
 
 def get_content(url):
