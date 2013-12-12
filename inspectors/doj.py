@@ -1,7 +1,12 @@
 
 # This Python file uses the following encoding: utf-8
-# docs that have no date are given today's date
-# Still need a plan for "indexed" forms
+
+# - Some documents don't have dates, in that case today's date is used
+# - Some forms, marked index are one html document spread across several links
+# - Sometimes the .string method would not work so I make a hack around that it is not elegant, but it is working
+# - I added language information since there were English and Spanish docs
+# - There are html and pdfs for the same docs so all the urls are tracked in urls
+
 
 import re
 from bs4 import BeautifulSoup
@@ -260,11 +265,6 @@ def extract_info(content, directory):
               "language": language,
               }  
 
-            print "\n"
-            print doc_id
-            print title
-            print link
-            print "\n"
 
 def find_file_type(url):
   if url[-3:] == "pdf":
