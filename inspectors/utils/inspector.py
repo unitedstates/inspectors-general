@@ -10,7 +10,7 @@ import utils, os
 # fields added: report_path, text_path
 
 def save_report(report):
-  print "[%s][%s]" % (report['type'], report['published_on'])
+  print "[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id'])
 
   report_path = download_report(report)
   print "\treport: %s" % report_path
