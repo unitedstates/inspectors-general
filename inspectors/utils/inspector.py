@@ -1,4 +1,5 @@
 import utils, os
+import logging
 
 # Save a report to disk, provide output along the way.
 #
@@ -10,16 +11,16 @@ import utils, os
 # fields added: report_path, text_path
 
 def save_report(report):
-  print "[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id'])
+  logging.warn("[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id']))
 
   report_path = download_report(report)
-  print "\treport: %s" % report_path
+  logging.warn("\treport: %s" % report_path)
 
   text_path = extract_report(report_path)
-  print "\ttext: %s" % text_path
+  logging.warn("\ttext: %s" % text_path)
 
   data_path = write_report(report)
-  print "\tdata: %s" % data_path
+  logging.warn("\tdata: %s" % data_path)
 
 def download_report(report):
   report_path = "%s/%s/%s/report.%s" % (report['inspector'], report['year'], report['report_id'], report['file_type'])

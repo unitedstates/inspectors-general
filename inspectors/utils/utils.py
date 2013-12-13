@@ -8,9 +8,13 @@ import scrapelib
 scraper = scrapelib.Scraper(requests_per_minute=120, follow_robots=False, retry_attempts=3)
 scraper.user_agent = "unitedstates/inspectors-general (https://github.com/unitedstates/inspectors-general)"
 
-def run(method):
+
+def run(run_method):
+  cli_options = options()
+  configure_logging(cli_options)
+
   try:
-    method(options())
+    run_method(cli_options)
   except Exception as exception:
     print format_exception(exception)
 
@@ -32,6 +36,18 @@ def options():
       elif value.lower() == 'false': value = False
       options[key.lower()] = value
   return options
+
+def configure_logging(options = {}):
+  if options.get('debug', False):
+    log_level = "debug"
+  else:
+    log_level = options.get("log", "warn")
+
+  if log_level not in ["debug", "info", "warn", "error"]:
+    print "Invalid log level (specify: debug, info, warn, error)."
+    sys.exit(1)
+
+  logging.basicConfig(format='%(message)s', level=log_level.upper())
 
 
 # download the data at url
