@@ -105,11 +105,7 @@ def download(url, destination=None, options={}):
 
 
 # uses pdftotext to get text out of PDFs
-def extract_text(pdf_path):
-  if not pdf_path.endswith(".pdf"):
-    logging.warn("Report is not a PDF!")
-    return None
-
+def text_from_pdf(pdf_path):
   pdftotext = subprocess.Popen(["which", "pdftotext"], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
   if not pdftotext.strip():
     logging.warn("Install pdftotext to extract text!")
