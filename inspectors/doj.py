@@ -49,75 +49,76 @@ def extract_info(content, directory):
     agency = agency_decoder[directory][1]
     agency_name = agency_decoder[directory][0]
   
-  for c in content:
-    blurbs = c.find_all("p")
+  blurbs = content[-1].find_all("p")
   
   for b in blurbs:
     # date
     # finding new dates that are just above the old ones
     x = b.previous_sibling
     y = b.previous_sibling.previous_sibling
-    
+
     try:
       if y['class'] == ['date']:
         date_string = y.string
       else:
-        date_string = None
+         date_string = None
     except:
-      date_string = None
-
-    try:
-      if x['class'] == ['date']:
-        date_string = x.string
-    except:
-      pass
-
+       date_string = None
+   
     # finding older date that are at the end of the text
     if date_string == None:
       try:
-        date = b.string
-        # I don't know why .string doesn't always work
-        if date == None:
-            date = hard_clean(b)
-        date = re.sub(r'\([^)]*\)', '', date)
-        date = re.sub(r'\[(.*?)\]', '', date)
-        date_chopped = date.rsplit(',')
-        date = date_chopped[-1]
-        date_string = date.strip()
-        date_string = date_string.replace("  ", " ")
-        
-        date = date.strip()
-        if date.isdigit():
-          date_string = date_chopped[-2] + "," + date_chopped[-1]
-      
+        date_string = b.get_text()
       except:
         date_string = None
 
-    else:
+    if date_string is not None:
+      date_text = re.sub(r'\([^)]*\)', '', date_string)
+      date_text = re.sub(r'\[(.*?)\]', '', date_text)
+      date_chopped = date_text.rsplit(',')
+      day = date_chopped[-1]
+      date_string = day.strip()
+      date_string = date_string.replace("  ", " ")
+      
+      day = day.strip()
+      if day.isdigit():
+        date_string = date_chopped[-2] + "," + date_chopped[-1]
+
+    #check for missing commas
+    try:
+      date_string = datetime.strptime(date_string, "%B %d %Y")
+      date_string = datetime.strftime(date_string, "%B %d, %Y")
+    except ValueError:
       pass
-    
+
+    # for dates without a day
+    if date_string is not None:
+      date_string = date_string.strip()
+      if "," not in date_string:
+        date_test = date_string.replace(" ", " 1, ")
+        try:
+          d = datetime.strptime(date_test, "%B %d, %Y")
+          date_string = date_test
+        except ValueError:
+          pass
+
     # going through each link in a paragraph
     for l in b.find_all("a"):
       try:
-        date_string = date_string.strip()
-        if "," not in date_string:
-          date_string = date_string.replace(" ", " 1, ")
-        date = datetime.strptime(date_string, "%B %d, %Y")
-      
-      except:
-        info = odd_link(b, date, l, directory)
+        date = datetime.strptime(date_string, "%B %d, %Y") 
+      except ValueError:
+        info = odd_link(b, date_string, l, directory, )
         real_title = info["real_title"]
-        real_title = hard_clean(real_title)
         date_string = info["date_string"]
-        if date_string != "ignore":
-          if "," not in date_string:
-            date_string = date_string.strip()
-            date_string = date_string.replace(" ", " 1, ")
+        if real_title == "ignore" and date_string == "ignore":
+          break
+        if "," not in date_string:
+          date_string = date_string.strip()
+          date_string = date_string.replace(" ", " 1, ")
           date = datetime.strptime(date_string, "%B %d, %Y")
 
-      if date_string != "ignore":
-        year = datetime.strftime(date, "%Y")
-        published_on = datetime.strftime(date, "%Y-%m-%d")
+      year = datetime.strftime(date, "%Y")
+      published_on = datetime.strftime(date, "%Y-%m-%d")
       
       string_title = b.string
       if b.string == None:
@@ -132,22 +133,14 @@ def extract_info(content, directory):
         title = l.string
         if title == "HTML" or title == "PDF":
           title = string_title
-        if title == None:
-          #this doesn't work
-          if str(b) == '<p><a href="/oig/press/2012/2012_09_25.pdf">Report on Activities Under Section 702 of the <em>FISA Amendments Act of 2008</em></a></p>':
-            title = "Report on Activities Under Section 702 of the FISA Amendments Act of 2008"
         
         if "real_title" in locals():
           title = real_title
 
-        if "[" in title[-5:]:
-          title = title.replace("[", '')
-        title = title.strip()
-
         if title == 'id="content" name="content">':
           title =  b.string
           if title == None:
-            title = hard_clean(b)
+            title = b.text()
         
         try:
           title = title.strip()
@@ -157,12 +150,11 @@ def extract_info(content, directory):
           pass
 
         file_type = find_file_type(link)
+        if file_type == "ignore":
+          break
 
-        if title == "ignore" and file_type != "ignore":
+        if title == None:
           title = b.string
-
-        if title == None and file_type != "ignore":
-          title = hard_clean(b)
 
         # formating links consistently
         if link[:1] != "/":
@@ -208,62 +200,59 @@ def extract_info(content, directory):
           url = base_url + link
         else:
           url = base_url + "/oig/reports" + link
-        # file_type
-        
 
-        if file_type != "ignore":
-          if report.has_key(doc_id):
-            if file_type == "pdf":
-              # current and previous file pdf
-              if report[doc_id]["file_type"] == "pdf":
-                report[doc_id]["categories"].append(directory)
-              # current file a pdf, old file html
-              else:
-                report[doc_id]["file_type"] = "pdf"
-                report[doc_id]["url"] = url
-                report[doc_id]["categories"].append(directory)
-            else:
-              # current file html old file pdf OR both files html
+        if report.has_key(doc_id):
+          if file_type == "pdf":
+            # current and previous file pdf
+            if report[doc_id]["file_type"] == "pdf":
               report[doc_id]["categories"].append(directory)
+            # current file a pdf, old file html
+            else:
+              report[doc_id]["file_type"] = "pdf"
+              report[doc_id]["url"] = url
+              report[doc_id]["categories"].append(directory)
+          else:
+            # current file html old file pdf OR both files html
+            report[doc_id]["categories"].append(directory)
 
-            # add url if new
-            for n in report[doc_id]["urls"]:
-              if n.has_key(url):
-                old_url = True
-            if not "old_url" in locals():
-              report[doc_id]["urls"].append({
+          # add url if new
+          for n in report[doc_id]["urls"]:
+            if n.has_key(url):
+              old_url = True
+          if not "old_url" in locals():
+            report[doc_id]["urls"].append({
+              "url":url, 
+              "file_type": file_type, 
+              "indexed": indexed,
+              })
+
+          # finding the most descriptive name for cross-listed docs
+          if report[doc_id]["agency"] == "doj" and agency != "doj":
+            report[doc_id]["agency"] = agency
+            report[doc_id]["agency_name"] = agency_name
+
+        else:
+          report[doc_id] = {
+            "report_id": doc_id,
+            "inspector": "doj", 
+            "inspector_url": "http://www.justice.gov/oig/reports/",
+            "agency": agency,
+            "agency_name": agency_name,
+            "url": url,
+            "title": title,
+            "file_type": file_type, 
+            "categories": [directory,],
+            "urls": [{
                 "url":url, 
                 "file_type": file_type, 
                 "indexed": indexed,
-                })
-
-            # finding the most descriptive name for cross-listed docs
-            if report[doc_id]["agency"] == "doj" and agency != "doj":
-              report[doc_id]["agency"] = agency
-              report[doc_id]["agency_name"] = agency_name
-
-          else:
-            report[doc_id] = {
-              "report_id": doc_id,
-              "inspector": "doj", 
-              "inspector_url": "http://www.justice.gov/oig/reports/",
-              "agency": agency,
-              "agency_name": agency_name,
-              "url": url,
-              "title": title,
-              "file_type": file_type, 
-              "categories": [directory,],
-              "urls": [{
-                  "url":url, 
-                  "file_type": file_type, 
-                  "indexed": indexed,
-                }],
-              "published_on": published_on,
-              "year": year,  
-              # perhaps elaborate on this later
-              "type": "report",
-              "language": language,
-              }  
+              }],
+            "published_on": published_on,
+            "year": year,  
+            # perhaps elaborate on this later
+            "type": "report",
+            "language": language,
+            }  
 
 
 def find_file_type(url):
@@ -289,23 +278,20 @@ def date_format(date):
 
 
 def odd_link(b, date, l, directory):
+  text = b.get_text()
   # not links to docs
   try:
     link = l.get("href")
+  except:
+    pass
+  
+  if "link" in locals():
     if link[-4:] == ".gov":
       return {"date_string":"ignore", "real_title":"ignore"}
     elif link[-5:] == ".gov/":
       return {"date_string":"ignore", "real_title":"ignore"}
-  except:
-    pass
 
-  #check for missing commas
-  try:
-    date_string = datetime.strptime(date, "%B %d %Y")
-    date_string = datetime.strftime(date_string, "%B %d, %Y")
-    return{"date_string": date_string, "real_title": hard_clean(b)}
-  except:
-    pass
+  text = b.get_text()
 
   #section for documents without dates:
   if date != None:
@@ -321,42 +307,59 @@ def odd_link(b, date, l, directory):
     if date.strip() in no_dates:
       date_string = datetime.now()
       date_string = datetime.strftime(date_string, "%B %d, %Y")
-      return{"date_string": date_string, "real_title": hard_clean(b)}
+      return{"date_string": date_string, "real_title": text}
     # Intergovernmental Agreements for Detention Space External Reports don't always have dates, not even on the douments, using today
     if directory == "Intergovernmental Agreements for Detention Space (IGAs)":
       date_string = datetime.now()
       date_string = datetime.strftime(date_string, "%B %d, %Y")
-      return{"date_string": date_string, "real_title": hard_clean(b)}
+      return{"date_string": date_string, "real_title": text}
 
-  if "Released Publicly" in date:
-    date =  date[18:].strip()
-    date = date.replace(" ", " 1, ")
-    return{"date_string": date, "real_title": hard_clean(b)}
-  if "(Unclassified Summary)" in date:
-    date = hard_clean(b)
-    date = date[4:-4]
+  if "Released Publicly" in text:
+    date = text
     date = re.sub(r'\([^)]*\)', '', date)
     date = re.sub(r'\[(.*?)\]', '', date)
-    date = date.rsplit(',')
-    date = date[-1]
-    if "\r\n " in date:
-      date = re.sub(r'\r\n ', '', date)
+    date = date.replace("Released Publicly", '')
+    date_chopped = date.rsplit(',')
+    day = date_chopped[-1]
+    date = day.strip()
+    if day.isdigit():
+        date_string = date_chopped[-2] + "," + date_chopped[-1]
+    if "," not in date:
       date = date.strip()
       date = date.replace(" ", " 1, ")
-    t = str(b)
-    t = t[4:-4]
-    t = re.sub(r'\[(.*?)\]', '', t)
-    return{"date_string": date, "real_title": t}
-  if "Revised" in date:
-    date = date[7:] 
-    date = date.strip()
-    date_string = date.replace(" ", " 1, ")
-    return{"date_string": date_string, "real_title": hard_clean(b)}
-
-    if "," not in date_string:
-      date_string = date_string.strip()
-      date_string = date_string.replace(" ", " 1, ")
-    return{"date_string": date_string, "real_title": hard_clean(b)}
+    return{"date_string": date, "real_title": text}
+  
+  if "(Unclassified Summary)" in date:
+    # I dont think this should run
+    print "(Unclassified Summary)*****************"
+    date = text
+    date = re.sub(r'\([^)]*\)', '', date)
+    date = re.sub(r'\[(.*?)\]', '', date)
+    date = date.replace("(Unclassified Summary)", '')
+    date_chopped = date.rsplit(',')
+    day = date_chopped[-1]
+    date = day.strip()
+    if day.isdigit():
+        date_string = date_chopped[-2] + "," + date_chopped[-1]
+    if "," not in date:
+      date = date.strip()
+      date = date.replace(" ", " 1, ")
+    return{"date_string": date, "real_title": text}
+  
+  if "Revised" in text:
+    date = text
+    date = re.sub(r'\([^)]*\)', '', date)
+    date = re.sub(r'\[(.*?)\]', '', date)
+    date = date.replace("Revised", '')
+    date_chopped = date.rsplit(',')
+    day = date_chopped[-1]
+    date = day.strip()
+    if day.isdigit():
+        date_string = date_chopped[-2] + "," + date_chopped[-1]
+    if "," not in date:
+      date = date.strip()
+      date = date.replace(" ", " 1, ")
+    return{"date_string": date, "real_title": text}
 
   if date != None:
     date = date.strip
@@ -370,12 +373,7 @@ def odd_link(b, date, l, directory):
       # case where there is a list in a paragraph tag
       listy = b.parent.parent
       text = str(listy.previous_sibling)
-      if "<!--" in text: 
-        title = re.search(r"^.*?(?=<!--)", text)
-        title = title.group(0)
-        title =  str(title)[3:]
-      else:
-        title = text  
+      title = text  
 
       # case where there is a paragraph above a list
       if len(text) < 4:
@@ -389,78 +387,9 @@ def odd_link(b, date, l, directory):
       date_string = date_string.strip()
       if "," not in date_string:
         date_string = date_string.replace(" ", " 1, ")
- 
-
-  #I don't know why this doesn't work on the first pass for the first item on the page, dealing with it here
-  try:
-    date_string.strip()
-    date = datetime.strptime(date_string, "%B %d, %Y")
-  except:
-    y = b.previous_sibling.previous_sibling
-    date_string = y.string
-
-  try:
-     x = datetime.strptime(date_string, "%B %d, %Y")
-  except:
-    text = hard_clean(b)
-    d = re.sub(r'\([^)]*\)', '', text)
-    d = re.sub(r'\[(.*?)\]', '', d)
-    date_chopped = d.rsplit(',')
-    d = date_chopped[-1]
-    if "\r" in d:
-      d = d.rsplit('\r')[0]
-    if "\n" in d:
-      d = d.rsplit('\n')[0]
-    d = d.strip()
-    d = d.replace("  ", " ")
-    d = d.strip()
-    if d.isdigit():
-      d = date_chopped[-2] + "," + date_chopped[-1]
-    date_string = d
-  
-  # getting rid of comments
-  try:
-     x = datetime.strptime(date_string, "%B %d, %Y")
-  except:
-    stuff = date_string.rsplit("<")
-    d = stuff[0]
-    date_string = d.strip()
-
-    # these guys have a lot of comments, .string doesn't work and don't get cleaned properly
-    if "=" in title:
-      c = str(b)
-      chunks = c.rsplit("<!--")
-      title = hard_clean(chunks[0])
-      title = hard_clean(title)
-      d = re.sub(r'\([^)]*\)', '', title)
-      d = re.sub(r'\[(.*?)\]', '', d)
-      date_chopped = d.rsplit(',')
-      d = date_chopped[-1]
-      if "\r" in d:
-        d = d.rsplit('\r')[0]
-      if "\n" in d:
-        d = d.rsplit('\n')[0]
-      d = d.strip()
-      d = d.replace("  ", " ")
-      d = d.strip()
-      if d.isdigit():
-        d = date_chopped[-2] + "," + date_chopped[-1]
-      date_string = d
-      if "'" not in d:
-        date_string = date_string.replace(" ", " 1, ")
-
 
   info = {"real_title":title, "date_string": date_string, }
   return(info)
-
-# sometimes I can't get .string to work
-def hard_clean(st):
-  st = str(st)
-  st = re.sub(r'<([^>]+)>', "", st)
-  st = re.sub(r'\([^)]*\)', "", st)
-  st = re.sub(r'\[(.*?)\]', "", st)
-  st = st.replace("  ", " ")
-  return st
 
 def get_content(url):
   page = utils.download(url)
@@ -480,9 +409,9 @@ def find_pages():
 
 def run():
   find_pages()
-  for l in source_links.keys():
-    content = get_content(l)
-    extract_info(content, source_links[l])
+  for link in source_links.keys():
+    content = get_content(link)
+    extract_info(content, source_links[link])
   
   for key in report.keys():
     inspector.save_report(report[key])
