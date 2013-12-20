@@ -407,7 +407,7 @@ def find_pages():
       link = base_url + l.get("href")
       source_links[link] = name
 
-def run():
+def run(run):
   find_pages()
   for link in source_links.keys():
     content = get_content(link)
@@ -416,4 +416,4 @@ def run():
   for key in report.keys():
     inspector.save_report(report[key])
 
-run()
+utils.run(run)
