@@ -14,7 +14,6 @@ from datetime import datetime, date
 from utils import utils, inspector
 
 report = {}
-source_links = {}
 agency_decoder = {
     "Department of Justice":["Department of Justice", "doj"],
     "United States Marshals Service (USMS)": [ "United States Marshals Service", "USMS"], 
@@ -126,21 +125,24 @@ def extract_info(content, directory):
         if "<a href=" in str(string_title):
           string_title = b.contents[0]
 
-      #for l in b.find_all("a"):
       link = l.get("href")
       if link != None:
         # title
-        title = l.string
+        try:
+          title = l.text
+        except:
+          title = l.string
         if title == "HTML" or title == "PDF":
           title = string_title
         
         if "real_title" in locals():
-          title = real_title
+          if real_title != None:
+            title = real_title
 
         if title == 'id="content" name="content">':
           title =  b.string
           if title == None:
-            title = b.text()
+            title = b.text
         
         try:
           title = title.strip()
@@ -232,6 +234,17 @@ def extract_info(content, directory):
             report[doc_id]["agency_name"] = agency_name
 
         else:
+          if title == None:
+            print "\n", b
+            try:
+              print b.text, "- text\n"
+            except:
+              pass
+            try:
+              print b.string, "- string\n"
+            except:
+              pass
+            
           report[doc_id] = {
             "report_id": doc_id,
             "inspector": "doj", 
@@ -250,7 +263,7 @@ def extract_info(content, directory):
             "published_on": published_on,
             "year": year,  
             # perhaps elaborate on this later
-            "type": "report",
+            "type": type_for(title),
             "language": language,
             }  
 
@@ -329,22 +342,22 @@ def odd_link(b, date, l, directory):
       date = date.replace(" ", " 1, ")
     return{"date_string": date, "real_title": text}
   
-  if "(Unclassified Summary)" in date:
-    # I dont think this should run
-    print "(Unclassified Summary)*****************"
-    date = text
-    date = re.sub(r'\([^)]*\)', '', date)
-    date = re.sub(r'\[(.*?)\]', '', date)
-    date = date.replace("(Unclassified Summary)", '')
-    date_chopped = date.rsplit(',')
-    day = date_chopped[-1]
-    date = day.strip()
-    if day.isdigit():
-        date_string = date_chopped[-2] + "," + date_chopped[-1]
-    if "," not in date:
-      date = date.strip()
-      date = date.replace(" ", " 1, ")
-    return{"date_string": date, "real_title": text}
+  # if "(Unclassified Summary)" in date:
+  #   # I dont think this should run
+  #   print "(Unclassified Summary)*****************"
+  #   date = text
+  #   date = re.sub(r'\([^)]*\)', '', date)
+  #   date = re.sub(r'\[(.*?)\]', '', date)
+  #   date = date.replace("(Unclassified Summary)", '')
+  #   date_chopped = date.rsplit(',')
+  #   day = date_chopped[-1]
+  #   date = day.strip()
+  #   if day.isdigit():
+  #       date_string = date_chopped[-2] + "," + date_chopped[-1]
+  #   if "," not in date:
+  #     date = date.strip()
+  #     date = date.replace(" ", " 1, ")
+  #   return{"date_string": date, "real_title": text}
   
   if "Revised" in text:
     date = text
@@ -391,15 +404,34 @@ def odd_link(b, date, l, directory):
   info = {"real_title":title, "date_string": date_string, }
   return(info)
 
+# adding types bases on the USPS
+def type_for(original_type):
+  original = original_type.lower()
+  if "audit" in original:
+    return "audit"
+  elif "testimony" in original:
+    return "testimony"
+  elif "press release" in original:
+    return "press"
+  elif "research" in original:
+    return "research"
+  elif "sarc" in original:
+    return "interactive"
+  elif "report to congress" in original:
+    return "congress"
+  else:
+    return "unknown"
+
 def get_content(url):
   page = utils.download(url)
   page = BeautifulSoup(page)
   content = page.select(".content-left")
   return content
 
-def find_pages():
+def run(run):
   starting_point = "http://www.justice.gov/oig/reports/"
   content = get_content(starting_point)
+  source_links = {}
   for c in content:
     links = c.find_all("a")
     for l in links:
@@ -407,8 +439,6 @@ def find_pages():
       link = base_url + l.get("href")
       source_links[link] = name
 
-def run(run):
-  find_pages()
   for link in source_links.keys():
     content = get_content(link)
     extract_info(content, source_links[link])
