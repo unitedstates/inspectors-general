@@ -3,10 +3,8 @@
 
 # - Some documents don't have dates, in that case today's date is used
 # - Some forms, marked index are one html document spread across several links
-# - Sometimes the .string method would not work so I make a hack around that it is not elegant, but it is working
 # - I added language information since there were English and Spanish docs
 # - There are html and pdfs for the same docs so all the urls are tracked in urls
-
 
 import re
 from bs4 import BeautifulSoup
@@ -33,7 +31,6 @@ agency_decoder = {
 
 base_url = "http://www.justice.gov"
 not_agency = ("Office of Justice Programs (OJP)", "Contracts", "Special Reports", "Other DOJ Components and Reports Encompassing More Than One DOJ Component","Equitable Sharing", "Offices, Boards and Divisions (OBDs)")
-index_links = ["http://www.justice.gov/oig/reports/2012/s1209.htm"]
 
 
 def extract_info(content, directory):
@@ -119,8 +116,12 @@ def extract_info(content, directory):
       year = datetime.strftime(date, "%Y")
       published_on = datetime.strftime(date, "%Y-%m-%d")
       
-      string_title = b.string
-      if b.string == None:
+      try:
+        string_title = b.text
+      except:
+        string_title = b.string
+      
+      if string_title == None:
         string_title = b.contents
         if "<a href=" in str(string_title):
           string_title = b.contents[0]
@@ -168,11 +169,9 @@ def extract_info(content, directory):
 
         #these docs are one report where the page has a table of contents with links to content 
         if "/index" in link:
-          index_links.append(link)
           indexed = True
         else:
           indexed = False
-
 
         # there may be a better way to do this but I am just taking out all the things that are not the id
         url_extras = ( "/final", "/fullpdf", "/ins_response", "oig/special/", "USMS/", "plus/", "oig/grants/", "oig/reports/", "EOUSA/", "BOP/", "ATF/", "COPS/", "FBI/", "OJP/", "INS/", "DEA/", "OBD", "/analysis", "/report", "/PDF_list", "/full_report", "/full", "_redacted", "oig", "r-", "/response", "/listpdf", "/memo", "/fullreport", "/Final", "/extradition", "/oig", "/grants", "/index")
@@ -234,17 +233,6 @@ def extract_info(content, directory):
             report[doc_id]["agency_name"] = agency_name
 
         else:
-          if title == None:
-            print "\n", b
-            try:
-              print b.text, "- text\n"
-            except:
-              pass
-            try:
-              print b.string, "- string\n"
-            except:
-              pass
-            
           report[doc_id] = {
             "report_id": doc_id,
             "inspector": "doj", 
@@ -289,7 +277,6 @@ def date_format(date):
   date_string = date
   return date_string
 
-
 def odd_link(b, date, l, directory):
   text = b.get_text()
   # not links to docs
@@ -303,7 +290,6 @@ def odd_link(b, date, l, directory):
       return {"date_string":"ignore", "real_title":"ignore"}
     elif link[-5:] == ".gov/":
       return {"date_string":"ignore", "real_title":"ignore"}
-
   text = b.get_text()
 
   #section for documents without dates:
@@ -341,23 +327,6 @@ def odd_link(b, date, l, directory):
       date = date.strip()
       date = date.replace(" ", " 1, ")
     return{"date_string": date, "real_title": text}
-  
-  # if "(Unclassified Summary)" in date:
-  #   # I dont think this should run
-  #   print "(Unclassified Summary)*****************"
-  #   date = text
-  #   date = re.sub(r'\([^)]*\)', '', date)
-  #   date = re.sub(r'\[(.*?)\]', '', date)
-  #   date = date.replace("(Unclassified Summary)", '')
-  #   date_chopped = date.rsplit(',')
-  #   day = date_chopped[-1]
-  #   date = day.strip()
-  #   if day.isdigit():
-  #       date_string = date_chopped[-2] + "," + date_chopped[-1]
-  #   if "," not in date:
-  #     date = date.strip()
-  #     date = date.replace(" ", " 1, ")
-  #   return{"date_string": date, "real_title": text}
   
   if "Revised" in text:
     date = text
