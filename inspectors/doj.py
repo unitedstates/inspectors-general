@@ -2,7 +2,8 @@
 # This Python file uses the following encoding: utf-8
 
 # - Some documents don't have dates, in that case today's date is used
-# - Some forms, marked index are one html document spread across several links
+# - Some forms, marked index are one html document spread across several links, 
+# I go through all the links so that we get the most descriptive agency name
 # - I added language information since there were English and Spanish docs
 # - There are html and pdfs for the same docs so all the urls are tracked in urls
 
@@ -34,7 +35,7 @@ not_agency = ("Office of Justice Programs (OJP)", "Contracts", "Special Reports"
 
 
 def extract_info(content, directory):
-
+  # goes through each agency or content bucket
   if directory in not_agency:
     agency = "doj"
     agency_name = "Department of Justice"
@@ -47,12 +48,14 @@ def extract_info(content, directory):
   
   blurbs = content[-1].find_all("p")
   
+
   for b in blurbs:
     # date
     # finding new dates that are just above the old ones
+
+    # this is the format of the newest entries and the easiest to get
     x = b.previous_sibling
     y = b.previous_sibling.previous_sibling
-
     try:
       if y['class'] == ['date']:
         date_string = y.string
@@ -61,7 +64,7 @@ def extract_info(content, directory):
     except:
        date_string = None
    
-    # finding older date that are at the end of the text
+    # finding older dates that are at the end of the text
     if date_string == None:
       try:
         date_string = b.get_text()
@@ -69,14 +72,18 @@ def extract_info(content, directory):
         date_string = None
 
     if date_string is not None:
+      # get rid of extra stuff that is not the date
       date_text = re.sub(r'\([^)]*\)', '', date_string)
       date_text = re.sub(r'\[(.*?)\]', '', date_text)
+      # chop up the string, the last part should be the date
       date_chopped = date_text.rsplit(',')
       day = date_chopped[-1]
+      # cleaning
       date_string = day.strip()
       date_string = date_string.replace("  ", " ")
-      
       day = day.strip()
+
+      # this is a date written out with a comma
       if day.isdigit():
         date_string = date_chopped[-2] + "," + date_chopped[-1]
 
@@ -100,12 +107,16 @@ def extract_info(content, directory):
 
     # going through each link in a paragraph
     for l in b.find_all("a"):
+      # most cases pass this test 
       try:
         date = datetime.strptime(date_string, "%B %d, %Y") 
+      # these ones got to a coding purgatory called odd_link
       except ValueError:
         info = odd_link(b, date_string, l, directory, )
+        # this should give better titles than "pdf" or "Press Release"
         real_title = info["real_title"]
         date_string = info["date_string"]
+        # these are links to things that are not reports
         if real_title == "ignore" and date_string == "ignore":
           break
         if "," not in date_string:
@@ -116,6 +127,8 @@ def extract_info(content, directory):
       year = datetime.strftime(date, "%Y")
       published_on = datetime.strftime(date, "%Y-%m-%d")
       
+      # trying to get the most descriptive title
+      # I go from the best methods to fall back and override exceptions
       try:
         string_title = b.text
       except:
@@ -136,6 +149,7 @@ def extract_info(content, directory):
         if title == "HTML" or title == "PDF":
           title = string_title
         
+        # in some cases the title is a heading a few elements up this gets passed in odd link
         if "real_title" in locals():
           if real_title != None:
             title = real_title
@@ -173,6 +187,7 @@ def extract_info(content, directory):
         else:
           indexed = False
 
+        # creating ids
         # there may be a better way to do this but I am just taking out all the things that are not the id
         url_extras = ( "/final", "/fullpdf", "/ins_response", "oig/special/", "USMS/", "plus/", "oig/grants/", "oig/reports/", "EOUSA/", "BOP/", "ATF/", "COPS/", "FBI/", "OJP/", "INS/", "DEA/", "OBD", "/analysis", "/report", "/PDF_list", "/full_report", "/full", "_redacted", "oig", "r-", "/response", "/listpdf", "/memo", "/fullreport", "/Final", "/extradition", "/oig", "/grants", "/index")
         for n in url_extras:
@@ -187,6 +202,7 @@ def extract_info(content, directory):
             if doc_id[:2] == "19" or doc_id[:2] == "20":
               doc_id = doc_id[5:]
         
+        # some weird issues I hard coded
         special_cases = {"a0118/au0118":"a0118", "a0207/0207":"a0207",  }
         if doc_id in special_cases.keys():
           doc_id = special_cases[doc_id]
@@ -232,6 +248,7 @@ def extract_info(content, directory):
             report[doc_id]["agency"] = agency
             report[doc_id]["agency_name"] = agency_name
 
+        # Adding new document
         else:
           report[doc_id] = {
             "report_id": doc_id,
@@ -277,6 +294,7 @@ def date_format(date):
   date_string = date
   return date_string
 
+# said purgatory for odd links
 def odd_link(b, date, l, directory):
   text = b.get_text()
   # not links to docs
@@ -285,6 +303,7 @@ def odd_link(b, date, l, directory):
   except:
     pass
   
+  # these are not documents
   if "link" in locals():
     if link[-4:] == ".gov":
       return {"date_string":"ignore", "real_title":"ignore"}
@@ -307,12 +326,13 @@ def odd_link(b, date, l, directory):
       date_string = datetime.now()
       date_string = datetime.strftime(date_string, "%B %d, %Y")
       return{"date_string": date_string, "real_title": text}
-    # Intergovernmental Agreements for Detention Space External Reports don't always have dates, not even on the douments, using today
+    # Intergovernmental Agreements for Detention Space External Reports don't always have dates, not even on the documents, using today
     if directory == "Intergovernmental Agreements for Detention Space (IGAs)":
       date_string = datetime.now()
       date_string = datetime.strftime(date_string, "%B %d, %Y")
       return{"date_string": date_string, "real_title": text}
 
+  # need to get rid of this to process
   if "Released Publicly" in text:
     date = text
     date = re.sub(r'\([^)]*\)', '', date)
