@@ -6,9 +6,20 @@ import bs4
 from datetime import datetime
 import calendar
 
+#  options
+#    --since=[year] fetches all reports from that year to now
+
 def run(options):
 
-  print "## Downloading audits and other reports"
+  this_year = datetime.now().year
+  since = int(options.get('since', this_year))
+  if since > this_year:
+    since = this_year
+  if since != this_year:
+    print "## Downloading reports from %i to %i" % (since, this_year)
+  else:
+    print "## Downloading reports from this year (%i)" % this_year
+
   url = url_for()
   body = utils.download(url)
 
@@ -17,11 +28,17 @@ def run(options):
 
   for result in results:
     try:
-      print "## Downloading year %i " % int(result.get("title"))
+      year = int(result.get("title"))
+      ## check that the fetched year is in the range
+      if year not in range (since, this_year + 1):
+        continue
+      print "## Downloading year %i " % year
     except ValueError:
       continue
     listings = result.div.table.tbody.contents
     for item in listings:
+      if type(item) is not bs4.element.Tag:
+        continue
       report_from(item)
 
 def url_for():
@@ -48,10 +65,16 @@ def report_from(item):
   report['url'] = 'http://www.opm.gov' + raw_link.get('href')
   report['name'] = raw_link.string
 
-  raw_id = item.find_all('td')[1].contents[0]
-  while raw_id.span:
-    raw_id = raw_id.span
-  report['report_id'] = raw_id.string
+  raw_id = str(hash(report['name']))
+  try:
+    raw_id = item.find_all('td')[1].contents[0]
+    if type(raw_id) is bs4.element.Tag:
+      while raw_id.span:
+        raw_id = raw_id.span
+      raw_id = raw_id.string
+  except IndexError:
+    pass
+  report['report_id'] = raw_id
 
   inspector.save_report(report)
 
