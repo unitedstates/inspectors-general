@@ -6,6 +6,10 @@ import bs4
 from datetime import datetime
 import calendar
 
+#  Note: reports are only scraped from /our-inspector-general/reports/
+#  I think this is mostly just audit reports (other reports are scattered
+#  around the website
+
 #  options
 #    --since=[year] fetches all reports from that year to now
 
@@ -29,21 +33,24 @@ def run(options):
   for result in results:
     try:
       year = int(result.get("title"))
-      ## check that the fetched year is in the range
+      # check that the fetched year is in the range
       if year not in range (since, this_year + 1):
         continue
       print "## Downloading year %i " % year
     except ValueError:
       continue
+    # gets each table entry and sends generates a report from it
     listings = result.div.table.tbody.contents
     for item in listings:
       if type(item) is not bs4.element.Tag:
         continue
       report_from(item)
 
+#  really only here for symbolic purposes
 def url_for():
   return "http://www.opm.gov/our-inspector-general/reports/"
 
+#  generates the report item from a table item
 def report_from(item):
   report = {
     'inspector': 'opm',
@@ -64,7 +71,11 @@ def report_from(item):
   raw_link = item.find_all('td')[0].a
   report['url'] = 'http://www.opm.gov' + raw_link.get('href')
   report['name'] = raw_link.string
+  
+  if 'audit' not in report['name'].lower():
+    report['type'] = 'other'
 
+  # if the document doesn't have a listed id - use hash of name
   raw_id = str(hash(report['name']))
   try:
     raw_id = item.find_all('td')[1].contents[0]
