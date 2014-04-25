@@ -99,7 +99,6 @@ def run(options):
             col_text = col_links[0].text
             if RE_YEAR.match(col_text):
               current_year = col_text
-              print current_year
         continue
 
       published_on_dt = datetime.datetime.strptime(tds[6].text, '%m/%d/%Y')
@@ -122,7 +121,7 @@ def report_from(tds, published_on_dt, year):
     'inspector_url': 'http://www.epa.gov/oig',
     'agency': 'epa',
     'agency_name': 'Environmental Protection Agency',
-    'type': 'unknown',
+    'type': 'report',
     'year': year,
   }
 
