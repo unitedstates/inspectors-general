@@ -21,6 +21,7 @@ from utils import utils, inspector
 #   report_id: a unique ID for the report
 #   title: title of report
 #   url: link to report
+#   type: "report" (or some other class of document, if it makes sense to distinguish)
 #   published_on: date of publication
 #   year: year of publication
 #   file_type: 'pdf' or other file extension

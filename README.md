@@ -18,6 +18,8 @@ Currently writing scrapers for the highest priority IG offices, as highlighted i
 
 ### Using
 
+**Setup**: You'll need to have `pdftotext` installed. On Ubuntu, `apt-get install poppler-utils`. On Macs, install it via MacpPorts with `port install poppler`, or via Homebrew with `brew install poppler`.
+
 To run an individual IG scraper, just execute its file directly. For example:
 
 ```bash
@@ -59,6 +61,7 @@ The `report` object must be a dict that contains the following required fields:
 * `url` - Link to report.
 * `published_on` - Date of publication, in `YYYY-MM-DD` format.
 * `year` - Year of publication.
+* `type` - "report" or some other description. There's not yet a standard set of values for this field.
 * `file_type` - "pdf", or whatever file extension the report has.
 
 The `report_id` only needs to be unique within that IG, so you can make it up from other fields.
