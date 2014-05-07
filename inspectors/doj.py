@@ -1,8 +1,8 @@
-
-# This Python file uses the following encoding: utf-8
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
 
 # - Some documents don't have dates, in that case today's date is used
-# - Some forms, marked index are one html document spread across several links, 
+# - Some forms, marked index are one html document spread across several links,
 # I go through all the links so that we get the most descriptive agency name
 # - I added language information since there were English and Spanish docs
 # - There are html and pdfs for the same docs so all the urls are tracked in urls
@@ -12,11 +12,15 @@ from bs4 import BeautifulSoup
 from datetime import datetime, date
 from utils import utils, inspector
 
+# accumulates information on reports as they're seen
 report = {}
+
+base_url = "http://www.justice.gov"
+
 agency_decoder = {
     "Department of Justice":["Department of Justice", "doj"],
-    "United States Marshals Service (USMS)": [ "United States Marshals Service", "USMS"], 
-    "Office of Justice Programs (OJP)": ["Office of Justice Programs", "OJP"], 
+    "United States Marshals Service (USMS)": [ "United States Marshals Service", "USMS"],
+    "Office of Justice Programs (OJP)": ["Office of Justice Programs", "OJP"],
     "Federal Bureau of Prisons (BOP)": ["Federal Bureau of Prisons", "BOP"],
     "Federal Bureau of Investigation (FBI)": ["Federal Bureau of Investigation", "FBI"],
     "Combined DNA Index System (CODIS)": ["Combined DNA Index System", "CODIS"],
@@ -30,11 +34,23 @@ agency_decoder = {
     "United States Marshals Service (USMS)": ["United States Marshals Service", "USMS"],
   }
 
-base_url = "http://www.justice.gov"
-not_agency = ("Office of Justice Programs (OJP)", "Contracts", "Special Reports", "Other DOJ Components and Reports Encompassing More Than One DOJ Component","Equitable Sharing", "Offices, Boards and Divisions (OBDs)")
+not_agency = (
+  "Office of Justice Programs (OJP)", "Contracts", "Special Reports",
+  "Other DOJ Components and Reports Encompassing More Than One DOJ Component",
+  "Equitable Sharing", "Offices, Boards and Divisions (OBDs)"
+)
 
+# not all the reports have a convenient date field immediately prior.
+# So, we'll just go back in sibling order until we find the h3 we need.
+def year_for(blurb):
+  h3 = None
+  for sibling in blurb.previous_siblings:
+    if sibling.name == "h3":
+      h3 = sibling
+      break
+  return int(h3.text)
 
-def extract_info(content, directory):
+def extract_info(content, directory, year):
   # goes through each agency or content bucket
   if directory in not_agency:
     agency = "doj"
@@ -45,9 +61,24 @@ def extract_info(content, directory):
   else:
     agency = agency_decoder[directory][1]
     agency_name = agency_decoder[directory][0]
-  
-  blurbs = content[-1].find_all("p")
-  
+
+  candidates = content[-1].find_all("p")
+  print "Found %i candidate reports on \"%s\"" % (len(candidates), directory)
+  blurbs = []
+
+  # if we're limiting to a specific year, find only the <p>'s
+  # following the <h3> with the year in it
+  if year:
+    for blurb in candidates:
+      report_year = year_for(blurb)
+      if report_year == year:
+        blurbs.append(blurb)
+    print "Preparing to fetch %i reports for %i" % (len(blurbs), year)
+  else:
+    blurbs = candidates
+    print "Preparing to fetch %i reports for all years" % len(blurbs)
+
+  exit()
 
   for b in blurbs:
     # date
@@ -60,10 +91,10 @@ def extract_info(content, directory):
       if y['class'] == ['date']:
         date_string = y.string
       else:
-         date_string = None
+        date_string = None
     except:
        date_string = None
-   
+
     # finding older dates that are at the end of the text
     if date_string == None:
       try:
@@ -87,7 +118,7 @@ def extract_info(content, directory):
       if day.isdigit():
         date_string = date_chopped[-2] + "," + date_chopped[-1]
 
-    #check for missing commas
+    # check for missing commas
     try:
       date_string = datetime.strptime(date_string, "%B %d %Y")
       date_string = datetime.strftime(date_string, "%B %d, %Y")
@@ -107,9 +138,9 @@ def extract_info(content, directory):
 
     # going through each link in a paragraph
     for l in b.find_all("a"):
-      # most cases pass this test 
+      # most cases pass this test
       try:
-        date = datetime.strptime(date_string, "%B %d, %Y") 
+        date = datetime.strptime(date_string, "%B %d, %Y")
       # these ones got to a coding purgatory called odd_link
       except ValueError:
         info = odd_link(b, date_string, l, directory, )
@@ -126,14 +157,14 @@ def extract_info(content, directory):
 
       year = datetime.strftime(date, "%Y")
       published_on = datetime.strftime(date, "%Y-%m-%d")
-      
+
       # trying to get the most descriptive title
       # I go from the best methods to fall back and override exceptions
       try:
         string_title = b.text
       except:
         string_title = b.string
-      
+
       if string_title == None:
         string_title = b.contents
         if "<a href=" in str(string_title):
@@ -148,7 +179,7 @@ def extract_info(content, directory):
           title = l.string
         if title == "HTML" or title == "PDF":
           title = string_title
-        
+
         # in some cases the title is a heading a few elements up this gets passed in odd link
         if "real_title" in locals():
           if real_title != None:
@@ -158,7 +189,7 @@ def extract_info(content, directory):
           title =  b.string
           if title == None:
             title = b.text
-        
+
         try:
           title = title.strip()
           title = title.replace('\n', "")
@@ -175,13 +206,13 @@ def extract_info(content, directory):
 
         # formating links consistently
         if link[:1] != "/":
-          link = "/" + link 
+          link = "/" + link
         # id
         doc_id = str(link)[1:-4]
         if link[:11] == "oig/reports":
           doc_id = doc_id[16:]
 
-        #these docs are one report where the page has a table of contents with links to content 
+        #these docs are one report where the page has a table of contents with links to content
         if "/index" in link:
           indexed = True
         else:
@@ -201,7 +232,7 @@ def extract_info(content, directory):
           if doc_id[4:5] == "/":
             if doc_id[:2] == "19" or doc_id[:2] == "20":
               doc_id = doc_id[5:]
-        
+
         # some weird issues I hard coded
         special_cases = {"a0118/au0118":"a0118", "a0207/0207":"a0207",  }
         if doc_id in special_cases.keys():
@@ -238,8 +269,8 @@ def extract_info(content, directory):
               old_url = True
           if not "old_url" in locals():
             report[doc_id]["urls"].append({
-              "url":url, 
-              "file_type": file_type, 
+              "url":url,
+              "file_type": file_type,
               "indexed": indexed,
               })
 
@@ -252,25 +283,25 @@ def extract_info(content, directory):
         else:
           report[doc_id] = {
             "report_id": doc_id,
-            "inspector": "doj", 
+            "inspector": "doj",
             "inspector_url": "http://www.justice.gov/oig/reports/",
             "agency": agency,
             "agency_name": agency_name,
             "url": url,
             "title": title,
-            "file_type": file_type, 
+            "file_type": file_type,
             "categories": [directory,],
             "urls": [{
-                "url":url, 
-                "file_type": file_type, 
+                "url":url,
+                "file_type": file_type,
                 "indexed": indexed,
               }],
             "published_on": published_on,
-            "year": year,  
+            "year": year,
             # perhaps elaborate on this later
             "type": type_for(title),
             "language": language,
-            }  
+            }
 
 
 def find_file_type(url):
@@ -281,7 +312,7 @@ def find_file_type(url):
   elif url[-4:] == "html":
     file_type = "html"
   else:
-    # these include a few navigation links  
+    # these include a few navigation links
     file_type = "ignore"
   return file_type
 
@@ -302,7 +333,7 @@ def odd_link(b, date, l, directory):
     link = l.get("href")
   except:
     pass
-  
+
   # these are not documents
   if "link" in locals():
     if link[-4:] == ".gov":
@@ -347,7 +378,7 @@ def odd_link(b, date, l, directory):
       date = date.strip()
       date = date.replace(" ", " 1, ")
     return{"date_string": date, "real_title": text}
-  
+
   if "Revised" in text:
     date = text
     date = re.sub(r'\([^)]*\)', '', date)
@@ -375,7 +406,7 @@ def odd_link(b, date, l, directory):
       # case where there is a list in a paragraph tag
       listy = b.parent.parent
       text = str(listy.previous_sibling)
-      title = text  
+      title = text
 
       # case where there is a paragraph above a list
       if len(text) < 4:
@@ -417,21 +448,35 @@ def get_content(url):
   content = page.select(".content-left")
   return content
 
-def run(run):
+
+def run(options):
+
+  # provide a specific year, or 'all' -- no year means current year
+  year = options.get('year', datetime.now().year)
+  if year == "all":
+    year = None
+  else:
+    year = int(year)
+
+
+  # Hit the main landing page, get links to each component's landing page.
   starting_point = "http://www.justice.gov/oig/reports/"
   content = get_content(starting_point)
   source_links = {}
   for c in content:
     links = c.find_all("a")
     for l in links:
-      name = l.string 
+      name = l.string
       link = base_url + l.get("href")
       source_links[link] = name
 
-  for link in source_links.keys():
+  # For each component's landing page, run the processor ove rit
+  keys = source_links.keys()
+  keys.sort()
+  for link in keys:
     content = get_content(link)
-    extract_info(content, source_links[link])
-  
+    extract_info(content, source_links[link], year)
+
   for key in report.keys():
     inspector.save_report(report[key])
 
