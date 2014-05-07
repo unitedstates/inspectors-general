@@ -81,9 +81,8 @@ def extract_info(content, directory, year):
     agency = agency_decoder[directory][1]
     agency_name = agency_decoder[directory][0]
 
-  candidates = content[-1].find_all("p")
-  print "Found %i candidate reports (for all years) on \"%s\"" % (len(candidates), directory)
-  blurbs = candidates
+  # there can be multiple reports per blurb
+  blurbs = content[-1].find_all("p")
 
   for b in blurbs:
     # date
@@ -493,6 +492,8 @@ def run(options):
   for link in keys:
     content = get_content(link)
     extract_info(content, source_links[link], year)
+
+  print "Found %i reports, for year: %s" % (len(report.keys()), str(year))
 
   for key in report.keys():
     inspector.save_report(report[key])
