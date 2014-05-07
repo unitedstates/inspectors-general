@@ -7,6 +7,12 @@
 # - I added language information since there were English and Spanish docs
 # - There are html and pdfs for the same docs so all the urls are tracked in urls
 
+# Options:
+#   year - YYYY, which year to limit fetching to.
+#          Can also be 'all', which removes the limit.
+#   component - Any of the slugs in the `components` dict below,
+#               will be used to filter to a particular landing page.
+
 import re
 from bs4 import BeautifulSoup
 from datetime import datetime, date
@@ -16,6 +22,29 @@ from utils import utils, inspector
 report = {}
 
 base_url = "http://www.justice.gov"
+
+# just here for developer reference, valid component URL slugs to filter on
+components = {
+  "atf": "Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF)",
+  "dea": "Drug Enforcement Administration (DEA)",
+  "eousa": "Executive Office for U. S. Attorneys (EOUSA)",
+  "fbi": "Federal Bureau of Investigation (FBI)",
+  "bop": "Federal Bureau of Prisons (BOP)",
+  "obd": "Offices, Boards and Divisions (OBDs)",
+  "cops": "Office of Community Oriented Policing Services (COPS)",
+  "ojp": "Office of Justice Programs (OJP)",
+  "usms": "United States Marshals Service (USMS) ",
+  "plus": "Other DOJ Components and Reports Encompassing More Than One DOJ Component ",
+  "special": "Special Reports",
+  "ins": "Immigration and Naturalization Service (INS) – 1994 to 2003",
+  "cops-ext": "Office of Community Oriented Policing Services (COPS)",
+  "ojp-ext": "Office of Justice Programs (OJP)",
+  "ovw-ext": "Office on Violence Against Women (OVW)",
+  "iads-ext": "Intergovernmental Agreements for Detention Space (IGAs)",
+  "codis-ext": "Combined DNA Index System (CODIS)",
+  "equ-ext": "Equitable Sharing",
+  "contracts-ext": "Contracts"
+}
 
 agency_decoder = {
     "Department of Justice":["Department of Justice", "doj"],
@@ -48,7 +77,12 @@ def year_for(blurb):
     if sibling.name == "h3":
       h3 = sibling
       break
-  return int(h3.text)
+
+  if h3 is None:
+    # print "Couldn't find a year h3 sibling for %s" % str(blurb)
+    return None
+  else:
+    return int(h3.text)
 
 def extract_info(content, directory, year):
   # goes through each agency or content bucket
@@ -71,6 +105,17 @@ def extract_info(content, directory, year):
   if year:
     for blurb in candidates:
       report_year = year_for(blurb)
+
+      # If we couldn't find one, well, er, just assume it's like the last one.
+      # This can happen with indented press release whatever.
+      # Don't want to Stop The Beat because of this optimization,
+      # and most all the time it will be the value of the last one.
+      if report_year:
+        last_known = report_year
+      else:
+        report_year = last_known
+
+      # If it's the year we're filtering to, add it to the processing list.
       if report_year == year:
         blurbs.append(blurb)
     print "Preparing to fetch %i reports for %i" % (len(blurbs), year)
@@ -456,17 +501,24 @@ def run(options):
   else:
     year = int(year)
 
+  # Can limit search to any of the components listed at the top of this script
+  component = options.get('component', None)
+  if component and components.has_key(component):
+    source_links = {}
+    link = "%s/oig/reports/%s.htm" % (base_url, component)
+    source_links[link] = components[component]
 
-  # Hit the main landing page, get links to each component's landing page.
-  starting_point = "http://www.justice.gov/oig/reports/"
-  content = get_content(starting_point)
-  source_links = {}
-  for c in content:
-    links = c.find_all("a")
-    for l in links:
-      name = l.string
-      link = base_url + l.get("href")
-      source_links[link] = name
+  # Otherwise, get links to each component's landing page from main page.
+  else:
+    starting_point = "http://www.justice.gov/oig/reports/"
+    content = get_content(starting_point)
+    source_links = {}
+    for c in content:
+      links = c.find_all("a")
+      for l in links:
+        name = l.string
+        link = base_url + l.get("href")
+        source_links[link] = name
 
   # For each component's landing page, run the processor ove rit
   keys = source_links.keys()
