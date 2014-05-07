@@ -48,13 +48,13 @@ def run(options):
 
 #  really only here for symbolic purposes
 def url_for():
-  return "http://www.opm.gov/our-inspector-general/reports/"
+  return "https://www.opm.gov/our-inspector-general/reports/"
 
 #  generates the report item from a table item
 def report_from(item):
   report = {
     'inspector': 'opm',
-    'inspector_url': 'http://www.opm.gov/our-inspector-general/',
+    'inspector_url': 'https://www.opm.gov/our-inspector-general/',
     'agency': 'opm',
     'agency_name': 'U.S. Office of Personnel Management',
     'type': 'audit',
@@ -69,9 +69,9 @@ def report_from(item):
   report['year'] = year
 
   raw_link = item.find_all('td')[0].a
-  report['url'] = 'http://www.opm.gov' + raw_link.get('href')
+  report['url'] = 'https://www.opm.gov' + raw_link.get('href')
   report['name'] = raw_link.string
-  
+
   if 'audit' not in report['name'].lower():
     report['type'] = 'other'
 
