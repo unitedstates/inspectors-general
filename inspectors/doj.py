@@ -8,8 +8,8 @@
 # - There are html and pdfs for the same docs so all the urls are tracked in urls
 
 # Options:
+#   since - YYYY, which year to start fetching from.
 #   year - YYYY, which year to limit fetching to.
-#          Can also be 'all', which removes the limit.
 #   component - Any of the slugs in the `components` dict below,
 #               will be used to filter to a particular landing page.
 
@@ -69,7 +69,7 @@ not_agency = (
   "Equitable Sharing", "Offices, Boards and Divisions (OBDs)"
 )
 
-def extract_info(content, directory, year):
+def extract_info(content, directory, year_range):
   # goes through each agency or content bucket
   if directory in not_agency:
     agency = "doj"
@@ -163,7 +163,7 @@ def extract_info(content, directory, year):
       published_on = datetime.strftime(date, "%Y-%m-%d")
 
       # if we're filtering on a year, and this isn't in it, skip it
-      if year and (int(report_year) != year):
+      if int(report_year) not in year_range:
         # print "Skipping report for %s..." % report_year
         continue
 
@@ -459,13 +459,26 @@ def get_content(url):
 
 
 def run(options):
+  this_year = datetime.now().year
 
-  # provide a specific year, or 'all' -- no year means current year
-  year = options.get('year', datetime.now().year)
-  if year == "all":
-    year = None
-  else:
+  since = options.get('since', None)
+  if since:
+    since = int(since)
+    if since > this_year:
+      since = this_year
+
+  year = options.get('year', None)
+  if year:
     year = int(year)
+    if year > this_year:
+      year = this_year
+
+  if since:
+    year_range = range(since, this_year + 1)
+  elif year:
+    year_range = range(year, year + 1)
+  else:
+    year_range = range(this_year, this_year + 1)
 
   # Can limit search to any of the components listed at the top of this script
   component = options.get('component', None)
@@ -491,9 +504,9 @@ def run(options):
   keys.sort()
   for link in keys:
     content = get_content(link)
-    extract_info(content, source_links[link], year)
+    extract_info(content, source_links[link], year_range)
 
-  print "Found %i reports, for year: %s" % (len(report.keys()), str(year))
+  print "Found %i reports, for year %i to %i" % (len(report.keys()), year_range[0], year_range[-1])
 
   for key in report.keys():
     inspector.save_report(report[key])
