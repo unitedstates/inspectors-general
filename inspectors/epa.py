@@ -3,35 +3,13 @@
 import datetime
 from urlparse import urljoin
 import re
-
 from bs4 import BeautifulSoup
-
 from utils import utils, inspector
 
-# This script's "run" function will be run.
-# You can do anything you want that eventually results in calling:
-#
-#   inspector.save_report(report)
-#
-# Where report is a dict with the following required fields:
-#
-#   inspector: the handle you chose for the IG, e.g. "usps"
-#   agency: the agency the report relates to.
-#           This can be the same value as the inspector field, but it
-#           may differ -- some IGs monitor multiple agencies.
-#   report_id: a unique ID for the report
-#   title: title of report
-#   url: link to report
-#   published_on: date of publication
-#   year: year of publication
-#   file_type: 'pdf' or other file extension
-#
-# Any additional fields are fine, and will be kept.
 #
 # options:
 #   since - date (YYYY-MM-DD) to fetch reports from.
 #           defaults to 60 days ago.
-#   pages - number of pages to fetch. defaults to 1.
 #   only - limit reports fetched to one or more topic area, comma-separated.
 #          e.g. "EF,IRM".
 #          topic area codes are:
