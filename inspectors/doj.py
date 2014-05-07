@@ -78,8 +78,6 @@ def extract_info(content, directory, year):
     blurbs = candidates
     print "Preparing to fetch %i reports for all years" % len(blurbs)
 
-  exit()
-
   for b in blurbs:
     # date
     # finding new dates that are just above the old ones
