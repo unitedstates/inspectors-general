@@ -70,7 +70,7 @@ def report_from(item):
 
   raw_link = item.find_all('td')[0].a
   report['url'] = 'https://www.opm.gov' + raw_link.get('href')
-  report['name'] = raw_link.string
+  report['name'] = raw_link.text.strip()
 
   if 'audit' not in report['name'].lower():
     report['type'] = 'other'
