@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: UTF-8 -*-
 
 import datetime
 from urlparse import urljoin
@@ -8,10 +9,16 @@ from utils import utils, inspector
 
 #
 # options:
-#   since - date (YYYY-MM-DD) to fetch reports from.
-#           defaults to 60 days ago.
+#   since - year (YYYY) to fetch reports since.
+#   year  - year (YYYY) to fetch reports from.
+#
+#   if neither `since` nor `year` is provided,
+#     defaults to current year.
+#
 #   only - limit reports fetched to one or more topic area, comma-separated.
 #          e.g. "EF,IRM".
+#   defaults to "E,I" (Enforcement, Investigation)
+#
 #          topic area codes are:
 #          A    - Air
 #          CB   - Chesapeake Bay
@@ -38,8 +45,7 @@ from utils import utils, inspector
 #          L    - Superfund/Land
 #          W    - Water
 #          WTC  - World Trade Center
-#          defaults to:
-#            "E,I", reports in the Enforcement and Investigation topic areas.
+
 
 ALL_TOPIC_AREAS = set(("A", "CB", "CC", "C", "CO", "X", "DWG", "EF", "E", "FM",
                        "FA", "G", "GU", "HS", "K", "IRM", "I", "PL", "ARRA",
@@ -48,17 +54,33 @@ BASE_URL = 'http://www.epa.gov/oig/reports.html'
 RE_YEAR = re.compile(r'\d{4}')
 
 def run(options):
-  since = options.get('since')
+  this_year = datetime.datetime.now().year
+
+  since = options.get('since', None)
   if since:
-    since_dt = datetime.datetime.strptime(since, '%Y-%m-%d')
+    since = int(since)
+    if since > this_year:
+      since = this_year
+
+  year = options.get('year', None)
+  if year:
+    year = int(year)
+    if year > this_year:
+      year = this_year
+
+  if since:
+    year_range = range(since, this_year + 1)
+  elif year:
+    year_range = range(year, year + 1)
   else:
-    since_dt = datetime.datetime.now() - datetime.timedelta(days=60)
+    year_range = range(this_year, this_year + 1)
+
 
   only = options.get('only')
   if only:
     only = set(only.split(','))
   else:
-    only = set(('E', 'I'))
+    only = ALL_TOPIC_AREAS
 
   index_body = utils.download(BASE_URL)
 
@@ -80,7 +102,7 @@ def run(options):
         continue
 
       published_on_dt = datetime.datetime.strptime(tds[6].text, '%m/%d/%Y')
-      if since_dt > published_on_dt:
+      if published_on_dt.year not in year_range:
         continue
 
       topic_areas = set(tds[7].text.split(', '))
