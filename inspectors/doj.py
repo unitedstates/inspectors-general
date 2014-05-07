@@ -69,21 +69,6 @@ not_agency = (
   "Equitable Sharing", "Offices, Boards and Divisions (OBDs)"
 )
 
-# not all the reports have a convenient date field immediately prior.
-# So, we'll just go back in sibling order until we find the h3 we need.
-def year_for(blurb):
-  h3 = None
-  for sibling in blurb.previous_siblings:
-    if sibling.name == "h3":
-      h3 = sibling
-      break
-
-  if h3 is None:
-    # print "Couldn't find a year h3 sibling for %s" % str(blurb)
-    return None
-  else:
-    return int(h3.text)
-
 def extract_info(content, directory, year):
   # goes through each agency or content bucket
   if directory in not_agency:
@@ -97,31 +82,8 @@ def extract_info(content, directory, year):
     agency_name = agency_decoder[directory][0]
 
   candidates = content[-1].find_all("p")
-  print "Found %i candidate reports on \"%s\"" % (len(candidates), directory)
-  blurbs = []
-
-  # if we're limiting to a specific year, find only the <p>'s
-  # following the <h3> with the year in it
-  if year:
-    for blurb in candidates:
-      report_year = year_for(blurb)
-
-      # If we couldn't find one, well, er, just assume it's like the last one.
-      # This can happen with indented press release whatever.
-      # Don't want to Stop The Beat because of this optimization,
-      # and most all the time it will be the value of the last one.
-      if report_year:
-        last_known = report_year
-      else:
-        report_year = last_known
-
-      # If it's the year we're filtering to, add it to the processing list.
-      if report_year == year:
-        blurbs.append(blurb)
-    print "Preparing to fetch %i reports for %i" % (len(blurbs), year)
-  else:
-    blurbs = candidates
-    print "Preparing to fetch %i reports for all years" % len(blurbs)
+  print "Found %i candidate reports (for all years) on \"%s\"" % (len(candidates), directory)
+  blurbs = candidates
 
   for b in blurbs:
     # date
@@ -198,8 +160,13 @@ def extract_info(content, directory, year):
           date_string = date_string.replace(" ", " 1, ")
           date = datetime.strptime(date_string, "%B %d, %Y")
 
-      year = datetime.strftime(date, "%Y")
+      report_year = datetime.strftime(date, "%Y")
       published_on = datetime.strftime(date, "%Y-%m-%d")
+
+      # if we're filtering on a year, and this isn't in it, skip it
+      if year and (int(report_year) != year):
+        # print "Skipping report for %s..." % report_year
+        continue
 
       # trying to get the most descriptive title
       # I go from the best methods to fall back and override exceptions
@@ -340,7 +307,7 @@ def extract_info(content, directory, year):
                 "indexed": indexed,
               }],
             "published_on": published_on,
-            "year": year,
+            "year": report_year,
             # perhaps elaborate on this later
             "type": type_for(title),
             "language": language,
@@ -388,23 +355,23 @@ def odd_link(b, date, l, directory):
   #section for documents without dates:
   if date != None:
     if date.strip() == "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995":
-      return{"date_string": "June 1, 1996", "real_title": "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995"}
+      return {"date_string": "June 1, 1996", "real_title": "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995"}
     if date == "Audit Report GR-30-00-001":
-      return{"date_string": "November 1, 2000", "real_title":"McMechen, West Virginia Police Department, Audit Report GR-30-00-001"}
+      return {"date_string": "November 1, 2000", "real_title":"McMechen, West Virginia Police Department, Audit Report GR-30-00-001"}
     # no date, one other entry, giving it the same date
     if date == "Georgia's Department of Corrections":
-      return{"date_string": "November 1, 2000", "real_title":"United States Marshals Service Cost Proposal for the Intergovernmental Service Agreement for Detention Facilities with the City of Atlanta, Georgia’s Department of Corrections"}
+      return {"date_string": "November 1, 2000", "real_title":"United States Marshals Service Cost Proposal for the Intergovernmental Service Agreement for Detention Facilities with the City of Atlanta, Georgia’s Department of Corrections"}
     # confirmed no dates for these
     no_dates = ("Audit Report GR-40-99-014", "Audit Report GR-40-99-011", "Evaluation and Inspections Report I-2000-021", "Evaluation and Inspections Report I-2000-018", "Audit Report 99-03")
     if date.strip() in no_dates:
       date_string = datetime.now()
       date_string = datetime.strftime(date_string, "%B %d, %Y")
-      return{"date_string": date_string, "real_title": text}
+      return {"date_string": date_string, "real_title": text}
     # Intergovernmental Agreements for Detention Space External Reports don't always have dates, not even on the documents, using today
     if directory == "Intergovernmental Agreements for Detention Space (IGAs)":
       date_string = datetime.now()
       date_string = datetime.strftime(date_string, "%B %d, %Y")
-      return{"date_string": date_string, "real_title": text}
+      return {"date_string": date_string, "real_title": text}
 
   # need to get rid of this to process
   if "Released Publicly" in text:
