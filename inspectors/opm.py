@@ -12,17 +12,32 @@ import calendar
 
 #  options
 #    --since=[year] fetches all reports from that year to now
+#    --year=[year] fetches all reports for a particular year
 
 def run(options):
-
   this_year = datetime.now().year
-  since = int(options.get('since', this_year))
-  if since > this_year:
-    since = this_year
-  if since != this_year:
-    print "## Downloading reports from %i to %i" % (since, this_year)
+
+  since = options.get('since', None)
+  if since:
+    since = int(since)
+    if since > this_year:
+      since = this_year
+
+  year = options.get('year', None)
+  if year:
+    year = int(year)
+    if year > this_year:
+      year = this_year
+
+  if since:
+    year_range = range(since, this_year + 1)
+  elif year:
+    year_range = range(year, year + 1)
   else:
-    print "## Downloading reports from this year (%i)" % this_year
+    year_range = range(this_year, this_year + 1)
+
+
+  print "## Downloading reports from %i to %i" % (year_range[0], year_range[-1])
 
   url = url_for()
   body = utils.download(url)
@@ -34,7 +49,7 @@ def run(options):
     try:
       year = int(result.get("title"))
       # check that the fetched year is in the range
-      if year not in range (since, this_year + 1):
+      if year not in year_range:
         continue
       print "## Downloading year %i " % year
     except ValueError:
@@ -60,7 +75,13 @@ def report_from(item):
     'type': 'audit',
     'file_type': 'pdf'
   }
-  raw_date = item.th.contents[0].split(" ")
+
+  # date can sometimes be surrounded with <span>
+  raw_date = item.th.contents[0]
+  if type(raw_date) is bs4.element.Tag:
+    raw_date = raw_date.text
+  raw_date = raw_date.split(" ")
+
   month = str(find_month_num(raw_date[0]))
   day = raw_date[1].replace(",", "")
   year = raw_date[2]
