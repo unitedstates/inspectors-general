@@ -62,9 +62,16 @@ def validate_report(report):
     if report.get(field, None) is None:
       return "Missing a required field: %s" % field
 
-  # fields from pre-processing
+  if report.get("type", None) is None:
+    return "Er, this shouldn't happen: empty `type` field."
+
   if report.get("file_type", None) is None:
-    return "Couldn't figure out file_type from URL, please set it explicitly."
+    return "Couldn't figure out `file_type` from URL, please set it explicitly."
+
+  try:
+    datetime.datetime.strptime(report['published_on'], "%Y-%m-%d")
+  except ValueError:
+    return "Invalid format for `published_on`, must be YYYY-MM-DD."
 
   return True
 
