@@ -1,0 +1,15 @@
+# email settings
+email:
+
+  # smtp details
+  hostname:
+  port:
+  user_name:
+  password:
+  starttls:
+
+  # email content
+  subject: "[inspectors-general] Notice"
+  from:
+  from_name:
+  to:

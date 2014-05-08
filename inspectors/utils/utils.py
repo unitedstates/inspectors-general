@@ -8,6 +8,7 @@ import scrapelib
 scraper = scrapelib.Scraper(requests_per_minute=120, follow_robots=False, retry_attempts=3)
 scraper.user_agent = "unitedstates/inspectors-general (https://github.com/unitedstates/inspectors-general)"
 
+import admin
 
 def run(run_method):
   cli_options = options()
@@ -16,7 +17,7 @@ def run(run_method):
   try:
     run_method(cli_options)
   except Exception as exception:
-    print format_exception(exception)
+    admin.notify(exception)
 
 # read options from the command line
 #   e.g. ./inspectors/usps.py --since=2012-03-04 --debug

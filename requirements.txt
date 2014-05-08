@@ -2,3 +2,4 @@ ipython
 scrapelib
 PyQuery
 BeautifulSoup4
+pyyaml
