@@ -459,26 +459,7 @@ def get_content(url):
 
 
 def run(options):
-  this_year = datetime.now().year
-
-  since = options.get('since', None)
-  if since:
-    since = int(since)
-    if since > this_year:
-      since = this_year
-
-  year = options.get('year', None)
-  if year:
-    year = int(year)
-    if year > this_year:
-      year = this_year
-
-  if since:
-    year_range = range(since, this_year + 1)
-  elif year:
-    year_range = range(year, year + 1)
-  else:
-    year_range = range(this_year, this_year + 1)
+  year_range = inspector.year_range(options)
 
   # Can limit search to any of the components listed at the top of this script
   component = options.get('component', None)

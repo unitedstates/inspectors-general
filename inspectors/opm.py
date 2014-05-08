@@ -19,29 +19,8 @@ import calendar
 #    --report_id   limit it to a specific report ID (since/year should include it)
 
 def run(options):
-  this_year = datetime.now().year
-
+  year_range = inspector.year_range(options)
   only_id = options.get('report_id', None)
-
-  since = options.get('since', None)
-  if since:
-    since = int(since)
-    if since > this_year:
-      since = this_year
-
-  year = options.get('year', None)
-  if year:
-    year = int(year)
-    if year > this_year:
-      year = this_year
-
-  if since:
-    year_range = range(since, this_year + 1)
-  elif year:
-    year_range = range(year, year + 1)
-  else:
-    year_range = range(this_year, this_year + 1)
-
 
   print "## Downloading reports from %i to %i" % (year_range[0], year_range[-1])
 
