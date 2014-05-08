@@ -48,7 +48,7 @@ Metadata for a report is at `report.json`. The original report will be saved at 
 
 ### Contributing a Scraper
 
-The easiest way is to start by copying `scraper.py.template` to `inspectors/[inspector].py`, where "[inspector]" is the filename-friendly handle of the IG office you want to scrape. For example, our scraper for the US Postal Service's IG is [usps.py](https://github.com/unitedstates/inspectors-general/blob/master/inspectors/usps.py).
+The easiest way is to start by copying `scraper.py.template` to `inspectors/[inspector].py`, where "[inspector]" is the filename-friendly handle of the IG office you want to scrape. For example, our scraper for the US Postal Service's IG is [usps.py](https://github.com/unitedstates/inspectors-general/blob/master/inspectors/usps.py)
 
 The template has a suggested workflow and set of methods, but all your task **needs** to do is:
 
@@ -74,6 +74,8 @@ The `report` object must be a dict that contains the following required fields:
 The `report_id` only needs to be unique within that IG, so you can make it up from other fields.
 
 It does need to come out the same every time you run the script. In other words, **don't auto-increment a number** -- if the IG doesn't give you a unique ID already, append other fields together into a consistent, unique ID.
+
+Finally, **err towards errors**: have your scraper choke and die on unexpected input. Better to be forced to discover it that way, then for incomplete or inaccurate data to be silently saved.
 
 ## Public domain
 
