@@ -13,6 +13,13 @@ A project to collect reports from the offices of Inspectors General across the f
   * Customs and Border Protection (CBP)
   * Citizenship and Immigration Services (CIS)
   * Coast Guard
+* [Office of Personnel Management (OPM)](https://www.opm.gov/our-inspector-general/reports/)
+* [Environmental Protection Agency (EPA)](http://www.epa.gov/oig/reports.html)
+* [Department of Justice](http://www.justice.gov/oig/reports/)
+  * Federal Bureau of Investigation (FBI)
+  * United States Marshals Service (USMS)
+  * Drug Enforcement Administration (DEA)
+  * Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF)
 
 Currently writing scrapers for the highest priority IG offices, as highlighted in yellow [in this spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing).
 
