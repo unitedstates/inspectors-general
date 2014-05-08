@@ -13,9 +13,15 @@ import calendar
 #  options
 #    --since=[year] fetches all reports from that year to now
 #    --year=[year] fetches all reports for a particular year
+#
+#    defaults to current year.
+#
+#    --report_id   limit it to a specific report ID (since/year should include it)
 
 def run(options):
   this_year = datetime.now().year
+
+  only_id = options.get('report_id', None)
 
   since = options.get('since', None)
   if since:
@@ -54,12 +60,19 @@ def run(options):
       print "## Downloading year %i " % year
     except ValueError:
       continue
+
     # gets each table entry and sends generates a report from it
     listings = result.div.table.tbody.contents
     for item in listings:
       if type(item) is not bs4.element.Tag:
         continue
-      report_from(item)
+      report = report_from(item)
+
+      # can limit it to just one report, for debugging convenience
+      if only_id and only_id != report['report_id']:
+        continue
+
+      inspector.save_report(report)
 
 #  really only here for symbolic purposes
 def url_for():
@@ -77,7 +90,8 @@ def report_from(item):
   }
 
   # date can sometimes be surrounded with <span>
-  raw_date = item.th.contents[0]
+  raw_date = item.th.text
+
   if type(raw_date) is bs4.element.Tag:
     raw_date = raw_date.text
   raw_date = raw_date.split(" ")
@@ -108,7 +122,7 @@ def report_from(item):
     pass
   report['report_id'] = raw_id
 
-  inspector.save_report(report)
+  return report
 
 
 def find_month_num(month):
