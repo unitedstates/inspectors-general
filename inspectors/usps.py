@@ -6,9 +6,7 @@ from datetime import datetime
 
 
 # options:
-#   since - year to fetch reports since.
-#   year - year to fetch reports from.
-#   defaults to current year.
+#   standard since/year options for a year range to fetch from.
 #
 #   pages - number of pages to fetch. defaults to all of them (using a very high number)
 #   only - limit reports fetched to one or more types, comma-separated. e.g. "audit,testimony"
@@ -23,10 +21,12 @@ from datetime import datetime
 #             including audits, reports to Congress, and research
 #             excluding press releases, SARC, and testimony to Congress
 
-# there are 158 pages total as of 2014-05-08, so let's try, er, 1000
+# This will actually get adjusted downwards on the fly, so pick a huge number.
+# There are 158 pages total as of 2014-05-08, so let's try, er, 1000.
 ALL_PAGES = 1000
 
 def run(options):
+  year_range = inspector.year_range(options)
   pages = options.get('pages', ALL_PAGES)
 
   max_page = None
@@ -45,6 +45,13 @@ def run(options):
 
     for result in results:
       report = report_from(result)
+
+      # inefficient enforcement of --year arg, USPS doesn't support it server-side
+      # TODO: change to published_on.year once it's a datetime
+      if report['year'] not in year_range:
+        print "[%s] Skipping report, not in requested range." % report['report_id']
+        continue
+
       inspector.save_report(report)
 
 
@@ -117,12 +124,18 @@ def last_page_for(doc):
   return int(doc.select("li.pager-item.last")[0].text.strip())
 
 
+# The USPS IG only supports a "since" filter.
+# So, if we get a --year, we'll use it as "since", and then
+# ignore reports after parsing their data (before saving them).
+# Inefficient, but more efficient than not supporting --year at all.
 def url_for(options, page=1):
+  year_range = inspector.year_range(options)
+
   url = "http://www.uspsoig.gov/document-library?"
 
-  since = options.get('since', None)
-  if since:
-    url += "&field_doc_date_value[value][date]=%s" % since
+  # there's always a first year, and it defaults to current year
+  since = "%s-01-01" % year_range[0]
+  url += "&field_doc_date_value[value][date]=%s" % since
 
   only = options.get('only', None)
   if not only:
