@@ -6,11 +6,15 @@ from datetime import datetime
 import urlparse
 
 # options:
+#   standard since/year options for a year range to fetch from.
+#
 #   component: limit to a specific component. See COMPONENTS dict at bottom.
 #   limit: only download X number of reports (per component)
 #   report_id: use in conjunction with 'component' to get only one report
 
 def run(options):
+  year_range = inspector.year_range(options)
+
   component = options.get('component', None)
   if component:
     components = [component]
@@ -37,6 +41,10 @@ def run(options):
     for result in results:
       report = report_from(result, component, url)
       if report_id and (report_id != report['report_id']):
+        continue
+
+      if report['year'] not in year_range:
+        # print "[%s] Skipping, not in requested range." % report['report_id']
         continue
 
       inspector.save_report(report)
