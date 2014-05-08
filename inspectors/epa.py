@@ -98,7 +98,6 @@ def report_from(tds, published_on_dt, year):
     'inspector_url': 'http://www.epa.gov/oig',
     'agency': 'epa',
     'agency_name': 'Environmental Protection Agency',
-    'type': 'report',
     'year': year,
     'summary_only': False
   }
@@ -129,19 +128,13 @@ def report_from(tds, published_on_dt, year):
     title_slug = re.sub(r'\W', '', title[:16])
     report_id = (published_on + '-' + title_slug)
 
-  if report_url[-4] == '.':
-    file_type = report_url[-3:]
-  else:
-    file_type = '???'
-
   report.update({
     'report_id': report_id,
     'url': report_url,
-    'title': title,
-    'published_on': published_on,
     # URL for 'At a glance' summary of the report
-    'glance_url': glance_url,
-    'file_type': file_type,
+    'summary_url': glance_url,
+    'title': title,
+    'published_on': published_on
   })
   return report
 

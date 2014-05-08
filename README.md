@@ -71,7 +71,7 @@ It's *encouraged* to use `inspectors.year_range(options)` to obtain a range of d
 
 #### Report metadata
 
-The `report` object must be a dict that contains the following required fields:
+The `report` object must be a dict that contains the following **required fields**:
 
 * `inspector` - The handle you chose for the IG. e.g. "usps"
 * `inspector_url` - The IG's primary website URL.
@@ -81,13 +81,10 @@ The `report` object must be a dict that contains the following required fields:
 * `title` - Title of report.
 * `url` - Link to report.
 * `published_on` - Date of publication, in `YYYY-MM-DD` format.
-* `year` - Year of publication.
-* `type` - "report" or some other description. There's not yet a standard set of values for this field.
-* `file_type` - "pdf", or whatever file extension the report has.
 
-The `report_id` only needs to be unique within that IG, so you can make it up from other fields.
+You can **include any other fields** you think worth keeping.
 
-It does need to come out the same every time you run the script. In other words, **don't auto-increment a number** -- if the IG doesn't give you a unique ID already, append other fields together into a consistent, unique ID.
+The `report_id` only needs to be unique within that IG, so you can make it up from other fields. It does need to come out the same every time you run the script. In other words, **don't auto-increment a number** -- if the IG doesn't give you a unique ID already, append other fields together into a consistent, unique ID.
 
 Finally, **err towards errors**: have your scraper choke and die on unexpected input. Better to be forced to discover it that way, then for incomplete or inaccurate data to be silently saved.
 

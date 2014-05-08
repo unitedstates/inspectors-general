@@ -63,9 +63,7 @@ def report_from(item):
     'inspector': 'opm',
     'inspector_url': 'https://www.opm.gov/our-inspector-general/',
     'agency': 'opm',
-    'agency_name': 'U.S. Office of Personnel Management',
-    'type': 'audit',
-    'file_type': 'pdf'
+    'agency_name': 'U.S. Office of Personnel Management'
   }
 
   # date can sometimes be surrounded with <span>
@@ -84,13 +82,13 @@ def report_from(item):
 
   raw_link = item.find_all('td')[0].a
   report['url'] = 'https://www.opm.gov' + raw_link.get('href')
-  report['name'] = raw_link.text.strip()
+  report['title'] = raw_link.text.strip()
 
-  if 'audit' not in report['name'].lower():
+  if 'audit' not in report['title'].lower():
     report['type'] = 'other'
 
   # if the document doesn't have a listed id - use hash of name
-  raw_id = str(hash(report['name']))
+  raw_id = str(hash(report['title']))
   try:
     raw_id = item.find_all('td')[1].contents[0]
     if type(raw_id) is bs4.element.Tag:

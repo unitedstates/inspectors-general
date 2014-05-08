@@ -59,8 +59,7 @@ def run(options):
 def report_from(result, component, url):
   report = {
     'inspector': 'dhs',
-    'inspector_url': 'http://www.oig.dhs.gov',
-    'type': 'report' # can't seem to find any easy distinctions
+    'inspector_url': 'http://www.oig.dhs.gov'
   }
 
   report['report_id'] = result.select("td")[1].text.strip()
@@ -89,8 +88,6 @@ def report_from(result, component, url):
   report['title'] = title
 
   report_path = urlparse.urlsplit(report_url).path
-  extension = report_path.split(".")[-1]
-  report['file_type'] = extension
 
   return report
 

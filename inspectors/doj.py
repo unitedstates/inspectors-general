@@ -207,7 +207,7 @@ def extract_info(content, directory, year_range):
           pass
 
         file_type = find_file_type(link)
-        if file_type == "ignore":
+        if file_type == None:
           break
 
         if title == None:
@@ -315,15 +315,14 @@ def extract_info(content, directory, year_range):
 
 def find_file_type(url):
   if url[-3:] == "pdf":
-    file_type = "pdf"
+    return "pdf"
   elif url[-3:] == "htm":
-    file_type = "html"
+    return "html"
   elif url[-4:] == "html":
-    file_type = "html"
+    return "html"
   else:
     # these include a few navigation links
-    file_type = "ignore"
-  return file_type
+    return None
 
 def date_format(date):
   date = str(date)
@@ -433,7 +432,7 @@ def odd_link(b, date, l, directory):
   info = {"real_title":title, "date_string": date_string, }
   return(info)
 
-# adding types bases on the USPS
+# adding types based on the USPS
 def type_for(original_type):
   original = original_type.lower()
   if "audit" in original:
@@ -444,12 +443,10 @@ def type_for(original_type):
     return "press"
   elif "research" in original:
     return "research"
-  elif "sarc" in original:
-    return "interactive"
   elif "report to congress" in original:
     return "congress"
   else:
-    return "unknown"
+    return None
 
 def get_content(url):
   page = utils.download(url)

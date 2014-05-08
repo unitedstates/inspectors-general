@@ -95,7 +95,6 @@ def report_from(result):
   filename = link.split("/")[-1]
   extension = filename.split(".")[-1]
   report['report_id'] = filename.replace("." + extension, "")
-  report['file_type'] = extension
 
   report['title'] = result.select("h3")[0].text.strip()
 
@@ -116,7 +115,7 @@ def type_for(original_type):
   elif "report to congress":
     return "congress"
   else:
-    return "unknown"
+    return None
 
 # get the last page number, from a page of search results
 # e.g. <li class="pager-item active last">158</li>

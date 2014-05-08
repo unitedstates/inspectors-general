@@ -1,6 +1,7 @@
 import utils, os
 import logging
 import datetime
+import urlparse
 
 # Save a report to disk, provide output along the way.
 #
@@ -12,6 +13,14 @@ import datetime
 # fields added: report_path, text_path
 
 def save_report(report):
+  # create some inferred fields, set defaults
+  preprocess_report(report)
+
+  # validate report will return True, or a string message
+  validation = validate_report(report)
+  if validation != True:
+    raise Exception("[%s][%s][%s] Invalid report: %s\n\n%s" % (report.get('type', None), report.get('published_on', None), report.get('report_id', None), validation, str(report)))
+
   logging.warn("[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id']))
 
   report_path = download_report(report)
@@ -22,6 +31,43 @@ def save_report(report):
 
   data_path = write_report(report)
   logging.warn("\tdata: %s" % data_path)
+
+
+
+# Preprocess before validation, to catch cases where inference didn't work.
+# So, fields may be absent at this time.
+def preprocess_report(report):
+  # not sure what I'm doing with this field yet
+  if report.get("type", None) is None:
+    report["type"] = "report"
+
+  # TODO: calculate year from published_on
+
+  # if we have a URL, but no explicit file type, try to detect it
+  if report.get("url", None) and (report.get("file_type", None) is None):
+    parsed = urlparse.urlparse(report['url'])
+    split = parsed.path.split(".")
+    if len(split) > 1:
+      report['file_type'] = split[-1]
+
+
+
+# Ensure required fields are present
+def validate_report(report):
+  required = [
+    "published_on", "report_id", "title", "url",
+    "inspector", "inspector_url", "agency", "agency_name",
+  ]
+  for field in required:
+    if report.get(field, None) is None:
+      return "Missing a required field: %s" % field
+
+  # fields from pre-processing
+  if report.get("file_type", None) is None:
+    return "Couldn't figure out file_type from URL, please set it explicitly."
+
+  return True
+
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])
