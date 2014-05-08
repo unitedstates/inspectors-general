@@ -9,11 +9,7 @@ from utils import utils, inspector
 
 #
 # options:
-#   since - year (YYYY) to fetch reports since.
-#   year  - year (YYYY) to fetch reports from.
-#
-#   if neither `since` nor `year` is provided,
-#     defaults to current year.
+#   standard since/year options for a year range to fetch from.
 #
 #   only - limit reports fetched to one or more topic area, comma-separated.
 #          e.g. "EF,IRM".
@@ -54,27 +50,7 @@ BASE_URL = 'http://www.epa.gov/oig/reports.html'
 RE_YEAR = re.compile(r'\d{4}')
 
 def run(options):
-  this_year = datetime.datetime.now().year
-
-  since = options.get('since', None)
-  if since:
-    since = int(since)
-    if since > this_year:
-      since = this_year
-
-  year = options.get('year', None)
-  if year:
-    year = int(year)
-    if year > this_year:
-      year = this_year
-
-  if since:
-    year_range = range(since, this_year + 1)
-  elif year:
-    year_range = range(year, year + 1)
-  else:
-    year_range = range(this_year, this_year + 1)
-
+  year_range = inspector.year_range(options)
 
   only = options.get('only')
   if only:

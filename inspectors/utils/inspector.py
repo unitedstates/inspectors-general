@@ -1,5 +1,6 @@
 import utils, os
 import logging
+import datetime
 
 # Save a report to disk, provide output along the way.
 #
@@ -61,3 +62,28 @@ def path_for(report, ext):
 
 def cache(inspector, path):
   return os.path.join(utils.cache_dir(), inspector, path)
+
+# assume standard options for IG scrapers, since/year
+def year_range(options):
+  this_year = datetime.datetime.now().year
+
+  since = options.get('since', None)
+  if since:
+    since = int(since)
+    if since > this_year:
+      since = this_year
+
+  year = options.get('year', None)
+  if year:
+    year = int(year)
+    if year > this_year:
+      year = this_year
+
+  if since:
+    year_range = range(since, this_year + 1)
+  elif year:
+    year_range = range(year, year + 1)
+  else:
+    year_range = range(this_year, this_year + 1)
+
+  return year_range
