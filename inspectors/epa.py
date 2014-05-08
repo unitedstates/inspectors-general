@@ -110,7 +110,8 @@ def run(options):
         continue
 
       report = report_from(tds, published_on_dt, current_year)
-      inspector.save_report(report)
+      if report:
+        inspector.save_report(report)
 
 
 RE_PDF = re.compile('PDF', re.I)
@@ -123,24 +124,34 @@ def report_from(tds, published_on_dt, year):
     'agency_name': 'Environmental Protection Agency',
     'type': 'report',
     'year': year,
+    'summary_only': False
   }
 
-  report_url = extract_url(tds[3])
-  if not report_url:
-    return None
-  report_url = urljoin(BASE_URL, report_url)
-
-  published_on = datetime.datetime.strftime(published_on_dt, '%Y-%m-%d')
-
   report_id = tds[0].text
-  title = tds[1].text
-  if not report_id:
-    title_slug = re.sub(r'\W', '', title[:16])
-    report_id = (published_on + '-' + title_slug)
+
+  report_url = extract_url(tds[3])
+  if report_url:
+    report_url = urljoin(BASE_URL, report_url)
 
   glance_url = extract_url(tds[2])
   if glance_url:
     glance_url = urljoin(BASE_URL, glance_url)
+
+  # some reports only have the At A Glance summary,
+  # e.g. when the full report is technical/sensitive
+  if report_url is None and glance_url is not None:
+    report_url = glance_url
+    report['summary_only'] = True
+
+  elif not report_url and not glance_url:
+    raise Exception("Couldn't find a link for report %s" % report_id)
+
+  published_on = datetime.datetime.strftime(published_on_dt, '%Y-%m-%d')
+
+  title = tds[1].text
+  if not report_id:
+    title_slug = re.sub(r'\W', '', title[:16])
+    report_id = (published_on + '-' + title_slug)
 
   if report_url[-4] == '.':
     file_type = report_url[-3:]
