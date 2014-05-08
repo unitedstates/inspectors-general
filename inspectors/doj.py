@@ -8,8 +8,6 @@
 # - There are html and pdfs for the same docs so all the urls are tracked in urls
 
 # Options:
-#   since - YYYY, which year to start fetching from.
-#   year - YYYY, which year to limit fetching to.
 #   component - Any of the slugs in the `components` dict below,
 #               will be used to filter to a particular landing page.
 
@@ -482,6 +480,7 @@ def run(options):
   for link in keys:
     content = get_content(link)
     extract_info(content, source_links[link], year_range)
+
 
   print "Found %i reports, for year %i to %i" % (len(report.keys()), year_range[0], year_range[-1])
 

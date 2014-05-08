@@ -130,6 +130,7 @@ def year_range(options):
   this_year = datetime.datetime.now().year
 
   since = options.get('since', None)
+  if type(since) is not str: since = None
   if since:
     since = int(since)
     if since > this_year:
