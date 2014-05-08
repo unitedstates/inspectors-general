@@ -43,7 +43,7 @@ def run(options):
       if report_id and (report_id != report['report_id']):
         continue
 
-      if report['year'] not in year_range:
+      if inspector.year_from(report) not in year_range:
         # print "[%s] Skipping, not in requested range." % report['report_id']
         continue
 
@@ -79,7 +79,6 @@ def report_from(result, component, url):
     timestamp = "%s/01/%s" % tuple(timestamp.split("/"))
   published_on = datetime.strptime(timestamp, "%m/%d/%y")
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
-  report['year'] = published_on.year
 
   link = result.select("td")[2].select("a")[0]
   report_url = urlparse.urljoin(url, link['href'])

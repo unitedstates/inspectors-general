@@ -41,7 +41,9 @@ def preprocess_report(report):
   if report.get("type", None) is None:
     report["type"] = "report"
 
-  # TODO: calculate year from published_on
+  # if we have a date, but no explicit year, extract it
+  if report.get("published_on", None) and (report.get('year', None) is None):
+    report['year'] = year_from(report)
 
   # if we have a URL, but no explicit file type, try to detect it
   if report.get("url", None) and (report.get("file_type", None) is None):
@@ -61,6 +63,9 @@ def validate_report(report):
   for field in required:
     if report.get(field, None) is None:
       return "Missing a required field: %s" % field
+
+  if report.get("year", None) is None:
+    return "Couldn't get `year`, for some reason."
 
   if report.get("type", None) is None:
     return "Er, this shouldn't happen: empty `type` field."
@@ -115,6 +120,10 @@ def path_for(report, ext):
 
 def cache(inspector, path):
   return os.path.join(utils.cache_dir(), inspector, path)
+
+# get year for a report from its publish date
+def year_from(report):
+  return int(report['published_on'].split("-")[0])
 
 # assume standard options for IG scrapers, since/year
 def year_range(options):

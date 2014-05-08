@@ -98,7 +98,6 @@ def report_from(tds, published_on_dt, year):
     'inspector_url': 'http://www.epa.gov/oig',
     'agency': 'epa',
     'agency_name': 'Environmental Protection Agency',
-    'year': year,
     'summary_only': False
   }
 

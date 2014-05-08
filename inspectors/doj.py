@@ -306,7 +306,6 @@ def extract_info(content, directory, year_range):
                 "indexed": indexed,
               }],
             "published_on": published_on,
-            "year": report_year,
             # perhaps elaborate on this later
             "type": type_for(title),
             "language": language,

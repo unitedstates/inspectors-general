@@ -78,7 +78,6 @@ def report_from(item):
   year = raw_date[2]
 
   report['published_on'] = year + "-" + month + "-" + day
-  report['year'] = year
 
   raw_link = item.find_all('td')[0].a
   report['url'] = 'https://www.opm.gov' + raw_link.get('href')

@@ -48,7 +48,7 @@ def run(options):
 
       # inefficient enforcement of --year arg, USPS doesn't support it server-side
       # TODO: change to published_on.year once it's a datetime
-      if report['year'] not in year_range:
+      if inspector.year_from(report) not in year_range:
         print "[%s] Skipping report, not in requested range." % report['report_id']
         continue
 
@@ -77,7 +77,6 @@ def report_from(result):
 
   report['type'] = report_type
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
-  report['year'] = published_on.year
 
   # if there's only one button, use that URL
   # otherwise, look for "Read Full Report" (could be first or last)
