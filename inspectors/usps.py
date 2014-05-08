@@ -120,7 +120,13 @@ def type_for(original_type):
 # get the last page number, from a page of search results
 # e.g. <li class="pager-item active last">158</li>
 def last_page_for(doc):
-  return int(doc.select("li.pager-item.last")[0].text.strip())
+  page = doc.select("li.pager-item.last")[0].text.strip()
+  if page and len(page) > 0:
+    return int(page)
+
+  # this means we're on the last page, AFAIK
+  else:
+    return -1
 
 
 # The USPS IG only supports a "since" filter.
