@@ -40,7 +40,7 @@ This will fetch the current year's reports from the [Inspector General for the U
 If you want to go back further, use `--since` or `--year` to specify a year or range:
 
 ```bash
-./inspectors/usps.py --since 2009
+./inspectors/usps.py --since=2009
 ```
 
 Reports are broken up by IG, and by year. So a USPS IG report from 2013 with a scraper-determined ID of `no-ar-13-010` will create the following files:
