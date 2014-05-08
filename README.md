@@ -13,6 +13,7 @@ A project to collect reports from the offices of Inspectors General across the f
   * Customs and Border Protection (CBP)
   * Citizenship and Immigration Services (CIS)
   * Coast Guard
+  * (and others)
 * [Office of Personnel Management (OPM)](https://www.opm.gov/our-inspector-general/reports/)
 * [Environmental Protection Agency (EPA)](http://www.epa.gov/oig/reports.html)
 * [Department of Justice](http://www.justice.gov/oig/reports/)
@@ -20,12 +21,13 @@ A project to collect reports from the offices of Inspectors General across the f
   * United States Marshals Service (USMS)
   * Drug Enforcement Administration (DEA)
   * Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF)
+  * (and others)
 
-Currently writing scrapers for the highest priority IG offices, as highlighted in yellow [in this spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing).
+Thanks to [Matt Rumsey](https://twitter.com/mattrumsey) for [compiling a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices.
 
 ### Using
 
-**Setup**: You'll need to have `pdftotext` installed. On Ubuntu, `apt-get install poppler-utils`. On Macs, install it via MacpPorts with `port install poppler`, or via Homebrew with `brew install poppler`.
+**Setup**: You'll need to have `pdftotext` installed. On Ubuntu, `apt-get install poppler-utils`. On Macs, install it via MacPorts with `port install poppler`, or via Homebrew with `brew install poppler`.
 
 To run an individual IG scraper, just execute its file directly. For example:
 
@@ -45,6 +47,14 @@ Reports are broken up by IG, and by year. So a USPS IG report from 2013 with a s
 
 Metadata for a report is at `report.json`. The original report will be saved at `report.pdf` (the extension will match the original, it may not be `.pdf`). The text from the report will be extracted to `report.txt`.
 
+#### Common options
+
+Every scraper will accept the following options:
+
+* `--year`: A `YYYY` year, only fetch reports from this year.
+* `--since`: A `YYYY` year, only fetch reports from this year onwards.
+* `--debug`: Print extra output to STDOUT. (Can be quite verbose when downloading.)
+
 
 ### Contributing a Scraper
 
@@ -52,10 +62,14 @@ The easiest way is to start by copying `scraper.py.template` to `inspectors/[ins
 
 The template has a suggested workflow and set of methods, but all your task **needs** to do is:
 
-* start execution in a `run` method, and
+* start execution in a `run(options)` method, and
 * call `inspector.save_report(report)` for every report
 
-This will save that report to disk in the right place.
+This will automatically save reports to disk in the right place, extract text, and avoid re-downloading files. `options` will be a dict parsed from any included command line flags.
+
+It's *encouraged* to use `inspectors.year_range(options)` to obtain a range of desired years, and to obey that range during scraping. See an example of [creating it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L22) and [using it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L37-L38).
+
+#### Report metadata
 
 The `report` object must be a dict that contains the following required fields:
 
