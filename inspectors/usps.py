@@ -48,7 +48,7 @@ def run(options):
 
       # inefficient enforcement of --year arg, USPS doesn't support it server-side
       # TODO: change to published_on.year once it's a datetime
-      if report['year'] not in year_range:
+      if inspector.year_from(report) not in year_range:
         print "[%s] Skipping report, not in requested range." % report['report_id']
         continue
 
@@ -77,7 +77,6 @@ def report_from(result):
 
   report['type'] = report_type
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
-  report['year'] = published_on.year
 
   # if there's only one button, use that URL
   # otherwise, look for "Read Full Report" (could be first or last)
@@ -95,7 +94,6 @@ def report_from(result):
   filename = link.split("/")[-1]
   extension = filename.split(".")[-1]
   report['report_id'] = filename.replace("." + extension, "")
-  report['file_type'] = extension
 
   report['title'] = result.select("h3")[0].text.strip()
 
@@ -116,12 +114,18 @@ def type_for(original_type):
   elif "report to congress":
     return "congress"
   else:
-    return "unknown"
+    return None
 
 # get the last page number, from a page of search results
 # e.g. <li class="pager-item active last">158</li>
 def last_page_for(doc):
-  return int(doc.select("li.pager-item.last")[0].text.strip())
+  page = doc.select("li.pager-item.last")[0].text.strip()
+  if page and len(page) > 0:
+    return int(page)
+
+  # this means we're on the last page, AFAIK
+  else:
+    return -1
 
 
 # The USPS IG only supports a "since" filter.

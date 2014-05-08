@@ -13,6 +13,7 @@ A project to collect reports from the offices of Inspectors General across the f
   * Customs and Border Protection (CBP)
   * Citizenship and Immigration Services (CIS)
   * Coast Guard
+  * (and others)
 * [Office of Personnel Management (OPM)](https://www.opm.gov/our-inspector-general/reports/)
 * [Environmental Protection Agency (EPA)](http://www.epa.gov/oig/reports.html)
 * [Department of Justice](http://www.justice.gov/oig/reports/)
@@ -20,12 +21,13 @@ A project to collect reports from the offices of Inspectors General across the f
   * United States Marshals Service (USMS)
   * Drug Enforcement Administration (DEA)
   * Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF)
+  * (and others)
 
-Currently writing scrapers for the highest priority IG offices, as highlighted in yellow [in this spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing).
+Thanks to [Matt Rumsey](https://twitter.com/mattrumsey) for [compiling a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices.
 
 ### Using
 
-**Setup**: You'll need to have `pdftotext` installed. On Ubuntu, `apt-get install poppler-utils`. On Macs, install it via MacpPorts with `port install poppler`, or via Homebrew with `brew install poppler`.
+**Setup**: You'll need to have `pdftotext` installed. On Ubuntu, `apt-get install poppler-utils`. On Macs, install it via MacPorts with `port install poppler`, or via Homebrew with `brew install poppler`.
 
 To run an individual IG scraper, just execute its file directly. For example:
 
@@ -45,6 +47,14 @@ Reports are broken up by IG, and by year. So a USPS IG report from 2013 with a s
 
 Metadata for a report is at `report.json`. The original report will be saved at `report.pdf` (the extension will match the original, it may not be `.pdf`). The text from the report will be extracted to `report.txt`.
 
+#### Common options
+
+Every scraper will accept the following options:
+
+* `--year`: A `YYYY` year, only fetch reports from this year.
+* `--since`: A `YYYY` year, only fetch reports from this year onwards.
+* `--debug`: Print extra output to STDOUT. (Can be quite verbose when downloading.)
+
 
 ### Contributing a Scraper
 
@@ -52,12 +62,16 @@ The easiest way is to start by copying `scraper.py.template` to `inspectors/[ins
 
 The template has a suggested workflow and set of methods, but all your task **needs** to do is:
 
-* start execution in a `run` method, and
+* start execution in a `run(options)` method, and
 * call `inspector.save_report(report)` for every report
 
-This will save that report to disk in the right place.
+This will automatically save reports to disk in the right place, extract text, and avoid re-downloading files. `options` will be a dict parsed from any included command line flags.
 
-The `report` object must be a dict that contains the following required fields:
+It's *encouraged* to use `inspectors.year_range(options)` to obtain a range of desired years, and to obey that range during scraping. See an example of [creating it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L22) and [using it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L37-L38).
+
+#### Report metadata
+
+The `report` object must be a dict that contains the following **required fields**:
 
 * `inspector` - The handle you chose for the IG. e.g. "usps"
 * `inspector_url` - The IG's primary website URL.
@@ -67,13 +81,10 @@ The `report` object must be a dict that contains the following required fields:
 * `title` - Title of report.
 * `url` - Link to report.
 * `published_on` - Date of publication, in `YYYY-MM-DD` format.
-* `year` - Year of publication.
-* `type` - "report" or some other description. There's not yet a standard set of values for this field.
-* `file_type` - "pdf", or whatever file extension the report has.
 
-The `report_id` only needs to be unique within that IG, so you can make it up from other fields.
+You can **include any other fields** you think worth keeping.
 
-It does need to come out the same every time you run the script. In other words, **don't auto-increment a number** -- if the IG doesn't give you a unique ID already, append other fields together into a consistent, unique ID.
+The `report_id` only needs to be unique within that IG, so you can make it up from other fields. It does need to come out the same every time you run the script. In other words, **don't auto-increment a number** -- if the IG doesn't give you a unique ID already, append other fields together into a consistent, unique ID.
 
 Finally, **err towards errors**: have your scraper choke and die on unexpected input. Better to be forced to discover it that way, then for incomplete or inaccurate data to be silently saved.
 

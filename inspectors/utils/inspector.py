@@ -1,6 +1,7 @@
 import utils, os
 import logging
 import datetime
+import urlparse
 
 # Save a report to disk, provide output along the way.
 #
@@ -12,6 +13,14 @@ import datetime
 # fields added: report_path, text_path
 
 def save_report(report):
+  # create some inferred fields, set defaults
+  preprocess_report(report)
+
+  # validate report will return True, or a string message
+  validation = validate_report(report)
+  if validation != True:
+    raise Exception("[%s][%s][%s] Invalid report: %s\n\n%s" % (report.get('type', None), report.get('published_on', None), report.get('report_id', None), validation, str(report)))
+
   logging.warn("[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id']))
 
   report_path = download_report(report)
@@ -22,6 +31,55 @@ def save_report(report):
 
   data_path = write_report(report)
   logging.warn("\tdata: %s" % data_path)
+
+
+
+# Preprocess before validation, to catch cases where inference didn't work.
+# So, fields may be absent at this time.
+def preprocess_report(report):
+  # not sure what I'm doing with this field yet
+  if report.get("type", None) is None:
+    report["type"] = "report"
+
+  # if we have a date, but no explicit year, extract it
+  if report.get("published_on", None) and (report.get('year', None) is None):
+    report['year'] = year_from(report)
+
+  # if we have a URL, but no explicit file type, try to detect it
+  if report.get("url", None) and (report.get("file_type", None) is None):
+    parsed = urlparse.urlparse(report['url'])
+    split = parsed.path.split(".")
+    if len(split) > 1:
+      report['file_type'] = split[-1]
+
+
+
+# Ensure required fields are present
+def validate_report(report):
+  required = [
+    "published_on", "report_id", "title", "url",
+    "inspector", "inspector_url", "agency", "agency_name",
+  ]
+  for field in required:
+    if report.get(field, None) is None:
+      return "Missing a required field: %s" % field
+
+  if report.get("year", None) is None:
+    return "Couldn't get `year`, for some reason."
+
+  if report.get("type", None) is None:
+    return "Er, this shouldn't happen: empty `type` field."
+
+  if report.get("file_type", None) is None:
+    return "Couldn't figure out `file_type` from URL, please set it explicitly."
+
+  try:
+    datetime.datetime.strptime(report['published_on'], "%Y-%m-%d")
+  except ValueError:
+    return "Invalid format for `published_on`, must be YYYY-MM-DD."
+
+  return True
+
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])
@@ -62,6 +120,10 @@ def path_for(report, ext):
 
 def cache(inspector, path):
   return os.path.join(utils.cache_dir(), inspector, path)
+
+# get year for a report from its publish date
+def year_from(report):
+  return int(report['published_on'].split("-")[0])
 
 # assume standard options for IG scrapers, since/year
 def year_range(options):

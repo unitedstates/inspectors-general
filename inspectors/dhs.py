@@ -43,7 +43,7 @@ def run(options):
       if report_id and (report_id != report['report_id']):
         continue
 
-      if report['year'] not in year_range:
+      if inspector.year_from(report) not in year_range:
         # print "[%s] Skipping, not in requested range." % report['report_id']
         continue
 
@@ -59,8 +59,7 @@ def run(options):
 def report_from(result, component, url):
   report = {
     'inspector': 'dhs',
-    'inspector_url': 'http://www.oig.dhs.gov',
-    'type': 'report' # can't seem to find any easy distinctions
+    'inspector_url': 'http://www.oig.dhs.gov'
   }
 
   report['report_id'] = result.select("td")[1].text.strip()
@@ -80,7 +79,6 @@ def report_from(result, component, url):
     timestamp = "%s/01/%s" % tuple(timestamp.split("/"))
   published_on = datetime.strptime(timestamp, "%m/%d/%y")
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
-  report['year'] = published_on.year
 
   link = result.select("td")[2].select("a")[0]
   report_url = urlparse.urljoin(url, link['href'])
@@ -89,8 +87,6 @@ def report_from(result, component, url):
   report['title'] = title
 
   report_path = urlparse.urlsplit(report_url).path
-  extension = report_path.split(".")[-1]
-  report['file_type'] = extension
 
   return report
 

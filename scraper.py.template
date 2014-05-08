@@ -11,22 +11,6 @@ from utils import utils, inspector
 # You can do anything you want that eventually results in calling:
 #
 #   inspector.save_report(report)
-#
-# Where report is a dict with the following required fields:
-#
-#   inspector: the handle you chose for the IG, e.g. "usps"
-#   agency: the agency the report relates to.
-#           This can be the same value as the inspector field, but it
-#           may differ -- some IGs monitor multiple agencies.
-#   report_id: a unique ID for the report
-#   title: title of report
-#   url: link to report
-#   type: "report" (or some other class of document, if it makes sense to distinguish)
-#   published_on: date of publication
-#   year: year of publication
-#   file_type: 'pdf' or other file extension
-#
-# Any additional fields are fine, and will be kept.
 
 def run(options):
 
