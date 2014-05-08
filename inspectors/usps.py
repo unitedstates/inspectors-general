@@ -6,10 +6,11 @@ from datetime import datetime
 
 
 # options:
-#   since - date (YYYY-MM-DD) to fetch reports from.
-#           defaults to 2 days ago.
-#   pages - number of pages to fetch. "all" uses a very high number.
-#           defaults to 1.
+#   since - year to fetch reports since.
+#   year - year to fetch reports from.
+#   defaults to current year.
+#
+#   pages - number of pages to fetch. defaults to all of them (using a very high number)
 #   only - limit reports fetched to one or more types, comma-separated. e.g. "audit,testimony"
 #          can include:
 #             audit - Audit Reports
@@ -22,15 +23,24 @@ from datetime import datetime
 #             including audits, reports to Congress, and research
 #             excluding press releases, SARC, and testimony to Congress
 
-def run(options):
-  pages = options.get('pages', 1)
+# there are 158 pages total as of 2014-05-08, so let's try, er, 1000
+ALL_PAGES = 1000
 
+def run(options):
+  pages = options.get('pages', ALL_PAGES)
+
+  max_page = None
   for page in range(1, (int(pages) + 1)):
+    if max_page and (page > max_page):
+      print "End of pages!"
+      break
+
     print "## Downloading page %i" % page
     url = url_for(options, page)
     body = utils.download(url)
-
     doc = BeautifulSoup(body)
+    max_page = last_page_for(doc)
+
     results = doc.select(".views-row")
 
     for result in results:
@@ -101,6 +111,12 @@ def type_for(original_type):
   else:
     return "unknown"
 
+# get the last page number, from a page of search results
+# e.g. <li class="pager-item active last">158</li>
+def last_page_for(doc):
+  return int(doc.select("li.pager-item.last")[0].text.strip())
+
+
 def url_for(options, page=1):
   url = "http://www.uspsoig.gov/document-library?"
 
@@ -115,6 +131,7 @@ def url_for(options, page=1):
   params = ["field_doc_cat_tid[]=%s" % CATEGORIES[id] for id in only]
   url += "&%s" % str.join("&", params)
 
+  # page is 0-indexed
   if page > 1:
     url += "&page=%i" % (page - 1)
 
