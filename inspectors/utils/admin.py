@@ -32,8 +32,8 @@ def notify(body):
                 send_email(body)
 
     except Exception as exception:
-        print "Exception logging message to admin, halting as to avoid loop"
-        print format_exception(exception)
+        print("Exception logging message to admin, halting as to avoid loop")
+        print(format_exception(exception))
 
 
 def format_exception(exception):

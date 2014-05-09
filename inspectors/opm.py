@@ -22,7 +22,7 @@ def run(options):
   year_range = inspector.year_range(options)
   only_id = options.get('report_id', None)
 
-  print "## Downloading reports from %i to %i" % (year_range[0], year_range[-1])
+  print("## Downloading reports from %i to %i" % (year_range[0], year_range[-1]))
 
   url = url_for()
   body = utils.download(url)
@@ -36,7 +36,7 @@ def run(options):
       # check that the fetched year is in the range
       if year not in year_range:
         continue
-      print "## Downloading year %i " % year
+      print("## Downloading year %i " % year)
     except ValueError:
       continue
 

@@ -3,7 +3,7 @@
 from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
-import urlparse
+import urllib.parse
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -19,14 +19,14 @@ def run(options):
   if component:
     components = [component]
   else:
-    components = COMPONENTS.keys()
+    components = list(COMPONENTS.keys())
 
   report_id = options.get('report_id', None)
 
   limit = int(options.get('limit', 0))
 
   for component in components:
-    print "## Fetching reports for component %s" % component
+    print("## Fetching reports for component %s" % component)
     url = url_for(options, component)
     body = utils.download(url)
 
@@ -35,7 +35,7 @@ def run(options):
     results = doc.select("table.contentpaneopen table[border=1] tr")
     # accept only trs that look like body tr's (no 'align' attribute)
     #   note: HTML is very inconsistent. cannot rely on thead or tbody
-    results = filter(lambda x: x.get('align', None) is None, results)
+    results = [x for x in results if x.get('align', None) is None]
 
     count = 0
     for result in results:
@@ -53,7 +53,7 @@ def run(options):
       if limit and (count >= limit):
         break
 
-    print "## Fetched %i reports for component %s\n\n" % (count, component)
+    print("## Fetched %i reports for component %s\n\n" % (count, component))
 
 
 def report_from(result, component, url):
@@ -81,12 +81,12 @@ def report_from(result, component, url):
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
 
   link = result.select("td")[2].select("a")[0]
-  report_url = urlparse.urljoin(url, link['href'])
+  report_url = urllib.parse.urljoin(url, link['href'])
   title = link.text.strip()
   report['url'] = report_url
   report['title'] = title
 
-  report_path = urlparse.urlsplit(report_url).path
+  report_path = urllib.parse.urlsplit(report_url).path
 
   return report
 
