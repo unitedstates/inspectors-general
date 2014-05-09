@@ -2,6 +2,7 @@ import os, os.path, errno, sys, traceback, subprocess
 import re, html.entities
 import json
 import logging
+import yaml
 
 # scraper should be instantiated at class-load time, so that it can rate limit appropriately
 import scrapelib
@@ -10,6 +11,9 @@ scraper.user_agent = "unitedstates/inspectors-general (https://github.com/united
 
 from . import admin
 
+
+# will pass correct options on to individual scrapers whether
+# run through ./igs or individually, because argv[1:] is the same
 def run(run_method):
   cli_options = options()
   configure_logging(cli_options)
@@ -202,3 +206,7 @@ def unescape(text):
   text = re.sub("&#?\w+;", fixup, text)
   text = remove_unicode_control(text)
   return text
+
+# 'safe' scrapers listed in safe.yml
+def safe_igs():
+  return yaml.load(open("safe.yml"))

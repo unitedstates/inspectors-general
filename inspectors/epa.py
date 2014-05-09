@@ -11,7 +11,7 @@ from utils import utils, inspector
 # options:
 #   standard since/year options for a year range to fetch from.
 #
-#   only - limit reports fetched to one or more topic area, comma-separated.
+#   topics - limit reports fetched to one or more topic area, comma-separated.
 #          e.g. "EF,IRM".
 #   defaults to "E,I" (Enforcement, Investigation)
 #
@@ -52,7 +52,7 @@ RE_YEAR = re.compile(r'\d{4}')
 def run(options):
   year_range = inspector.year_range(options)
 
-  only = options.get('only')
+  only = options.get('topics')
   if only:
     only = set(only.split(','))
   else:
@@ -148,4 +148,4 @@ def extract_url(td):
       url = pdf_links[0]['href']
   return url
 
-utils.run(run)
+utils.run(run) if (__name__ == "__main__") else None

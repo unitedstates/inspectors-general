@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import sys, os
+sys.path.append("inspectors")
+from utils import utils
+import glob
+options = utils.options()
+
+# Helper script to run multiple IG scrapers.
+#
+# Usage:
+#   ./igs [--safe] [--only] [scraper options]
+#
+# Defaults to running all scrapers in `/inspectors`.
+#
+# Add --safe to limit to scrapers listed in `safe.yml`.
+# Add --only to limit to comma-separated scrapers, e.g. "usps,opm"
+#
+# Remaining flags are passed directly onto each individual scraper.
+
+
+def desired_igs():
+	# play it safe?
+	if "safe" in options:
+		del options['safe']
+		return utils.safe_igs()
+
+	# if not, first  look at any igs in the directory
+	igs = []
+	for ig in glob.glob("inspectors/*.py"):
+		name = os.path.basename(os.path.splitext(ig)[0])
+		if name != "__init__":
+			igs.append(name)
+
+	# can limit it to a subset of all IGs with --only
+	if "only" in options:
+		only = options.pop("only")
+		return list(set(igs) & set(only.split(",")))
+
+	return igs
+
+for ig in desired_igs():
+	inspector = __import__(ig)
+	utils.run(inspector.run)

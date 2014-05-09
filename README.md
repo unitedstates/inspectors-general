@@ -25,7 +25,7 @@ A project to collect reports from the offices of Inspectors General across the f
 
 Thanks to [Matt Rumsey](https://twitter.com/mattrumsey) for [compiling a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices.
 
-### Using
+### Scraping IG reports
 
 **Python 3**: This project uses Python 3, and is tested on Python 3.4.0. If you don't have Python 3 installed, check out [pyenv](https://github.com/yyuu/pyenv) and [pyenv-virtualenvwrapper](https://github.com/yyuu/pyenv-virtualenvwrapper) for easily installing and switching between multiple versions of Python.
 
@@ -44,6 +44,20 @@ If you want to go back further, use `--since` or `--year` to specify a year or r
 ```bash
 ./inspectors/usps.py --since=2009
 ```
+
+If you want to run multiple IG scrapers in a row, use the `igs` script to run each one:
+
+```bash
+./igs
+```
+
+The `igs` script takes the following arguments:
+
+* `--safe`: Limit scrapers to those declared in `safe.yml`. The idea is for "safe" scrapers to be appropriate for clients who wish to fully automate their report pipeline, without human intervention when new IGs are added, in a stable way.
+* `--only`: Limit scrapers to a comma-separated list of names. For example, `--only=opm,epa` will run `inspectors/opm.py` and `inspectors/epa.py` in turn.
+
+
+#### Using the data
 
 Reports are broken up by IG, and by year. So a USPS IG report from 2013 with a scraper-determined ID of `no-ar-13-010` will create the following files:
 
@@ -75,7 +89,15 @@ The template has a suggested workflow and set of methods, but all your task **ne
 
 This will automatically save reports to disk in the right place, extract text, and avoid re-downloading files. `options` will be a dict parsed from any included command line flags.
 
+You will also need this line at the bottom:
+
+```python
+utils.run(run) if (__name__ == "__main__") else None
+```
+
 It's *encouraged* to use `inspectors.year_range(options)` to obtain a range of desired years, and to obey that range during scraping. See an example of [creating it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L22) and [using it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L37-L38).
+
+Scrapers are welcome to use any command line flags they want, **except** those used by the `igs` runner. Currently, that's `--safe` and `--only`.
 
 #### Report metadata
 
