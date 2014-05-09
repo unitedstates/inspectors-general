@@ -69,6 +69,7 @@ def report_from(result, component, url):
   report['title'] = title
 
   report_id = result.select("td")[1].text.strip()
+  # A couple reports have no ID (Boston Marathon Bombing reports)
   if len(report_id) == 0:
     filename = urllib.parse.urlparse(report['url']).path.split("/")[-1]
     report_id = filename.split(".")[0]

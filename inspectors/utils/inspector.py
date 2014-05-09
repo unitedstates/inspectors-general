@@ -62,7 +62,8 @@ def validate_report(report):
     "inspector", "inspector_url", "agency", "agency_name",
   ]
   for field in required:
-    if report.get(field, None) is None:
+    value = report.get(field, None)
+    if (value is None) or value == "":
       return "Missing a required field: %s" % field
 
   if report.get("year", None) is None:
