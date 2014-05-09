@@ -1,5 +1,5 @@
 import os, os.path, errno, sys, traceback, subprocess
-import re, htmlentitydefs
+import re, html.entities
 import json
 import logging
 
@@ -8,7 +8,7 @@ import scrapelib
 scraper = scrapelib.Scraper(requests_per_minute=120, follow_robots=False, retry_attempts=3)
 scraper.user_agent = "unitedstates/inspectors-general (https://github.com/unitedstates/inspectors-general)"
 
-import admin
+from . import admin
 
 def run(run_method):
   cli_options = options()
@@ -45,7 +45,7 @@ def configure_logging(options = {}):
     log_level = options.get("log", "warn")
 
   if log_level not in ["debug", "info", "warn", "error"]:
-    print "Invalid log level (specify: debug, info, warn, error)."
+    print("Invalid log level (specify: debug, info, warn, error).")
     sys.exit(1)
 
   logging.basicConfig(format='%(message)s', level=log_level.upper())
@@ -76,15 +76,15 @@ def download(url, destination=None, options={}):
       if destination: logging.info("## \tto: %s" % destination)
       response = scraper.urlopen(url)
     except scrapelib.HTTPError as e:
-      print "Error downloading %s:\n\n%s" % (url, format_exception(e))
+      print("Error downloading %s:\n\n%s" % (url, format_exception(e)))
       return None
 
     if binary:
       body = response.bytes # a 'str' instance
-      if isinstance(body, unicode): raise ValueError("Binary content improperly decoded.")
+      if isinstance(body, str): raise ValueError("Binary content improperly decoded.")
     else:
       body = response # a subclass of a 'unicode' instance
-      if not isinstance(body, unicode): raise ValueError("Content not decoded.")
+      if not isinstance(body, str): raise ValueError("Content not decoded.")
 
     # don't allow 0-byte files
     if (not body) or (not body.strip()):
@@ -93,9 +93,9 @@ def download(url, destination=None, options={}):
     # cache content to disk
     if destination:
       if binary:
-        write(body, destination)
+        write(body, destination, binary=True)
       else:
-        write(body.encode("utf8"), destination)
+        write(body.encode("utf8"), destination, binary=False)
 
   # don't return binary content
   if binary:
@@ -138,9 +138,14 @@ def data_dir():
 def cache_dir():
   return "cache"
 
-def write(content, destination):
+def write(content, destination, binary=False):
   mkdir_p(os.path.dirname(destination))
-  f = open(destination, 'w')
+
+  if binary:
+    mode = "bw"
+  else:
+    mode = "w"
+  f = open(destination, mode)
   f.write(content)
   f.close()
 
@@ -152,7 +157,7 @@ def format_datetime(obj):
     return eastern_time_zone.localize(obj.replace(microsecond=0)).isoformat()
   elif isinstance(obj, datetime.date):
     return obj.isoformat()
-  elif isinstance(obj, (str, unicode)):
+  elif isinstance(obj, str):
     return obj
   else:
     return None
@@ -172,7 +177,7 @@ def mkdir_p(path):
 def unescape(text):
 
   def remove_unicode_control(str):
-    remove_re = re.compile(u'[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]')
+    remove_re = re.compile('[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]')
     return remove_re.sub('', str)
 
   def fixup(m):
@@ -181,15 +186,15 @@ def unescape(text):
       # character reference
       try:
         if text[:3] == "&#x":
-          return unichr(int(text[3:-1], 16))
+          return chr(int(text[3:-1], 16))
         else:
-          return unichr(int(text[2:-1]))
+          return chr(int(text[2:-1]))
       except ValueError:
         pass
     else:
       # named entity
       try:
-        text = unichr(htmlentitydefs.name2codepoint[text[1:-1]])
+        text = chr(html.entities.name2codepoint[text[1:-1]])
       except KeyError:
         pass
     return text # leave as is

@@ -242,7 +242,7 @@ def extract_info(content, directory, year_range):
 
         # some weird issues I hard coded
         special_cases = {"a0118/au0118":"a0118", "a0207/0207":"a0207",  }
-        if doc_id in special_cases.keys():
+        if doc_id in list(special_cases.keys()):
           doc_id = special_cases[doc_id]
 
         if "spanish" in link:
@@ -256,7 +256,7 @@ def extract_info(content, directory, year_range):
         else:
           url = base_url + "/oig/reports" + link
 
-        if report.has_key(doc_id):
+        if doc_id in report:
           if file_type == "pdf":
             # current and previous file pdf
             if report[doc_id]["file_type"] == "pdf":
@@ -272,7 +272,7 @@ def extract_info(content, directory, year_range):
 
           # add url if new
           for n in report[doc_id]["urls"]:
-            if n.has_key(url):
+            if url in n:
               old_url = True
           if not "old_url" in locals():
             report[doc_id]["urls"].append({
@@ -457,7 +457,7 @@ def run(options):
 
   # Can limit search to any of the components listed at the top of this script
   component = options.get('component', None)
-  if component and components.has_key(component):
+  if component and component in components:
     source_links = {}
     link = "%s/oig/reports/%s.htm" % (base_url, component)
     source_links[link] = components[component]
@@ -475,16 +475,16 @@ def run(options):
         source_links[link] = name
 
   # For each component's landing page, run the processor ove rit
-  keys = source_links.keys()
+  keys = list(source_links.keys())
   keys.sort()
   for link in keys:
     content = get_content(link)
     extract_info(content, source_links[link], year_range)
 
 
-  print "Found %i reports, for year %i to %i" % (len(report.keys()), year_range[0], year_range[-1])
+  print("Found %i reports, for year %i to %i" % (len(list(report.keys())), year_range[0], year_range[-1]))
 
-  for key in report.keys():
+  for key in list(report.keys()):
     inspector.save_report(report[key])
 
 utils.run(run)

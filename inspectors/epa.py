@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import datetime
-from urlparse import urljoin
+from urllib.parse import urljoin
 import re
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -143,7 +143,7 @@ def extract_url(td):
   if len(links) == 1:
     url = links[0]['href']
   else:
-    pdf_links = filter(lambda link: RE_PDF.search(link.text), links)
+    pdf_links = [link for link in links if RE_PDF.search(link.text)]
     if pdf_links:
       url = pdf_links[0]['href']
   return url

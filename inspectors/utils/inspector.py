@@ -1,7 +1,8 @@
-import utils, os
+from utils import utils
+import os
 import logging
 import datetime
-import urlparse
+import urllib.parse
 
 # Save a report to disk, provide output along the way.
 #
@@ -47,7 +48,7 @@ def preprocess_report(report):
 
   # if we have a URL, but no explicit file type, try to detect it
   if report.get("url", None) and (report.get("file_type", None) is None):
-    parsed = urlparse.urlparse(report['url'])
+    parsed = urllib.parse.urlparse(report['url'])
     split = parsed.path.split(".")
     if len(split) > 1:
       report['file_type'] = split[-1]
@@ -61,7 +62,8 @@ def validate_report(report):
     "inspector", "inspector_url", "agency", "agency_name",
   ]
   for field in required:
-    if report.get(field, None) is None:
+    value = report.get(field, None)
+    if (value is None) or value == "":
       return "Missing a required field: %s" % field
 
   if report.get("year", None) is None:
@@ -143,10 +145,10 @@ def year_range(options):
       year = this_year
 
   if since:
-    year_range = range(since, this_year + 1)
+    year_range = list(range(since, this_year + 1))
   elif year:
-    year_range = range(year, year + 1)
+    year_range = list(range(year, year + 1))
   else:
-    year_range = range(this_year, this_year + 1)
+    year_range = list(range(this_year, this_year + 1))
 
   return year_range
