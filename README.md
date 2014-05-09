@@ -27,7 +27,9 @@ Thanks to [Matt Rumsey](https://twitter.com/mattrumsey) for [compiling a spreads
 
 ### Using
 
-**Setup**: You'll need to have `pdftotext` installed. On Ubuntu, `apt-get install poppler-utils`. On Macs, install it via MacPorts with `port install poppler`, or via Homebrew with `brew install poppler`.
+**Python 3**: This project uses Python 3, and is tested on Python 3.4.0. If you don't have Python 3 installed, check out [pyenv](https://github.com/yyuu/pyenv) and [pyenv-virtualenvwrapper](https://github.com/yyuu/pyenv-virtualenvwrapper) for easily installing and switching between multiple versions of Python.
+
+**Dependencies**: You'll need to have `pdftotext` installed. On Ubuntu, `apt-get install poppler-utils`. On OS X, install it via MacPorts with `port install poppler`, or via Homebrew with `brew install poppler`.
 
 To run an individual IG scraper, just execute its file directly. For example:
 
