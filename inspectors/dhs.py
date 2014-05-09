@@ -62,8 +62,18 @@ def report_from(result, component, url):
     'inspector_url': 'http://www.oig.dhs.gov'
   }
 
-  report['report_id'] = result.select("td")[1].text.strip()
+  link = result.select("td")[2].select("a")[0]
+  report_url = urllib.parse.urljoin(url, link['href'])
+  title = link.text.strip()
+  report['url'] = report_url
+  report['title'] = title
 
+  report_id = result.select("td")[1].text.strip()
+  if len(report_id) == 0:
+    filename = urllib.parse.urlparse(report['url']).path.split("/")[-1]
+    report_id = filename.split(".")[0]
+
+  report['report_id'] = report_id
 
   # if component is a top-level DHS thing, file as 'dhs'
   # otherwise, the component is the agency for our purposes
@@ -79,12 +89,6 @@ def report_from(result, component, url):
     timestamp = "%s/01/%s" % tuple(timestamp.split("/"))
   published_on = datetime.strptime(timestamp, "%m/%d/%y")
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
-
-  link = result.select("td")[2].select("a")[0]
-  report_url = urllib.parse.urljoin(url, link['href'])
-  title = link.text.strip()
-  report['url'] = report_url
-  report['title'] = title
 
   report_path = urllib.parse.urlsplit(report_url).path
 
