@@ -487,4 +487,4 @@ def run(options):
   for key in list(report.keys()):
     inspector.save_report(report[key])
 
-utils.run(run)
+utils.run(run) if (__name__ == "__main__") else None

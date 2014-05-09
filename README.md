@@ -75,6 +75,12 @@ The template has a suggested workflow and set of methods, but all your task **ne
 
 This will automatically save reports to disk in the right place, extract text, and avoid re-downloading files. `options` will be a dict parsed from any included command line flags.
 
+You will also need this line at the bottom:
+
+```python
+utils.run(run) if (__name__ == "__main__") else None
+```
+
 It's *encouraged* to use `inspectors.year_range(options)` to obtain a range of desired years, and to obey that range during scraping. See an example of [creating it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L22) and [using it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L37-L38).
 
 #### Report metadata

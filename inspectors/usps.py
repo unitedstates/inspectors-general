@@ -9,7 +9,7 @@ from datetime import datetime
 #   standard since/year options for a year range to fetch from.
 #
 #   pages - number of pages to fetch. defaults to all of them (using a very high number)
-#   only - limit reports fetched to one or more types, comma-separated. e.g. "audit,testimony"
+#   types - limit reports fetched to one or more types, comma-separated. e.g. "audit,testimony"
 #          can include:
 #             audit - Audit Reports
 #             testimony - Congressional Testimony
@@ -141,7 +141,7 @@ def url_for(options, page=1):
   since = "%s-01-01" % year_range[0]
   url += "&field_doc_date_value[value][date]=%s" % since
 
-  only = options.get('only', None)
+  only = options.get('types', None)
   if not only:
     only = "audit,congress,research"
   only = only.split(",")
@@ -165,4 +165,4 @@ CATEGORIES = {
 }
 
 
-utils.run(run)
+utils.run(run) if (__name__ == "__main__") else None

@@ -134,4 +134,4 @@ AREAS = {
   'Transportation Security': (66, 35),
 }
 
-utils.run(run)
+utils.run(run) if (__name__ == "__main__") else None

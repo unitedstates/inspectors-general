@@ -108,4 +108,4 @@ def find_month_num(month):
   return -1
 
 
-utils.run(run)
+utils.run(run) if (__name__ == "__main__") else None
