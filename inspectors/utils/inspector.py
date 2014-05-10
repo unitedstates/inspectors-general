@@ -100,9 +100,8 @@ def extract_report(report):
 
   if report['file_type'] == "pdf":
     return utils.text_from_pdf(report_path)
-  elif report['file_type'] == "html":
-    logging.warn("\tTODO: extract text from HTML.")
-    return None
+  elif report['file_type'].startswith("htm"):
+    return utils.text_from_html(report_path)
   else:
     logging.warn("Unknown file type, don't know how to extract text!")
     return None

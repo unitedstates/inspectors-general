@@ -3,6 +3,7 @@ import re, html.entities
 import json
 import logging
 import yaml
+from bs4 import BeautifulSoup
 
 # scraper should be instantiated at class-load time, so that it can rate limit appropriately
 import scrapelib
@@ -104,8 +105,23 @@ def download(url, destination=None, options={}):
     # whether from disk or web, unescape HTML entities
     return unescape(body)
 
+# uses BeautifulSoup to do a naive extraction of text from HTML,
+# then writes it and returns the /data-relative path.
+def text_from_html(html_path):
+  real_html_path = os.path.join(data_dir(), html_path)
+  text_path = "%s.txt" % os.path.splitext(html_path)[0]
+  real_text_path = os.path.join(data_dir(), text_path)
 
-# uses pdftotext to get text out of PDFs
+  html = open(real_html_path).read()
+  doc = BeautifulSoup(html)
+  text = doc.text.strip()
+
+  write(text, real_text_path, binary=False)
+  return text_path
+
+
+# uses pdftotext to get text out of PDFs,
+# then writes it and returns the /data-relative path.
 def text_from_pdf(pdf_path):
   pdftotext = subprocess.Popen(["which", "pdftotext"], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
   if not pdftotext.strip():
@@ -113,7 +129,7 @@ def text_from_pdf(pdf_path):
     return None
 
   real_pdf_path = os.path.join(data_dir(), pdf_path)
-  text_path = re.sub("\\.pdf$", ".txt", pdf_path)
+  text_path = "%s.txt" % os.path.splitext(pdf_path)[0]
   real_text_path = os.path.join(data_dir(), text_path)
 
   try:
