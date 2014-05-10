@@ -83,10 +83,10 @@ def download(url, destination=None, options={}):
       return None
 
     if binary:
-      body = response.bytes # a 'str' instance
+      body = response.bytes
       if isinstance(body, str): raise ValueError("Binary content improperly decoded.")
     else:
-      body = response # a subclass of a 'unicode' instance
+      body = response
       if not isinstance(body, str): raise ValueError("Content not decoded.")
 
     # don't allow 0-byte files
@@ -95,10 +95,7 @@ def download(url, destination=None, options={}):
 
     # cache content to disk
     if destination:
-      if binary:
-        write(body, destination, binary=True)
-      else:
-        write(body.encode("utf8"), destination, binary=False)
+      write(body, destination, binary=binary)
 
   # don't return binary content
   if binary:
