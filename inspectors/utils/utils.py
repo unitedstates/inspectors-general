@@ -71,7 +71,6 @@ def download(url, destination=None, options={}):
     # otherwise, decode it for return
     with open(destination, 'r') as f:
       body = f.read()
-      body = body.decode("utf8")
 
   # otherwise, download from the web
   else:
