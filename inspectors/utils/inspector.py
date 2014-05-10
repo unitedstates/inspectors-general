@@ -71,6 +71,10 @@ def validate_report(report):
     if (value is None) or value == "":
       return "Missing a required field: %s" % field
 
+  # report_id can't have slashes, it'll mess up the directory structure
+  if "/" in report["report_id"]:
+    return "Invalid / in report_id - find another way: %s" % report["report_id"]
+
   if report.get("year", None) is None:
     return "Couldn't get `year`, for some reason."
 

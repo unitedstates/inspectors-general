@@ -240,6 +240,11 @@ def extract_info(content, directory, year_range):
             if doc_id[:2] == "19" or doc_id[:2] == "20":
               doc_id = doc_id[5:]
 
+        # if it's still got slashes, just turn them into dashes
+        # the ol' slash and dash
+        if "/" in doc_id:
+          doc_id = doc_id.replace("/", "-")
+
         # some weird issues I hard coded
         special_cases = {"a0118/au0118":"a0118", "a0207/0207":"a0207",  }
         if doc_id in list(special_cases.keys()):
