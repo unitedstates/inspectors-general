@@ -25,6 +25,10 @@ def save_report(report):
   logging.warn("[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id']))
 
   report_path = download_report(report)
+  if not report_path:
+    logging.warn("\terror downloading report: sadly, skipping.")
+    return False
+
   logging.warn("\treport: %s" % report_path)
 
   text_path = extract_report(report)
@@ -33,6 +37,7 @@ def save_report(report):
   data_path = write_report(report)
   logging.warn("\tdata: %s" % data_path)
 
+  return True
 
 
 # Preprocess before validation, to catch cases where inference didn't work.
@@ -87,12 +92,15 @@ def download_report(report):
   report_path = path_for(report, report['file_type'])
   binary = (report['file_type'] == 'pdf')
 
-  utils.download(
+  result = utils.download(
     report['url'],
     "%s/%s" % (utils.data_dir(), report_path),
     {'binary': binary}
   )
-  return report_path
+  if result:
+    return report_path
+  else:
+    return None
 
 # relies on putting text next to report_path
 def extract_report(report):
