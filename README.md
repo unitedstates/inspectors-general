@@ -45,13 +45,13 @@ If you want to go back further, use `--since` or `--year` to specify a year or r
 ./inspectors/usps.py --since=2009
 ```
 
-If you want to run multiple IG scrapers in a row, use the `igs` script to run each one:
+If you want to run multiple IG scrapers in a row, use the `igs` script:
 
 ```bash
 ./igs
 ```
 
-The `igs` script takes the following arguments:
+By default, the `igs` script runs all scrapers. It takes the following arguments:
 
 * `--safe`: Limit scrapers to those declared in `safe.yml`. The idea is for "safe" scrapers to be appropriate for clients who wish to fully automate their report pipeline, without human intervention when new IGs are added, in a stable way.
 * `--only`: Limit scrapers to a comma-separated list of names. For example, `--only=opm,epa` will run `inspectors/opm.py` and `inspectors/epa.py` in turn.
