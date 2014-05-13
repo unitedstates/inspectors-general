@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 # - Some documents don't have dates, in that case today's date is used
 # - Some forms, marked index are one html document spread across several links,
