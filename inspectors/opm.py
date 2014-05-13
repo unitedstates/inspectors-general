@@ -78,7 +78,7 @@ def report_from(item):
   day = raw_date[1].replace(",", "")
   year = raw_date[2]
 
-  report['published_on'] = year + "-" + month + "-" + day
+  report['published_on'] = "%04d-%02d-%02d" % (int(year), int(month), int(day))
 
   raw_link = item.find_all('td')[0].a
   report['url'] = 'https://www.opm.gov' + raw_link.get('href')

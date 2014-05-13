@@ -1,5 +1,6 @@
 from utils import utils
 import os
+import re
 import logging
 import datetime
 import urllib.parse
@@ -88,6 +89,9 @@ def validate_report(report):
     datetime.datetime.strptime(report['published_on'], "%Y-%m-%d")
   except ValueError:
     return "Invalid format for `published_on`, must be YYYY-MM-DD."
+
+  if re.search("(\\-\\d[\\-]|\\-\\d$)", report["published_on"]):
+    return "Invalid format for `published_on`, dates must use zero prefixing."
 
   return True
 
