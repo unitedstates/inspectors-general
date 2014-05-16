@@ -150,7 +150,7 @@ def extract_info(content, directory, year_range):
         real_title = info["real_title"]
         date_string = info["date_string"]
         # these are links to things that are not reports
-        if real_title == "ignore" and date_string == "ignore":
+        if real_title == False and date_string == False:
           break
         if "," not in date_string:
           date_string = date_string.strip()
@@ -205,7 +205,7 @@ def extract_info(content, directory, year_range):
           pass
 
         file_type = find_file_type(link)
-        if file_type == None:
+        if file_type == None or title == False:
           break
 
         if title == None:
@@ -347,9 +347,9 @@ def odd_link(b, date, l, directory):
   # these are not documents
   if "link" in locals():
     if link[-4:] == ".gov":
-      return {"date_string":"ignore", "real_title":"ignore"}
+      return {"date_string":False, "real_title":False}
     elif link[-5:] == ".gov/":
-      return {"date_string":"ignore", "real_title":"ignore"}
+      return {"date_string":False, "real_title":False}
   text = b.get_text()
 
   #section for documents without dates:
@@ -436,6 +436,7 @@ def odd_link(b, date, l, directory):
 
 # adding types based on the USPS
 def type_for(original_type):
+  print(original_type)
   original = original_type.lower()
   if "audit" in original:
     return "audit"
