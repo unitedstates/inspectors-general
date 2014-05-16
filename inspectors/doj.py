@@ -436,7 +436,6 @@ def odd_link(b, date, l, directory):
 
 # adding types based on the USPS
 def type_for(original_type):
-  print(original_type)
   original = original_type.lower()
   if "audit" in original:
     return "audit"
