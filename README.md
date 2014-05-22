@@ -25,9 +25,7 @@ A project to collect reports from the offices of Inspectors General across the f
 
 Thanks to [Matt Rumsey](https://twitter.com/mattrumsey) for [compiling a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices.
 
-Eric Mill has written [a piece explaining what the project is](http://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/) and why it's being done.
-
-From that piece:
+Eric Mill has written [a piece explaining what the project is](http://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/) and why it's being done. From it:
 
 > **What's an inspector general?**
 >
