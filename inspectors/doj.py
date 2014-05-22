@@ -45,7 +45,7 @@ components = {
 }
 
 agency_decoder = {
-    "Department of Justice":["Department of Justice", "doj"],
+    "Department of Justice":["Department of Justice", "DOJ"],
     "United States Marshals Service (USMS)": [ "United States Marshals Service", "USMS"],
     "Office of Justice Programs (OJP)": ["Office of Justice Programs", "OJP"],
     "Federal Bureau of Prisons (BOP)": ["Federal Bureau of Prisons", "BOP"],
@@ -112,6 +112,10 @@ def extract_info(content, directory, year_range):
       # chop up the string, the last part should be the date
       date_chopped = date_text.rsplit(',')
       day = date_chopped[-1]
+      # ATF added dashes
+      if "-" in day:
+        date_chopped = date_text.rsplit('-')
+        day = date_chopped[0]
       # cleaning
       date_string = day.strip()
       date_string = date_string.replace("  ", " ")
@@ -157,9 +161,6 @@ def extract_info(content, directory, year_range):
           date_string = date_string.strip()
           date_string = date_string.replace(" ", " 1, ")
           date = datetime.strptime(date_string, "%B %d, %Y")
-        else:
-          print(date_string)
-          print(b)
 
       report_year = datetime.strftime(date, "%Y")
       published_on = datetime.strftime(date, "%Y-%m-%d")
@@ -410,6 +411,7 @@ def odd_link(b, date, l, directory):
 
   if date != None:
     date = date.strip
+
     # case 1, date is wrong because it is in the paragraph and completely written out
     try:
         date =  b.string
@@ -479,6 +481,7 @@ def run(options):
     for c in content:
       links = c.find_all("a")
       for l in links:
+        print(l)
         name = l.string
         link = base_url + l.get("href")
         source_links[link] = name
