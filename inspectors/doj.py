@@ -45,7 +45,7 @@ components = {
 }
 
 agency_decoder = {
-    "Department of Justice":["Department of Justice", "doj"],
+    "Department of Justice":["Department of Justice", "DOJ"],
     "United States Marshals Service (USMS)": [ "United States Marshals Service", "USMS"],
     "Office of Justice Programs (OJP)": ["Office of Justice Programs", "OJP"],
     "Federal Bureau of Prisons (BOP)": ["Federal Bureau of Prisons", "BOP"],
@@ -64,7 +64,8 @@ agency_decoder = {
 not_agency = (
   "Office of Justice Programs (OJP)", "Contracts", "Special Reports",
   "Other DOJ Components and Reports Encompassing More Than One DOJ Component",
-  "Equitable Sharing", "Offices, Boards and Divisions (OBDs)"
+  "Equitable Sharing", "Offices, Boards and Divisions (OBDs)",
+  "Other DOJ Components", "Reports Encompassing More Than One DOJ Component"
 )
 
 def extract_info(content, directory, year_range):
@@ -111,6 +112,10 @@ def extract_info(content, directory, year_range):
       # chop up the string, the last part should be the date
       date_chopped = date_text.rsplit(',')
       day = date_chopped[-1]
+      # ATF added dashes
+      if "-" in day:
+        date_chopped = date_text.rsplit('-')
+        day = date_chopped[0]
       # cleaning
       date_string = day.strip()
       date_string = date_string.replace("  ", " ")
@@ -152,9 +157,12 @@ def extract_info(content, directory, year_range):
         # these are links to things that are not reports
         if real_title == False and date_string == False:
           break
-        if "," not in date_string:
+        elif "," not in date_string:
           date_string = date_string.strip()
           date_string = date_string.replace(" ", " 1, ")
+          date = datetime.strptime(date_string, "%B %d, %Y")
+      
+      if 'date' not in locals():
           date = datetime.strptime(date_string, "%B %d, %Y")
 
       report_year = datetime.strftime(date, "%Y")
@@ -404,8 +412,19 @@ def odd_link(b, date, l, directory):
       date = date.replace(" ", " 1, ")
     return{"date_string": date, "real_title": text}
 
+  # for the DOJ combined page
+  if date == 'id="content" 1, name="content">':
+    chunks = text.split(",")
+    day_piece = chunks[-1]
+    day_chunks = day_piece.split('—')
+    day = day_chunks[0]
+    day = day.strip()
+    day = day.replace(" ", " 1, ")
+    date = day
+
   if date != None:
     date = date.strip
+
     # case 1, date is wrong because it is in the paragraph and completely written out
     try:
         date =  b.string
@@ -469,7 +488,7 @@ def run(options):
 
   # Otherwise, get links to each component's landing page from main page.
   else:
-    starting_point = "http://www.justice.gov/oig/reports/"
+    starting_point = "http://www.justice.gov/oig/reports/components.htm"
     content = get_content(starting_point)
     source_links = {}
     for c in content:
@@ -482,6 +501,7 @@ def run(options):
   # For each component's landing page, run the processor ove rit
   keys = list(source_links.keys())
   keys.sort()
+
   for link in keys:
     content = get_content(link)
     extract_info(content, source_links[link], year_range)
