@@ -494,7 +494,6 @@ def run(options):
     for c in content:
       links = c.find_all("a")
       for l in links:
-        print(l)
         name = l.string
         link = base_url + l.get("href")
         source_links[link] = name
