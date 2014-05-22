@@ -98,7 +98,7 @@ def validate_report(report):
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])
-  binary = (report['file_type'] == 'pdf')
+  binary = (report['file_type'].lower() == 'pdf')
 
   result = utils.download(
     report['url'],
@@ -114,9 +114,10 @@ def download_report(report):
 def extract_report(report):
   report_path = path_for(report, report['file_type'])
 
-  if report['file_type'] == "pdf":
+  file_type_lower = report['file_type'].lower()
+  if file_type_lower == "pdf":
     return utils.text_from_pdf(report_path)
-  elif report['file_type'].startswith("htm"):
+  elif file_type_lower.startswith("htm"):
     return utils.text_from_html(report_path)
   else:
     logging.warn("Unknown file type, don't know how to extract text!")
