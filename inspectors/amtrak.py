@@ -12,7 +12,7 @@ def run(options):
     page = 1
     done = False
     while not done:
-      url = url_for(options, page)
+      url = url_for(options, page, year)
       body = utils.download(url)
 
       doc = BeautifulSoup(body)
@@ -33,11 +33,12 @@ def run(options):
         inspector.save_report(report)
 
       page = next_page
-      print('Moving to next page (%d)' % page)
+      if not done:
+        print('Moving to next page (%d)' % page)
 
-def url_for(options, page = 1):
-  if 'year' in options:
-    year = str(options['year'])
+def url_for(options, page = 1, year=None):
+  if year:
+    year = str(year)
   else:
     year = ''
   return "http://www.amtrakoig.gov/reading-room?date_filter[value][year]=%s&term_node_tid_depth=%s&page=%d" % (year, 'All', page - 1)
