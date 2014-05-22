@@ -59,11 +59,14 @@ def report_from(result):
 
   published_on = datetime.strptime(issued.strip(), '%m/%d/%Y')
   report_type = type_for(category)
+  report_id = tracking.strip()
+  if not report_id:
+    report_id = url[url.rfind('/') + 1 : url.rfind('.')]
 
   report['type'] = report_type
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
   report['url'] = url
-  report['report_id'] = tracking.strip()
+  report['report_id'] = report_id
   report['title'] = title.strip()
 
   return report
