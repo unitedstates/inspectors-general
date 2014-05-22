@@ -161,6 +161,9 @@ def extract_info(content, directory, year_range):
           date_string = date_string.strip()
           date_string = date_string.replace(" ", " 1, ")
           date = datetime.strptime(date_string, "%B %d, %Y")
+      
+      if 'date' not in locals():
+          date = datetime.strptime(date_string, "%B %d, %Y")
 
       report_year = datetime.strftime(date, "%Y")
       published_on = datetime.strftime(date, "%Y-%m-%d")
@@ -409,6 +412,16 @@ def odd_link(b, date, l, directory):
       date = date.replace(" ", " 1, ")
     return{"date_string": date, "real_title": text}
 
+  # for the DOJ combined page
+  if date == 'id="content" 1, name="content">':
+    chunks = text.split(",")
+    day_piece = chunks[-1]
+    day_chunks = day_piece.split('—')
+    day = day_chunks[0]
+    day = day.strip()
+    day = day.replace(" ", " 1, ")
+    date = day
+
   if date != None:
     date = date.strip
 
@@ -489,6 +502,7 @@ def run(options):
   # For each component's landing page, run the processor ove rit
   keys = list(source_links.keys())
   keys.sort()
+
   for link in keys:
     content = get_content(link)
     extract_info(content, source_links[link], year_range)
