@@ -64,7 +64,8 @@ agency_decoder = {
 not_agency = (
   "Office of Justice Programs (OJP)", "Contracts", "Special Reports",
   "Other DOJ Components and Reports Encompassing More Than One DOJ Component",
-  "Equitable Sharing", "Offices, Boards and Divisions (OBDs)"
+  "Equitable Sharing", "Offices, Boards and Divisions (OBDs)",
+  "Other DOJ Components", "Reports Encompassing More Than One DOJ Component"
 )
 
 def extract_info(content, directory, year_range):
@@ -152,10 +153,13 @@ def extract_info(content, directory, year_range):
         # these are links to things that are not reports
         if real_title == False and date_string == False:
           break
-        if "," not in date_string:
+        elif "," not in date_string:
           date_string = date_string.strip()
           date_string = date_string.replace(" ", " 1, ")
           date = datetime.strptime(date_string, "%B %d, %Y")
+        else:
+          print(date_string)
+          print(b)
 
       report_year = datetime.strftime(date, "%Y")
       published_on = datetime.strftime(date, "%Y-%m-%d")
@@ -469,7 +473,7 @@ def run(options):
 
   # Otherwise, get links to each component's landing page from main page.
   else:
-    starting_point = "http://www.justice.gov/oig/reports/"
+    starting_point = "http://www.justice.gov/oig/reports/components.htm"
     content = get_content(starting_point)
     source_links = {}
     for c in content:
