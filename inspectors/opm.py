@@ -87,8 +87,7 @@ def report_from(item):
   if 'audit' not in report['title'].lower():
     report['type'] = 'other'
 
-  # if the document doesn't have a listed id - use slug of name, stored at a[title]
-  raw_id = raw_link.get("title")
+  raw_id = None
   try:
     raw_id = item.find_all('td')[1].contents[0]
     if type(raw_id) is bs4.element.Tag:
@@ -97,6 +96,9 @@ def report_from(item):
       raw_id = raw_id.string
   except IndexError:
     pass
+
+  # if the document doesn't have a listed id - use slug of name, stored at a[title]
+  if raw_id is None: raw_id = raw_link.get("title")
 
   report['report_id'] = raw_id
 
