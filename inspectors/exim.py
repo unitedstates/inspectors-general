@@ -3,28 +3,30 @@
 
 from utils import utils, inspector
 from bs4 import BeautifulSoup
+from bs4.element import Tag, NavigableString
 from datetime import datetime
 import re
 
 def run(options):
   year_range = inspector.year_range(options)
-  for url in URLS:
-    body = utils.download(url)
+  for page_url in URLS:
+    body = utils.download(page_url)
     doc = BeautifulSoup(body)
     maincontent = doc.select("div#CS_Element_eximpagemaincontent")[0]
-    results = maincontent.find_all("p")
-    for result in results:
-      if len(result.find_all("a")) == 0:
-        continue
-      if result.a.get('href').startswith('mailto:'):
-        continue
-      year = DATE_RE.search(result.text).group(3)
-      if int(year) not in year_range:
-        continue
-      report = report_from(result, url)
-      inspector.save_report(report)
+    all_p = maincontent.find_all("p")
+    for p in all_p:
+      for all_text, link_text, link_url in recurse_tree(p, False):
+        if link_url == None:
+          continue
+        if link_url.startswith('mailto:'):
+          continue
+        year = DATE_RE.search(all_text).group(3)
+        if int(year) not in year_range:
+          continue
+        report = report_from(all_text, link_text, link_url, page_url)
+        inspector.save_report(report)
 
-def report_from(result, page_url):
+def report_from(all_text, link_text, link_url, page_url):
   report = {
     'inspector': 'exim',
     'inspector_url': 'http://www.exim.gov/oig/index.cfm',
@@ -32,41 +34,94 @@ def report_from(result, page_url):
     'agency_name': 'Export-Import Bank of the United States'
   }
 
-  a_list = result.find_all("a")
-  url = None
-  link_text = ""
-  for a in a_list:
-    if not url:
-      url = a.get("href")
-    elif url != a.get("href"):
-      raise Exception("Found two URLs in one <p> tag, " +
-                      "something is wrong\n%s\n%s" % (url, a.get("href")))
-    link_text = link_text + a.text
   link_text = link_text.strip()
-  if url.startswith('/'):
-    url = "http://www.exim.gov" + url
+  if link_url.startswith('/'):
+    link_url = "http://www.exim.gov" + link_url
 
-  report_type = type_for(page_url, result)
+  all_text = all_text.strip()
+  report_type = type_for(page_url, all_text)
 
-  date_text = DATE_RE.search(result.text).group(0)
+  date_text = DATE_RE.search(all_text).group(0)
   published_on = datetime.strptime(date_text, '%B %d, %Y')
 
-  report_match = IDENTIFIER_RE.search(result.text)
+  report_match = IDENTIFIER_RE.search(all_text)
   if report_match:
     report_id = report_match.group(1)
   else:
-    report_id = url[url.rfind('/') + 1 : url.rfind('.')]
+    report_id = link_url[link_url.rfind('/') + 1 : link_url.rfind('.')]
 
   report['type'] = report_type
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
-  report['url'] = url
+  report['url'] = link_url
   report['report_id'] = report_id
   report['title'] = link_text
 
   return report
 
-def type_for(page_url, p):
-  text = p.text.strip()
+# Recurse through a subtree of the DOM, collect all the text, link text, and
+# link URLs in the subtree. If there are two <br>s in a row, split up the
+# collected text, with the <br><br> as a boundary. This yields multiple tuples,
+# each of the format (all_text, link_text, link_url). Raises an exception if
+# one section has multiple links with different hrefs.
+# It is the responsibility of the caller to do any final filtering on the
+# results, such as throwing out any tuples without a link, or throwing out
+# mailto: links.
+def recurse_tree(root, inside_link):
+  last_node_was_br = False
+  accumulator = ["", "", None]
+  for child in root.children:
+    if isinstance(child, Tag) and child.name == "br":
+      if last_node_was_br:
+        # Split up the results here, yield the accumulator contents so far
+        # and reinitialize the accumulator
+        yield tuple(accumulator)
+        accumulator = ["", "", None]
+        last_node_was_br = False
+      else:
+        last_node_was_br = True
+    else:
+      last_node_was_br = False
+    if isinstance(child, Tag):
+      if child.name == "a":
+        inside_link = True
+        if accumulator[2] == None:
+          accumulator[2] = child.get("href")
+        else:
+          if accumulator[2] != child.get("href"):
+            raise Exception("Found two different URLs in one entry, something is wrong\n%s\n%s" % (accumulator[2], child.get("href")))
+
+      # Concatenate first result out of generator with all text so far.
+      # If there's more than one result out of the generator, yield the previous
+      # accumulator value and copy the result into the accumulator.
+      # At the end, the last output from recursion should be in the accumulator,
+      # ready to add text from the rest of this level of the tree.
+      # If the node has no children, none of this code does anything, and the
+      # accumulator stays the same, and we keep collecting text later.
+      # If the node's subtree yields one result, just add it to the accumulator
+      # and keep going without yielding a complete result yet
+      generator = recurse_tree(child, inside_link)
+      first = True
+      for output in generator:
+        if not first:
+          yield tuple(accumulator)
+          accumulator = ["", "", None]
+        first = False
+        accumulator[0] = accumulator[0] + output[0]
+        accumulator[1] = accumulator[1] + output[1]
+        if accumulator[2] == None:
+          accumulator[2] = output[2]
+        elif output[2] == None:
+          pass
+        else:
+          if accumulator[2] != output[2]:
+            raise Exception("Found two different URLs in one entry, something is wrong\n%s\n%s" % (accumulator[2], output[2]))
+    elif isinstance(child, NavigableString):
+      accumulator[0] = accumulator[0] + str(child)
+      if inside_link:
+        accumulator[1] = accumulator[1] + str(child)
+  yield tuple(accumulator)
+
+def type_for(page_url, text):
   if page_url == WHATS_NEW_URL or page_url == WHATS_NEW_ARCHIVE_URL:
     if text.find("Semiannual Report to Congress") != -1:
       return "other"
