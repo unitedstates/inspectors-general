@@ -163,7 +163,7 @@ def extract_info(content, directory, year_range):
           date = datetime.strptime(date_string, "%B %d, %Y")
       
       if 'date' not in locals():
-          date = datetime.strptime(date_string, "%B %d, %Y")
+        date = datetime.strptime(date_string, "%B %d, %Y")
 
       report_year = datetime.strftime(date, "%Y")
       published_on = datetime.strftime(date, "%Y-%m-%d")
@@ -356,7 +356,7 @@ def odd_link(b, date, l, directory):
   if "link" in locals():
     if link[-4:] == ".gov":
       return {"date_string":False, "real_title":False}
-    elif link[-5:] == ".gov/":
+    elif link[-5:] == ".gov/" or link == "/usao/eousa/index.html":
       return {"date_string":False, "real_title":False}
   text = b.get_text()
 
@@ -412,16 +412,6 @@ def odd_link(b, date, l, directory):
       date = date.replace(" ", " 1, ")
     return{"date_string": date, "real_title": text}
 
-  # for the DOJ combined page
-  if date == 'id="content" 1, name="content">':
-    chunks = text.split(",")
-    day_piece = chunks[-1]
-    day_chunks = day_piece.split('—')
-    day = day_chunks[0]
-    day = day.strip()
-    day = day.replace(" ", " 1, ")
-    date = day
-
   if date != None:
     date = date.strip
 
@@ -449,6 +439,31 @@ def odd_link(b, date, l, directory):
       date_string = date_string.strip()
       if "," not in date_string:
         date_string = date_string.replace(" ", " 1, ")
+
+  # for the DOJ combined page
+  if date_string == 'id="content" 1, name="content">':
+    text = b.text
+    text = re.sub(r'\([^)]*\)', '', text)
+    chunks = text.split(",")
+    day_piece = chunks[-1]
+    day_chunks = day_piece.split('—')
+    day = day_chunks[0]
+    day = day.strip()
+    day = day.replace(" ", " 1, ")
+    date_string = day
+    title = b.text
+
+  ## uncomment for debugging
+  # try:
+  #   date = datetime.strptime(date_string, "%B %d, %Y")
+  # except:
+  #   print('hit one')
+  #   print("b:  ", b.text)
+  #   print("l:  ", l)
+  #   print("date: ", date)
+  #   print("date string", date_string)
+  #   print("directory", directory)
+  #   exit()
 
   info = {"real_title":title, "date_string": date_string, }
   return(info)
