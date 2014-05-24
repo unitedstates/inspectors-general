@@ -81,7 +81,7 @@ def report_from(result, base_url):
     published_date = match.group(0)
     date = datetime.strptime(published_date, "%B %d, %Y")
   else:
-    match = DATE_RE_MM_DD_YY.search(title)
+    match = DATE_RE_MM_DD_YY.search(result.text)
     if match:
       published_date = match.group(0)
       date = datetime.strptime(published_date, "%m/%d/%y")
