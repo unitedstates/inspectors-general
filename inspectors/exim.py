@@ -10,6 +10,7 @@ import re
 def run(options):
   year_range = inspector.year_range(options)
   for page_url in URLS:
+    done = False
     body = utils.download(page_url)
     doc = BeautifulSoup(body)
     maincontent = doc.select("div#CS_Element_eximpagemaincontent")[0]
@@ -20,11 +21,20 @@ def run(options):
           continue
         if link_url.startswith('mailto:'):
           continue
+        if page_url == WHATS_NEW_URL and link_url == "/oig/whats-new-archive.cfm":
+          # end of page
+          done = True
+          break
+        try:
+          print("'%s' '%s' '%s'" % (all_text, link_text, link_url))
+        except Exception:
+          print("Cannot print due to emdash")
         year = DATE_RE.search(all_text).group(3)
         if int(year) not in year_range:
           continue
         report = report_from(all_text, link_text, link_url, page_url)
         inspector.save_report(report)
+      if done: break
 
 def report_from(all_text, link_text, link_url, page_url):
   report = {
@@ -47,14 +57,28 @@ def report_from(all_text, link_text, link_url, page_url):
   report_match = IDENTIFIER_RE.search(all_text)
   if report_match:
     report_id = report_match.group(1)
-  else:
+  elif link_url.rfind("loader.cfm") == -1:
     report_id = link_url[link_url.rfind('/') + 1 : link_url.rfind('.')]
+  else:
+    # we could get the server's filename from the Content-Disposition header
+    # but that would require hitting the network and lots of parsing
+    report_id = link_text
+
+  if link_url.endswith(".pdf"):
+    file_type = "pdf"
+  elif link_url.find("loader.cfm") != -1:
+    file_type = "pdf"
+  elif link_url.endswith(".cfm") or link_url.endswith(".htm") or link_url.endswith(".html"):
+    file_type = "htm"
+  else:
+    raise Exception("Unable to guess file type\n%s" % link_url)
 
   report['type'] = report_type
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
   report['url'] = link_url
   report['report_id'] = report_id
   report['title'] = link_text
+  report['file_type'] = file_type
 
   return report
 
@@ -67,28 +91,47 @@ def report_from(all_text, link_text, link_url, page_url):
 # results, such as throwing out any tuples without a link, or throwing out
 # mailto: links.
 def recurse_tree(root, inside_link):
-  last_node_was_br = False
   accumulator = ["", "", None]
   for child in root.children:
-    if isinstance(child, Tag) and child.name == "br":
-      if last_node_was_br:
-        # Split up the results here, yield the accumulator contents so far
-        # and reinitialize the accumulator
-        yield tuple(accumulator)
-        accumulator = ["", "", None]
-        last_node_was_br = False
-      else:
-        last_node_was_br = True
-    else:
-      last_node_was_br = False
+    double_br = False
+    if isinstance(child, Tag):
+      if child.name == "br":
+        if child.parent.name == "br":
+          if child.parent.contents[0] == child:
+            double_br = True
+        temp = child
+        while True:
+          temp = temp.previous_element
+          if isinstance(temp, NavigableString):
+            if len(str(temp).strip()) > 0:
+              break
+          elif isinstance(temp, Tag):
+            if temp.name == "br":
+              double_br = True
+              break
+            if temp.name == "a":
+              break
+    if double_br:
+      # Split up the results here, yield the accumulator contents so far
+      # and reinitialize the accumulator
+      yield tuple(accumulator)
+      accumulator = ["", "", None]
     if isinstance(child, Tag):
       if child.name == "a":
         inside_link = True
+        href = child.get("href")
         if accumulator[2] == None:
-          accumulator[2] = child.get("href")
+          accumulator[2] = href
         else:
-          if accumulator[2] != child.get("href"):
-            raise Exception("Found two different URLs in one entry, something is wrong\n%s\n%s" % (accumulator[2], child.get("href")))
+          if accumulator[2] != href:
+            # We have found a second link in one report section, so check it
+            # against the whitelist of expected patterns. If the second link
+            # doesn't match any of those, then throw an exception
+            for whitelisted in SECOND_LINK_WHITELIST:
+              if href.find(whitelisted) != -1:
+                break
+            else:
+              raise Exception("Found two different URLs in one entry, something is wrong\n%s\n%s" % (accumulator[2], href))
 
       # Concatenate first result out of generator with all text so far.
       # If there's more than one result out of the generator, yield the previous
@@ -114,7 +157,15 @@ def recurse_tree(root, inside_link):
           pass
         else:
           if accumulator[2] != output[2]:
-            raise Exception("Found two different URLs in one entry, something is wrong\n%s\n%s" % (accumulator[2], output[2]))
+            href = output[2]
+            # We have found a second link in one report section, so check it
+            # against the whitelist of expected patterns. If the second link
+            # doesn't match any of those, then throw an exception
+            for whitelisted in SECOND_LINK_WHITELIST:
+              if href.find(whitelisted) != -1:
+                break
+            else:
+              raise Exception("Found two different URLs in one entry, something is wrong\n%s\n%s" % (accumulator[2], href))
     elif isinstance(child, NavigableString):
       accumulator[0] = accumulator[0] + str(child)
       if inside_link:
@@ -152,6 +203,12 @@ URLS = (
   PRESS_RELEASES_URL,
   PRESS_RELEASES_ARCHIVE_URL,
   SEMIANNUAL_REPORTS_AND_TESTIMONIES_URL
+)
+
+SECOND_LINK_WHITELIST = (
+  "TEXT-ONLY",
+  "/about/library/foia/foia-request-requirements.cfm",
+  "/oig/pressreleases/Press-Releases-Archive.cfm"
 )
 
 DATE_RE = re.compile("(January|February|March|April|May|June|July|August|" +
