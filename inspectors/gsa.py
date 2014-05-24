@@ -36,6 +36,8 @@ def crawl_index(base_url, options, is_meta_index=False):
 
     results = doc.select("div#svPortal dl")
     for result in results:
+      if "moreResults" in result.get("class"):
+        continue
       if is_meta_index:
         url = "http://www.gsaig.gov" + result.a.get("href")
         crawl_index(url, options, False)
@@ -64,22 +66,35 @@ def report_from(result, base_url):
   date_holders = result.find_all("dt", class_="releaseDate")
   if len(date_holders) > 0:
     published_date = date_holders[0].text
+    date = datetime.strptime(published_date, "%B %d, %Y")
+  elif title in HARDCODED_DATES:
+    # This is an ugly solution, but there's no date information on the web page.
+    # The next best solution would be to grab the PDF file and pull the file
+    # creation date out of its metadata.
+    published_date = HARDCODED_DATES[title]
+    date = datetime.strptime(published_date, "%B %d, %Y")
+  elif base_url == SEMIANNUAL_REPORTS_URL:
+    # get last match
+    match = None
+    for match in DATE_RE.finditer(title):
+      pass
+    published_date = match.group(0)
+    date = datetime.strptime(published_date, "%B %d, %Y")
   else:
-    if title == "Hats Off Program Investigative Report":
-      published_date = "June 16, 2011"
-    elif base_url == SEMIANNUAL_REPORTS_URL:
-      # get last match
-      for match in DATE_RE.finditer(title):
-        pass
+    match = DATE_RE_MM_DD_YY.search(title)
+    if match:
       published_date = match.group(0)
-  date = datetime.strptime(published_date, "%B %d, %Y")
-
+      date = datetime.strptime(published_date, "%m/%d/%y")
+    else:
+      raise Exception("Couldn't find date for %s" % title)
   id = ID_RE.search(url).group(1)
   report_type = type_for(base_url)
 
   js_match = JS_RE.match(url)
   if js_match:
     url = "http://www.gsaig.gov" + js_match.group(1)
+  elif url.startswith('/'):
+    url = "http://www.gsaig.gov" + url
 
   report['type'] = report_type
   report['published_on'] = datetime.strftime(date, "%Y-%m-%d")
@@ -107,5 +122,22 @@ JS_RE = re.compile("""javascript:newWin=window.open\('/(\?LinkServID=([-0-9A-F]*
 DATE_RE = re.compile("(January|February|March|April|May|June|July|August|" +
                      "September|October|November|December) ([123]?[0-9]), " +
                      "(20[0-9][0-9])")
+DATE_RE_MM_DD_YY = re.compile("[0-9]?[0-9]/[0-9]?[0-9]/[0-9][0-9]")
+
+HARDCODED_DATES = {
+  "Hats Off Program Investigative Report": "June 16, 2011",
+  "Major Issues from Fiscal Year 2010 Multiple Award Schedule Preaward Audits": "September 26, 2011",
+  "Review of Center for Information Security Services FTS": "March 23, 2001",
+  "Audit of Procurement of Profesional Services from the FSS Multiple Award Schedules": "July 31, 2003",
+  "Special Report: MAS Pricing Practices: Is FSS Observing Regulatory Provisions Regarding Pricing?": "August 24, 2001",
+  "Updated Assessment of GSA's Most Serious Challenges": "December 8, 2004",
+  "Limited Audit of FSS's Contracting for Services Under Multiple Award Schedule Contracts": "January 9, 2001",
+  "Procurement Reform and the Multiple Award Schedule Program": "July 30, 2010",
+  "FTS Alert Report": "March 6, 2003",
+  "FTS CSC Audit Report": "January 8, 2004",
+  "Compendium FTS CSC Audit Report": "December 14, 2004",
+  "Compendium FTS CSC Controls Audit Report": "June 14, 2005",
+  "Compendium FTS Client Support Center Controls Audit Report": "September 29, 2006"
+}
 
 utils.run(run) if (__name__ == "__main__") else None
