@@ -19,16 +19,17 @@ def run(options):
       for all_text, link_text, link_url in recurse_tree(p, False):
         if link_url == None:
           continue
-        if link_url.startswith('mailto:'):
+        if link_url.startswith("mailto:"):
           continue
         if page_url == WHATS_NEW_URL and link_url == "/oig/whats-new-archive.cfm":
           # end of page
           done = True
           break
-        try:
-          print("'%s' '%s' '%s'" % (all_text, link_text, link_url))
-        except Exception:
-          print("Cannot print due to emdash")
+        if link_url.startswith("https://public.govdelivery.com/"):
+          continue
+        for index_url in URLS:
+          if index_url.find(link_url) != -1:
+            continue
         year = DATE_RE.search(all_text).group(3)
         if int(year) not in year_range:
           continue
@@ -131,7 +132,12 @@ def recurse_tree(root, inside_link):
               if href.find(whitelisted) != -1:
                 break
             else:
-              raise Exception("Found two different URLs in one entry, something is wrong\n%s\n%s" % (accumulator[2], href))
+              # Check if there is a <a> with no text in it (i.e. only a <br>
+              # tag) and if so, throw it away and accept the new link
+              if len(accumulator[1].strip()) == 0:
+                accumulator[2] = href
+              else:
+                raise Exception("Found two different URLs in one entry, something is wrong\n%s\n%s" % (accumulator[2], href))
 
       # Concatenate first result out of generator with all text so far.
       # If there's more than one result out of the generator, yield the previous
@@ -165,7 +171,14 @@ def recurse_tree(root, inside_link):
               if href.find(whitelisted) != -1:
                 break
             else:
-              raise Exception("Found two different URLs in one entry, something is wrong\n%s\n%s" % (accumulator[2], href))
+              # Check if there is a <a> with no text in it (i.e. only a <br>
+              # tag) and if so, throw it away and accept the new link
+              if len(accumulator[1].strip()) == 0:
+                accumulator[0] = accumulator[0] + output[0]
+                accumulator[1] = output[1]
+                accumulator[2] = output[2]
+              else:
+                raise Exception("Found two different URLs in one entry, something is wrong\n%s\n%s" % (accumulator[2], href))
     elif isinstance(child, NavigableString):
       accumulator[0] = accumulator[0] + str(child)
       if inside_link:
@@ -186,7 +199,7 @@ def type_for(page_url, text):
     return "other"
   elif page_url == PRESS_RELEASES_URL or page_url == PRESS_RELEASES_ARCHIVE_URL:
     return "press"
-  elif page_url == SEMIANNUAL_REPORTS_AND_TESTIMONIES:
+  elif page_url == SEMIANNUAL_REPORTS_AND_TESTIMONIES_URL:
     if text.find("House") != -1 or text.find("Senate") != -1:
       return "testimony"
     return "other"
