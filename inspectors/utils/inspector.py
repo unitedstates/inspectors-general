@@ -14,7 +14,9 @@ import urllib.parse
 # fields used: file_type, url, inspector, year, report_id
 # fields added: report_path, text_path
 
-def save_report(report):
+def save_report(report, options=None):
+  options = {} if not options else options
+
   # create some inferred fields, set defaults
   preprocess_report(report)
 
@@ -25,15 +27,18 @@ def save_report(report):
 
   logging.warn("[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id']))
 
-  report_path = download_report(report)
-  if not report_path:
-    logging.warn("\terror downloading report: sadly, skipping.")
-    return False
+  if options.get('dry_run'):
+    logging.warn('\tskipping download and extraction, dry_run == True')
+  else:
+    report_path = download_report(report)
+    if not report_path:
+      logging.warn("\terror downloading report: sadly, skipping.")
+      return False
 
-  logging.warn("\treport: %s" % report_path)
+    logging.warn("\treport: %s" % report_path)
 
-  text_path = extract_report(report)
-  logging.warn("\ttext: %s" % text_path)
+    text_path = extract_report(report)
+    logging.warn("\ttext: %s" % text_path)
 
   data_path = write_report(report)
   logging.warn("\tdata: %s" % data_path)
