@@ -12,12 +12,12 @@ from utils import utils, inspector
 # options:
 #   standard since/year options for a year range to fetch from.
 #
-#   offic - limit reports fetched to one or more office, comma-separated.
+#   office - limit reports fetched to one or more office, comma-separated.
 #           e.g. "IE,ISPA". These are the offices/"components" defined by the
 #           site.
 #   defaults to "A" (Audit)
 #
-#          topic area codes are:
+#          office codes are:
 #          A    - Audit
 #          IE   - Inspections & Evaluations
 #          ISPA - Intelligence & Special Program Assessments
@@ -27,7 +27,7 @@ from utils import utils, inspector
 #          SPO  - Special Plans & Operations
 #          O    - Others
 
-TOPIC_AREAS = {
+OFFICES = {
   'A': 'Audit',
   'IE': 'Inspections and Evaluations',
   'ISPA': 'Intelligence and Special Program Assessments',
@@ -54,8 +54,8 @@ def run(options):
   if only:
     only = set(only.split(','))
   else:
-    # Default to everything, wheeee!
-    only = list(TOPIC_AREAS.keys())
+    # Default to Audit
+    only = ['A']
 
   for url in urls_for(options, only):
     body = utils.download(url)
@@ -72,14 +72,20 @@ def run(options):
         inspector.save_report(report)
 
 def report_from(tds):
+  report = {
+    'inspector': 'dod',
+    'inspector_url': 'http://www.dodig.mil/',
+    'agency': 'dod',
+    'agency_name': 'Department of Defense',
+  }
+
   title_link = tds[2].select('a')[0]
   title = title_link.text.strip().replace('\r\n', ' ')
-  summary_url = urljoin(BASE_URL, title_link['href'])
+  landing_url = urljoin(BASE_URL, title_link['href'])
   if RE_OFFICIAL.search(tds[2].text) or RE_CLASSIFIED.search(tds[2].text):
-    # 'Official use only' or 'Classified' materials don't have PDFs, and hence
-    # have nothing of real value. Skip them.
-    logging.info('Skipping classified report: {0!r}'.format(title))
-    return
+    # 'Official use only' or 'Classified' materials don't have PDFs. Mark the
+    # report metadata appropriately.
+    report['unreleased'] = True
 
   published_on = datetime.datetime.strptime(tds[0].text.strip(), '%m-%d-%Y')
   published_on = published_on.strftime('%Y-%m-%d')
@@ -93,20 +99,16 @@ def report_from(tds):
     title_slug = re.sub(r'\W', '', title[:16])
     report_id = (published_on + '-' + title_slug)
 
-  report_url, summary = fetch_from_summary(summary_url)
+  report_url, summary = fetch_from_landing_page(landing_url)
+  if report.get('unreleased'):
+    report_url = None
 
   office = tds[3].text.strip()
 
-  report = {
-    'inspector': 'dod',
-    'inspector_url': 'http://www.dodig.mil/',
-    'agency': 'dod',
-    'agency_name': 'Department of Defense',
-  }
   report.update({
     'report_id': report_id,
     'url': report_url,
-    'summary_url': summary_url,
+    'landing_url': landing_url,
     'summary': summary,
     'title': title,
     'topic': topic,
@@ -115,9 +117,9 @@ def report_from(tds):
   })
   return report
 
-def fetch_from_summary(summary_url):
+def fetch_from_landing_page(landing_url):
   """Returns a tuple of (pdf_link, summary_text)."""
-  body = utils.download(summary_url)
+  body = utils.download(landing_url)
   page = BeautifulSoup(body)
   link = page.find('a', text=RE_PDF_LINK_TEXT, href=RE_PDF_HREF)
   if not link:
@@ -129,17 +131,19 @@ def fetch_from_summary(summary_url):
   if text_tr:
     text = [node.strip() for node in text_tr[0].findAll(text=True)]
     summary = '\n\n'.join(text)
+  if not summary:
+    logging.info('\tno summary text found')
 
   return (href, summary)
 
 def urls_for(options, only):
   year_range = inspector.year_range(options)
-  for topic in only:
+  for office in only:
     # there's always a first year, and it defaults to current year
     params = {}
     params['searchdate1'] = '01/01/%s' % year_range[0]
     params['searchdate2'] = '12/31/%s' % year_range[-1] # could be the same year
-    params['office'] = TOPIC_AREAS[topic]
+    params['office'] = OFFICES[office]
     params['sort'] = 'report_number'
     params['order'] = 'desc'
 
@@ -154,6 +158,5 @@ def urls_for(options, only):
     for link in page.select('a'):
       if link['href'].startswith('?') and RE_DIGITS.match(link.text):
         yield BASE_URL + link['href']
-
 
 utils.run(run) if (__name__ == "__main__") else None
