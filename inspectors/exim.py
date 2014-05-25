@@ -9,12 +9,15 @@ import re
 
 def run(options):
   year_range = inspector.year_range(options)
+
   for page_url in URLS:
     done = False
     body = utils.download(page_url)
     doc = BeautifulSoup(body)
+
     maincontent = doc.select("div#CS_Element_eximpagemaincontent")[0]
     all_p = maincontent.find_all("p")
+
     for p in all_p:
       for all_text, link_text, link_url in recurse_tree(p, False):
         if link_url == None:
@@ -30,9 +33,11 @@ def run(options):
         for index_url in URLS:
           if index_url.find(link_url) != -1:
             continue
+
         year = DATE_RE.search(all_text).group(3)
         if int(year) not in year_range:
           continue
+
         report = report_from(all_text, link_text, link_url, page_url)
         inspector.save_report(report)
       if done: break
