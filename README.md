@@ -22,8 +22,10 @@ A project to collect reports from the offices of Inspectors General across the f
   * Drug Enforcement Administration (DEA)
   * Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF)
   * (and others)
+* [Amtrak](http://amtrakoig.gov/)
+* [Export-Import Bank](http://www.exim.gov/oig/index.cfm)
 
-Thanks to [Matt Rumsey](https://twitter.com/mattrumsey) for [compiling a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices.
+Thanks to [Matt Rumsey](https://twitter.com/mattrumsey) for [compiling a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. The left-hand column tracks who's completed what IG.
 
 Eric Mill has written [a piece explaining what the project is](http://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/) and why it's being done. From it:
 
