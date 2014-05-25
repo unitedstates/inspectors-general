@@ -15,6 +15,8 @@ import urllib.parse
 # fields added: report_path, text_path
 
 def save_report(report):
+  options = utils.options()
+
   # create some inferred fields, set defaults
   preprocess_report(report)
 
@@ -25,7 +27,9 @@ def save_report(report):
 
   logging.warn("[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id']))
 
-  if report.get('unreleased', False) is True:
+  if options.get('dry_run'):
+    logging.warn('\tskipping download and extraction, dry_run == True')
+  elif report.get('unreleased', False) is True:
     logging.warn('\tno download/extraction of unreleased report')
   else:
     report_path = download_report(report)
