@@ -123,9 +123,10 @@ def text_from_html(html_path):
 # uses pdftotext to get text out of PDFs,
 # then writes it and returns the /data-relative path.
 def text_from_pdf(pdf_path):
-  pdftotext = subprocess.Popen(["which", "pdftotext"], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
-  if not pdftotext.strip():
-    logging.warn("Install pdftotext to extract text!")
+  try:
+    subprocess.Popen(["pdftotext", "-v"], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
+  except Exception:
+    logging.warn("Install pdftotext to extract text! The pdftotext executable must be in a directory that is in your PATH environment variable.")
     return None
 
   real_pdf_path = os.path.join(data_dir(), pdf_path)
