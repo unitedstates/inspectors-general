@@ -63,7 +63,7 @@ def report_from(result, base_url):
     'inspector': 'gsa',
     'inspector_url': 'http://gsaig.gov/',
     'agency': 'gsa',
-    'agency_name': 'Amtrak'
+    'agency_name': 'General Services Administration'
   }
 
   link = result.a
