@@ -125,7 +125,7 @@ def text_from_html(html_path):
 def text_from_pdf(pdf_path):
   try:
     subprocess.Popen(["pdftotext", "-v"], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
-  except Exception:
+  except FileNotFoundError:
     logging.warn("Install pdftotext to extract text! The pdftotext executable must be in a directory that is in your PATH environment variable.")
     return None
 
