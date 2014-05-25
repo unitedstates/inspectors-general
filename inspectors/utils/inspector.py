@@ -14,8 +14,8 @@ import urllib.parse
 # fields used: file_type, url, inspector, year, report_id
 # fields added: report_path, text_path
 
-def save_report(report, options=None):
-  options = {} if not options else options
+def save_report(report):
+  options = utils.options()
 
   # create some inferred fields, set defaults
   preprocess_report(report)
