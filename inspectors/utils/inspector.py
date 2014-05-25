@@ -25,15 +25,18 @@ def save_report(report):
 
   logging.warn("[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id']))
 
-  report_path = download_report(report)
-  if not report_path:
-    logging.warn("\terror downloading report: sadly, skipping.")
-    return False
+  if report.get('unreleased', False) is True:
+    logging.warn('\tno download/extraction of unreleased report')
+  else:
+    report_path = download_report(report)
+    if not report_path:
+      logging.warn("\terror downloading report: sadly, skipping.")
+      return False
 
-  logging.warn("\treport: %s" % report_path)
+    logging.warn("\treport: %s" % report_path)
 
-  text_path = extract_report(report)
-  logging.warn("\ttext: %s" % text_path)
+    text_path = extract_report(report)
+    logging.warn("\ttext: %s" % text_path)
 
   data_path = write_report(report)
   logging.warn("\tdata: %s" % data_path)
@@ -63,18 +66,26 @@ def preprocess_report(report):
 
 # Ensure required fields are present
 def validate_report(report):
-  required = [
-    "published_on", "report_id", "title", "url",
-    "inspector", "inspector_url", "agency", "agency_name",
-  ]
+  required = (
+    "published_on", "report_id", "title", "inspector", "inspector_url",
+    "agency", "agency_name",
+  )
   for field in required:
     value = report.get(field, None)
     if (value is None) or value == "":
       return "Missing a required field: %s" % field
 
+  # URL is not required in the case that the report has an 'unreleased' field
+  # set to True
+  unreleased = report.get('unreleased', False)
+  if unreleased is not True:  # Strict test for True specifically
+    url = report.get("url")
+    if not url:
+      return "Missing required field 'url' when field 'unreleased' != True"
+
   # report_id can't have slashes, it'll mess up the directory structure
   if "/" in report["report_id"]:
-    return "Invalid / in report_id - find another way: %s" % report["report_id"]
+    return "Invalid / in report_id - find another way: %r" % report["report_id"]
 
   if report.get("year", None) is None:
     return "Couldn't get `year`, for some reason."
@@ -82,7 +93,7 @@ def validate_report(report):
   if report.get("type", None) is None:
     return "Er, this shouldn't happen: empty `type` field."
 
-  if report.get("file_type", None) is None:
+  if unreleased is not True and report.get("file_type", None) is None:
     return "Couldn't figure out `file_type` from URL, please set it explicitly."
 
   try:
