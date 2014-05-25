@@ -7,7 +7,7 @@ from datetime import datetime
 
 def run(options):
   year_range = inspector.year_range(options)
-  max_pages = options.get('pages', 1)
+  max_pages = int(options.get('pages', 1))
   for year in year_range:
     page = 1
     done = False
@@ -25,6 +25,8 @@ def run(options):
           found_next_page = True
           break
       if not found_next_page:
+        done = True
+      if next_page > max_pages:
         done = True
 
       results = doc.select("table.views-table > tbody > tr")
