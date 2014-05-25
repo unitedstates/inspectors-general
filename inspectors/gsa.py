@@ -13,8 +13,10 @@ def run(options):
   crawl_index(MISCELLANEOUS_REPORTS_URL, options)
 
 def crawl_index(base_url, options, is_meta_index=False):
+  year_range = inspector.year_range(options)
   max_pages = int(options.get('pages', 1))
   page = 1
+
   done = False
   while not done:
     url = url_for(base_url, page)
@@ -43,7 +45,9 @@ def crawl_index(base_url, options, is_meta_index=False):
         crawl_index(url, options, False)
       else:
         report = report_from(result, base_url)
-        inspector.save_report(report)
+        year = int(report['published_on'][:4])
+        if year in year_range:
+          inspector.save_report(report)
 
     page = next_page
     if not done:
@@ -63,6 +67,7 @@ def report_from(result, base_url):
   link = result.a
   title = link.text
   url = link.get('href')
+
   date_holders = result.find_all("dt", class_="releaseDate")
   if len(date_holders) > 0:
     published_date = date_holders[0].text
@@ -87,7 +92,9 @@ def report_from(result, base_url):
       date = datetime.strptime(published_date, "%m/%d/%y")
     else:
       raise Exception("Couldn't find date for %s" % title)
+
   id = ID_RE.search(url).group(1)
+
   report_type = type_for(base_url)
 
   js_match = JS_RE.match(url)
