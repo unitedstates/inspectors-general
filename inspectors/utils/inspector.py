@@ -23,7 +23,9 @@ def save_report(report):
   # validate report will return True, or a string message
   validation = validate_report(report)
   if validation != True:
-    raise Exception("[%s][%s][%s] Invalid report: %s\n\n%s" % (report.get('type', None), report.get('published_on', None), report.get('report_id', None), validation, str(report)))
+    raise Exception("[%s][%s][%s] Invalid report: %s\n\n%s" % (
+      report.get('type'), report.get('published_on'), report.get('report_id'),
+      validation, str(report)))
 
   logging.warn("[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id']))
 
@@ -50,15 +52,15 @@ def save_report(report):
 # So, fields may be absent at this time.
 def preprocess_report(report):
   # not sure what I'm doing with this field yet
-  if report.get("type", None) is None:
+  if report.get("type") is None:
     report["type"] = "report"
 
   # if we have a date, but no explicit year, extract it
-  if report.get("published_on", None) and (report.get('year', None) is None):
+  if report.get("published_on") and (report.get('year') is None):
     report['year'] = year_from(report)
 
   # if we have a URL, but no explicit file type, try to detect it
-  if report.get("url", None) and (report.get("file_type", None) is None):
+  if report.get("url") and (report.get("file_type") is None):
     parsed = urllib.parse.urlparse(report['url'])
     split = parsed.path.split(".")
     if len(split) > 1:
@@ -73,7 +75,7 @@ def validate_report(report):
     "inspector", "inspector_url", "agency", "agency_name",
   ]
   for field in required:
-    value = report.get(field, None)
+    value = report.get(field)
     if (value is None) or value == "":
       return "Missing a required field: %s" % field
 
@@ -81,13 +83,13 @@ def validate_report(report):
   if "/" in report["report_id"]:
     return "Invalid / in report_id - find another way: %s" % report["report_id"]
 
-  if report.get("year", None) is None:
+  if report.get("year") is None:
     return "Couldn't get `year`, for some reason."
 
-  if report.get("type", None) is None:
+  if report.get("type") is None:
     return "Er, this shouldn't happen: empty `type` field."
 
-  if report.get("file_type", None) is None:
+  if report.get("file_type") is None:
     return "Couldn't figure out `file_type` from URL, please set it explicitly."
 
   try:
@@ -152,14 +154,14 @@ def year_from(report):
 def year_range(options):
   this_year = datetime.datetime.now().year
 
-  since = options.get('since', None)
+  since = options.get('since')
   if type(since) is not str: since = None
   if since:
     since = int(since)
     if since > this_year:
       since = this_year
 
-  year = options.get('year', None)
+  year = options.get('year')
   if year:
     year = int(year)
     if year > this_year:

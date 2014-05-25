@@ -27,7 +27,7 @@ def notify(body):
         logging.error(body)  # always print it
 
         if config:
-            details = config.get('email', None)
+            details = config.get('email')
             if details:
                 send_email(body)
 

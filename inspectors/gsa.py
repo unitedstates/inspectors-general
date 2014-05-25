@@ -14,7 +14,7 @@ def run(options):
 
 def crawl_index(base_url, options, is_meta_index=False):
   year_range = inspector.year_range(options)
-  max_pages = options.get('pages', None)
+  max_pages = options.get('pages')
   if max_pages:
     max_pages = int(max_pages)
   page = 1

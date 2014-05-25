@@ -21,7 +21,7 @@ import calendar
 
 def run(options):
   year_range = inspector.year_range(options)
-  only_id = options.get('report_id', None)
+  only_id = options.get('report_id')
 
   print("## Downloading reports from %i to %i" % (year_range[0], year_range[-1]))
 

@@ -142,7 +142,7 @@ def url_for(options, page=1):
   since = "%s-01-01" % year_range[0]
   url += "&field_doc_date_value[value][date]=%s" % since
 
-  only = options.get('types', None)
+  only = options.get('types')
   if not only:
     only = "audit,congress,research"
   only = only.split(",")
