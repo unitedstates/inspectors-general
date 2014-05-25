@@ -13,10 +13,8 @@ from utils import utils, inspector
 #   standard since/year options for a year range to fetch from.
 #
 #   office - limit reports fetched to one or more office, comma-separated.
-#           e.g. "IE,ISPA". These are the offices/"components" defined by the
-#           site.
-#   defaults to "A" (Audit)
-#
+#            e.g. "IE,ISPA". These are the offices/"components" defined by the
+#            site. Defaults to all offices.
 #          office codes are:
 #          A    - Audit
 #          IE   - Inspections & Evaluations
@@ -40,6 +38,7 @@ OFFICES = {
 BASE_URL = 'http://www.dodig.mil/pubs/index.cfm'
 
 RE_DIGITS = re.compile(r'^\d+$')
+RE_NEXT_10 = re.compile('Next 10 Pages')
 
 RE_PDF_LINK_TEXT = re.compile('Complete PDF')
 RE_PDF_CLICK_TEXT = re.compile('click here', re.I)
@@ -54,8 +53,8 @@ def run(options):
   if only:
     only = set(only.split(','))
   else:
-    # Default to Audit
-    only = ['A']
+    # Default to all offices, whee!
+    only = list(OFFICES.keys())
 
   for url in urls_for(options, only):
     body = utils.download(url)
@@ -154,9 +153,23 @@ def urls_for(options, only):
     body = utils.download(url)
     page = BeautifulSoup(body)
 
-    # Find the pagination links on the page and yield them all
-    for link in page.select('a'):
-      if link['href'].startswith('?') and RE_DIGITS.match(link.text):
-        yield BASE_URL + link['href']
+    for url in get_pagination_urls(page):
+      yield url
+        
+def get_pagination_urls(page):
+  """Find the pagination links on the page and yield them all.
+
+  This method recursively downloads new pages in the case that there are more
+  than 10.
+  """
+  for link in page.select('a'):
+    if link['href'].startswith('?') and RE_DIGITS.match(link.text):
+      yield BASE_URL + link['href']
+    elif link['href'].startswith('/pubs') and RE_NEXT_10.search(link.text):
+      new_url = urljoin(BASE_URL, link['href'])
+      page = BeautifulSoup(utils.download(new_url))
+      for link in get_pagination_urls(page):
+        yield link
+
 
 utils.run(run) if (__name__ == "__main__") else None
