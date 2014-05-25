@@ -14,7 +14,9 @@ def run(options):
 
 def crawl_index(base_url, options, is_meta_index=False):
   year_range = inspector.year_range(options)
-  max_pages = int(options.get('pages', 1))
+  max_pages = options.get('pages', None)
+  if max_pages:
+    max_pages = int(max_pages)
   page = 1
 
   done = False
@@ -33,7 +35,7 @@ def crawl_index(base_url, options, is_meta_index=False):
         break
     if not found_next_page:
       done = True
-    if next_page > max_pages:
+    if max_pages and next_page > max_pages:
       done = True
 
     results = doc.select("div#svPortal dl")
@@ -128,7 +130,7 @@ ID_RE = re.compile("LinkServID=([-0-9A-F]*)&showMeta=")
 JS_RE = re.compile("""javascript:newWin=window.open\('/(\?LinkServID=([-0-9A-F]*)&showMeta=0)','NewWin[0-9]*'\);newWin.focus\(\);void\(0\)""")
 DATE_RE = re.compile("(January|February|March|April|May|June|July|August|" +
                      "September|October|November|December) ([123]?[0-9]), " +
-                     "(20[0-9][0-9])")
+                     "([12][0-9][0-9][0-9])")
 DATE_RE_MM_DD_YY = re.compile("[0-9]?[0-9]/[0-9]?[0-9]/[0-9][0-9]")
 
 HARDCODED_DATES = {
@@ -144,7 +146,8 @@ HARDCODED_DATES = {
   "FTS CSC Audit Report": "January 8, 2004",
   "Compendium FTS CSC Audit Report": "December 14, 2004",
   "Compendium FTS CSC Controls Audit Report": "June 14, 2005",
-  "Compendium FTS Client Support Center Controls Audit Report": "September 29, 2006"
+  "Compendium FTS Client Support Center Controls Audit Report": "September 29, 2006",
+  "Review of the Federal Acquisition Service's Client Support Center, Southeast Sunbelt Region - A090139-3": "June 4, 2010"
 }
 
 utils.run(run) if (__name__ == "__main__") else None
