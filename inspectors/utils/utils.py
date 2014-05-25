@@ -43,7 +43,8 @@ def options():
       options[key.lower()] = value
   return options
 
-def configure_logging(options = {}):
+def configure_logging(options=None):
+  options = {} if not options else options
   if options.get('debug', False):
     log_level = "debug"
   else:
@@ -57,7 +58,8 @@ def configure_logging(options = {}):
 
 
 # download the data at url
-def download(url, destination=None, options={}):
+def download(url, destination=None, options=None):
+  options = {} if not options else options
   cache = options.get('cache', True) # default to caching
   binary = options.get('binary', False) # default to assuming text
 
