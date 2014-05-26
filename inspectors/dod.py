@@ -8,6 +8,9 @@ import logging
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
+# http://www.dodig.mil/pubs/index.cfm
+# Oldest report: FY 1987
+
 #
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -124,7 +127,7 @@ def fetch_from_landing_page(landing_url):
   if not link:
     link = page.find('a', text=RE_PDF_CLICK_TEXT, href=RE_PDF_HREF)
   href = link['href'] if link else None
-  
+
   summary = None
   text_tr = page.select('tr[valign="top"] td')
   if text_tr:
@@ -155,7 +158,7 @@ def urls_for(options, only):
 
     for url in get_pagination_urls(page):
       yield url
-        
+
 def get_pagination_urls(page):
   """Find the pagination links on the page and yield them all.
 
