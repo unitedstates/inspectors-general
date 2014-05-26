@@ -16,13 +16,13 @@ import urllib.parse
 def run(options):
   year_range = inspector.year_range(options)
 
-  component = options.get('component', None)
+  component = options.get('component')
   if component:
     components = [component]
   else:
     components = list(COMPONENTS.keys())
 
-  report_id = options.get('report_id', None)
+  report_id = options.get('report_id')
 
   limit = int(options.get('limit', 0))
 
@@ -36,7 +36,7 @@ def run(options):
     results = doc.select("table.contentpaneopen table[border=1] tr")
     # accept only trs that look like body tr's (no 'align' attribute)
     #   note: HTML is very inconsistent. cannot rely on thead or tbody
-    results = [x for x in results if x.get('align', None) is None]
+    results = [x for x in results if x.get('align') is None]
 
     count = 0
     for result in results:

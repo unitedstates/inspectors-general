@@ -495,7 +495,7 @@ def run(options):
   year_range = inspector.year_range(options)
 
   # Can limit search to any of the components listed at the top of this script
-  component = options.get('component', None)
+  component = options.get('component')
   if component and component in components:
     source_links = {}
     link = "%s/oig/reports/%s.htm" % (base_url, component)
