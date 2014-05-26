@@ -15,6 +15,8 @@ from utils import utils, inspector
 # options:
 #   standard since/year options for a year range to fetch from.
 #
+#   report_id: limit to a particular report ID, skip others.
+#
 #   topics - limit reports fetched to one or more office, comma-separated.
 #            e.g. "IE,ISPA". These are the offices/"components" defined by the
 #            site. Defaults to all offices. (NOTE: this parameter is named
@@ -46,6 +48,7 @@ RE_NEXT_10 = re.compile('Next 10 Pages')
 
 RE_PDF_LINK_TEXT = re.compile('Complete PDF')
 RE_PDF_CLICK_TEXT = re.compile('click here', re.I)
+RE_PDF_SARC_TEXT = re.compile('semiannual report', re.I)
 RE_PDF_HREF = re.compile(r'\.pdf$')
 
 RE_OFFICIAL = re.compile('For Official Use Only')
@@ -70,11 +73,11 @@ def run(options):
       if len(tds) == 1:
         # Page has no reports, simply a "No Data" indication for these dates.
         break
-      report = report_from(tds)
+      report = report_from(tds, options)
       if report:
         inspector.save_report(report)
 
-def report_from(tds):
+def report_from(tds, options):
   report = {
     'inspector': 'dod',
     'inspector_url': 'http://www.dodig.mil/',
@@ -102,6 +105,11 @@ def report_from(tds):
     title_slug = re.sub(r'\W', '', title[:16])
     report_id = (published_on + '-' + title_slug)
 
+  # helper: if we asked for just one report ID, skip the rest
+  only_id = options.get('report_id')
+  if only_id and (only_id != report_id):
+    return
+
   report_url, summary = fetch_from_landing_page(landing_url)
   if report.get('unreleased'):
     report_url = None
@@ -127,6 +135,8 @@ def fetch_from_landing_page(landing_url):
   link = page.find('a', text=RE_PDF_LINK_TEXT, href=RE_PDF_HREF)
   if not link:
     link = page.find('a', text=RE_PDF_CLICK_TEXT, href=RE_PDF_HREF)
+  if not link:
+    link = page.find('a', text=RE_PDF_SARC_TEXT, href=RE_PDF_HREF)
   href = link['href'] if link else None
 
   summary = None
