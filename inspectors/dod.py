@@ -51,9 +51,10 @@ RE_PDF_CLICK_TEXT = re.compile('click here', re.I)
 RE_PDF_SARC_TEXT = re.compile('semiannual report', re.I)
 RE_PDF_HREF = re.compile(r'\.pdf$')
 
-RE_OFFICIAL = re.compile('For Official Use Only')
-RE_CLASSIFIED = re.compile('Classified')
-RE_FOIA = re.compile('Freedom of Information Act')
+RE_OFFICIAL = re.compile('For Official Use Only', re.I)
+RE_CLASSIFIED = re.compile('Classified', re.I)
+RE_FOIA = re.compile('Freedom of Information Act', re.I)
+RE_AFGHANISTAN = re.compile('Provided to the Security Forces of Afghanistan', re.I)
 
 def run(options):
   only = options.get('topics')
@@ -88,7 +89,7 @@ def report_from(tds, options):
   title_link = tds[2].select('a')[0]
   title = title_link.text.strip().replace('\r\n', ' ')
   landing_url = urljoin(BASE_URL, title_link['href'])
-  if RE_OFFICIAL.search(tds[2].text) or RE_CLASSIFIED.search(tds[2].text) or RE_FOIA.search(tds[2].text):
+  if RE_OFFICIAL.search(tds[2].text) or RE_CLASSIFIED.search(tds[2].text) or RE_FOIA.search(tds[2].text) or RE_AFGHANISTAN.search(tds[2].text):
     # 'Official use only' or 'Classified' materials don't have PDFs. Mark the
     # report metadata appropriately.
     report['unreleased'] = True
