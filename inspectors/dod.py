@@ -49,6 +49,7 @@ RE_PDF_HREF = re.compile(r'\.pdf$')
 
 RE_OFFICIAL = re.compile('For Official Use Only')
 RE_CLASSIFIED = re.compile('Classified')
+RE_FOIA = re.compile('Freedom of Information Act')
 RE_NO_DATA = re.compile('No Data')
 
 def run(options):
@@ -84,7 +85,7 @@ def report_from(tds):
   title_link = tds[2].select('a')[0]
   title = title_link.text.strip().replace('\r\n', ' ')
   landing_url = urljoin(BASE_URL, title_link['href'])
-  if RE_OFFICIAL.search(tds[2].text) or RE_CLASSIFIED.search(tds[2].text):
+  if RE_OFFICIAL.search(tds[2].text) or RE_CLASSIFIED.search(tds[2].text) or RE_FOIA.search(tds[2].text):
     # 'Official use only' or 'Classified' materials don't have PDFs. Mark the
     # report metadata appropriately.
     report['unreleased'] = True
