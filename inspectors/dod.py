@@ -15,9 +15,10 @@ from utils import utils, inspector
 # options:
 #   standard since/year options for a year range to fetch from.
 #
-#   office - limit reports fetched to one or more office, comma-separated.
+#   topics - limit reports fetched to one or more office, comma-separated.
 #            e.g. "IE,ISPA". These are the offices/"components" defined by the
-#            site. Defaults to all offices.
+#            site. Defaults to all offices. (NOTE: this parameter is named
+#            'topics' to line up better with other IG scrapers.)
 #          office codes are:
 #          A    - Audit
 #          IE   - Inspections & Evaluations
@@ -50,7 +51,6 @@ RE_PDF_HREF = re.compile(r'\.pdf$')
 RE_OFFICIAL = re.compile('For Official Use Only')
 RE_CLASSIFIED = re.compile('Classified')
 RE_FOIA = re.compile('Freedom of Information Act')
-RE_NO_DATA = re.compile('No Data')
 
 def run(options):
   only = options.get('topics')
