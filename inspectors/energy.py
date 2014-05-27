@@ -23,16 +23,23 @@ from utils import utils, inspector
 #            NSS  - National Security & Safety
 #            SI   - Science & Innovation
 #
-#   category - target a specific category for downloading reports. This
-#              corresponds to the categories in the left hand side of the report
-#              site, such as "Calendar Year Reports" or "DOE Directives".
-#              Only one category code may be specified. NOTE: You cannot specify
-#              both "--topics==" and "--category=" arguments to the scraper.
-#              Only the --category directive will be used.
-#              Category codes are:
-#              CY  - Calendary Year Reports
+#   type - target the specific types for downloading reports, comma-separated.
+#          These corresponds to the links in the left hand side of the report
+#          site, such as "Calendar Year Reports" or "DOE Directives". This can
+#          be specified along with --topics and the union of the two will be
+#          fetched.
+#          Type codes are:
+#          RA   - American Recovery and Reinvestment Act
+#          PR   - Peer Reviews
+#          DOED - Department of Energy Directives
+#          P    - Performance
+#          SP   - Strategic Plan
+#          T    - Testimony
+#          FS   - Financial Statements
+#          SR   - Semiannual Reports
 #
 
+BASE_URL = 'http://energy.gov/ig/calendar-year-reports'
 TOPIC_TO_URL = {
   'E': 'http://energy.gov/ig/listings/energy-reports',
   'EC': 'http://energy.gov/ig/listings/environmental-cleanup-reports',
@@ -43,31 +50,108 @@ TOPIC_TO_URL = {
   'SI': 'http://energy.gov/ig/listings/science-innovation-reports',
 }
 
-CATEGORY_TO_URL = {
-  'CY': 'http://energy.gov/ig/calendar-year-reports',
+TYPE_TO_URL = {
+  'RA': 'http://energy.gov/ig/listings/recovery-act-reports',
+  'PR': 'http://energy.gov/ig/calendar-year-reports/peer-reviews',
+  'DOED': 'http://energy.gov/ig/calendar-year-reports/doe-directives',
+  'P': 'http://energy.gov/ig/calendar-year-reports/performance-plans',
+  'SP': 'http://energy.gov/ig/calendar-year-reports/strategic-plans',
+  'T': 'http://energy.gov/ig/listings/testimony-inspector-general',
+  'FS': 'http://energy.gov/ig/listings/consolidated-financial-statements',
+  'SR': 'http://energy.gov/ig/listings/semiannual-reports-congress',
+  'WP': 'http://energy.gov/ig/calendar-year-reports/work-plans-manuals',
 }
 
 RE_CALENDAR_YEAR = re.compile(r'Calendar Year (\d{4})')
+RE_REPORT_ID = re.compile('(.+): (.+)')
+RE_NOT_AVAILABLE = re.compile('not available for viewing', re.I)
+RE_CLASSIFIED = re.compile('report is classified', re.I)
 
 def run(options):
   for url in urls_for(options):
-    print(url)
+    page = BeautifulSoup(utils.download(url))
 
-  if False:
-    body = utils.download(url)
-    page = BeautifulSoup(body)
-
-    report_table = page.select('table[summary~="reports"]')[0]
-    for tr in report_table.select('tr')[1:]:
-      tds = tr.select('td')
-      if len(tds) == 1:
-        # Page has no reports, simply a "No Data" indication for these dates.
-        break
-      report = report_from(tds)
+    for node in page.select('.node'):
+      report = report_from(node)
       if report:
         inspector.save_report(report)
 
+def report_from(node):
+  report = {
+    'inspector': 'energy',
+    'inspector_url': 'http://energy.gov/ig/office-inspector-general',
+    'agency': 'energy',
+    'agency_name': 'Department of Energy',
+  }
+
+  date = node.select('.date')[0]
+  published_on = datetime.datetime.strptime(date.text, '%B %d, %Y')
+  published_on = published_on.strftime('%Y-%m-%d')
+
+  title_p = node.select('.field-item p')[0]
+  title = title_p.text.strip()
+
+  title_link = node.select('.title-link')[0]
+  landing_url = urljoin(BASE_URL, title_link['href'])
+
+  title_link_span = title_link.select('span')[0]
+  md = RE_REPORT_ID.search(title_link_span.text)
+  if md:
+    sub_type = md.group(1).strip().replace(' ', '_').lower()
+    report_id = md.group(2).strip().replace('/', '-')
+  else:
+    title_slug = re.sub(r'\W', '', title[:16])
+    report_id = (published_on + '-' + title_slug)
+
+  report_url, summary, unreleased = fetch_from_landing_page(landing_url)
+
+  if unreleased:
+    report['unreleased'] = True
+
+  report.update({
+    'report_id': report_id,
+    'type': 'report',
+    'sub_type': sub_type,
+    'url': report_url,
+    'landing_url': landing_url,
+    'summary': summary,
+    'title': title,
+    'published_on': published_on
+  })
+  return report
+  
+def fetch_from_landing_page(landing_url):
+  """Returns a tuple of (pdf_link, summary_text, is_unreleased)."""
+  unreleased = False
+  page = BeautifulSoup(utils.download(landing_url))
+
+  summary = None
+  field_items = page.select('.field-items')
+  if field_items:
+    text = [node.strip() for node in field_items[0].findAll(text=True)]
+    summary = '\n\n'.join(text)
+  if not summary:
+    logging.info('\tno summary text found')
+
+  if (summary and (RE_NOT_AVAILABLE.search(summary)
+                   or RE_CLASSIFIED.search(summary))):
+    unreleased = True
+
+  report_url = None
+  pdf_link = page.select('.file a')
+  if not pdf_link:
+    logging.warn('No pdf link found on page: {0}'.format(landing_url))
+  else:
+    report_url = pdf_link[0]['href']
+
+  return report_url, summary, unreleased
+
 def urls_for(options):
+  type_ = options.get('type')
+  if type_:
+    # TODO: Do something with types
+    pass
+
   only = options.get('topics')
   if only:
     only = set(only.split(','))
@@ -77,7 +161,7 @@ def urls_for(options):
   # Not getting reports from specific topics, iterate over all Calendar Year
   # reports.
   year_range = inspector.year_range(options)
-  url = CATEGORY_TO_URL['CY']
+  url = BASE_URL
 
   page = BeautifulSoup(utils.download(url))
 
@@ -98,11 +182,6 @@ def urls_for(options):
         next_page = BeautifulSoup(utils.download(next_url))
         for link in next_page.select('li.pager-item a'):
           yield urljoin(url, link['href'])
-    
-def pagination_links_for_year(url):
-  page = BeautifulSoup(utils.download(url))
-
-  
 
 def urls_for_topics(options, only):
   year_range = inspector.year_range(options)
