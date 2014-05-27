@@ -49,7 +49,7 @@ RE_NEXT_10 = re.compile('Next 10 Pages')
 RE_PDF_LINK_TEXT = re.compile('Complete PDF')
 RE_PDF_CLICK_TEXT = re.compile('click here', re.I)
 RE_PDF_SARC_TEXT = re.compile('semiannual report', re.I)
-RE_PDF_HREF = re.compile(r'\.pdf$')
+RE_PDF_HREF = re.compile(r'\.pdf\s*$')
 
 RE_OFFICIAL = re.compile('For Official Use Only', re.I)
 RE_CLASSIFIED = re.compile('Classified', re.I)
@@ -138,7 +138,7 @@ def fetch_from_landing_page(landing_url):
     link = page.find('a', text=RE_PDF_CLICK_TEXT, href=RE_PDF_HREF)
   if not link:
     link = page.find('a', text=RE_PDF_SARC_TEXT, href=RE_PDF_HREF)
-  href = link['href'] if link else None
+  href = link['href'].strip() if link else None
 
   summary = None
   text_tr = page.select('tr[valign="top"] td')
