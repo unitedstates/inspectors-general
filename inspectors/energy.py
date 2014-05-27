@@ -8,6 +8,9 @@ import logging
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
+# Website: http://energy.gov/ig/
+# Goes back to: 1995
+
 # options:
 #   standard since/year options for a year range to fetch from.
 #
@@ -153,7 +156,7 @@ class EnergyScraper(object):
     field_items = page.select('.field-items')
     if field_items:
       text = [node.strip() for node in field_items[0].findAll(text=True)]
-      summary = '\n\n'.join(text)
+      summary = '\n\n'.join(text).strip()
     if not summary:
       logging.info('\tno summary text found')
 
@@ -174,7 +177,7 @@ class EnergyScraper(object):
     only = self.options.get('topics')
     if only:
       only = set(only.split(','))
-      only = [(o, TOPIC_TO_REPORT_TYPE[o]) if o in TOPIC_TO_REPORT_TYPE else o 
+      only = [(o, TOPIC_TO_REPORT_TYPE[o]) if o in TOPIC_TO_REPORT_TYPE else o
               for o in only]
       yield from self.urls_for_topics(only)
       # If there are topics selected, ONLY yield URLs for those.
@@ -243,7 +246,7 @@ class EnergyScraper(object):
       cur_date = datetime.datetime.strptime(date.text.strip(), '%B %d, %Y')
       if cur_date <= self.last_date:
         return True
-    return False  
+    return False
 
   def is_last_page(self, page):
     for date in page.select('.date'):
