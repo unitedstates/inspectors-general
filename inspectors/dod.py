@@ -54,6 +54,7 @@ RE_PDF_HREF = re.compile(r'\.pdf\s*$')
 RE_OFFICIAL = re.compile('For Official Use Only', re.I)
 RE_CLASSIFIED = re.compile('Classified', re.I)
 RE_FOIA = re.compile('Freedom of Information Act', re.I)
+RE_RESTRICTED = re.compile('Restricted', re.I)
 RE_AFGHANISTAN = re.compile('Provided to the Security Forces of Afghanistan', re.I)
 
 def run(options):
@@ -89,10 +90,11 @@ def report_from(tds, options):
   title_link = tds[2].select('a')[0]
   title = title_link.text.strip().replace('\r\n', ' ')
   landing_url = urljoin(BASE_URL, title_link['href'])
-  if RE_OFFICIAL.search(tds[2].text) or RE_CLASSIFIED.search(tds[2].text) or RE_FOIA.search(tds[2].text) or RE_AFGHANISTAN.search(tds[2].text):
+  maybe_unreleased = False
+  if RE_OFFICIAL.search(tds[2].text) or RE_CLASSIFIED.search(tds[2].text) or RE_FOIA.search(tds[2].text) or RE_AFGHANISTAN.search(tds[2].text) or RE_RESTRICTED.search(tds[2].text):
     # 'Official use only' or 'Classified' materials don't have PDFs. Mark the
     # report metadata appropriately.
-    report['unreleased'] = True
+    maybe_unreleased = True
 
   published_on = datetime.datetime.strptime(tds[0].text.strip(), '%m-%d-%Y')
   published_on = published_on.strftime('%Y-%m-%d')
@@ -112,8 +114,9 @@ def report_from(tds, options):
     return
 
   report_url, summary = fetch_from_landing_page(landing_url)
-  if report.get('unreleased'):
-    report_url = None
+
+  if (report_url is None) and maybe_unreleased:
+    report['unreleased'] = True
 
   office = tds[3].text.strip()
 
