@@ -26,7 +26,7 @@ A project to collect reports from the offices of Inspectors General across the f
 * [Amtrak](http://amtrakoig.gov/)
 * [Export-Import Bank](http://www.exim.gov/oig/index.cfm)
 
-Thanks to [Matt Rumsey](https://twitter.com/mattrumsey) for [compiling a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. The left-hand column tracks who's completed what IG.
+Thanks to [Matt Rumsey](https://twitter.com/mattrumsey) for [compiling a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. The left-hand column tracks who's completed what IG. A yellow highlight means it's a high priority.
 
 Eric Mill has written [a piece explaining what the project is](http://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/) and why it's being done. From it:
 
