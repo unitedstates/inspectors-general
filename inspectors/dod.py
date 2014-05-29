@@ -153,7 +153,7 @@ def fetch_from_landing_page(landing_url):
 
 
   href = link['href'].strip() if link else None
-  if add_pdf:
+  if href and add_pdf:
     href = href + ".pdf"
 
   summary = None
