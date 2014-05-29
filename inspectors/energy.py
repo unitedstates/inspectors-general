@@ -14,6 +14,8 @@ from utils import utils, inspector
 # options:
 #   standard since/year options for a year range to fetch from.
 #
+#   report_id - limit to a particular report
+#
 #   topics - limit reports fetched to one or more topcis, comma-separated, which
 #            correspond to the topics defined on the site. For example: 'E,EC'.
 #            Defaults to all topics.
@@ -73,7 +75,7 @@ TOPIC_TO_REPORT_TYPE = dict(ADDITIONAL_TOPICS)
 
 RE_CALENDAR_YEAR = re.compile(r'Calendar Year (\d{4})')
 RE_REPORT_ID = re.compile('(.+): (\S+[-/]\S+)')
-RE_NOT_AVAILABLE = re.compile('not available for viewing', re.I)
+RE_NOT_AVAILABLE = re.compile('not available (?:for|of) viewing', re.I)
 RE_CLASSIFIED = re.compile('report is classified', re.I)
 
 class EnergyScraper(object):
@@ -97,9 +99,8 @@ class EnergyScraper(object):
         if report:
           inspector.save_report(report)
         else:
-          # Empty report indicates a report out of the date range. There will
-          # be no more good reports on this page.
-          break
+          # Empty report indicates a report out of the date range, or not the ID.
+          continue
 
   def report_from(self, node):
     report = {
@@ -130,6 +131,13 @@ class EnergyScraper(object):
     else:
       title_slug = re.sub(r'\W', '', title[:16])
       report_id = (published_on + '-' + title_slug)
+
+    # debugging: if we're limiting to a particular report,
+    # and this isn't it, back out
+    only_report_id = self.options.get('report_id')
+    if only_report_id and (only_report_id != report_id):
+      # print("[%s] Skipping, not what was asked for." % report_id)
+      return
 
     report_url, summary, unreleased = self.fetch_from_landing_page(landing_url)
 
@@ -175,7 +183,7 @@ class EnergyScraper(object):
 
   def urls_for(self):
     only = self.options.get('topics')
-    if only:
+    if only: # if only...
       only = set(only.split(','))
       only = [(o, TOPIC_TO_REPORT_TYPE[o]) if o in TOPIC_TO_REPORT_TYPE else o
               for o in only]
