@@ -50,6 +50,7 @@ RE_PDF_LINK_TEXT = re.compile('Complete PDF')
 RE_PDF_CLICK_TEXT = re.compile('click here', re.I)
 RE_PDF_SARC_TEXT = re.compile('semiannual report', re.I)
 RE_PDF_HREF = re.compile(r'\.pdf\s*$')
+RE_BACKUP_PDF_HREF = re.compile(r'Audit/reports', re.I)
 
 RE_OFFICIAL = re.compile('For Official Use Only', re.I)
 RE_CLASSIFIED = re.compile('Classified', re.I)
@@ -134,6 +135,8 @@ def report_from(tds, options):
 
 def fetch_from_landing_page(landing_url):
   """Returns a tuple of (pdf_link, summary_text)."""
+  add_pdf = False
+
   body = utils.download(landing_url)
   page = BeautifulSoup(body)
   link = page.find('a', text=RE_PDF_LINK_TEXT, href=RE_PDF_HREF)
@@ -141,7 +144,17 @@ def fetch_from_landing_page(landing_url):
     link = page.find('a', text=RE_PDF_CLICK_TEXT, href=RE_PDF_HREF)
   if not link:
     link = page.find('a', text=RE_PDF_SARC_TEXT, href=RE_PDF_HREF)
+
+  # cases where .pdf is left off, ugh, e.g.
+  # http://www.dodig.mil/pubs/report_summary.cfm?id=849
+  if not link:
+    link = page.find('a', text=RE_PDF_LINK_TEXT, href=RE_BACKUP_PDF_HREF)
+    add_pdf = True
+
+
   href = link['href'].strip() if link else None
+  if add_pdf:
+    href = href + ".pdf"
 
   summary = None
   text_tr = page.select('tr[valign="top"] td')
