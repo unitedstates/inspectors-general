@@ -4,6 +4,8 @@ A project to collect reports from the offices of Inspectors General across the f
 
 **Done so far**:
 
+* [Department of Defense](http://www.dodig.mil/)
+* [Department of Energy](http://energy.gov/ig/)
 * [General Services Administration](http://www.gsaig.gov/)
 * [US Postal Service](http://www.uspsoig.gov/)
 * [Department of Homeland Security](http://www.oig.dhs.gov/), which includes:
