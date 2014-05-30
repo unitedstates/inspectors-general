@@ -37,6 +37,11 @@ from utils import utils, inspector
 #            SR   - Semiannual Reports
 #
 
+# blacklist of broken report pages -
+# these are being sent to the IG's office for their fixing,
+# so they can be taken off the blacklist.
+BROKEN_IDS = ('OAS-L-04-08')
+
 BASE_URL = 'http://energy.gov/ig/calendar-year-reports'
 TOPIC_TO_URL = {
   'E': 'http://energy.gov/ig/listings/energy-reports',
@@ -131,6 +136,12 @@ class EnergyScraper(object):
     else:
       title_slug = re.sub(r'\W', '', title[:16])
       report_id = (published_on + '-' + title_slug)
+
+    # Some reports are just broken. Move on, but they are
+    # noted here and should be reported to the IG.
+    if report_id in BROKEN_IDS:
+      print("[%s] Skipping, broken report." % report_id)
+      return
 
     # debugging: if we're limiting to a particular report,
     # and this isn't it, back out
