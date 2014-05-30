@@ -34,7 +34,7 @@ Eric Mill has written [a piece explaining what the project is](http://sunlightfo
 
 > **What's an inspector general?**
 >
-> Just about every agency in the federal government has an independent unit, usually called the Office of the Inspector General, dedicated to independent oversight. This includes regular audits of the agency's spending, monitoring of active government contractors and investigations into wasteful or corrupt agency practices. They ask tough questions, [carry guns](http://cnsnews.com/news/article/doj-inspectors-general-employ-3501-workers-who-can-carry-gunsmake-arrests) and sue people.
+> Just about every agency in the federal government has an independent unit, usually called the Office of the Inspector General, dedicated to independent oversight. This includes regular audits of the agency's spending, monitoring of active government contractors and investigations into wasteful or corrupt agency practices. They ask tough questions, carry guns and sue people.
 
 ### Scraping IG reports
 
