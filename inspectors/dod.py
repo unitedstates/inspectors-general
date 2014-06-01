@@ -122,7 +122,7 @@ def report_from(tds, options):
     }, 'pdf')
 
     if os.path.exists("%s/%s" % (utils.data_dir(), pdf_path)):
-      print("\tSkipping previously downloaded report, as asked.")
+      logging.warn("\tSkipping previously downloaded report, as asked.")
       return
 
   report_url, summary, maybe_unreleased = fetch_from_landing_page(landing_url)
