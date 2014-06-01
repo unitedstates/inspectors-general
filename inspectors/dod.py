@@ -139,8 +139,11 @@ def fetch_from_landing_page(landing_url):
   body = utils.download(landing_url)
   page = BeautifulSoup(body)
 
-  report_table = page.select('table[summary~="reports"]')[0]
-  examine_text = report_table.text
+  report_tables = page.select('table[summary~="reports"]')
+  # in the rare case that doesn't work, have faith
+  if len(report_tables) == 0:
+    report_tables = page.select('table')
+  examine_text = report_tables[0].text
 
   maybe_unreleased = False
   if RE_OFFICIAL.search(examine_text) or RE_CLASSIFIED.search(examine_text) or RE_FOIA.search(examine_text) or RE_AFGHANISTAN.search(examine_text) or RE_RESTRICTED.search(examine_text):
