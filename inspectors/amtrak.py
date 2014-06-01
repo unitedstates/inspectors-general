@@ -1,13 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Oldest reports: 2006
+
+# options:
+#   --pages: limit the scraper to a certain number of pages
+
 from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
 
 def run(options):
   year_range = inspector.year_range(options)
-  max_pages = int(options.get('pages', 1))
+
+  max_pages = options.get('pages', None)
+  if max_pages:
+    max_pages = int(max_pages)
+
   for year in year_range:
     page = 1
     done = False
@@ -26,7 +35,7 @@ def run(options):
           break
       if not found_next_page:
         done = True
-      if next_page > max_pages:
+      if max_pages and (next_page > max_pages):
         done = True
 
       results = doc.select("table.views-table > tbody > tr")
