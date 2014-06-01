@@ -54,6 +54,7 @@ RE_BACKUP_PDF_HREF = re.compile(r'Audit/reports', re.I)
 
 RE_OFFICIAL = re.compile('For Official Use Only', re.I)
 RE_CLASSIFIED = re.compile('Classified', re.I)
+RE_INTEL = re.compile('-INTEL-') # case-sensitive
 RE_FOIA = re.compile('Freedom of Information Act', re.I)
 RE_RESTRICTED = re.compile('Restricted', re.I)
 RE_AFGHANISTAN = re.compile('Provided to the Security Forces of Afghanistan', re.I)
@@ -146,7 +147,7 @@ def fetch_from_landing_page(landing_url):
   examine_text = report_tables[0].text
 
   maybe_unreleased = False
-  if RE_OFFICIAL.search(examine_text) or RE_CLASSIFIED.search(examine_text) or RE_FOIA.search(examine_text) or RE_AFGHANISTAN.search(examine_text) or RE_RESTRICTED.search(examine_text):
+  if RE_OFFICIAL.search(examine_text) or RE_CLASSIFIED.search(examine_text) or RE_FOIA.search(examine_text) or RE_AFGHANISTAN.search(examine_text) or RE_RESTRICTED.search(examine_text) or RE_INTEL.search(examine_text):
     # 'Official use only' or 'Classified' materials don't have PDFs. Mark the
     # report metadata appropriately.
     maybe_unreleased = True
