@@ -4,6 +4,7 @@
 import datetime
 from urllib.parse import urljoin, urlencode
 import re
+import os
 import logging
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -94,8 +95,8 @@ def report_from(tds, options):
   title = title_link.text.strip().replace('\r\n', ' ')
   landing_url = urljoin(BASE_URL, title_link['href'])
 
-  published_on = datetime.datetime.strptime(tds[0].text.strip(), '%m-%d-%Y')
-  published_on = published_on.strftime('%Y-%m-%d')
+  published_date = datetime.datetime.strptime(tds[0].text.strip(), '%m-%d-%Y')
+  published_on = published_date.strftime('%Y-%m-%d')
 
   topic = tds[1].text
 
@@ -106,10 +107,23 @@ def report_from(tds, options):
     title_slug = re.sub(r'\W', '', title[:16])
     report_id = (published_on + '-' + title_slug)
 
-  # helper: if we asked for just one report ID, skip the rest
+  # helper: use --report_id to skip all but that one
   only_id = options.get('report_id')
   if only_id and (only_id != report_id):
     return
+
+  # helper: use --skip_downloaded to skip reports whose PDFs are on disk
+  #   (drastically reduces calls to DOD landing pages)
+  if options.get('skip_downloaded'):
+    pdf_path = inspector.path_for({
+      'report_id': report_id,
+      'year': str(published_date.year),
+      'inspector': 'dod'
+    }, 'pdf')
+
+    if os.path.exists("%s/%s" % (utils.data_dir(), pdf_path)):
+      print("\tSkipping previously downloaded report, as asked.")
+      return
 
   report_url, summary, maybe_unreleased = fetch_from_landing_page(landing_url)
 
@@ -133,6 +147,7 @@ def report_from(tds, options):
     'published_on': published_on
   })
   return report
+
 
 def fetch_from_landing_page(landing_url):
   """Returns a tuple of (pdf_link, summary_text)."""
