@@ -6,6 +6,8 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import re
 
+# oldest year: 1979
+
 def run(options):
   crawl_index(SEMIANNUAL_REPORTS_URL, options)
   crawl_index(AUDIT_REPORTS_URL, options, True)

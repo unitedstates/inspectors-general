@@ -7,7 +7,9 @@
 # - I added language information since there were English and Spanish docs
 # - There are html and pdfs for the same docs so all the urls are tracked in urls
 
-# Options:
+# oldest year: 1996
+#
+# options:
 #   component - Any of the slugs in the `components` dict below,
 #               will be used to filter to a particular landing page.
 
@@ -161,7 +163,7 @@ def extract_info(content, directory, year_range):
           date_string = date_string.strip()
           date_string = date_string.replace(" ", " 1, ")
           date = datetime.strptime(date_string, "%B %d, %Y")
-      
+
       if 'date' not in locals():
         date = datetime.strptime(date_string, "%B %d, %Y")
 

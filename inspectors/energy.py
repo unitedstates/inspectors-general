@@ -8,8 +8,8 @@ import logging
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# Website: http://energy.gov/ig/
-# Goes back to: 1995
+# website: http://energy.gov/ig/
+# oldest year: 1995
 
 # options:
 #   standard since/year options for a year range to fetch from.

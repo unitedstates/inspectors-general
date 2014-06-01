@@ -5,7 +5,8 @@ from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-
+# oldest year: 1998
+#
 # options:
 #   standard since/year options for a year range to fetch from.
 #

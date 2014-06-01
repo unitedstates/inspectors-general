@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.dodig.mil/pubs/index.cfm
-# Oldest report: FY 1987
+# oldest year: 1986 (FY 1987)
 
 #
 # options:

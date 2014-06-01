@@ -7,6 +7,7 @@ import re
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
+# oldest year: 1996
 #
 # options:
 #   standard since/year options for a year range to fetch from.

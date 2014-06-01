@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Oldest reports: 2006
-
-# options:
-#   --pages: limit the scraper to a certain number of pages
-
 from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
+
+# oldest year: 2006
+
+# options:
+#   --pages: limit the scraper to a certain number of pages
 
 def run(options):
   year_range = inspector.year_range(options)

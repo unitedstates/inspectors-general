@@ -7,6 +7,8 @@ import bs4
 from datetime import datetime
 import calendar
 
+# oldest year: 1998
+
 #  Note: reports are only scraped from /our-inspector-general/reports/
 #  I think this is mostly just audit reports (other reports are scattered
 #  around the website

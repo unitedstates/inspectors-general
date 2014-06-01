@@ -7,6 +7,8 @@ from bs4.element import Tag, NavigableString
 from datetime import datetime
 import re
 
+# oldest year: 2007
+
 def run(options):
   year_range = inspector.year_range(options)
 

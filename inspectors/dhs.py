@@ -6,6 +6,8 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import urllib.parse
 
+# oldest year: 2002
+
 # options:
 #   standard since/year options for a year range to fetch from.
 #
