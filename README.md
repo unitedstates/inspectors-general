@@ -106,9 +106,15 @@ You will also need this line at the bottom:
 utils.run(run) if (__name__ == "__main__") else None
 ```
 
-It's *encouraged* to use `inspectors.year_range(options)` to obtain a range of desired years, and to obey that range during scraping. See an example of [creating it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L22) and [using it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L37-L38).
+You should use `inspectors.year_range(options)` to obtain a range of desired years, and to obey that range during scraping. See an example of [creating it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L22) and [using it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L37-L38).
 
 Scrapers are welcome to use any command line flags they want, **except** those used by the `igs` runner. Currently, that's `--safe` and `--only`.
+
+Finally, scraper authors are encouraged to note a few things in comments at the top of the scraper:
+
+* The **earliest available year** for reports.
+* Any **additional command line options** you've chosen to support, besides `--since` and `--year`.
+* Any **notes to pass on to the IG's web team**, about how they can make their website better and more reliable.
 
 #### Report metadata
 
