@@ -49,6 +49,7 @@ RE_NEXT_10 = re.compile('Next 10 Pages')
 RE_PDF_LINK_TEXT = re.compile('Complete PDF')
 RE_PDF_CLICK_TEXT = re.compile('click here', re.I)
 RE_PDF_SARC_TEXT = re.compile('semiannual report', re.I)
+RE_PDF_BODY_MAYBE = re.compile('part ii$', re.I)
 RE_PDF_HREF = re.compile(r'\.pdf\s*$')
 RE_BACKUP_PDF_HREF = re.compile(r'Audit/reports', re.I)
 
@@ -152,11 +153,18 @@ def fetch_from_landing_page(landing_url):
     # report metadata appropriately.
     maybe_unreleased = True
 
+  # two varieties of normal report link
   link = page.find('a', text=RE_PDF_LINK_TEXT, href=RE_PDF_HREF)
   if not link:
     link = page.find('a', text=RE_PDF_CLICK_TEXT, href=RE_PDF_HREF)
+
+  # Semi annual reports to Congress
   if not link:
     link = page.find('a', text=RE_PDF_SARC_TEXT, href=RE_PDF_HREF)
+
+  # occurs for some multi-part reports, top/body/bottom
+  if not link:
+    link = page.find('a', text=RE_PDF_BODY_MAYBE, href=RE_PDF_HREF)
 
   # cases where .pdf is left off, ugh, e.g.
   # http://www.dodig.mil/pubs/report_summary.cfm?id=849
