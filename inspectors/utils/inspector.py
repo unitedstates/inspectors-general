@@ -30,7 +30,7 @@ def save_report(report):
   logging.warn("[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id']))
 
   if options.get('dry_run'):
-    logging.warn('\tskipping download and extraction, dry_run == True')
+    logging.warn('\tdry run: skipping download and extraction')
   elif report.get('unreleased', False) is True:
     logging.warn('\tno download/extraction of unreleased report')
   else:
@@ -67,7 +67,6 @@ def preprocess_report(report):
     split = parsed.path.split(".")
     if len(split) > 1:
       report['file_type'] = split[-1]
-
 
 
 # Ensure required fields are present

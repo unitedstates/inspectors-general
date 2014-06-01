@@ -91,11 +91,6 @@ def report_from(tds, options):
   title_link = tds[2].select('a')[0]
   title = title_link.text.strip().replace('\r\n', ' ')
   landing_url = urljoin(BASE_URL, title_link['href'])
-  maybe_unreleased = False
-  if RE_OFFICIAL.search(tds[2].text) or RE_CLASSIFIED.search(tds[2].text) or RE_FOIA.search(tds[2].text) or RE_AFGHANISTAN.search(tds[2].text) or RE_RESTRICTED.search(tds[2].text):
-    # 'Official use only' or 'Classified' materials don't have PDFs. Mark the
-    # report metadata appropriately.
-    maybe_unreleased = True
 
   published_on = datetime.datetime.strptime(tds[0].text.strip(), '%m-%d-%Y')
   published_on = published_on.strftime('%Y-%m-%d')
@@ -114,7 +109,11 @@ def report_from(tds, options):
   if only_id and (only_id != report_id):
     return
 
-  report_url, summary = fetch_from_landing_page(landing_url)
+  report_url, summary, maybe_unreleased = fetch_from_landing_page(landing_url)
+
+  # print("url: %s" % report_url)
+  # print("summary: %s" % summary)
+  # print("unreleased?: %s" % str(maybe_unreleased))
 
   if (report_url is None) and maybe_unreleased:
     report['unreleased'] = True
@@ -139,6 +138,16 @@ def fetch_from_landing_page(landing_url):
 
   body = utils.download(landing_url)
   page = BeautifulSoup(body)
+
+  report_table = page.select('table[summary~="reports"]')[0]
+  examine_text = report_table.text
+
+  maybe_unreleased = False
+  if RE_OFFICIAL.search(examine_text) or RE_CLASSIFIED.search(examine_text) or RE_FOIA.search(examine_text) or RE_AFGHANISTAN.search(examine_text) or RE_RESTRICTED.search(examine_text):
+    # 'Official use only' or 'Classified' materials don't have PDFs. Mark the
+    # report metadata appropriately.
+    maybe_unreleased = True
+
   link = page.find('a', text=RE_PDF_LINK_TEXT, href=RE_PDF_HREF)
   if not link:
     link = page.find('a', text=RE_PDF_CLICK_TEXT, href=RE_PDF_HREF)
@@ -164,7 +173,7 @@ def fetch_from_landing_page(landing_url):
   if not summary:
     logging.info('\tno summary text found')
 
-  return (href, summary)
+  return (href, summary, maybe_unreleased)
 
 def urls_for(options, only):
   year_range = inspector.year_range(options)
