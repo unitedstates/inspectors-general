@@ -18,6 +18,9 @@ from utils import utils, inspector
 #
 #   report_id: limit to a particular report ID, skip others.
 #
+#   skip_downloaded: skip over any reports whose PDFs have been downloaded.
+#      useful for resuming large fetches without making needless HTTP requests.
+#
 #   topics - limit reports fetched to one or more office, comma-separated.
 #            e.g. "IE,ISPA". These are the offices/"components" defined by the
 #            site. Defaults to all offices. (NOTE: this parameter is named
@@ -54,11 +57,30 @@ RE_PDF_BODY_MAYBE = re.compile('part ii$', re.I)
 RE_PDF_HREF = re.compile(r'\.pdf\s*$')
 RE_BACKUP_PDF_HREF = re.compile(r'Audit/reports', re.I)
 
+RE_PDF_STATEMENT_TEXT = re.compile('here', re.I)
+RE_PDF_STATEMENT_HREF = re.compile('statement', re.I)
+
+RE_EXTERNALLY_HOSTED = re.compile('This file is hosted', re.I)
+
 # more invasive/slow search for a link, needed when link has html inside,
 # e.g. http://www.dodig.mil/programs/guam/index_detail.cfm?id=4933
 def pdf_test(tag):
+  is_link = (tag.name == 'a') and tag.has_attr('href')
+  if not is_link: return False
+
+  is_pdf = (RE_PDF_HREF.search(tag['href']) or RE_BACKUP_PDF_HREF.search(tag['href']))
+  if not is_pdf: return False
+
   text = tag.text
-  return (tag.name == 'a' and tag.has_attr('href')) and (RE_PDF_HREF.search(tag['href']) or RE_BACKUP_PDF_HREF.search(tag['href'])) and (RE_PDF_CLICK_TEXT.search(text) or RE_PDF_LINK_TEXT.search(text) or RE_PDF_SARC_TEXT.search(text) or RE_PDF_BODY_MAYBE.search(text))
+  basic_match = (RE_PDF_CLICK_TEXT.search(text) or RE_PDF_LINK_TEXT.search(text) or RE_PDF_SARC_TEXT.search(text) or RE_PDF_BODY_MAYBE.search(text))
+  if basic_match: return True
+
+  # looser check - "here" is accepted, if it's also a statement
+  simple_match = (RE_PDF_STATEMENT_TEXT.search(text) and RE_PDF_STATEMENT_HREF.search(tag['href']))
+  if simple_match: return True
+
+  return False
+
 
 RE_OFFICIAL = re.compile('For Official Use Only', re.I)
 RE_CLASSIFIED = re.compile('Classified', re.I)
@@ -131,14 +153,18 @@ def report_from(tds, options):
       logging.warn("\tSkipping previously downloaded report, as asked.")
       return
 
-  report_url, summary, maybe_unreleased = fetch_from_landing_page(landing_url)
+  report_url, summary, maybe_unreleased, skip = fetch_from_landing_page(landing_url)
 
-  # print("url: %s" % report_url)
-  # print("summary: %s" % summary)
-  # print("unreleased?: %s" % str(maybe_unreleased))
+  if skip:
+    return
 
   if (report_url is None) and maybe_unreleased:
     report['unreleased'] = True
+
+  # giving up on any more Guam errors, we've caught as many cases
+  # as we reasonably can, and there are Guam entries that aren't reports.
+  elif (report_url is None) and (re.search("guam", landing_url)):
+    return
 
   office = tds[3].text.strip()
 
@@ -158,6 +184,7 @@ def report_from(tds, options):
 def fetch_from_landing_page(landing_url):
   """Returns a tuple of (pdf_link, summary_text)."""
   add_pdf = False
+  skip = False
 
   body = utils.download(landing_url)
   page = BeautifulSoup(body)
@@ -166,7 +193,8 @@ def fetch_from_landing_page(landing_url):
   # in the rare case that doesn't work, have faith
   if len(report_tables) == 0:
     report_tables = page.select('table')
-  examine_text = report_tables[0].text
+  table = report_tables[0]
+  examine_text = table.text
 
   maybe_unreleased = False
   if RE_OFFICIAL.search(examine_text) or RE_CLASSIFIED.search(examine_text) or RE_FOIA.search(examine_text) or RE_AFGHANISTAN.search(examine_text) or RE_RESTRICTED.search(examine_text) or RE_INTEL.search(examine_text):
@@ -198,6 +226,8 @@ def fetch_from_landing_page(landing_url):
   if not link:
     link = page.find(pdf_test)
 
+  if not link and RE_EXTERNALLY_HOSTED.search(table.text):
+    skip = True
 
   href = link['href'].strip() if link else None
   if href and add_pdf:
@@ -211,7 +241,7 @@ def fetch_from_landing_page(landing_url):
   if not summary:
     logging.info('\tno summary text found')
 
-  return (href, summary, maybe_unreleased)
+  return (href, summary, maybe_unreleased, skip)
 
 def urls_for(options, only):
   year_range = inspector.year_range(options)
