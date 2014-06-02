@@ -4,6 +4,7 @@
 from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
+import logging
 
 # oldest year: 1998
 #
@@ -34,10 +35,10 @@ def run(options):
   max_page = None
   for page in range(1, (int(pages) + 1)):
     if max_page and (page > max_page):
-      print("End of pages!")
+      logging.debug("End of pages!")
       break
 
-    print("## Downloading page %i" % page)
+    logging.debug("## Downloading page %i" % page)
     url = url_for(options, page)
     body = utils.download(url)
     doc = BeautifulSoup(body)
@@ -51,7 +52,7 @@ def run(options):
       # inefficient enforcement of --year arg, USPS doesn't support it server-side
       # TODO: change to published_on.year once it's a datetime
       if inspector.year_from(report) not in year_range:
-        print("[%s] Skipping report, not in requested range." % report['report_id'])
+        logging.warn("[%s] Skipping report, not in requested range." % report['report_id'])
         continue
 
       inspector.save_report(report)
