@@ -126,10 +126,17 @@ The `report` object must be a dict that contains the following **required fields
 * `agency_name` - The full text name of an agency, e.g. "United States Postal Service"
 * `report_id` - A string usable as an ID for the report.
 * `title` - Title of report.
-* `url` - Link to report.
 * `published_on` - Date of publication, in `YYYY-MM-DD` format.
 
-You can **include any other fields** you think worth keeping.
+Additionally, some information about report URLs is **required**. However, not all report contents are released: some are sensitive or classified, or require a FOIA request to obtain. Use these fields to handle report URLs:
+
+* `url` - URL to the report itself. Required unless `unreleased` is `True`.
+* `landing_url` - URL to some kind of landing page for the report.
+* `unreleased` - Set to `True` if the report's contents are not fully released.
+
+If `unreleased` is `True`, then `url` is *optional* and `landing_url` is *required*.
+
+You can also **include any other fields** you think worth keeping.
 
 The `report_id` only needs to be unique within that IG, so you can make it up from other fields. It does need to come out the same every time you run the script. In other words, **don't auto-increment a number** -- if the IG doesn't give you a unique ID already, append other fields together into a consistent, unique ID.
 
