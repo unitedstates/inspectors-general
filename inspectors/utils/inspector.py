@@ -80,13 +80,17 @@ def validate_report(report):
     if (value is None) or value == "":
       return "Missing a required field: %s" % field
 
-  # URL is not required in the case that the report has an 'unreleased' field
-  # set to True
-  unreleased = report.get('unreleased', False)
-  if unreleased is not True:  # Strict test for True specifically
-    url = report.get("url")
-    if not url:
+  # A URL is required, unless 'unreleased' is set to True.
+  url = report.get("url")
+  if url is not None:
+    if report.get("file_type") is None:
+      return "Couldn't figure out `file_type` from URL, please set it explicitly."
+  else:
+    if report.get('unreleased', False) is not True:
       return "Missing required field 'url' when field 'unreleased' != True"
+    if report.get("landing_url") is None:
+      return "Unreleased reports still need a landing_url"
+
 
   # report_id can't have slashes, it'll mess up the directory structure
   if "/" in report["report_id"]:
@@ -97,9 +101,6 @@ def validate_report(report):
 
   if report.get("type") is None:
     return "Er, this shouldn't happen: empty `type` field."
-
-  if unreleased is not True and report.get("file_type") is None:
-    return "Couldn't figure out `file_type` from URL, please set it explicitly."
 
   try:
     datetime.datetime.strptime(report['published_on'], "%Y-%m-%d")
