@@ -81,6 +81,13 @@ def pdf_test(tag):
 
   return False
 
+# any PDF
+def any_pdf_test(tag):
+  is_link = (tag.name == 'a') and tag.has_attr('href')
+  if not is_link: return False
+
+  is_pdf = (RE_PDF_HREF.search(tag['href']) or RE_BACKUP_PDF_HREF.search(tag['href']))
+  return is_pdf
 
 RE_OFFICIAL = re.compile('For Official Use Only', re.I)
 RE_CLASSIFIED = re.compile('Classified', re.I)
@@ -222,12 +229,17 @@ def fetch_from_landing_page(landing_url):
     if link:
       add_pdf = True
 
-  # last resort, slow python-based check
+  # last resort, slow python-based check for tightest requirements
   if not link:
     link = page.find(pdf_test)
 
+  # before accepting *any* PDF, check for external links
   if not link and RE_EXTERNALLY_HOSTED.search(table.text):
     skip = True
+
+  # okay, I'll take *any* PDF
+  if not link:
+    link = table.find(any_pdf_test)
 
   href = link['href'].strip() if link else None
   if href and add_pdf:
