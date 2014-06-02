@@ -54,6 +54,12 @@ RE_PDF_BODY_MAYBE = re.compile('part ii$', re.I)
 RE_PDF_HREF = re.compile(r'\.pdf\s*$')
 RE_BACKUP_PDF_HREF = re.compile(r'Audit/reports', re.I)
 
+# more invasive/slow search for a link, needed when link has html inside,
+# e.g. http://www.dodig.mil/programs/guam/index_detail.cfm?id=4933
+def pdf_test(tag):
+  text = tag.text
+  return (tag.name == 'a' and tag.has_attr('href')) and (RE_PDF_HREF.search(tag['href']) or RE_BACKUP_PDF_HREF.search(tag['href'])) and (RE_PDF_CLICK_TEXT.search(text) or RE_PDF_LINK_TEXT.search(text) or RE_PDF_SARC_TEXT.search(text) or RE_PDF_BODY_MAYBE.search(text))
+
 RE_OFFICIAL = re.compile('For Official Use Only', re.I)
 RE_CLASSIFIED = re.compile('Classified', re.I)
 RE_INTEL = re.compile('-INTEL-') # case-sensitive
@@ -185,7 +191,12 @@ def fetch_from_landing_page(landing_url):
   # http://www.dodig.mil/pubs/report_summary.cfm?id=849
   if not link:
     link = page.find('a', text=RE_PDF_LINK_TEXT, href=RE_BACKUP_PDF_HREF)
-    add_pdf = True
+    if link:
+      add_pdf = True
+
+  # last resort, slow python-based check
+  if not link:
+    link = page.find(pdf_test)
 
 
   href = link['href'].strip() if link else None
