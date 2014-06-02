@@ -245,6 +245,10 @@ def fetch_from_landing_page(landing_url):
   if href and add_pdf:
     href = href + ".pdf"
 
+  # some URLs have "/../" in the middle, and the redirects are trouble
+  if href:
+    href = href.replace("/../", "/")
+
   summary = None
   text_tr = page.select('tr[valign="top"] td')
   if text_tr:
