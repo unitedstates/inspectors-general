@@ -87,6 +87,7 @@ Every scraper will accept the following options:
 * `--year`: A `YYYY` year, only fetch reports from this year.
 * `--since`: A `YYYY` year, only fetch reports from this year onwards.
 * `--debug`: Print extra output to STDOUT. (Can be quite verbose when downloading.)
+* `--dry_run`: Will scrape sites and write JSON metadata to disk, but won't download full reports or extract text.
 
 
 ### Contributing a Scraper
