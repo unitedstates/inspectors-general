@@ -62,6 +62,7 @@ RE_PDF_STATEMENT_HREF = re.compile('statement', re.I)
 
 RE_EXTERNALLY_HOSTED = re.compile('This file is hosted', re.I)
 RE_RESCINDED = re.compile('This report was rescinded', re.I)
+RE_UNUSED = re.compile('NUMBER NOT USED', re.I)
 
 # more invasive/slow search for a link, needed when link has html inside,
 # e.g. http://www.dodig.mil/programs/guam/index_detail.cfm?id=4933
@@ -239,6 +240,9 @@ def fetch_from_landing_page(landing_url):
     skip = True
 
   if not link and RE_RESCINDED.search(table.text):
+    skip = True
+
+  if not link and RE_UNUSED.search(table.text):
     skip = True
 
   # okay, I'll take *any* PDF
