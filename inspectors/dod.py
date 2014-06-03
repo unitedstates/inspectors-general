@@ -92,7 +92,7 @@ def any_pdf_test(tag):
 RE_OFFICIAL = re.compile('For Official Use Only', re.I)
 RE_CLASSIFIED = re.compile('Classified', re.I)
 RE_INTEL = re.compile('-INTEL-') # case-sensitive
-RE_FOIA = re.compile('Freedom of Information Act', re.I)
+RE_FOIA = re.compile('Freedom (?:of|on) Information Act', re.I)
 RE_RESTRICTED = re.compile('Restricted', re.I)
 RE_AFGHANISTAN = re.compile('Provided to the Security Forces of Afghanistan', re.I)
 
