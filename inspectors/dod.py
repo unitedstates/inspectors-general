@@ -175,7 +175,9 @@ def report_from(tds, options):
     report['unreleased'] = True
 
   # broken reports: mark as unreleased, but also mark as broken
-  if (report_url is None) and (report_id in BLACKLIST):
+  # blacklisted reports, or, from now on, anything in 2001 and before
+  # I'll investigate the batch of 'missing' later.
+  if (report_url is None) and ((report_id in BLACKLIST) or (published_date.year <= 2001)):
     report['unreleased'] = True
     report['missing'] = True
 
@@ -244,17 +246,8 @@ def fetch_from_landing_page(landing_url):
   if not link:
     link = page.find(pdf_test)
 
-  # before accepting *any* PDF, check for external links
-  if not link and RE_EXTERNALLY_HOSTED.search(table.text):
-    skip = True
-
-  if not link and RE_RESCINDED.search(table.text):
-    skip = True
-
-  if not link and RE_RETRACTED.search(table.text):
-    skip = True
-
-  if not link and RE_UNUSED.search(table.text):
+  # before accepting *any* PDF, check for skippable offenses
+  if not link and (RE_EXTERNALLY_HOSTED.search(table.text) or RE_RESCINDED.search(table.text) or RE_RETRACTED.search(table.text) or RE_UNUSED.search(table.text)):
     skip = True
 
   # okay, I'll take *any* PDF
