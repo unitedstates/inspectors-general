@@ -47,6 +47,9 @@ OFFICES = {
 }
 BASE_URL = 'http://www.dodig.mil/pubs/index.cfm'
 
+# TODO: report these to DOD as apparently missing
+BLACKLIST = ('D-2004-006')
+
 RE_DIGITS = re.compile(r'^\d+$')
 RE_NEXT_10 = re.compile('Next 10 Pages')
 
@@ -169,6 +172,11 @@ def report_from(tds, options):
 
   if (report_url is None) and maybe_unreleased:
     report['unreleased'] = True
+
+  # broken reports: mark as unreleased, but also mark as broken
+  if (report_url is None) and (report_id in BLACKLIST):
+    report['unreleased'] = True
+    report['missing'] = True
 
   # giving up on any more Guam errors, we've caught as many cases
   # as we reasonably can, and there are Guam entries that aren't reports.
