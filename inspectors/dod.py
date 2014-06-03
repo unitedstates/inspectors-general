@@ -48,7 +48,7 @@ OFFICES = {
 BASE_URL = 'http://www.dodig.mil/pubs/index.cfm'
 
 # TODO: report these to DOD as apparently missing
-BLACKLIST = ('D-2004-006', 'D-2002-119')
+BLACKLIST = ('D-2004-006', 'D-2002-119', 'D-2002-088', 'D-2002-072', 'D-2002-058', 'D-2002-046')
 
 RE_DIGITS = re.compile(r'^\d+$')
 RE_NEXT_10 = re.compile('Next 10 Pages')
@@ -65,6 +65,7 @@ RE_PDF_STATEMENT_HREF = re.compile('statement', re.I)
 
 RE_EXTERNALLY_HOSTED = re.compile('This file is hosted', re.I)
 RE_RESCINDED = re.compile('This report was rescinded', re.I)
+RE_RETRACTED = re.compile('Report Retracted', re.I)
 RE_UNUSED = re.compile('NUMBER NOT USED', re.I)
 
 # more invasive/slow search for a link, needed when link has html inside,
@@ -248,6 +249,9 @@ def fetch_from_landing_page(landing_url):
     skip = True
 
   if not link and RE_RESCINDED.search(table.text):
+    skip = True
+
+  if not link and RE_RETRACTED.search(table.text):
     skip = True
 
   if not link and RE_UNUSED.search(table.text):
