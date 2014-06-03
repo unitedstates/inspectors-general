@@ -48,7 +48,7 @@ OFFICES = {
 BASE_URL = 'http://www.dodig.mil/pubs/index.cfm'
 
 # TODO: report these to DOD as apparently missing
-BLACKLIST = ('D-2004-006', 'D-2002-119', 'D-2002-088', 'D-2002-072', 'D-2002-058', 'D-2002-046')
+BLACKLIST = ('D-2004-006', 'D-2002-119', 'D-2002-088', 'D-2002-072', 'D-2002-058', 'D-2002-046', 'D-2002-015', 'D-2001-166')
 
 RE_DIGITS = re.compile(r'^\d+$')
 RE_NEXT_10 = re.compile('Next 10 Pages')
