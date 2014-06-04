@@ -81,6 +81,8 @@ TOPIC_TO_REPORT_TYPE = dict(ADDITIONAL_TOPICS)
 RE_CALENDAR_YEAR = re.compile(r'Calendar Year (\d{4})')
 RE_REPORT_ID = re.compile('(.+): (\S+[-/]\S+)')
 RE_NOT_AVAILABLE = re.compile('not available (?:for|of) viewing', re.I)
+RE_NOT_AVAILABLE_2 = re.compile('not publically available', re.I)
+RE_NOT_AVAILABLE_3 = re.compile('official use only', re.I)
 RE_CLASSIFIED = re.compile('report is classified', re.I)
 
 class EnergyScraper(object):
@@ -180,6 +182,8 @@ class EnergyScraper(object):
       logging.info('\tno summary text found')
 
     if (summary and (RE_NOT_AVAILABLE.search(summary)
+                     or RE_NOT_AVAILABLE_2.search(summary)
+                     or RE_NOT_AVAILABLE_3.search(summary)
                      or RE_CLASSIFIED.search(summary))):
       unreleased = True
 
