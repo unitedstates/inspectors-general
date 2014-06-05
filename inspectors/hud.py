@@ -101,7 +101,12 @@ def report_from(report_row, year_range):
 
   def get_optional_selector(selector):
     try:
-      return article.select(selector)[0].text.strip()
+      text = article.select(selector)[0].text.strip()
+      # don't return empty strings
+      if text:
+        return text
+      else:
+        return None
     except IndexError:
       return None
 
@@ -126,7 +131,7 @@ def report_from(report_row, year_range):
     else:
       raise AssertionError("Report: %s did not have a report url and is not unreleased" % landing_url)
 
-  return {
+  report = {
     'inspector': 'hud',
     'inspector_url': 'http://www.hudoig.gov/',
     'agency': 'hud',
@@ -136,14 +141,20 @@ def report_from(report_row, year_range):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
     'landing_url': landing_url,
-    'unreleased': unreleased,
-    'missing': missing,
     'type': report_type,
     'program_area': program_area,
     'state': state,
-    'funding': funding,
     'summary': summary,
+    'funding': funding
   }
+
+  # only include these if they are true
+  if unreleased:
+    report['unreleased'] = True
+  if missing:
+    report['missing'] = True
+
+  return report
 
 def url_for(year_range, page=1):
   page -= 1  # The website uses zero-index pages
