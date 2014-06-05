@@ -28,7 +28,6 @@ from utils import utils, inspector
 #            SEMIANNUAL_REPORTS       - Semiannual Reports
 #            TESTIMONY                - Testimony
 #            OTHER                    - Other
-#            FOIA                     - Freedom of Information Act
 #
 # Notes for IG's web team:
 #   - All reports available on a single page/feed
@@ -45,14 +44,20 @@ TOPIC_TO_URL = {
   'SEMIANNUAL_REPORTS': 'https://www.sec.gov/about/offices/oig/inspector_general_reppubs_semireports.shtml',
   'TESTIMONY': 'https://www.sec.gov/about/offices/oig/inspector_general_reppubs_testimony.shtml',
   'OTHER': 'https://www.sec.gov/about/offices/oig/inspector_general_reppubs_other.shtml',
-  'FOIA': 'https://www.sec.gov/foia/docs/foia-oig-reports.htm',
 }
 BASE_REPORT_URL = "https://www.sec.gov"
 
 # Some reports have bugs such that it is hard to find the published time.
 # Hardcode these for now.
 REPORT_URL_TO_PUBLISHED_DATETIMES = {
-  "https://www.sec.gov/about/oig/audit/246fin.htm": datetime.datetime(1997, 1, 7)
+  "http://www.justice.gov/opa/pr/2011/March/11-crm-341.html": datetime.datetime(2011, 3, 16),
+  "https://www.sec.gov/about/oig/audit/246fin.htm": datetime.datetime(1997, 1, 7),
+  "https://www.sec.gov/about/offices/oig/reports/reppubs/other/finalpeerreviewreport-sec.pdf": datetime.datetime(2012, 8, 23),
+  "https://www.sec.gov/about/offices/oig/reports/audits/2010/478.pdf": datetime.datetime(2010, 5, 7),
+  "https://www.sec.gov/about/offices/oig/reports/reppubs/other/cpb_peerreview-sec.pdf": datetime.datetime(2010, 1, 22),
+  "https://www.sec.gov/about/offices/oig/reports/reppubs/other/kotz_legislativerecommendationsforbankingcommittee.pdf": datetime.datetime(2009, 10, 29),
+  "https://www.sec.gov/about/offices/oig/reports/reppubs/other/sec_oig_pressrelease_1_13.pdf": datetime.datetime(2012, 1, 13),
+  "https://www.sec.gov/about/offices/oig/reports/reppubs/other/oig_strategicplan2010-2015-9-1-10-508.pdf": datetime.datetime(2010, 9, 1),
 }
 
 def run(options):
@@ -108,7 +113,7 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
   published_on = published_date_for_report(published_on_text, title, report_url, last_published_on)
 
   if published_on.year not in year_range:
-    logger.debug("[%s] Skipping, not in requested range." % landing_url)
+    logging.debug("[%s] Skipping, not in requested range." % landing_url)
     return None, None
 
   logging.debug("### Processing report %s" % report_link)
@@ -144,6 +149,7 @@ def published_date_for_report(published_on_text, title, report_url, last_publish
 
     # Try parsing date from the end of the title
     ("".join(title.split(",")[-2:]).strip(), "%B %d %Y"),
+    (" ".join(title.split()[-2:]), '%B %Y'),
 
     # 'April 1, 2005 to September 30, 2005 Tables'
     (" ".join(title.rstrip(" Tables").split()[-3:]), '%B %d, %Y'),
