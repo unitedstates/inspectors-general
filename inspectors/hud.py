@@ -157,8 +157,6 @@ def report_from(report_row, year_range):
   return report
 
 def url_for(year_range, page=1):
-  page -= 1  # The website uses zero-index pages
-
   start_year = year_range[0]
   end_year = year_range[-1]
   if start_year < 2004:
@@ -166,7 +164,7 @@ def url_for(year_range, page=1):
     # requesting before that time, remove all date filters and we will later
     # filter the results in memory
     start_year, end_year = '', ''
-  return '%s?keys=&date_filter[min][year]=%s&date_filter[max][year]=%s&page=%i' % (BASE_URL, start_year, end_year, page)
+  return '%s?keys=&date_filter[min][year]=%s&date_filter[max][year]=%s&page=%i' % (BASE_URL, start_year, end_year, page-1)
 
 
 utils.run(run) if (__name__ == "__main__") else None
