@@ -73,7 +73,7 @@ def report_from(report_row, year_range):
   landing_url = urljoin(BASE_REPORT_PAGE_URL, landing_url_relative)
 
   if published_on.year not in year_range:
-    logger.debug("[%s] Skipping, not in requested range." % landing_url)
+    logging.debug("[%s] Skipping, not in requested range." % landing_url)
     return
 
   logging.debug("### Processing report %s" % landing_url)
