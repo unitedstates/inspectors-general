@@ -70,7 +70,7 @@ def run(options):
 
     try:
       year_results = doc.select("#Listing")[0]
-      results =[x for x in year_results.select("ul li ul li")]
+      results = [x for x in year_results.select("ul li ul li")]
     except IndexError:
       try:
         all_results = doc.select("#bodyholder")[0]
@@ -134,6 +134,7 @@ def find_first_matching_datetime_format_from_text(text_datetime_format_tuples):
       pass
 
 def published_date_for_report(published_on_text, title, report_url, last_published_on):
+  "There are multiple different ways we try to extract the published date"
   if report_url in REPORT_URL_TO_PUBLISHED_DATETIMES:
     return REPORT_URL_TO_PUBLISHED_DATETIMES[report_url]
 
