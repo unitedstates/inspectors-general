@@ -114,7 +114,7 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % landing_url)
-    return None, None
+    return None, published_on
 
   logging.debug("### Processing report %s" % report_link)
 
