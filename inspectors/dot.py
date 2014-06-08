@@ -157,7 +157,7 @@ def report_from(result, year_range, topic):
 
   report = {
     'inspector': 'dot',
-    'inspector_url': 'https://www.oig.dot.gov/',
+    'inspector_url': 'http://www.oig.dot.gov',
     'agency': 'dot',
     'agency_name': 'Department of Transportation',
     'report_id': report_id,
