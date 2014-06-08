@@ -27,8 +27,11 @@ from utils import utils, inspector
 #          SA   - Semiannual Reports
 
 # Notes to IG's web team:
-#   - All report types the same (some report links just link to other agency's homepages)
+#   - All report types are the same (some report links just link to other agency's homepages)
+#   - No easy way to distinguish work product from preliminary and intermediary announcements.
 #   - Add report ids to all pages in a consistent way
+#   - From a report's landing page, no way to see what oversight area or sub-agency a report belongs to.
+#   - Read https://github.com/unitedstates/inspectors-general/pull/50 for more details.
 
 TOPIC_TO_URL = {
   "A": "http://www.oig.dot.gov/audits",
@@ -157,7 +160,7 @@ def report_from(result, year_range, topic):
 
   report = {
     'inspector': 'dot',
-    'inspector_url': 'http://www.oig.dot.gov',
+    'inspector_url': 'https://www.oig.dot.gov',
     'agency': 'dot',
     'agency_name': 'Department of Transportation',
     'report_id': report_id,
