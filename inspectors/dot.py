@@ -159,7 +159,7 @@ def report_from(result, year_range, topic):
     'inspector': 'dot',
     'inspector_url': 'https://www.oig.dot.gov/',
     'agency': 'dot',
-    'agency_name': 'Development of Transportation',
+    'agency_name': 'Department of Transportation',
     'report_id': report_id,
     'url': report_url,
     'title': title,
