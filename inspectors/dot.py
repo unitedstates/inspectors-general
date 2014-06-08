@@ -26,6 +26,9 @@ from utils import utils, inspector
 #          R    - Recovery Act
 #          SA   - Semiannual Reports
 
+# Notes to IG's web team:
+#   - All report types the same (some report links just link to other agency's homepages)
+#   - Add report ids to all pages in a consistent way
 
 TOPIC_TO_URL = {
   "A": "http://www.oig.dot.gov/audits",
@@ -34,6 +37,24 @@ TOPIC_TO_URL = {
   "C": "http://www.oig.dot.gov/correspondence",
   "R": "http://www.oig.dot.gov/recovery",
   "SA": "http://www.oig.dot.gov/semiannual-reports",
+}
+
+TYPES_WITHOUT_REPORTS = [
+  'New Audit Announcements',
+]
+
+UNRELEASED_REPORT_TYPES = [
+  'Investigations',
+  'Audit Reports',
+]
+
+UNRELEASED_REPORT_IDS = [
+  "CC-2000-290",
+  "AV-2009-066"
+]
+
+LANDING_URLS_TO_REPORT_LINKS = {
+  "http://www.oig.dot.gov/library-item/5235": "http://www.osc.gov/FY2010/Scanned/10-07%20DI-08-2225/DI-08-2225%20Agency%20Report%20Part%201%20(Revised).PDF",
 }
 
 BASE_REPORT_PAGE_URL = BASE_REPORT_URL = "http://www.oig.dot.gov/"
@@ -56,7 +77,7 @@ def run(options):
       results = doc.select(".item-list ul li")
 
       for result in results:
-        report = report_from(result, year_range)
+        report = report_from(result, year_range, topic)
         if report:
           inspector.save_report(report)
 
@@ -64,7 +85,7 @@ def urls_for(year_range, topic):
   topic_url = TOPIC_TO_URL[topic]
   return ["%s?date_filter[value][year]=%s" % (topic_url, year) for year in year_range]
 
-def report_from(result, year_range):
+def report_from(result, year_range, topic):
   published_date_text = result.select('.date-display-single')[0].text
   published_on = datetime.datetime.strptime(published_date_text, "%m.%d.%Y")
 
@@ -85,19 +106,54 @@ def report_from(result, year_range):
   report_page = BeautifulSoup(report_page_body)
   summary = report_page.select(".summary-body")[0].text.strip()
 
+  report_type = report_page.select("#content-wrapper div h2")[0].text
+
+  try:
+    report_id = report_page.select("div.project-id")[0].text
+    report_id = report_id.replace("Project ID: ", "")  # Strip out the text
+  except IndexError:
+    report_id = None
+
   unreleased = False
-  missing = False
   try:
     report_url = urljoin(BASE_REPORT_URL, report_page.select(".download-pdf a")[0]['href'])
-  except IndexError as exc:
-    if 'For Official Use Only' in summary:
+  except IndexError:
+    try:
+      report_url = urljoin(BASE_REPORT_URL, report_page.select("div.item-link a")[0]['href'])
+    except IndexError as exc:
+      if report_type in TYPES_WITHOUT_REPORTS:
+        # Some types just don't have reports(Announcements), ignore them
+        return
+      elif (
+          'For Official Use Only' in summary
+          or report_type in UNRELEASED_REPORT_TYPES
+          or report_id in UNRELEASED_REPORT_IDS
+        ):
+        unreleased = True
+        report_url = None
+        if not report_id:
+          report_id = landing_url.split("/")[-1]
+      elif landing_url in LANDING_URLS_TO_REPORT_LINKS:
+        report_url = LANDING_URLS_TO_REPORT_LINKS[landing_url]
+      else:
+        raise exc
+
+  # Try to pull the filename for a report_id
+  if not report_id:
+    report_id = os.path.splitext(os.path.basename(report_url))[0]
+
+  # Fall back to using the id from the landing_url
+  if not report_id:
+    report_id = landing_url.split("/")[-1]
+
+  # Some investigations provide a report link, but they are just links to other
+  # sites. Mark these as unreleased.
+  # Ex. http://www.oig.dot.gov/library-item/5085
+  if report_url:
+    report_extension = os.path.splitext(os.path.basename(report_url))[1]
+    if report_type == 'Investigations' and not report_extension:
       unreleased = True
       report_url = None
-      report_id = landing_url.split("/")[-1]
-    else:
-      raise exc
-  else:
-    report_id = os.path.splitext(os.path.basename(report_url))[0]
 
   report = {
     'inspector': 'dot',
@@ -110,11 +166,11 @@ def report_from(result, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
     'landing_url': landing_url,
     'summary': summary,
+    'topic': topic,
+    'type': report_type,
   }
   if unreleased:
     report['unreleased'] = unreleased
-  if missing:
-    report['missing'] = missing
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
