@@ -6,7 +6,9 @@ A project to collect reports from the offices of Inspectors General across the f
 
 * [Department of Defense](http://www.dodig.mil/)
 * [Department of Energy](http://energy.gov/ig/)
+* [Department of Transportation](https://www.oig.dot.gov/)
 * [General Services Administration](http://www.gsaig.gov/)
+* [Securities and Exchange Commission (SEC)](https://www.sec.gov/oig/)
 * [US Postal Service](http://www.uspsoig.gov/)
 * [Department of Homeland Security](http://www.oig.dhs.gov/), which includes:
   * Secret Service
@@ -25,6 +27,7 @@ A project to collect reports from the offices of Inspectors General across the f
   * Drug Enforcement Administration (DEA)
   * Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF)
   * (and others)
+* [Department of Housing and Urban Development (HUD)](http://www.hudoig.gov/)
 * [Amtrak](http://amtrakoig.gov/)
 * [Export-Import Bank](http://www.exim.gov/oig/index.cfm)
 
