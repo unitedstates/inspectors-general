@@ -77,7 +77,7 @@ def validate_report(report):
   )
   for field in required:
     value = report.get(field)
-    if (value is None) or value == "":
+    if (value is None) or value.strip() == "":
       return "Missing a required field: %s" % field
 
   # A URL is required, unless 'unreleased' is set to True.

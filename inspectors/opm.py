@@ -4,6 +4,7 @@
 from utils import utils, inspector
 from bs4 import BeautifulSoup
 import bs4
+import os
 from datetime import datetime
 import calendar
 
@@ -100,7 +101,13 @@ def report_from(item):
     pass
 
   # if the document doesn't have a listed id - use slug of name, stored at a[title]
-  if raw_id is None: raw_id = raw_link.get("title")
+  if (raw_id is None) or (raw_id.strip() == ""):
+    raw_id = raw_link.get("title")
+    if not raw_id:
+      filename = os.path.basename(raw_link.get('href'))
+      raw_id = os.path.splitext(filename)[0]
+
+  print(raw_id)
 
   report['report_id'] = raw_id
 
