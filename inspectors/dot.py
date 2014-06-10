@@ -158,6 +158,13 @@ def report_from(result, year_range, topic):
       unreleased = True
       report_url = None
 
+  # Check for related reports. This will help us group related reports later.
+  related_reports = [
+    urljoin(BASE_REPORT_URL, link['href'])
+    for link
+    in report_page.select(".view-related-library-items li a")
+  ]
+
   report = {
     'inspector': 'dot',
     'inspector_url': 'https://www.oig.dot.gov',
@@ -174,6 +181,8 @@ def report_from(result, year_range, topic):
   }
   if unreleased:
     report['unreleased'] = unreleased
+  if related_reports:
+    report['related_reports'] = related_reports
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
