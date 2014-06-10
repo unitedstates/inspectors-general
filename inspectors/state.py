@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import datetime
+import logging
+import os
 import re
 
 from bs4 import BeautifulSoup
@@ -42,16 +45,48 @@ TOPIC_TO_URL = {
   "MA": "http://oig.state.gov/lbry/alerts/index.htm",
   "SR": "http://oig.state.gov/lbry/sar/index.htm",
   "OC": "http://oig.state.gov/lbry/congress/index.htm",
-  "RA": "http://oig.state.gov/arra/index.htm",
+
+  # "RA": "http://oig.state.gov/arra/index.htm",
+  # break this up into
+  # http://oig.state.gov/arra/plansreports/index.htm
+  # http://oig.state.gov/arra/financialactivity/index.htm
+
   # "CT": "http://oig.state.gov/aboutoig/offices/cpa/tstmny/index.htm",
   # TODO the highlights are years...
   "SPWP": "http://oig.state.gov/lbry/plans/index.htm",
-  "O": "http://oig.state.gov/lbry/other/index.htm",
+  "O": "http://oig.state.gov/lbry/other/c26047.htm",
   # "FOIA": "http://oig.state.gov/foia/readroom/index.htm",
   # TODO implement
+
+  # http://oig.state.gov/lbry/other/c39666.htm
+  # http://oig.state.gov/lbry/other/c26046.htm
+}
+
+TOPIC_NAMES = {
+  "A": "Audits",
+  "I": "Inspections",
+  "BBG": "Broadcasting Board of Governors",
+  "IT": "Information Technology",
+  "MA": "Management Alerts and Other Action Items",
+  "SR": "Semiannual Reports to Congress",
+  "OC": "Other Reports to Congress",
+  "RA": "Recovery Act",
+  "CT": "Congressional Testimony",
+  "SPWP": "Strategic, Performance, and Work Plans",
+  "O": "Other OIG Reports and Publications",
+  "FOIA": "FOIA Electronic Reading Room",
 }
 
 NESTED_TOPICS = ["A", "I", "BBG"]
+
+# TODO kill?
+REPORT_ID_TO_PUBLISHED_ON = {
+  # '197264': datetime.datetime(2012, 8, 1),
+  # '196458': datetime.datetime(2012, 8, 10),
+  # '169045': datetime.datetime(2011, 7, 12),
+}
+
+# TODO archives
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -64,6 +99,7 @@ def run(options):
 
   for topic in topics:
     topic_url = TOPIC_TO_URL[topic]
+    topic_name = TOPIC_NAMES[topic]
 
     if topic in NESTED_TOPICS:
       subtopic_link_map = get_page_highlights(topic_url)
@@ -71,17 +107,18 @@ def run(options):
       # TODO
       subtopic_link_map = {None: topic_url}
 
-    for subtopic_name, subtopic_link in subtopic_link_map.items():
-      print(topic, subtopic_name, subtopic_link)
+    for subtopic_name, subtopic_url in subtopic_link_map.items():
+      print(topic, subtopic_name, subtopic_url)
+      logging.debug("## Processing subtopic %s" % subtopic_name)
 
-    # # Suggested parser, Beautiful Soup 4.
-    # doc = BeautifulSoup(body)
-    # results = doc.select("some-selector")
+      body = utils.download(subtopic_url)
+      doc = BeautifulSoup(body)
 
-    # for result in results:
-    #   report = report_from(result)
-    #   inspector.save_report(report)
-
+      results = doc.select("#body-row02-col02andcol03 a")
+      for result in results:
+        report = report_from(result, topic_name)
+        if report:
+          inspector.save_report(report)
 
 # suggested: construct URL based on options
 def url_for(options, page = 1):
@@ -89,9 +126,61 @@ def url_for(options, page = 1):
 
 # suggested: a function that gets report details from a parent element,
 # extract a dict of details that are ready for inspector.save_report().
-def report_from(result):
-  pass
+def report_from(result, topic_name):
+  title = result.text.strip()
+  report_url = result['href']
 
+  if ("archives" in title.lower()
+      or 'foia' in title.lower()
+      or 'foia' in report_url
+      or report_url in [
+        'http://oig.state.gov/lbry/sar/index.htm',
+        'http://oig.state.gov/lbry/congress/index.htm'
+        ]
+    ):
+    return None
+
+  logging.debug("## Processing report %s" % report_url)
+
+  report_filename = report_url.split("/")[-1]
+  report_id = os.path.splitext(report_filename)[0]
+
+  try:
+    previous_sibling_text = str(result.previous_sibling).strip()
+  except AttributeError:
+    previous_sibling_text = ""
+  except TypeError:
+    import pdb;pdb.set_trace()
+
+  if report_id in REPORT_ID_TO_PUBLISHED_ON:
+    published_on = REPORT_ID_TO_PUBLISHED_ON[report_id]
+  else:
+    try:
+      published_on = datetime.datetime.strptime(previous_sibling_text, "-%m/%d/%y")
+    except ValueError:
+      try:
+        published_on = datetime.datetime.strptime("-".join(title.split()[-2:]), "%b-%Y")
+      except ValueError:
+        try:
+          # Fall back to when the report was posted to the site
+          posted_text = result.find_parent("p").previous_sibling.previous_sibling.text
+          published_on = datetime.datetime.strptime(posted_text, 'Posted %B %d, %Y')
+        except ValueError:
+          import pdb;pdb.set_trace()
+        except AttributeError:
+          import pdb;pdb.set_trace()
+
+  return {
+    'inspector': 'state',
+    'inspector_url': 'http://oig.state.gov/',
+    'agency': 'state',
+    'agency_name': 'Department of State',
+    'report_id': report_id,
+    'topic': topic_name,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
 
 def get_page_highlights(page_url):
   body = utils.download(page_url)
