@@ -50,13 +50,12 @@ TOPIC_TO_URL = {
 
   # "CT": "http://oig.state.gov/aboutoig/offices/cpa/tstmny/index.htm",
   # TODO the highlights are years...
+
   "SPWP": "http://oig.state.gov/lbry/plans/index.htm",
   "O": "http://oig.state.gov/lbry/other/c26047.htm",
-  # "FOIA": "http://oig.state.gov/foia/readroom/index.htm",
-  # TODO implement
-
-  # http://oig.state.gov/lbry/other/c39666.htm
-  # http://oig.state.gov/lbry/other/c26046.htm
+  "FOIA": "http://oig.state.gov/foia/readroom/index.htm",
+  "PR": "http://oig.state.gov/lbry/other/c39666.htm",
+  "P": "http://oig.state.gov/lbry/other/c26046.htm",
 }
 
 TOPIC_NAMES = {
@@ -72,7 +71,9 @@ TOPIC_NAMES = {
   "CT": "Congressional Testimony",
   "SPWP": "Strategic, Performance, and Work Plans",
   "O": "Other OIG Reports and Publications",
-  "FOIA": "FOIA Electronic Reading Room",
+  "FOIA": "Freedom of Information Act",
+  "PR": "Peer Reviews",
+  "P": "Publications",
 }
 
 NESTED_TOPICS = ["A", "I", "BBG"]
@@ -113,8 +114,12 @@ def run(options):
       doc = BeautifulSoup(body)
 
       results = doc.select("#body-row02-col02andcol03 a")
+      if not results:
+        results = doc.select("#body-row02-col01andcol02andcol03 a")
+      if not results:
+        raise AssertionError("No report links found for %s" % landing_url)
       for result in results:
-        report = report_from(result, topic_name)
+        report = report_from(result, topic_name, year_range)
         if report:
           inspector.save_report(report)
 
@@ -124,7 +129,7 @@ def url_for(options, page = 1):
 
 # suggested: a function that gets report details from a parent element,
 # extract a dict of details that are ready for inspector.save_report().
-def report_from(result, topic_name):
+def report_from(result, topic_name, year_range):
   title = result.text.strip()
   report_url = result['href']
 
@@ -167,6 +172,10 @@ def report_from(result, topic_name):
           import pdb;pdb.set_trace()
         except AttributeError:
           import pdb;pdb.set_trace()
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
 
   return {
     'inspector': 'state',
