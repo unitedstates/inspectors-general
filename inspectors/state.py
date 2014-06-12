@@ -45,11 +45,8 @@ TOPIC_TO_URL = {
   "MA": "http://oig.state.gov/lbry/alerts/index.htm",
   "SR": "http://oig.state.gov/lbry/sar/index.htm",
   "OC": "http://oig.state.gov/lbry/congress/index.htm",
-
-  # "RA": "http://oig.state.gov/arra/index.htm",
-  # break this up into
-  # http://oig.state.gov/arra/plansreports/index.htm
-  # http://oig.state.gov/arra/financialactivity/index.htm
+  "RA": "http://oig.state.gov/arra/plansreports/index.htm",
+  "RAF": "http://oig.state.gov/arra/financialactivity/index.htm",
 
   # "CT": "http://oig.state.gov/aboutoig/offices/cpa/tstmny/index.htm",
   # TODO the highlights are years...
@@ -71,6 +68,7 @@ TOPIC_NAMES = {
   "SR": "Semiannual Reports to Congress",
   "OC": "Other Reports to Congress",
   "RA": "Recovery Act",
+  "RAF": "Recovery Act Financial Reports",
   "CT": "Congressional Testimony",
   "SPWP": "Strategic, Performance, and Work Plans",
   "O": "Other OIG Reports and Publications",
