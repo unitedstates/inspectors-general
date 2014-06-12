@@ -89,15 +89,16 @@ NESTED_TOPICS = ["A", "I", "BBG", "CT"]
 # These are links that appear like reports, but are not.
 BLACKLIST_REPORT_URLS = [
   # 404, should probably investigate
-  "http://oig.state.gov/documents/organization/106950.pdf",
+  "http://oig.state.gov/documents/organization/106950.pdf",  # From http://oig.state.gov/aboutoig/offices/cpa/tstmny/2008/index.htm
 
-  # 404s, probably don't need to investigate (should just be a bio links)
+  # We probably want this
+  "http://oig.state.gov/documents/organization/207582.pdf",  # From http://oig.state.gov/aboutoig/offices/cpa/tstmny/2013/index.htm
+
+  # Things that are just not reports
+  "http://oig.state.gov/foia/index.htm",
+  "http://oig.state.gov/foia/196253.htm",
   "http://oig.state.gov/about/c25120.htm",
   "http://oig.state.gov/audits/c7795.htm",
-
-  # TODO we probably want these
-  "http://oig.state.gov/documents/organization/207582.pdf",  # From http://oig.state.gov/aboutoig/offices/cpa/tstmny/2013/index.htm
-  "http://oig.state.gov/lbry/archives/it/17998.htm",  # From http://oig.state.gov/lbry/archives/it/index.htm
 ]
 
 # Sometimes a report will be linked to multiple times on the same page. We only
@@ -158,35 +159,7 @@ def report_from(result, year_range, topic, subtopic=None):
   title = result.text.strip()
   report_url = result['href']
 
-  # There are lots of links and formats. Ignore those that are not to this site.
-  if "oig.state.gov" not in report_url:
-    return
-
-  # These are inline links to officials in the OIG
-  if "http://oig.state.gov/aboutoig/bios" in report_url:
-    return
-
-  if report_url in BLACKLIST_REPORT_URLS:
-    return
-
-  # See the definition of REPORT_URLS_SEEN for more
-  if report_url in REPORT_URLS_SEEN:
-    return
-
-  REPORT_URLS_SEEN.add(report_url)
-
-  if ("archives" in title.lower()
-      or 'foia' in title.lower()
-      or 'foia' in report_url
-      or report_url in [
-        'http://oig.state.gov/lbry/sar/index.htm',
-        'http://oig.state.gov/lbry/congress/index.htm'
-        ]
-    ):
-    return None
-
-  # TODO this is way to hacky. See http://oig.state.gov/aboutoig/offices/cpa/tstmny/2009/index.htm
-  if 'Acting Inspector General' in title:
+  if skip_url(report_url):
     return
 
   # These are always just dupes of the previous report
@@ -231,6 +204,33 @@ def report_from(result, year_range, topic, subtopic=None):
   if subtopic:
     result['subtopic'] = subtopic
   return result
+
+def skip_url(report_url):
+  # There are lots of links and formats. Ignore those that are not to this site.
+  if "oig.state.gov" not in report_url:
+    return True
+
+  # A lot of the pages link to their archive pages. We grab those later.
+  if "oig.state.gov/lbry/archives" in report_url:
+    return True
+
+  # Some pages will also link to other topic pages. We grab those later.
+  if report_url in TOPIC_TO_URL.values():
+    return True
+
+  # These are inline links to official bios in the OIG
+  if "oig.state.gov/aboutoig/bios" in report_url:
+    return True
+
+  if report_url in BLACKLIST_REPORT_URLS:
+    return True
+
+  # See the definition of REPORT_URLS_SEEN for more
+  if report_url in REPORT_URLS_SEEN:
+    return True
+
+  REPORT_URLS_SEEN.add(report_url)
+  return False
 
 def get_page_highlights(page_url):
   body = utils.download(page_url)
