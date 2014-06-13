@@ -84,6 +84,7 @@ TOPIC_NAMES = {
   "P": "Publications",
 }
 
+# Topics that contain subtopics
 NESTED_TOPICS = ["A", "I", "BBG", "CT"]
 
 # These are links that appear like reports, but are not.
@@ -121,6 +122,7 @@ def run(options):
     topic_url = TOPIC_TO_URL[topic]
     extract_reports_for_topic(topic, topic_url, year_range)
 
+    # Some topics have additional archive pages to grab
     if topic in ARCHIVE_TOPICS:
       archive_url = ARCHIVE_TOPICS[topic]
       extract_reports_for_topic(topic, archive_url, year_range)
@@ -129,6 +131,7 @@ def extract_reports_for_topic(topic, topic_url, year_range):
   if topic in NESTED_TOPICS:
     subtopic_link_map = get_page_highlights(topic_url)
   else:
+    # No subtopic, just look for report in the topic_url
     subtopic_link_map = {None: topic_url}
 
   topic_name = TOPIC_NAMES[topic]
@@ -159,6 +162,9 @@ def report_from(result, year_range, topic, subtopic=None):
   title = result.text.strip()
   report_url = result['href']
 
+  # Out current method of finding reports is to just look for all links within
+  # a certain section of the page. This results in us grabbing a few extra link
+  # that we filter out here.
   if skip_url(report_url):
     return
 
@@ -233,30 +239,48 @@ def skip_url(report_url):
   return False
 
 def get_page_highlights(page_url):
+  """
+  A lot of pages on the oig.state.gov site load their 'page highlights' through
+  through additional calls after the page has loaded. We often need to get these
+  links. This function returns a dictionary mapping the page highlight titles
+  to their links.
+
+  For example, calling
+
+  get_page_highlights("http://oig.state.gov/lbry/archives/bbg/index.htm")
+
+  would return something like
+
+  {
+    'BBG Audits': 'http://oig.state.gov/lbry/archives/bbg/aud/index.htm',
+    'BBG Information Technology': 'http://oig.state.gov/lbry/archives/bbg/it/index.htm',
+    'BBG Inspections': 'http://oig.state.gov/lbry/archives/bbg/isp/index.htm'
+  }
+  """
   body = utils.download(page_url)
   doc = BeautifulSoup(body)
 
+  # Each page on the site is given an id that is used to find the highlights
   page_id = re.search("item_id = '(\d+)';", doc.find(language='javascript').text).groups()[0]
 
   # The first hightlights page just gives a link to the real page
-  page_highlights_url = "http://oig.state.gov/highlights_xml/c_%s.xml" % page_id
-  page_highlights_body = utils.download(page_highlights_url)
-  page_highlights = BeautifulSoup(page_highlights_body)
-  real_highlights_url = page_highlights.find("highlightpath")
+  first_highlights = beautifulsoup_from_url("http://oig.state.gov/highlights_xml/c_%s.xml" % page_id)
+  highlights_url = first_highlights.find("highlightpath")
 
-  if not real_highlights_url:
-    page_highlights_url = "http://oig.state.gov/learnmore_xml/c_%s.xml" % page_id
-    page_highlights_body = utils.download(page_highlights_url)
-    page_highlights = BeautifulSoup(page_highlights_body)
-    real_highlights_url = page_highlights.find("highlightpath")
+  # If we can't find the highlights from the highlights_xml, fall back to learnmore_xml
+  if not highlights_url:
+    first_highlights = beautifulsoup_from_url("http://oig.state.gov/learnmore_xml/c_%s.xml" % page_id)
+    highlights_url = first_highlights.find("highlightpath")
 
-  page_highlights_url = "http://oig.state.gov%s" % real_highlights_url.text
-  page_highlights_body = utils.download(page_highlights_url)
-  page_highlights = BeautifulSoup(page_highlights_body)
+  highlights = beautifulsoup_from_url("http://oig.state.gov%s" % highlights_url.text)
   return {
     link.text.replace(u'•', '').strip(): link['href']
     for link
-    in page_highlights.select("a")
+    in highlights.select("a")
   }
+
+def beautifulsoup_from_url(url):
+  body = utils.download(url)
+  return BeautifulSoup(body)
 
 utils.run(run) if (__name__ == "__main__") else None
