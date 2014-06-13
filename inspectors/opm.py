@@ -107,8 +107,6 @@ def report_from(item):
       filename = os.path.basename(raw_link.get('href'))
       raw_id = os.path.splitext(filename)[0]
 
-  print(raw_id)
-
   report['report_id'] = raw_id
 
   return report
