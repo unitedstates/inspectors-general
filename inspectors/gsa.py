@@ -21,6 +21,8 @@ def crawl_index(base_url, options, is_meta_index=False):
     max_pages = int(max_pages)
   page = 1
 
+  only_id = options.get('report_id')
+
   done = False
   while not done:
     url = url_for(base_url, page)
@@ -50,8 +52,14 @@ def crawl_index(base_url, options, is_meta_index=False):
       else:
         report = report_from(result, base_url)
         year = int(report['published_on'][:4])
-        if year in year_range:
-          inspector.save_report(report)
+
+        if only_id and (report['report_id'] != only_id):
+          continue
+
+        if year not in year_range:
+          continue
+
+        inspector.save_report(report)
 
     page = next_page
     if not done:
