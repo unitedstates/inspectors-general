@@ -134,10 +134,9 @@ def extract_reports_for_topic(topic, topic_url, year_range):
     # No subtopic, just look for report in the topic_url
     subtopic_link_map = {None: topic_url}
 
-  topic_name = TOPIC_NAMES[topic]
   for subtopic_name, subtopic_url in subtopic_link_map.items():
     logging.debug("## Processing subtopic %s" % subtopic_name)
-    extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_name)
+    extract_reports_for_subtopic(subtopic_url, year_range, topic, subtopic_name)
 
 def extract_reports_for_subtopic(subtopic_url, year_range, topic, subtopic=None):
   if subtopic_url.startswith("http://httphttp://"):
@@ -153,12 +152,19 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic, subtopic=None)
   if not results and "There are currently no reports in this category" not in doc.text:
     raise AssertionError("No report links found for %s" % subtopic_url)
 
+  topic_name = TOPIC_NAMES[topic]
+  # Broadcasting Board of Governors is a fully independent agency
+  if topic == 'BBG':
+    agency = 'bbg'
+  else:
+    agency = 'state'
+
   for result in results:
-    report = report_from(result, year_range, topic, subtopic)
+    report = report_from(result, year_range, agency, topic_name, subtopic)
     if report:
       inspector.save_report(report)
 
-def report_from(result, year_range, topic, subtopic=None):
+def report_from(result, year_range, agency, topic, subtopic=None):
   title = result.text.strip()
   report_url = result['href']
 
@@ -199,7 +205,7 @@ def report_from(result, year_range, topic, subtopic=None):
   result = {
     'inspector': 'state',
     'inspector_url': 'http://oig.state.gov/',
-    'agency': 'state',
+    'agency': agency,
     'agency_name': 'Department of State',
     'report_id': report_id,
     'topic': topic,
