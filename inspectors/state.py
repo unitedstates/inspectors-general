@@ -202,11 +202,16 @@ def report_from(result, year_range, agency, topic, subtopic=None):
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
+  names = {
+    'bbg': 'Broadcasting Board of Governors',
+    'state': 'Department of State'
+  }
+
   result = {
     'inspector': 'state',
     'inspector_url': 'http://oig.state.gov/',
     'agency': agency,
-    'agency_name': 'Department of State',
+    'agency_name': names[agency],
     'report_id': report_id,
     'topic': topic,
     'url': report_url,
