@@ -154,7 +154,7 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic, subtopic=None)
 
   topic_name = TOPIC_NAMES[topic]
   # Broadcasting Board of Governors is a fully independent agency
-  if topic == 'BBG':
+  if topic == 'BBG' or subtopic == 'Broadcasting Board of Governors':
     agency = 'bbg'
   else:
     agency = 'state'
