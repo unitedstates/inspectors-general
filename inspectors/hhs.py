@@ -51,7 +51,7 @@ TOPIC_TO_URL = {
   "OAS": 'https://oig.hhs.gov/reports-and-publications/oas/index.asp',
   # "OE": 'https://oig.hhs.gov/reports-and-publications/oei/subject_index.asp',
   "HCF": 'https://oig.hhs.gov/reports-and-publications/hcfac/index.asp',
-  # "SAR": 'https://oig.hhs.gov/reports-and-publications/semiannual/index.asp',
+  "SAR": 'https://oig.hhs.gov/reports-and-publications/semiannual/index.asp',
   "MIR": 'https://oig.hhs.gov/reports-and-publications/medicaid-integrity/index.asp',
   "TMPC": 'https://oig.hhs.gov/reports-and-publications/top-challenges/',
   "CPR": 'https://oig.hhs.gov/reports-and-publications/compendium/index.asp',
@@ -101,7 +101,11 @@ REPORT_PUBLISHED_MAPPING = {
   'OIG-Strategic-Plan-2014-2018': datetime.datetime(2014, 1, 1),
 }
 
-# https://oig.hhs.gov/reports-and-publications/index.asp
+# These are links that appear like reports, but are not.
+BLACKLIST_REPORT_URLS = [
+  'http://get.adobe.com/reader/'
+]
+
 BASE_URL = "https://oig.hhs.gov"
 
 def run(options):
@@ -145,9 +149,8 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
     if result.parent.parent.attrs.get('id') == 'related':
       continue
     report = report_from(result, year_range, topic_name, subtopic_name)
-    if not report:
-      import pdb;pdb.set_trace()
-    inspector.save_report(report)
+    if report:
+      inspector.save_report(report)
 
 def report_from(result, year_range, topic, subtopic=None):
   if result.name == 'a':
@@ -163,6 +166,9 @@ def report_from(result, year_range, topic, subtopic=None):
 
   if report_url in REPORT_URL_MAPPING:
     report_url = REPORT_URL_MAPPING[report_url]
+
+  if report_url in BLACKLIST_REPORT_URLS:
+    return
 
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]
