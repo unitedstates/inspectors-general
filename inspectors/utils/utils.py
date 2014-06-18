@@ -153,7 +153,7 @@ def format_exception(exception):
 
 # assumes working dir is the root dir
 def data_dir():
-  return "data"
+  return options().get('data-directory', 'data')
 def cache_dir():
   return "cache"
 

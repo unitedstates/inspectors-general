@@ -69,7 +69,7 @@ By default, the `igs` script runs all scrapers. It takes the following arguments
 
 * `--safe`: Limit scrapers to those declared in `safe.yml`. The idea is for "safe" scrapers to be appropriate for clients who wish to fully automate their report pipeline, without human intervention when new IGs are added, in a stable way.
 * `--only`: Limit scrapers to a comma-separated list of names. For example, `--only=opm,epa` will run `inspectors/opm.py` and `inspectors/epa.py` in turn.
-
+* `--data-directory`: The directory path to store the output files. Defaults to `data` in the current working directory.
 
 #### Using the data
 
