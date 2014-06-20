@@ -187,11 +187,11 @@ def report_from(result, year_range, topic, subtopic=None):
     except (ValueError, AttributeError):
       try:
         fiscal_year = int(result.text.split(":")[0].split()[1])
-        published_on = datetime.datetime(fiscal_year + 1, 1, 1)
+        published_on = datetime.datetime(fiscal_year - 1, 10, 1)
       except (ValueError, IndexError):
         try:
           fiscal_year = int(report_filename.split("-")[0])
-          published_on = datetime.datetime(fiscal_year + 1, 1, 1)
+          published_on = datetime.datetime(fiscal_year - 1, 10, 1)
         except ValueError:
           try:
             published_on = datetime.datetime.strptime(title.replace(": ", ":"), "Compendium:%B %Y Edition")
@@ -205,7 +205,7 @@ def report_from(result, year_range, topic, subtopic=None):
               except (ValueError, IndexError):
                 if "Fiscal Year" in title:
                   fiscal_year = int(title.replace("Fiscal Year ", ""))
-                  published_on = datetime.datetime(fiscal_year + 1, 1, 1)
+                  published_on = datetime.datetime(fiscal_year - 1, 10, 1)
                 else:
                   import pdb;pdb.set_trace()
 
