@@ -37,7 +37,6 @@ from utils import utils, inspector
 #            B    - OIG Budget
 #            RAOR - Recovery Act Oversight Reports
 #            RAA  - Recovery Act-related Audit and Inspection Reports
-#            O    - GAO Forum Highlights Report: Data Analytics For Oversight
 
 # Notes for IG's web team:
 #  - Fix published date for http://oig.hhs.gov/oas/reports/region3/31200010.asp
@@ -65,10 +64,9 @@ TOPIC_TO_URL = {
   "FRN": 'https://oig.hhs.gov/reports-and-publications/federal-register-notices/index.asp',
   "RA": 'https://oig.hhs.gov/reports-and-publications/regulatory-authorities/index.asp',
 
-  # "B": 'https://oig.hhs.gov/reports-and-publications/budget/index.asp',
+  "B": 'https://oig.hhs.gov/reports-and-publications/budget/index.asp',
   # "RAOR": 'https://oig.hhs.gov/reports-and-publications/recovery/index.asp',
   "RAA": 'https://oig.hhs.gov/reports-and-publications/recovery/recovery_reports.asp',
-  # "O": 'https://oig.hhs.gov/reports-and-publications/other/gao.asp',
 }
 
 TOPIC_NAMES = {
@@ -88,7 +86,6 @@ TOPIC_NAMES = {
   "B": 'OIG Budget',
   "RAOR": 'Recovery Act Oversight Reports',
   "RAA": 'Recovery Act-related Audit and Inspection Reports',
-  "O": 'GAO Forum Highlights Report: Data Analytics For Oversight',
 }
 
 TOPIC_WITH_SUBTOPICS = ['OAS', 'OE']
