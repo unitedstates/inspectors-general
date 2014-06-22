@@ -22,6 +22,8 @@ import calendar
 #
 #    --report_id   limit it to a specific report ID (since/year should include it)
 
+BLACKLIST = ('4A-CI-00-14-015')
+
 def run(options):
   year_range = inspector.year_range(options)
   only_id = options.get('report_id')
@@ -50,6 +52,10 @@ def run(options):
       if type(item) is not bs4.element.Tag:
         continue
       report = report_from(item)
+
+      if report['report_id'] in BLACKLIST:
+        print("Skipping downed report: remember to report this and get it fixed!")
+        continue
 
       # can limit it to just one report, for debugging convenience
       if only_id and only_id != report['report_id']:
