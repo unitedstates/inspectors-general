@@ -45,6 +45,14 @@ from utils import utils, inspector
 #  - Fix published date for https://oig.hhs.gov/oei/reports/oei-06-98-00321.pdf
 #  on https://oig.hhs.gov/reports-and-publications/oei/s.asp. It currently
 #  says Dec 2028.
+#  - Fix published date for https://oig.hhs.gov/oas/reports/region7/70903133.asp
+#  It currently says 14-21-2010.
+#  - Fix published date for https://oig.hhs.gov/oas/reports/region3/31300031.asp
+#  It currently says 03-05-2015.
+#  - Fix published date for https://oig.hhs.gov/oas/reports/region9/91102005.asp
+#  It currently says 04-23-3012.
+#  - Add missing report for 'Use of Discounted Airfares by the Office of the Secretary' (A-03-07-00500)
+#  linked to from https://oig.hhs.gov/reports-and-publications/oas/dept.asp
 
 # TODO archives
 # See archive link on https://oig.hhs.gov/reports-and-publications/oas/acf.asp
@@ -91,15 +99,27 @@ TOPIC_NAMES = {
 TOPIC_WITH_SUBTOPICS = ['OAS', 'OE']
 
 REPORT_URL_MAPPING = {
-  "https://oig.hhs.gov/reports-and-publications/medicaid-integrity/2011/": "https://oig.hhs.gov/reports-and-publications/medicaid-integrity/2011/medicaid_integrity_reportFY11.pdf"
+  "https://oig.hhs.gov/reports-and-publications/medicaid-integrity/2011/": "https://oig.hhs.gov/reports-and-publications/medicaid-integrity/2011/medicaid_integrity_reportFY11.pdf",
+  "https://oig.hhs.gov/reports-and-publications/compendium/2011.asp": "https://oig.hhs.gov/publications/docs/compendium/2011/CMP-March2011-Final.pdf",
 }
 
 REPORT_PUBLISHED_MAPPING = {
   "31200010": datetime.datetime(2012, 8, 3),
-  'OIG-Strategic-Plan-2014-2018': datetime.datetime(2014, 1, 1),
+  "OIG-Strategic-Plan-2014-2018": datetime.datetime(2014, 1, 1),
+  "CMP-March2011-Final": datetime.datetime(2011, 3, 1),
+  "hcfacreport2004": datetime.datetime(2005, 9, 1),
 
   # This has an incorrect datetime (2028)
   'oei-06-98-00321': datetime.datetime(2000, 12, 1),
+
+  # This has an incorrect datetime (14-21-2010)
+  '70903133': datetime.datetime(2010, 4, 21),
+
+  # This has an incorrect datetime (03-05-2015)
+  '31300031': datetime.datetime(2014, 3, 1),
+
+  # This has an incorrect datetime (04-23-3012)
+  '91102005': datetime.datetime(2012, 4, 23),
 }
 
 BLACKLIST_TITLES = [
@@ -110,7 +130,10 @@ BLACKLIST_TITLES = [
 
 # These are links that appear like reports, but are not.
 BLACKLIST_REPORT_URLS = [
-  'http://get.adobe.com/reader/'
+  'http://get.adobe.com/reader/',
+
+  # See note to IG web team
+  'https://oig.hhs.gov/reports/region3/30700500.htm'
 ]
 
 BASE_URL = "https://oig.hhs.gov"
@@ -187,8 +210,14 @@ def report_from(result, year_range, topic, subtopic=None):
   except TypeError:
     import pdb;pdb.set_trace()
 
+  report_url = report_url.strip()
+
   if report_url in REPORT_URL_MAPPING:
     report_url = REPORT_URL_MAPPING[report_url]
+
+  # Ignore reports from other sites
+  if BASE_URL not in report_url:
+    return
 
   if report_url in BLACKLIST_REPORT_URLS:
     return
@@ -204,7 +233,7 @@ def report_from(result, year_range, topic, subtopic=None):
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
   else:
     # Process reports with landing pages
-    if extension != '.pdf':
+    if extension.lower() != '.pdf':
       report_url, published_on = report_from_landing_url(report_url)
     else:
       published_on = published_on_from_inline_link(
@@ -238,20 +267,47 @@ def report_from(result, year_range, topic, subtopic=None):
 def report_from_landing_url(report_url):
   doc = beautifulsoup_from_url(report_url)
 
-  possible_tags = doc.select("#leftContentInterior h1") + doc.select("#leftContentInterior h2")
+  possible_tags = (
+    doc.select("h1") +
+    doc.select("h2") +
+    doc.select("h3") +
+    doc.select("body font p b") +
+    doc.select("body center") +
+    doc.select("body blockquote p")
+  )
+  if not possible_tags:
+    import pdb;pdb.set_trace()
+  published_on = None
   for possible_tag in possible_tags:
     try:
-      published_on_text = possible_tag.contents[0].strip()
-    except TypeError:
-      published_on_text = possible_tag.text.strip()
+      published_on_text = possible_tag.contents[0].split("|")[0]
+    except (TypeError, IndexError):
+      published_on_text = possible_tag.text
 
+    published_on_text = published_on_text.strip().replace(" ", "")
     try:
       published_on = datetime.datetime.strptime(published_on_text, '%m-%d-%Y')
       break
     except TypeError:
       import pdb;pdb.set_trace()
     except ValueError:
-      published_on = None
+      try:
+        published_on = datetime.datetime.strptime(published_on_text, '%m-%d-%y')
+        break
+      except ValueError:
+        try:
+          published_on = datetime.datetime.strptime(published_on_text, '%b%d,%Y')
+        except ValueError:
+          try:
+            published_on = datetime.datetime.strptime(published_on_text, '%B%d,%Y')
+          except ValueError:
+            try:
+              published_on = datetime.datetime.strptime(published_on_text, '%B%Y')
+            except ValueError:
+              try:
+                published_on = datetime.datetime.strptime(possible_tag.contents[-1].strip(), '%m-%d-%Y')
+              except (ValueError, TypeError, IndexError):
+                pass
 
   if published_on is None:
     import pdb;pdb.set_trace()
@@ -259,8 +315,13 @@ def report_from_landing_url(report_url):
   try:
     relative_url = doc.select("#leftContentInterior p.download a")[0]['href']
   except IndexError:
-    relative_url = doc.select("#leftContentInterior p a")[0]['href']
-  report_url = urljoin(BASE_URL, relative_url)
+    try:
+      relative_url = doc.select("#leftContentInterior p a")[0]['href']
+    except IndexError:
+      relative_url = None
+
+  if relative_url is not None:
+    report_url = urljoin(BASE_URL, relative_url)
   return report_url, published_on
 
 missing_datetimes = set()
@@ -335,7 +396,11 @@ def get_subtopic_map(topic):
 
 def beautifulsoup_from_url(url):
   body = utils.download(url)
-  doc = BeautifulSoup(body)
+
+  try:
+    doc = BeautifulSoup(body)
+  except TypeError:
+    import pdb;pdb.set_trace()
 
   # Some of the pages will return meta refreshes
   if doc.find("meta") and doc.find("meta").attrs.get('http-equiv') == 'REFRESH':
