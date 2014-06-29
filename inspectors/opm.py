@@ -5,6 +5,7 @@ from utils import utils, inspector
 from bs4 import BeautifulSoup
 import bs4
 import os
+import time
 from datetime import datetime
 import calendar
 
@@ -22,7 +23,8 @@ import calendar
 #
 #    --report_id   limit it to a specific report ID (since/year should include it)
 
-BLACKLIST = ('4A-CI-00-14-015')
+# previously ignored: 4A-CI-00-14-015
+BLACKLIST = ()
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -63,9 +65,9 @@ def run(options):
 
       inspector.save_report(report)
 
-#  really only here for symbolic purposes
 def url_for():
-  return "https://www.opm.gov/our-inspector-general/reports/"
+  cache_buster = str(int(time.time()))
+  return "https://www.opm.gov/our-inspector-general/reports/?t=%s" % cache_buster
 
 #  generates the report item from a table item
 def report_from(item):
