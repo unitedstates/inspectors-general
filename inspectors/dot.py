@@ -158,6 +158,15 @@ def report_from(result, year_range, topic):
       unreleased = True
       report_url = None
 
+  # The DOT has lots of links to reports from other agencies. Ignore them.
+  if report_url and BASE_REPORT_URL not in report_url:
+    logging.debug("### Skipping report %s (not DOT)" % landing_url)
+    return
+
+  # These are just announcements, not real reports
+  if "Audit Initiated" in title:
+    return
+
   # Check for related reports. This will help us group related reports later.
   related_reports = [
     urljoin(BASE_REPORT_URL, link['href'])

@@ -13,3 +13,6 @@ email:
   from:
   from_name:
   to:
+
+# data output directory
+data_directory: /tmp/data

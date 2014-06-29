@@ -153,6 +153,8 @@ def format_exception(exception):
 
 # assumes working dir is the root dir
 def data_dir():
+  if admin.config and admin.config.get('data_directory'):
+    return admin.config.get('data_directory')
   return "data"
 def cache_dir():
   return "cache"

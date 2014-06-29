@@ -123,7 +123,9 @@ def report_from(tds, published_on_dt, year):
 
   published_on = datetime.datetime.strftime(published_on_dt, '%Y-%m-%d')
 
-  title = tds[1].text.strip()
+  # Don't take all the text because it can sometimes include a <br> and some
+  # annotation.
+  title = tds[1].contents[0].strip()
   if not report_id:
     title_slug = re.sub(r'\W', '', title[:16])
     report_id = (published_on + '-' + title_slug)
