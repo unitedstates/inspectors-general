@@ -15,4 +15,4 @@ email:
   to:
 
 # data output directory
-data_directory: /tmp/data
+data_directory: data
