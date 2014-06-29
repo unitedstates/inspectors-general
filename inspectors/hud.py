@@ -20,8 +20,8 @@ from utils import utils, inspector
 #   - Filters only work back through 2004, but there are documents back to 2001
 #
 
-BASE_URL = 'https://www.hudoig.gov/reports-publications/results'
-BASE_REPORT_PAGE_URL = "https://www.hudoig.gov/"
+BASE_URL = 'http://www.hudoig.gov/reports-publications/results'
+BASE_REPORT_PAGE_URL = "http://www.hudoig.gov/"
 ALL_PAGES = 1000
 
 # TODO: There is a set of reports which don't have pdfs linked for some reason
