@@ -20,9 +20,8 @@
 # Environmental Protection Agency
 - epa
 
-# Export-ImportBank
-# (waiting on #43)
-# - exim
+# Export-Import Bank
+- exim
 
 # Department of Housing and Urban Development
 - hud
