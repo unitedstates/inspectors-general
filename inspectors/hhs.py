@@ -39,6 +39,13 @@ from utils import utils, inspector
 #            RAA  - Recovery Act-related Audit and Inspection Reports
 
 # Notes for IG's web team:
+#  - A large number of reports don't list a date when they were published.
+#  See "Adverse Events in Hospitals: Medicare's Responses to Alleged Serious
+#  Events"(OEI-01-08-00590) referenced at
+#  https://oig.hhs.gov/reports-and-publications/oei/a.asp
+#  As a fallback, this scraper uses the HTTP Last-Modified header for reports
+#  published after 2002. For reports published before 2002, we use the report id
+#  month-year as an approximation of the published date.
 #  - Fix published date for http://oig.hhs.gov/oas/reports/region3/31200010.asp
 #  on http://oig.hhs.gov/reports-and-publications/oas/cms.asp. It currently
 #  says 08-03-2102
@@ -149,8 +156,6 @@ def run(options):
 
   for topic in topics:
     extract_reports_for_topic(topic, year_range)
-  print(missing_datetimes)
-  print(len(missing_datetimes))
 
 def extract_reports_for_topic(topic, year_range):
   if topic in TOPIC_WITH_SUBTOPICS:
@@ -324,7 +329,6 @@ def report_from_landing_url(report_url):
     report_url = urljoin(BASE_URL, relative_url)
   return report_url, published_on
 
-missing_datetimes = set()
 def published_on_from_inline_link(result, report_filename, title, report_id, report_url):
   try:
     published_on_text = result.find_previous("dt").text.strip()
@@ -358,23 +362,31 @@ def published_on_from_inline_link(result, report_filename, title, report_id, rep
                 report_year = int(report_url.split("/")[-2:-1][0])
                 published_on = datetime.datetime(report_year, 1, 1)
               except (ValueError, IndexError):
-                # if "Fiscal Year" in title:
                 try:
                   fiscal_year = int(title.replace("Fiscal Year ", ""))
                   published_on = datetime.datetime(fiscal_year - 1, 10, 1)
                 except ValueError:
-                  try:
-                    # oei-04-12-00490
-                    # These are not really the published_on date. They are the
-                    # date that the report_id was assigned which is before the
-                    # report was actually published
-                    published_on_text = "-".join(report_id.split("-")[1:3])
-                    published_on = datetime.datetime.strptime(published_on_text, '%m-%y')
-                  except ValueError:
-                    # TODO Fix
-                    # published_on = datetime.datetime(1990, 1, 1)
-                    # missing_datetimes.add(report_id)
-                    import pdb;pdb.set_trace()
+                  # Try using the last-modified header
+                  response = utils.scraper.request(method='HEAD', url=report_url)
+                  last_modified = response.headers['Last-Modified']
+                  published_on = datetime.datetime.strptime(last_modified, '%a, %d %b %Y %H:%M:%S %Z')
+                  if published_on.year < 2003:
+                    # We don't trust the last-modified for dates before 2003
+                    # since a lot of historical reports were published at this
+                    # time. For these reports, fallback to a hacky method based
+                    # on the report id.
+                    try:
+                      # oei-04-12-00490
+                      # These are not really the published_on date. They are the
+                      # date that the report_id was assigned which is before the
+                      # report was actually published
+                      published_on_text = "-".join(report_id.split("-")[1:3])
+                      published_on = datetime.datetime.strptime(published_on_text, '%m-%y')
+                    except ValueError:
+                      # TODO Fix
+                      # published_on = datetime.datetime(1990, 1, 1)
+                      # missing_datetimes.add(report_id)
+                      import pdb;pdb.set_trace()
   return published_on
 
 def get_subtopic_map(topic):
