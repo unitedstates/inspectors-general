@@ -12,7 +12,58 @@ import re
 def run(options):
   year_range = inspector.year_range(options)
 
-  for page_url in URLS:
+  for page_url in [WHATS_NEW_URL]:
+    body = utils.download(page_url)
+    doc = BeautifulSoup(body)
+
+    maincontent = doc.select("div#CS_Element_eximpagemaincontent")[0]
+    after_maincontent = maincontent.nextSibling
+    all_strong = maincontent.find_all("strong")
+
+    for strong in all_strong:
+      strong_text = strong.text
+      if strong_text.strip() == "":
+        continue
+      all_text = ""
+      node = strong.next
+      link = None
+      while True:
+        if isinstance(node, Tag):
+          if node.name == "strong":
+            if node.text.strip() != "":
+              break
+          elif node.name == "a":
+            if node.text.strip() != "":
+              href = node.get("href")
+              if page_url == WHATS_NEW_URL and href == "/oig/whats-new-archive.cfm":
+                # end of page
+                break
+              for whitelisted in SECOND_LINK_WHITELIST:
+                if href.find(whitelisted) != -1:
+                  break
+              else:
+                if link != None:
+                  raise Exception("Found two different URLs in one entry, something is wrong\n%s\n%s" % (link.get("href"), node.get("href")))
+                link = node
+        elif isinstance(node, NavigableString):
+          all_text = all_text + node
+        node = node.next
+        if not node:
+          break
+        if node == after_maincontent:
+          break
+
+      if not link:
+        raise Exception("Didn't find link for '%s'" % strong_text)
+
+      year = DATE_RE.search(all_text).group(3)
+      if int(year) not in year_range:
+        continue
+
+      report = report_from(all_text, link.text, link.get("href"), page_url)
+      inspector.save_report(report)
+
+  for page_url in [WHATS_NEW_ARCHIVE_URL, PRESS_RELEASES_URL, PRESS_RELEASES_ARCHIVE_URL, SEMIANNUAL_REPORTS_AND_TESTIMONIES_URL]:
     done = False
     body = utils.download(page_url)
     doc = BeautifulSoup(body)
