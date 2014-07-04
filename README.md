@@ -1,6 +1,6 @@
 ## Inspectors General
 
-A project to collect reports from the [offices of Inspectors General](http://en.wikipedia.org/wiki/Office_of_the_Inspector_General) across the federal government.
+A project to collect reports from the [offices of Inspectors General](http://en.wikipedia.org/wiki/Office_of_the_Inspector_General) across the US federal government.
 
 **Done so far**:
 
