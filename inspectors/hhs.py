@@ -180,8 +180,8 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
     results = doc.select("#leftContentInterior ul li")
   if not results:
     results = doc.select("#leftContentInterior > p > a")
-  if not results:
-    import pdb;pdb.set_trace()
+  # if not results:
+  #   import pdb;pdb.set_trace()
   for result in results:
     if 'crossref' in result.parent.parent.attrs.get('class', []):
       continue
@@ -210,10 +210,10 @@ def report_from(result, year_range, topic, subtopic=None):
   if not strip_url_fragment(result_link['href']):
     return
 
-  try:
-    report_url = urljoin(BASE_URL, result_link['href'])
-  except TypeError:
-    import pdb;pdb.set_trace()
+  # try:
+  report_url = urljoin(BASE_URL, result_link['href'])
+  # except TypeError:
+  #   import pdb;pdb.set_trace()
 
   report_url = report_url.strip()
 
@@ -279,8 +279,8 @@ def report_from_landing_url(report_url):
     doc.select("body center") +
     doc.select("body blockquote p")
   )
-  if not possible_tags:
-    import pdb;pdb.set_trace()
+  # if not possible_tags:
+  #   import pdb;pdb.set_trace()
   published_on = None
   for possible_tag in possible_tags:
     try:
@@ -292,8 +292,8 @@ def report_from_landing_url(report_url):
     try:
       published_on = datetime.datetime.strptime(published_on_text, '%m-%d-%Y')
       break
-    except TypeError:
-      import pdb;pdb.set_trace()
+    # except TypeError:
+    #   import pdb;pdb.set_trace()
     except ValueError:
       try:
         published_on = datetime.datetime.strptime(published_on_text, '%m-%d-%y')
@@ -313,8 +313,8 @@ def report_from_landing_url(report_url):
               except (ValueError, TypeError, IndexError):
                 pass
 
-  if published_on is None:
-    import pdb;pdb.set_trace()
+  # if published_on is None:
+  #   import pdb;pdb.set_trace()
 
   try:
     relative_url = doc.select("#leftContentInterior p.download a")[0]['href']
@@ -374,18 +374,18 @@ def published_on_from_inline_link(result, report_filename, title, report_id, rep
                     # since a lot of historical reports were published at this
                     # time. For these reports, fallback to a hacky method based
                     # on the report id.
-                    try:
+                    # try:
                       # oei-04-12-00490
                       # These are not really the published_on date. They are the
                       # date that the report_id was assigned which is before the
                       # report was actually published
                       published_on_text = "-".join(report_id.split("-")[1:3])
                       published_on = datetime.datetime.strptime(published_on_text, '%m-%y')
-                    except ValueError:
+                    # except ValueError:
                       # TODO Fix
                       # published_on = datetime.datetime(1990, 1, 1)
                       # missing_datetimes.add(report_id)
-                      import pdb;pdb.set_trace()
+                      # import pdb;pdb.set_trace()
   return published_on
 
 def get_subtopic_map(topic):
@@ -408,10 +408,10 @@ def get_subtopic_map(topic):
 def beautifulsoup_from_url(url):
   body = utils.download(url)
 
-  try:
-    doc = BeautifulSoup(body)
-  except TypeError:
-    import pdb;pdb.set_trace()
+  # try:
+  doc = BeautifulSoup(body)
+  # except TypeError:
+  #   import pdb;pdb.set_trace()
 
   # Some of the pages will return meta refreshes
   if doc.find("meta") and doc.find("meta").attrs.get('http-equiv') == 'REFRESH':
