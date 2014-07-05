@@ -250,7 +250,6 @@ def report_from(result, year_range, topic, subtopic=None):
       )
 
   if published_on.year not in year_range:
-    import pdb;pdb.set_trace()
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
