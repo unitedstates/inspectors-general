@@ -255,7 +255,7 @@ def report_from(result, year_range, topic, subtopic=None):
 
   result = {
     'inspector': 'hhs',
-    'inspector_url': 'https://oig.hhs.gov/',
+    'inspector_url': 'https://oig.hhs.gov',
     'agency': 'hhs',
     'agency_name': 'Health & Human Services',
     'report_id': report_id,
