@@ -259,7 +259,7 @@ def report_from(result, year_range, topic, subtopic=None):
     'agency': 'hhs',
     'agency_name': 'Health & Human Services',
     'report_id': report_id,
-    'topic': topic,
+    'topic': topic.strip(),
     'url': report_url,
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
