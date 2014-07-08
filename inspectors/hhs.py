@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://oig.hhs.gov/reports-and-publications/index.asp
-# Oldest report: 1986?
+# Oldest report: 1985
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -180,8 +180,6 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
     results = doc.select("#leftContentInterior ul li")
   if not results:
     results = doc.select("#leftContentInterior > p > a")
-  # if not results:
-  #   import pdb;pdb.set_trace()
   for result in results:
     if 'crossref' in result.parent.parent.attrs.get('class', []):
       continue
@@ -210,12 +208,7 @@ def report_from(result, year_range, topic, subtopic=None):
   if not strip_url_fragment(result_link['href']):
     return
 
-  # try:
-  report_url = urljoin(BASE_URL, result_link['href'])
-  # except TypeError:
-  #   import pdb;pdb.set_trace()
-
-  report_url = report_url.strip()
+  report_url = urljoin(BASE_URL, result_link['href']).strip()
 
   if report_url in REPORT_URL_MAPPING:
     report_url = REPORT_URL_MAPPING[report_url]
@@ -279,42 +272,10 @@ def report_from_landing_url(report_url):
     doc.select("body center") +
     doc.select("body blockquote p")
   )
-  # if not possible_tags:
-  #   import pdb;pdb.set_trace()
-  published_on = None
   for possible_tag in possible_tags:
-    try:
-      published_on_text = possible_tag.contents[0].split("|")[0]
-    except (TypeError, IndexError):
-      published_on_text = possible_tag.text
-
-    published_on_text = published_on_text.strip().replace(" ", "")
-    try:
-      published_on = datetime.datetime.strptime(published_on_text, '%m-%d-%Y')
+    published_on = get_published_date_from_tag(possible_tag)
+    if published_on:
       break
-    # except TypeError:
-    #   import pdb;pdb.set_trace()
-    except ValueError:
-      try:
-        published_on = datetime.datetime.strptime(published_on_text, '%m-%d-%y')
-        break
-      except ValueError:
-        try:
-          published_on = datetime.datetime.strptime(published_on_text, '%b%d,%Y')
-        except ValueError:
-          try:
-            published_on = datetime.datetime.strptime(published_on_text, '%B%d,%Y')
-          except ValueError:
-            try:
-              published_on = datetime.datetime.strptime(published_on_text, '%B%Y')
-            except ValueError:
-              try:
-                published_on = datetime.datetime.strptime(possible_tag.contents[-1].strip(), '%m-%d-%Y')
-              except (ValueError, TypeError, IndexError):
-                pass
-
-  # if published_on is None:
-  #   import pdb;pdb.set_trace()
 
   try:
     relative_url = doc.select("#leftContentInterior p.download a")[0]['href']
@@ -327,6 +288,32 @@ def report_from_landing_url(report_url):
   if relative_url is not None:
     report_url = urljoin(BASE_URL, relative_url)
   return report_url, published_on
+
+def get_published_date_from_tag(possible_tag):
+  try:
+    published_on_text = possible_tag.contents[0].split("|")[0]
+  except (TypeError, IndexError):
+    published_on_text = possible_tag.text
+
+  published_on_text = published_on_text.strip().replace(" ", "")
+
+  date_formats = [
+    '%m-%d-%Y',
+    '%m-%d-%y',
+    '%b%d,%Y',
+    '%B%d,%Y',
+    '%B%Y',
+  ]
+  for date_format in date_formats:
+    try:
+      return datetime.datetime.strptime(published_on_text, date_format)
+    except ValueError:
+      pass
+
+  try:
+    return datetime.datetime.strptime(possible_tag.contents[-1].strip(), '%m-%d-%Y')
+  except (ValueError, TypeError, IndexError):
+    pass
 
 def published_on_from_inline_link(result, report_filename, title, report_id, report_url):
   try:
@@ -373,19 +360,11 @@ def published_on_from_inline_link(result, report_filename, title, report_id, rep
                     # We don't trust the last-modified for dates before 2003
                     # since a lot of historical reports were published at this
                     # time. For these reports, fallback to a hacky method based
-                    # on the report id.
-                    # try:
-                      # oei-04-12-00490
-                      # These are not really the published_on date. They are the
-                      # date that the report_id was assigned which is before the
-                      # report was actually published
-                      published_on_text = "-".join(report_id.split("-")[1:3])
-                      published_on = datetime.datetime.strptime(published_on_text, '%m-%y')
-                    # except ValueError:
-                      # TODO Fix
-                      # published_on = datetime.datetime(1990, 1, 1)
-                      # missing_datetimes.add(report_id)
-                      # import pdb;pdb.set_trace()
+                    # on the report id. For example: oei-04-12-00490. These are
+                    # the dates that the report_id was assigned which is before
+                    # the report was actually published
+                    published_on_text = "-".join(report_id.split("-")[1:3])
+                    published_on = datetime.datetime.strptime(published_on_text, '%m-%y')
   return published_on
 
 def get_subtopic_map(topic):
@@ -407,11 +386,7 @@ def get_subtopic_map(topic):
 
 def beautifulsoup_from_url(url):
   body = utils.download(url)
-
-  # try:
   doc = BeautifulSoup(body)
-  # except TypeError:
-  #   import pdb;pdb.set_trace()
 
   # Some of the pages will return meta refreshes
   if doc.find("meta") and doc.find("meta").attrs.get('http-equiv') == 'REFRESH':
