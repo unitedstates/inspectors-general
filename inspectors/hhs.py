@@ -4,7 +4,6 @@
 import datetime
 import logging
 import os
-import string
 from urllib.parse import urljoin, urlparse, urlunparse
 
 from bs4 import BeautifulSoup
