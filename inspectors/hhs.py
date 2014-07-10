@@ -59,9 +59,7 @@ from utils import utils, inspector
 #  It currently says 04-23-3012.
 #  - Add missing report for 'Use of Discounted Airfares by the Office of the Secretary' (A-03-07-00500)
 #  linked to from https://oig.hhs.gov/reports-and-publications/oas/dept.asp
-
-# TODO archives
-# See archive link on https://oig.hhs.gov/reports-and-publications/oas/acf.asp
+#  - The report https://oig.hhs.gov/oas/reports/region5/50800067.asp returns a 500.
 
 TOPIC_TO_URL = {
   "OAS": 'https://oig.hhs.gov/reports-and-publications/oas/index.asp',
@@ -81,6 +79,25 @@ TOPIC_TO_URL = {
   "B": 'https://oig.hhs.gov/reports-and-publications/budget/index.asp',
   # "RAOR": 'https://oig.hhs.gov/reports-and-publications/recovery/index.asp',
   "RAA": 'https://oig.hhs.gov/reports-and-publications/recovery/recovery_reports.asp',
+}
+
+TOPIC_TO_ARCHIVE_URL = {
+  "OAS": 'https://oig.hhs.gov/reports-and-publications/archives/oas/index.asp',
+
+  # Some reports missing published dates
+  # "SAR": 'https://oig.hhs.gov/reports-and-publications/archives/semiannual/index.asp',
+
+  # Some reports missing published dates
+  # "TMPC": 'https://oig.hhs.gov/reports-and-publications/archives/top-challenges/index.asp',
+
+  # No published dates
+  # "CPR": 'https://oig.hhs.gov/reports-and-publications/archives/compendium/redbook.asp',
+
+  # Some reports missing published dates
+  # "WP": 'https://oig.hhs.gov/reports-and-publications/archives/workplan/index.asp',
+
+  "FRN": 'https://oig.hhs.gov/reports-and-publications/archives/federal-register-notices/index.asp',
+  "B": 'https://oig.hhs.gov/reports-and-publications/archives/budget/index.asp',
 }
 
 TOPIC_NAMES = {
@@ -131,6 +148,7 @@ REPORT_PUBLISHED_MAPPING = {
 BLACKLIST_TITLES = [
   'Return to Reports and Publications',
   'Read the Summary',
+  'Back to Archives',
   'Top',
 ]
 
@@ -139,7 +157,8 @@ BLACKLIST_REPORT_URLS = [
   'http://get.adobe.com/reader/',
 
   # See note to IG web team
-  'https://oig.hhs.gov/reports/region3/30700500.htm'
+  'https://oig.hhs.gov/reports/region3/30700500.htm',
+  'https://oig.hhs.gov/oas/reports/region5/50800067.asp',
 ]
 
 BASE_URL = "https://oig.hhs.gov"
@@ -155,12 +174,16 @@ def run(options):
 
   for topic in topics:
     extract_reports_for_topic(topic, year_range)
+    if topic in TOPIC_TO_ARCHIVE_URL:
+      extract_reports_for_topic(topic, year_range, archives=True)
 
-def extract_reports_for_topic(topic, year_range):
+def extract_reports_for_topic(topic, year_range, archives=False):
+  topic_url = TOPIC_TO_ARCHIVE_URL[topic] if archives else TOPIC_TO_URL[topic]
+
   if topic in TOPIC_WITH_SUBTOPICS:
-    subtopic_map = get_subtopic_map(topic)
+    subtopic_map = get_subtopic_map(topic_url)
   else:
-    subtopic_map = {None: TOPIC_TO_URL[topic]}
+    subtopic_map = {None: topic_url}
 
   topic_name = TOPIC_NAMES[topic]
   for subtopic_name, subtopic_url in subtopic_map.items():
@@ -171,7 +194,9 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
   doc = beautifulsoup_from_url(subtopic_url)
 
   results = None
-  if topic_name == 'Top Management & Performance Challenges':
+
+  # This URL is different than the rest and needs to find the "p > a"s first.
+  if subtopic_url == TOPIC_TO_URL['TMPC']:
     results = doc.select("#leftContentInterior > p > a")
   if not results:
     results = doc.select("#leftContentInterior dl dd")
@@ -288,19 +313,23 @@ def report_from_landing_url(report_url):
     report_url = urljoin(BASE_URL, relative_url)
   return report_url, published_on
 
+def clean_published_text(published_text):
+  return published_text.strip().replace(" ", "").replace("\xa0", "")
+
 def get_published_date_from_tag(possible_tag):
   try:
     published_on_text = possible_tag.contents[0].split("|")[0]
   except (TypeError, IndexError):
     published_on_text = possible_tag.text
 
-  published_on_text = published_on_text.strip().replace(" ", "")
+  published_on_text = clean_published_text(published_on_text)
 
   date_formats = [
     '%m-%d-%Y',
     '%m-%d-%y',
     '%b%d,%Y',
     '%B%d,%Y',
+    '%B,%d,%Y',
     '%B%Y',
   ]
   for date_format in date_formats:
@@ -309,10 +338,12 @@ def get_published_date_from_tag(possible_tag):
     except ValueError:
       pass
 
-  try:
-    return datetime.datetime.strptime(possible_tag.contents[-1].strip(), '%m-%d-%Y')
-  except (ValueError, TypeError, IndexError):
-    pass
+  for date_format in date_formats:
+    try:
+      published_text = clean_published_text(possible_tag.contents[-1])
+      return datetime.datetime.strptime(published_text, date_format)
+    except (ValueError, TypeError, IndexError):
+      pass
 
 def published_on_from_inline_link(result, report_filename, title, report_id, report_url):
   try:
@@ -363,12 +394,14 @@ def published_on_from_inline_link(result, report_filename, title, report_id, rep
                     # the dates that the report_id was assigned which is before
                     # the report was actually published
                     published_on_text = "-".join(report_id.split("-")[1:3])
-                    published_on = datetime.datetime.strptime(published_on_text, '%m-%y')
+                    try:
+                      published_on = datetime.datetime.strptime(published_on_text, '%m-%y')
+                    except ValueError:
+                      pass
+                      # Fall back to the Last-Modified header
   return published_on
 
-def get_subtopic_map(topic):
-  topic_url = TOPIC_TO_URL[topic]
-
+def get_subtopic_map(topic_url):
   body = utils.download(topic_url)
   doc = BeautifulSoup(body)
 
