@@ -31,7 +31,7 @@ UNRELEASED_TEXTS = [
   "the report will not be posted to the public",
   "report will not be made available to the public",
 ]
-UNRELEAED_LANDING_URLS = [
+UNRELEASED_LANDING_URLS = [
   # It may be an overstatement to call these unreleased.
   "http://oig.federalreserve.gov/reports/board_FMIC_loss_or_theft_confidential_jun2008.htm",
 ]
@@ -68,7 +68,7 @@ def report_from(result, year_range):
     return
 
   unreleased = any(unreleased_text in landing_page_text for unreleased_text in UNRELEASED_TEXTS)
-  if landing_url in UNRELEAED_LANDING_URLS:
+  if landing_url in UNRELEASED_LANDING_URLS:
     unreleased = True
 
   if unreleased:
