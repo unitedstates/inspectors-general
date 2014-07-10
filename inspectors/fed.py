@@ -85,7 +85,7 @@ def report_from(result, year_range):
     report_id, extension = os.path.splitext(report_filename)
 
   report = {
-    'inspector': 'federal-reserve',
+    'inspector': 'fed',
     'inspector_url': 'http://oig.federalreserve.gov',
     'agency': agency,
     'agency_name': AGENCY_NAMES[agency],
