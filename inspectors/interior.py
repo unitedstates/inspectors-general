@@ -66,7 +66,7 @@ def report_from(result, year_range):
 
   result = {
     'inspector': 'interior',
-    'inspector_url': 'http://www.doi.gov/oig/index.cfm',
+    'inspector_url': 'http://www.doi.gov/oig/',
     'agency': 'interior',
     'agency_name': 'Department of the Interior',
     'report_id': report_id,
