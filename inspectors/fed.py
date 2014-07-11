@@ -20,6 +20,11 @@ from utils import utils, inspector
 
 BASE_PAGE_URL = "http://oig.federalreserve.gov/"
 REPORTS_URL = "http://oig.federalreserve.gov/reports/allyearsboardcfpb.htm"
+
+AGENCY_SLUGS = {
+  'CFPB': "cfpb",
+  'Board': "federal_reserve",
+}
 AGENCY_NAMES = {
   'CFPB': "Consumer Financial Protection Bureau",
   'Board': "Board of Governors of the Federal Reserve System",
@@ -87,7 +92,7 @@ def report_from(result, year_range):
   report = {
     'inspector': 'fed',
     'inspector_url': 'http://oig.federalreserve.gov',
-    'agency': agency,
+    'agency': AGENCY_SLUGS[agency],
     'agency_name': AGENCY_NAMES[agency],
     'report_id': report_id,
     'url': report_url,
