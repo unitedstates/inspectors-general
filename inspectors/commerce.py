@@ -27,7 +27,7 @@ from utils import utils, inspector
 #            T    - Testimony
 
 # Notes for IG's web team:
-# - The report 'OAE-19846_Announcement'
+#
 
 TOPIC_TO_URL_SLUG = {
   "A": 'Audits-Evaluations',
