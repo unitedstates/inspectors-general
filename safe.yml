@@ -23,6 +23,9 @@
 # Export-Import Bank
 - exim
 
+# Federal Reserve and CFPB
+- fed
+
 # Department of Housing and Urban Development
 - hud
 
@@ -30,7 +33,7 @@
 - hhs
 
 # Department of the Interior (in testing)
-# - interior 
+- interior 
 
 # General Services Administration
 - gsa
