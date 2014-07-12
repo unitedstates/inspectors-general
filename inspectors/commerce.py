@@ -4,7 +4,7 @@
 import datetime
 import logging
 import os
-from urllib.parse import urljoin, urlparse, urlunparse
+from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -44,17 +44,6 @@ TOPIC_NAMES = {
   "T": "Testimony",
 }
 BASE_TOPIC_URL = "http://www.oig.doc.gov/Pages/{}.aspx?YearStart=01/01/1996&YearEnd=12/31/2014"
-
-LANDING_URLS_WITHOUT_REPORTS = [
-  "http://www.oig.doc.gov/Pages/Multimillion-Dollar-Judgment-in-NOAA-and-NIST-Fraud-Case.aspx",
-  "http://www.oig.doc.gov/Pages/NIST-Grantee-Pleads-Guilty-to-Misuse-of-Federal-Funds.aspx",
-  "http://www.oig.doc.gov/Pages/Former-Census-Contractor-Sentenced-for-Money-Laundering.aspx",
-  "http://www.oig.doc.gov/Pages/Commerce-Employee-Entered-into-Pretrial-Diversion-Program-for-Metrocheck-Fraud,-Removed-From-Federal-Service.aspx",
-  "http://www.oig.doc.gov/Pages/NOAA-Employee-Fired-for-Misuse-of-Purchase-Card.aspx",
-  "http://www.oig.doc.gov/Pages/NOAA-Grantee-Sentenced-for-Misusing-Funds.aspx",
-  "http://www.oig.doc.gov/Pages/Former-NIST-Employee-Sentenced-in-Steel-Theft-Scheme.aspx",
-  "http://www.oig.doc.gov/Pages/NIST-Grant-Recipient-Sentenced-for-Grant-Fraud;-Civil-Suit-Filed.aspx",
-]
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -102,11 +91,15 @@ def report_from(result, topic, topic_url, year_range):
     link = result.select("a")[0]
     landing_url = link.get('href')
 
-    if landing_url in LANDING_URLS_WITHOUT_REPORTS:
+    landing_page = beautifulsoup_from_url(landing_url)
+    try:
+      report_url_relative = landing_page.select("div.oig_Publications a")[-1].get('href')
+    except IndexError:
+      # If there is no linked report, this page is the report. We know that
+      # these are not unreleased reports or we would have caught them above
+      # based on the title.
       report_url = landing_url
     else:
-      landing_page = beautifulsoup_from_url(landing_url)
-      report_url_relative = landing_page.select("div.oig_Publications a")[-1].get('href')
       report_url = urljoin(topic_url, report_url_relative)
 
     report_filename = report_url.split("/")[-1]
