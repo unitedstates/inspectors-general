@@ -44,7 +44,6 @@ TOPIC_NAMES = {
   "T": "Testimony",
 }
 BASE_TOPIC_URL = "http://www.oig.doc.gov/Pages/{}.aspx?YearStart=01/01/1996&YearEnd=12/31/2014"
-BASE_REPORT_URL = "http://www.oig.doc.gov/"
 
 LANDING_URLS_WITHOUT_REPORTS = [
   "http://www.oig.doc.gov/Pages/Multimillion-Dollar-Judgment-in-NOAA-and-NIST-Fraud-Case.aspx",
@@ -108,7 +107,7 @@ def report_from(result, topic, topic_url, year_range):
     else:
       landing_page = beautifulsoup_from_url(landing_url)
       report_url_relative = landing_page.select("div.oig_Publications a")[-1].get('href')
-      report_url = urljoin(BASE_REPORT_URL, report_url_relative)
+      report_url = urljoin(topic_url, report_url_relative)
 
     report_filename = report_url.split("/")[-1]
     report_id, extension = os.path.splitext(report_filename)
