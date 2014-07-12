@@ -20,6 +20,12 @@ from utils import utils, inspector
 
 BASE_PAGE_URL = "http://oig.federalreserve.gov/"
 REPORTS_URL = "http://oig.federalreserve.gov/reports/allyearsboardcfpb.htm"
+SEMIANNUAL_REPORTS_URL = "http://oig.federalreserve.gov/reports/semiannual-report-to-congress.htm"
+
+AGENCY_SLUGS = {
+  'CFPB': "cfpb",
+  'Board': "federal_reserve",
+}
 AGENCY_NAMES = {
   'CFPB': "Consumer Financial Protection Bureau",
   'Board': "Board of Governors of the Federal Reserve System",
@@ -36,15 +42,33 @@ UNRELEASED_LANDING_URLS = [
   "http://oig.federalreserve.gov/reports/board_FMIC_loss_or_theft_confidential_jun2008.htm",
 ]
 
+REPORT_PUBLISHED_MAPPING = {
+  "SAR_final_10_27_11": datetime.datetime(2011, 10, 27),
+}
+
 def run(options):
   year_range = inspector.year_range(options)
-  doc = beautifulsoup_from_url(REPORTS_URL)
 
+  # Pull the audit reports
+  doc = beautifulsoup_from_url(REPORTS_URL)
   results = doc.select("#rounded-corner > tr")
   for result in results:
     report = report_from(result, year_range)
     if report:
       inspector.save_report(report)
+
+  # Pull the semiannual reports
+  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  results = doc.select("div.style-aside ul > li > a")
+  for result in results:
+    report_url = urljoin(BASE_PAGE_URL, result.get('href'))
+    report = semiannual_report_from(report_url, year_range)
+    inspector.save_report(report)
+
+  # The most recent semiannual report will be embedded on the main page
+  report = semiannual_report_from(SEMIANNUAL_REPORTS_URL, year_range)
+  inspector.save_report(report)
+
 
 def report_from(result, year_range):
   title = result.select("a")[0].text
@@ -87,7 +111,7 @@ def report_from(result, year_range):
   report = {
     'inspector': 'fed',
     'inspector_url': 'http://oig.federalreserve.gov',
-    'agency': agency,
+    'agency': AGENCY_SLUGS[agency],
     'agency_name': AGENCY_NAMES[agency],
     'report_id': report_id,
     'url': report_url,
@@ -99,6 +123,47 @@ def report_from(result, year_range):
   if unreleased:
     report['unreleased'] = unreleased
   return report
+
+def semiannual_report_from(report_url, year_range):
+  report_filename = report_url.split("/")[-1]
+  report_id, extension = os.path.splitext(report_filename)
+
+  published_on = REPORT_PUBLISHED_MAPPING.get(report_id)
+
+  if extension != '.pdf':
+    # If this is not a PDF, then it is actually a link to a landing page.
+    # Grab the real report_url and the published date
+    landing_url = report_url
+    landing_page = beautifulsoup_from_url(landing_url)
+    report_url_relative = landing_page.select("div.report-header-container-aside a")[0].get('href')
+    report_url = urljoin(BASE_PAGE_URL, report_url_relative)
+
+    published_on_text = landing_page.select("div.work-plan-container p strong")[0].text.split("–")[-1].strip()
+    published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+
+  if not published_on:
+    date_format = '%B%Y'
+    try:
+      published_on = datetime.datetime.strptime(report_id.split("_")[-1], date_format)
+    except ValueError:
+      report_date = report_id.replace("SAR", "").replace("web", "").replace("_", "").split("-")[-1]
+      published_on = datetime.datetime.strptime(report_date, date_format)
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % landing_url)
+    return
+
+  return {
+    'inspector': 'fed',
+    'inspector_url': 'http://oig.federalreserve.gov',
+    'agency': AGENCY_SLUGS['Board'],
+    'agency_name': AGENCY_NAMES['Board'],
+    'report_id': report_id,
+    'url': report_url,
+    'topic': 'Semiannual Report',
+    'title': "Semiannual Report to Congress",
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
 
 def beautifulsoup_from_url(url):
   body = utils.download(url)
