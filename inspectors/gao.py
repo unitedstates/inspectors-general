@@ -17,6 +17,7 @@ from utils import utils, inspector
 #
 # Notes for IG's web team:
 #
+# * where's the reports before 2008?
 
 REPORTS_URL = "http://www.gao.gov/about/workforce/ig_reports.html"
 SEMIANNUAL_REPORTS_URL = "http://www.gao.gov/about/workforce/ig_semiannual.html"
