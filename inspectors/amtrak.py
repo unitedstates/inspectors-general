@@ -4,6 +4,7 @@
 from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
+import logging
 
 # oldest year: 2006
 
@@ -45,7 +46,7 @@ def run(options):
 
       page = next_page
       if not done:
-        print('Moving to next page (%d)' % page)
+        logging.info('Moving to next page (%d)' % page)
 
 def url_for(options, page = 1, year=None):
   if year:

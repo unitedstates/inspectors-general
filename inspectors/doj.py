@@ -17,6 +17,7 @@ import re
 from bs4 import BeautifulSoup
 from datetime import datetime, date
 from utils import utils, inspector
+import logging
 
 # accumulates information on reports as they're seen
 report = {}
@@ -172,7 +173,7 @@ def extract_info(content, directory, year_range):
 
       # if we're filtering on a year, and this isn't in it, skip it
       if int(report_year) not in year_range:
-        # print "Skipping report for %s..." % report_year
+        # print("Skipping report for %s..." % report_year)
         continue
 
       # trying to get the most descriptive title
@@ -524,7 +525,7 @@ def run(options):
     extract_info(content, source_links[link], year_range)
 
 
-  print("Found %i reports, for year %i to %i" % (len(list(report.keys())), year_range[0], year_range[-1]))
+  logging.info("Found %i reports, for year %i to %i" % (len(list(report.keys())), year_range[0], year_range[-1]))
 
   for key in list(report.keys()):
     inspector.save_report(report[key])
