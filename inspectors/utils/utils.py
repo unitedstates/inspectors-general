@@ -82,6 +82,8 @@ def download(url, destination=None, options=None):
       if destination: logging.info("## \tto: %s" % destination)
       response = scraper.urlopen(url)
     except scrapelib.HTTPError as e:
+      # intentionally print instead of using logging,
+      # so that all 404s get printed at the end of the log
       print("Error downloading %s:\n\n%s" % (url, format_exception(e)))
       return None
 

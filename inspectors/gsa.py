@@ -5,6 +5,7 @@ from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
 import re
+import logging
 
 # oldest year: 1979
 
@@ -63,7 +64,7 @@ def crawl_index(base_url, options, is_meta_index=False):
 
     page = next_page
     if not done:
-      print('Moving to next page (%d)' % page)
+      logging.info('Moving to next page (%d)' % page)
 
 def url_for(base_url, page = 1):
   return "%s?startRow=%d" % (base_url, page * 10 - 9)

@@ -142,14 +142,14 @@ class EnergyScraper(object):
     # Some reports are just broken. Move on, but they are
     # noted here and should be reported to the IG.
     if report_id in BROKEN_IDS:
-      print("[%s] Skipping, broken report." % report_id)
+      logging.warn("[%s] Skipping, broken report." % report_id)
       return
 
     # debugging: if we're limiting to a particular report,
     # and this isn't it, back out
     only_report_id = self.options.get('report_id')
     if only_report_id and (only_report_id != report_id):
-      # print("[%s] Skipping, not what was asked for." % report_id)
+      # logging.warn("[%s] Skipping, not what was asked for." % report_id)
       return
 
     report_url, summary, unreleased = self.fetch_from_landing_page(landing_url)
