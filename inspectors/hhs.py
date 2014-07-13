@@ -209,11 +209,11 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
       continue
     if result.parent.parent.attrs.get('id') == 'related':
       continue
-    report = report_from(result, year_range, topic_name, subtopic_name)
+    report = report_from(result, year_range, topic_name, subtopic_url, subtopic_name)
     if report:
       inspector.save_report(report)
 
-def report_from(result, year_range, topic, subtopic=None):
+def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   # Ignore links to other subsections
   if result.get('class') and result['class'][0] == 'crossref':
     return
@@ -232,7 +232,7 @@ def report_from(result, year_range, topic, subtopic=None):
   if not strip_url_fragment(result_link['href']):
     return
 
-  report_url = urljoin(BASE_URL, result_link['href']).strip()
+  report_url = urljoin(subtopic_url, result_link['href']).strip()
 
   if report_url in REPORT_URL_MAPPING:
     report_url = REPORT_URL_MAPPING[report_url]
@@ -310,7 +310,7 @@ def report_from_landing_url(report_url):
       relative_url = None
 
   if relative_url is not None:
-    report_url = urljoin(BASE_URL, relative_url)
+    report_url = urljoin(report_url, relative_url)
   return report_url, published_on
 
 def clean_published_text(published_text):
@@ -407,7 +407,7 @@ def get_subtopic_map(topic_url):
 
   subtopic_map = {}
   for link in doc.select("#leftContentInterior li a"):
-    absolute_url = urljoin(BASE_URL, link['href'])
+    absolute_url = urljoin(topic_url, link['href'])
     absolute_url = strip_url_fragment(absolute_url)
 
     # Only add new URLs
@@ -422,7 +422,7 @@ def beautifulsoup_from_url(url):
 
   # Some of the pages will return meta refreshes
   if doc.find("meta") and doc.find("meta").attrs.get('http-equiv') == 'REFRESH':
-    redirect_url = urljoin(BASE_URL, doc.find("meta").attrs['content'].split("url=")[1])
+    redirect_url = urljoin(topic_url, doc.find("meta").attrs['content'].split("url=")[1])
     return beautifulsoup_from_url(redirect_url)
   else:
     return doc
