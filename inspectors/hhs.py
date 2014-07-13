@@ -422,7 +422,7 @@ def beautifulsoup_from_url(url):
 
   # Some of the pages will return meta refreshes
   if doc.find("meta") and doc.find("meta").attrs.get('http-equiv') == 'REFRESH':
-    redirect_url = urljoin(topic_url, doc.find("meta").attrs['content'].split("url=")[1])
+    redirect_url = urljoin(url, doc.find("meta").attrs['content'].split("url=")[1])
     return beautifulsoup_from_url(redirect_url)
   else:
     return doc
