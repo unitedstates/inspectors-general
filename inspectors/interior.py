@@ -17,6 +17,10 @@ from utils import utils, inspector
 #
 # Notes for IG's web team:
 # - It would be nice to have topics for all reports
+# - Some reports have wrong links. For example,
+# http://www.doi.gov/oig/reports/upload/Report-of-Investigation---Pensus-Public.pdf
+# is linked to when it should actually be
+# http://www.doi.gov/oig/reports/upload/Report-of-Investigation-Pensus-Public.pdf
 
 REPORT_URL_BASE = "http://www.doi.gov"
 REPORT_SEARCH_URL = "http://www.doi.gov/oig/reports/index.cfm"
@@ -46,6 +50,7 @@ def report_from(result, year_range):
   title = result.select("a span")[0].text.strip()
 
   report_url = urljoin(REPORT_URL_BASE, result.select("a")[0].get('href'))
+  report_url = report_url.replace("---", "-")  # See note to IG team
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
 
