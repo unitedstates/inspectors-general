@@ -283,7 +283,7 @@ SECOND_LINK_WHITELIST = (
 )
 
 DATE_RE = re.compile("(January|February|March|April|May|June|July|August|" +
-                    "September|October|November|December) ([123]?[0-9]), " +
+                    "September|October|November|December)\\s+([123]?[0-9]),\\s+" +
                     "(20[0-9][0-9])")
 
 IDENTIFIER_RE = re.compile("""\((OIG-[A-Z][A-Z]-[0-9][0-9]-[0-9][0-9])\)""")
