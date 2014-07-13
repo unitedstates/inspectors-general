@@ -63,11 +63,13 @@ def run(options):
   for result in results:
     report_url = urljoin(BASE_PAGE_URL, result.get('href'))
     report = semiannual_report_from(report_url, year_range)
-    inspector.save_report(report)
+    if report:
+      inspector.save_report(report)
 
   # The most recent semiannual report will be embedded on the main page
   report = semiannual_report_from(SEMIANNUAL_REPORTS_URL, year_range)
-  inspector.save_report(report)
+  if report:
+    inspector.save_report(report)
 
 
 def report_from(result, year_range):
@@ -150,7 +152,7 @@ def semiannual_report_from(report_url, year_range):
       published_on = datetime.datetime.strptime(report_date, date_format)
 
   if published_on.year not in year_range:
-    logging.debug("[%s] Skipping, not in requested range." % landing_url)
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
   return {
