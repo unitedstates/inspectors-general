@@ -192,6 +192,8 @@ def extract_reports_for_topic(topic, year_range, archives=False):
 
 def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_name):
   doc = beautifulsoup_from_url(subtopic_url)
+  if not doc:
+    raise Exception("Failure fetching subtopic URL: %s" % subtopic_url)
 
   results = None
 
@@ -287,6 +289,8 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
 
 def report_from_landing_url(report_url):
   doc = beautifulsoup_from_url(report_url)
+  if not doc:
+    raise Exception("Failure fetching report landing URL: %s" % report_url)
 
   possible_tags = (
     doc.select("h1") +
@@ -418,6 +422,8 @@ def get_subtopic_map(topic_url):
 
 def beautifulsoup_from_url(url):
   body = utils.download(url)
+  if body is None: return None
+
   doc = BeautifulSoup(body)
 
   # Some of the pages will return meta refreshes
