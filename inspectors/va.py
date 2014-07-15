@@ -87,10 +87,7 @@ def report_from(result, year_range):
     field_value = field.select("td")[0].text
     field_mapping[field_name] = field_value
 
-  try:
-    report_id = field_mapping['Report Number']
-  except KeyError:
-    import pdb;pdb.set_trace()
+  report_id = field_mapping['Report Number']
   topic = field_mapping['Report Type']
   report_url = field_mapping.get('Report Link')
   summary = field_mapping['Summary']
