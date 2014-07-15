@@ -120,6 +120,7 @@ def report_from(result, year_range):
     'landing_url': landing_url,
     'topic': topic,
     'title': title,
+    'summary': landing_page_text.strip(),
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   if unreleased:
@@ -155,6 +156,8 @@ def semiannual_report_from(report_url, year_range):
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
+  title = "Semiannual Report to Congress {}".format(published_on.date())
+
   return {
     'inspector': 'fed',
     'inspector_url': 'http://oig.federalreserve.gov',
@@ -163,7 +166,7 @@ def semiannual_report_from(report_url, year_range):
     'report_id': report_id,
     'url': report_url,
     'topic': 'Semiannual Report',
-    'title': "Semiannual Report to Congress",
+    'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
 
