@@ -3,6 +3,7 @@
 
 import datetime
 import logging
+import os
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -61,11 +62,11 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the semiannual reports
-  # doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
-  # results = doc.select("div.style-aside ul > li > a")
-  # for result in results:
-  #   report = semiannual_report_from(result, year_range)
-  #   inspector.save_report(report)
+  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  results = doc.select("div.leadin")
+  for result in results:
+    report = semiannual_report_from(result, year_range)
+    inspector.save_report(report)
 
 def report_from(result, year_range):
   link = result.select("a")[0]
@@ -127,8 +128,30 @@ def report_from(result, year_range):
     report['location'] = location
   return report
 
-# def semiannual_report_from(result, year_range):
-#   pass
+def semiannual_report_from(result, year_range):
+  report_url = result.select("a")[0].get('href')
+  report_filename = report_url.split("/")[-1]
+  report_id = os.path.splitext(report_filename)[0]
+  summary = result.select("p")[0].text
+  title = result.select("h4 > a")[0].text
+  try:
+    published_on = datetime.datetime.strptime(title.split("-")[-1].strip(), '%B %d, %Y')
+  except ValueError:
+    published_on = datetime.datetime.strptime(title.split(" to ")[-1].strip(), '%B %d, %Y')
+
+  report = {
+    'inspector': 'va',
+    'inspector_url': 'http://www.va.gov/oig',
+    'agency': 'VA',
+    'agency_name': "Department of Veterans Affairs",
+    'report_id': report_id,
+    'url': report_url,
+    'topic': "Semiannual Report",
+    'summary': summary,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  return report
 
 def beautifulsoup_from_url(url):
   body = utils.download(url)
