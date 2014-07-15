@@ -98,12 +98,16 @@ def report_from(result, topic, topic_url, year_range):
       # If there is no linked report, this page is the report. We know that
       # these are not unreleased reports or we would have caught them above
       # based on the title.
-      report_url = landing_url
+      unreleased = True
+      report_url = None
     else:
       report_url = urljoin(topic_url, report_url_relative)
 
-    report_filename = report_url.split("/")[-1]
-    report_id, extension = os.path.splitext(report_filename)
+    if report_url:
+      report_filename = report_url.split("/")[-1]
+      report_id, extension = os.path.splitext(report_filename)
+    else:
+      report_id = "{}-{}".format(published_on_text, "-".join(title.split()))[:50]
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
