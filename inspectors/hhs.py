@@ -253,6 +253,18 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   if title in BLACKLIST_TITLES:
     return
 
+  # Try a quick check from the listing page to see if we can bail out based on
+  # the year
+  try:
+    published_on_text = result.find_previous("dt").text.strip()
+    published_on = datetime.datetime.strptime(published_on_text, "%m-%d-%Y")
+  except (AttributeError, ValueError):
+    published_on = None
+
+  if published_on and published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
   else:
