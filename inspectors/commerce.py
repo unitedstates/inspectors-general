@@ -112,7 +112,7 @@ def report_from(result, topic, topic_url, year_range):
   file_type = None
   # urllib.parse has trouble parsing the extension for some urls.
   # Ex: http://www.oig.doc.gov/Pages/NIST-Grant-Recipient-Sentenced-for-Grant-Fraud;-Civil-Suit-Filed.aspx
-  if report_url.endswith(".aspx"):
+  if report_url and report_url.endswith(".aspx"):
     file_type = "aspx"
 
   result = {
