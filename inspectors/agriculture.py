@@ -22,6 +22,10 @@ REPORTS_URL = "http://www.usda.gov/oig/rptsaudits.htm"
 SEMIANNUAL_REPORTS_URL = "http://www.usda.gov/oig/rptssarc.htm"
 TESTIMONIES_URL = "http://www.usda.gov/oig/rptsigtranscripts.htm"
 
+REPORT_PUBLISHED_MAPPING = {
+  "TestimonyBlurb2": datetime.datetime(2004, 7, 14),
+}
+
 def run(options):
   year_range = inspector.year_range(options)
 
@@ -33,12 +37,13 @@ def run(options):
   #   if report:
   #     inspector.save_report(report)
 
-  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
-  results = doc.select("ul li")
-  for result in results:
-    report = report_from(result, year_range)
-    if report:
-      inspector.save_report(report)
+  for url in [SEMIANNUAL_REPORTS_URL, TESTIMONIES_URL]:
+    doc = beautifulsoup_from_url(url)
+    results = doc.select("ul li")
+    for result in results:
+      report = report_from(result, year_range)
+      if report:
+        inspector.save_report(report)
 
 def report_from(result, year_range):
   link = result.select("a")[0]
@@ -48,17 +53,27 @@ def report_from(result, year_range):
   report_id = os.path.splitext(report_filename)[0]
 
   # These are just summary versions of other reports. Skip for now.
-  if title == '508 Compliant Version':
+  if '508 Compliant Version' in title:
     return
 
-  published_on_text = result.select("span")[0].text.split("-")[0].strip()
-
-  date_formats = ['%m/%d/%Y', '%m/%Y']
-  for date_format in date_formats:
+  if report_id in REPORT_PUBLISHED_MAPPING:
+    published_on = REPORT_PUBLISHED_MAPPING[report_id]
+  else:
     try:
-      published_on = datetime.datetime.strptime(published_on_text, date_format)
-    except ValueError:
-      pass
+      published_on_text = result.select("span")[0].text.split("-")[0].strip()
+    except IndexError:
+      import pdb;pdb.set_trace()
+
+    date_formats = ['%m/%d/%Y', '%m/%Y']
+    published_on = None
+    for date_format in date_formats:
+      try:
+        published_on = datetime.datetime.strptime(published_on_text, date_format)
+      except ValueError:
+        pass
+
+  if published_on is None:
+    import pdb;pdb.set_trace()
 
   report = {
     'inspector': 'agriculture',
