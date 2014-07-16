@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.oig.dol.gov/auditreports.htm
-# Oldest report: 1996
+# Oldest report: 1979
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -20,7 +20,7 @@ from utils import utils, inspector
 # Right now it just says "February 11" without a year.
 
 AUDIT_REPORTS_URL = "http://www.oig.dol.gov/cgi-bin/oa_rpts.cgi?s=&y=fy9{}&a=all"
-SEMIANNUAL_REPORTS_URL = "http://oig.federalreserve.gov/reports/semiannual-report-to-congress.htm"
+SEMIANNUAL_REPORTS_URL = "http://www.oig.dol.gov/semiannual.htm"
 
 REPORT_PUBLISHED_MAPPING = {
   "02-02-202-03-360": datetime.datetime(2002, 2, 11),
@@ -47,11 +47,12 @@ def run(options):
           inspector.save_report(report)
 
   # Pull the semiannual reports
-  # doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
-  # results = doc.select("")
-  # for result in results:
-  #   report = semiannual_report_from(result, year_range)
-  #   inspector.save_report(report)
+  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  results = doc.select("p > a:nth-of-type(1)")
+  for result in results:
+    report = semiannual_report_from(result, year_range)
+    if report:
+      inspector.save_report(report)
 
 def report_from(result, year_url):
   title = result.contents[0]
@@ -69,9 +70,6 @@ def report_from(result, year_url):
         published_on = datetime.datetime.strptime(published_text, date_format)
       except ValueError:
         pass
-
-  if published_on is None:
-    import pdb;pdb.set_trace()
 
   report_url, summary_url, response_url = None, None, None
   for link in result.select("a"):
@@ -111,8 +109,31 @@ def report_from(result, year_url):
     report['unreleased'] = unreleased
   return report
 
-# def semiannual_report_from(result, year_range):
-#   pass
+def semiannual_report_from(result, year_range):
+  published_on_text = result.text.split("-")[-1].strip()
+  report_url = urljoin(SEMIANNUAL_REPORTS_URL, result.get('href'))
+  report_filename = report_url.split("/")[-1]
+  report_id, extension = os.path.splitext(report_filename)
+
+  trimmed_text = " ".join(result.text.split())  # Trim out any extra whitespace/newlines
+  title = "Semiannual Report - {}".format(trimmed_text)
+  published_on = datetime.datetime.strptime(published_on_text, '%B %Y')
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  report = {
+    'inspector': 'labor',
+    'inspector_url': 'http://www.oig.dol.gov',
+    'agency': "labor",
+    'agency_name': "Department of Labor",
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  return report
 
 def url_for(year, page_number):
   offset = page_number * 20  # 20 items per page
