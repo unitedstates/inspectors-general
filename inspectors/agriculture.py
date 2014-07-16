@@ -18,9 +18,62 @@ from utils import utils, inspector
 # Notes for IG's web team:
 #
 
-REPORTS_URL = "http://www.usda.gov/oig/rptsaudits.htm"
 SEMIANNUAL_REPORTS_URL = "http://www.usda.gov/oig/rptssarc.htm"
+AGENCY_BASE_URL = "http://www.usda.gov/oig/"
 TESTIMONIES_URL = "http://www.usda.gov/oig/rptsigtranscripts.htm"
+
+AGENCY_URLS = {
+  "AARC": "rptsauditsaarc.htm",
+  "AMS": "rptsauditsams.htm",
+  "APHIS": "rptsauditsaphis.htm",
+  "ARS": "rptsauditsars.htm",
+  "CR": "rptsauditscr.htm",
+  "CCC": "rptsauditsccc.htm",
+  "CSRE": "rptsauditscsrees.htm",
+  "FSA": "rptsauditsfsa.htm",
+  "FNS": "rptsauditsfns.htm",
+  "FSIS": "rptsauditsfsis.htm",
+  "FAS": "rptsauditsfas.htm",
+  "FS": "rptsauditsfs.htm",
+  "GIPSA": "rptsauditsgipsa.htm",
+  "NASS": "rptsauditsnass.htm",
+  "NIFA": "rptsauditsnifa.htm",
+  "NRCS": "rptsauditsnrcs.htm",
+  "REE": "rptsauditsree.htm",
+  "RMA": "rptsauditsrma.htm",
+  "RBS": "rptsauditsrbs.htm",
+  "RBEG": "rptsauditsrbeg.htm",
+  "RD": "rptsauditsrd.htm",
+  "RHS": "rptsauditsrhs.htm",
+  "RUS": "rptsauditsrus.htm",
+  "USDA": "rptsauditsmulti.htm",
+}
+AGENCY_NAMES = {
+  "AARC": "Alternative Agricultural Research & Comm. Center",
+  "AMS": "Agricultural Marketing Service",
+  "APHIS": "Animal Plant Health Inspection Service",
+  "ARS": "Agricultural Research Service",
+  "CR": "Civil Rights",
+  "CCC": "Commodity Credit Corporation",
+  "CSRE": "Cooperative State Research, Ed. & Extension Service",
+  "FSA": "Farm Service Agency",
+  "FNS": "Food and Nutrition Service",
+  "FSIS": "Food Safety and Inspection Service",
+  "FAS": "Foreign Agricultural Service",
+  "FS": "Forest Service",
+  "GIPSA": "Grain Inspection, Packers and Stockyards Administration",
+  "NASS": "National Agricultural Statistics Service",
+  "NIFA": "National Institute of Food and Agriculture",
+  "NRCS": "Natural Resources Conservation Service",
+  "REE": "Research, Education, and Economics",
+  "RMA": "Risk Management Agency",
+  "RBS": "Rural Business-Cooperative Service",
+  "RBEG": "Rural Business Enterprise Grant",
+  "RD": "Rural Development",
+  "RHS": "Rural Housing Service",
+  "RUS": "Rural Utilities Service",
+  "USDA": "USDA (Multi-Agency)",
+}
 
 REPORT_PUBLISHED_MAPPING = {
   "TestimonyBlurb2": datetime.datetime(2004, 7, 14),
@@ -30,12 +83,14 @@ def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit reports
-  # doc = beautifulsoup_from_url(REPORTS_URL)
-  # results = doc.select("#rounded-corner > tr")
-  # for result in results:
-  #   report = report_from(result, year_range)
-  #   if report:
-  #     inspector.save_report(report)
+  for agency_slug, agency_path in AGENCY_URLS.items():
+    agency_url = urljoin(AGENCY_BASE_URL, agency_path)
+    doc = beautifulsoup_from_url(agency_url)
+    results = doc.select("ul li")
+    for result in results:
+      report = report_from(result, year_range, agency_slug)
+      if report:
+        inspector.save_report(report)
 
   for url in [SEMIANNUAL_REPORTS_URL, TESTIMONIES_URL]:
     doc = beautifulsoup_from_url(url)
@@ -45,9 +100,14 @@ def run(options):
       if report:
         inspector.save_report(report)
 
-def report_from(result, year_range):
-  link = result.select("a")[0]
-  title = link.text
+def report_from(result, year_range, agency_slug="agriculture"):
+  try:
+    # Try to find the link with text first. Sometimes there are hidden links
+    # (no text) that we want to ignore.
+    link = result.find_all("a", text=True)[0]
+  except IndexError:
+    link = result.find_all("a")[0]
+  title = link.text.strip()
   report_url = link.get('href')
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]
@@ -59,27 +119,24 @@ def report_from(result, year_range):
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
   else:
-    try:
-      published_on_text = result.select("span")[0].text.split("-")[0].strip()
-    except IndexError:
-      import pdb;pdb.set_trace()
+    published_on_text = result.text.split()[0].strip()
 
     date_formats = ['%m/%d/%Y', '%m/%Y']
-    published_on = None
     for date_format in date_formats:
       try:
         published_on = datetime.datetime.strptime(published_on_text, date_format)
       except ValueError:
         pass
 
-  if published_on is None:
-    import pdb;pdb.set_trace()
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
 
   report = {
     'inspector': 'agriculture',
     'inspector_url': 'http://www.usda.gov/oig/',
-    'agency': 'agriculture', #AGENCY_SLUGS[agency],
-    'agency_name': 'Department of Agriculture', #AGENCY_NAMES[agency],
+    'agency': agency_slug.lower(),
+    'agency_name': AGENCY_NAMES.get(agency_slug, 'Department of Agriculture'),
     'report_id': report_id,
     'url': report_url,
     'title': title,
