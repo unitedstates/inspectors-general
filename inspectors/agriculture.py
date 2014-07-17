@@ -88,7 +88,7 @@ def run(options):
     doc = beautifulsoup_from_url(agency_url)
     results = doc.select("ul li")
     for result in results:
-      report = report_from(result, year_range, agency_slug)
+      report = report_from(result, agency_url, year_range, agency_slug)
       if report:
         inspector.save_report(report)
 
@@ -96,11 +96,11 @@ def run(options):
     doc = beautifulsoup_from_url(url)
     results = doc.select("ul li")
     for result in results:
-      report = report_from(result, year_range)
+      report = report_from(result, url, year_range)
       if report:
         inspector.save_report(report)
 
-def report_from(result, year_range, agency_slug="agriculture"):
+def report_from(result, page_url, year_range, agency_slug="agriculture"):
   try:
     # Try to find the link with text first. Sometimes there are hidden links
     # (no text) that we want to ignore.
@@ -108,7 +108,7 @@ def report_from(result, year_range, agency_slug="agriculture"):
   except IndexError:
     link = result.find_all("a")[0]
   title = link.text.strip()
-  report_url = link.get('href')
+  report_url = urljoin(page_url, link.get('href'))
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]
 
