@@ -20,9 +20,16 @@ from utils import utils, inspector
 # http://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-2009.aspx
 # - There is an extra tr.ms-rteTableEvenRow-default at the end of
 # http://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-2014.aspx
+# - Add published dates for all reports at
+# http://www.treasury.gov/about/organizational-structure/ig/Pages/other-reports.aspx
 
 AUDIT_REPORTS_BASE_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-{}.aspx"
 TESTIMONIES_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/testimony_index.aspx"
+PEER_AUDITS_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/peer_audit_reports_index.aspx"
+OTHER_REPORTS_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/other-reports.aspx"
+
+# TODO
+# - add semiannual reports. maybe separate function.
 
 AGENCY_NAMES = {
   "bep": "The Bureau of Engraving & Printing",
@@ -62,6 +69,12 @@ REPORT_AGENCY_MAP = {
   "OIG-09-015": "mint",  # See note to IG web team
 }
 
+REPORT_PUBLISHED_MAP = {
+  "OIG-CA-13-006": datetime.datetime(2013, 3, 29),
+  "OIG-13-CA-008": datetime.datetime(2013, 6, 10),
+  "Treasury": datetime.datetime(2010, 11, 19),
+}
+
 def run(options):
   year_range = inspector.year_range(options)
 
@@ -77,7 +90,7 @@ def run(options):
   #     if report:
   #       inspector.save_report(report)
 
-  for url in [TESTIMONIES_URL]:
+  for url in [TESTIMONIES_URL, PEER_AUDITS_URL, OTHER_REPORTS_URL]:
     doc = beautifulsoup_from_url(url)
     results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p > a")
     for result in results:
@@ -146,13 +159,23 @@ def report_from(result, page_url, year_range):
     published_on_text = date1 + date2
     published_on = datetime.datetime.strptime(published_on_text.strip(), '%B %d %Y')
   except ValueError:
-    title, date1, date2, date3 = result.text.rsplit(maxsplit=3)
-    published_on_text = date1 + date2 + date3
-    published_on = datetime.datetime.strptime(published_on_text.strip(), '%B%d,%Y')
+    try:
+      title, date1, date2, date3 = result.text.rsplit(maxsplit=3)
+      published_on_text = date1 + date2 + date3
+      published_on = datetime.datetime.strptime(published_on_text.strip(), '%B%d,%Y')
+    except ValueError:
+      title = result.text
+      published_on = None
 
   report_id, title = title.split(maxsplit=1)
   report_id = report_id.rstrip(":")
   report_url = urljoin(page_url, result.get('href'))
+
+  if report_id in REPORT_PUBLISHED_MAP:
+    published_on = REPORT_PUBLISHED_MAP[report_id]
+
+  if published_on is None:
+    import pdb;pdb.set_trace()
 
   report = {
     'inspector': 'treasury',
