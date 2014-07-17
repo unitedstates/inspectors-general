@@ -14,8 +14,7 @@
 - doj
 
 # Department of Transportation
-# (waiting on #57)
-# - dot
+- dot
 
 # Department of Energy
 - energy
@@ -32,17 +31,17 @@
 # Government Accountability Office
 - gao
 
-# Department of Housing and Urban Development
-- hud
+# General Services Administration
+- gsa
 
 # Department of Health and Human Services
 - hhs
 
+# Department of Housing and Urban Development
+- hud
+
 # Department of the Interior
 - interior
-
-# General Services Administration
-- gsa
 
 # Office of Personnel Management
 - opm
