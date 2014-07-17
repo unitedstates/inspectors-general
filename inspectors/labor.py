@@ -21,6 +21,7 @@ from utils import utils, inspector
 
 AUDIT_REPORTS_URL = "http://www.oig.dol.gov/cgi-bin/oa_rpts.cgi?s=&y=fy9{}&a=all"
 SEMIANNUAL_REPORTS_URL = "http://www.oig.dol.gov/semiannual.htm"
+BASE_URL = "http://www.oig.dol.gov"
 
 REPORT_PUBLISHED_MAPPING = {
   "02-02-202-03-360": datetime.datetime(2002, 2, 11),
@@ -74,11 +75,11 @@ def report_from(result, year_url):
   report_url, summary_url, response_url = None, None, None
   for link in result.select("a"):
     if 'Report' in link.text:
-      report_url = link.get('href')
+      report_url = urljoin(BASE_URL, link.get('href'))
     elif 'Summary' in link.text:
-      summary_url = link.get('href')
+      summary_url = urljoin(BASE_URL, link.get('href'))
     elif 'Response' in link.text:
-      response_url = link.get('href')
+      response_url = urljoin(BASE_URL, link.get('href'))
 
   UNRELEASED_TEXTS = [
     "This report will not be posted.",
