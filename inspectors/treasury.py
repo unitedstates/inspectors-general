@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.treasury.gov/about/organizational-structure/ig/Pages/audit_reports_index.aspx
-# Oldest report: 2006
+# Oldest report: 2005
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -27,6 +27,7 @@ AUDIT_REPORTS_BASE_URL = "http://www.treasury.gov/about/organizational-structure
 TESTIMONIES_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/testimony_index.aspx"
 PEER_AUDITS_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/peer_audit_reports_index.aspx"
 OTHER_REPORTS_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/other-reports.aspx"
+SEMIANNUAL_REPORTS_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/semiannual_reports_index.aspx"
 
 # TODO
 # - add semiannual reports. maybe separate function.
@@ -90,13 +91,20 @@ def run(options):
   #     if report:
   #       inspector.save_report(report)
 
-  for url in [TESTIMONIES_URL, PEER_AUDITS_URL, OTHER_REPORTS_URL]:
-    doc = beautifulsoup_from_url(url)
-    results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p > a")
-    for result in results:
-      report = report_from(result, url, year_range)
-      if report:
-        inspector.save_report(report)
+  # for url in [TESTIMONIES_URL, PEER_AUDITS_URL, OTHER_REPORTS_URL]:
+  #   doc = beautifulsoup_from_url(url)
+  #   results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p > a")
+  #   for result in results:
+  #     report = report_from(result, url, year_range)
+  #     if report:
+  #       inspector.save_report(report)
+
+  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p > a")
+  for result in results:
+    report = semiannual_report_from(result, SEMIANNUAL_REPORTS_URL, year_range)
+    if report:
+      inspector.save_report(report)
 
 def clean_text(text):
   # A lot of text on this page has extra characters
@@ -174,8 +182,26 @@ def report_from(result, page_url, year_range):
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
 
-  if published_on is None:
-    import pdb;pdb.set_trace()
+  report = {
+    'inspector': 'treasury',
+    'inspector_url': 'http://www.treasury.gov/about/organizational-structure/ig/',
+    'agency': 'treasury',
+    'agency_name': "Department of the Treasury",
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  return report
+
+def semiannual_report_from(result, page_url, year_range):
+  published_on_text = clean_text(result.text)
+  published_on = datetime.datetime.strptime(published_on_text.strip(), '%B %d, %Y')
+  title = "Semiannual Report - {}".format(published_on_text)
+
+  report_url = urljoin(page_url, result.get('href'))
+  report_filename = report_url.split("/")[-1]
+  report_id, extension = os.path.splitext(report_filename)
 
   report = {
     'inspector': 'treasury',
