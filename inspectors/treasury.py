@@ -29,9 +29,6 @@ PEER_AUDITS_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pag
 OTHER_REPORTS_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/other-reports.aspx"
 SEMIANNUAL_REPORTS_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/semiannual_reports_index.aspx"
 
-# TODO
-# - add semiannual reports. maybe separate function.
-
 AGENCY_NAMES = {
   "bep": "The Bureau of Engraving & Printing",
   "bfs": "The Bureau of the Fiscal Service",
