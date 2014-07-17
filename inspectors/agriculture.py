@@ -21,6 +21,7 @@ from utils import utils, inspector
 SEMIANNUAL_REPORTS_URL = "http://www.usda.gov/oig/rptssarc.htm"
 AGENCY_BASE_URL = "http://www.usda.gov/oig/"
 TESTIMONIES_URL = "http://www.usda.gov/oig/rptsigtranscripts.htm"
+INVESTIGATION_URLS = "http://www.usda.gov/oig/newinv.htm"
 
 AGENCY_URLS = {
   "AARC": "rptsauditsaarc.htm",
@@ -92,7 +93,7 @@ def run(options):
       if report:
         inspector.save_report(report)
 
-  for url in [SEMIANNUAL_REPORTS_URL, TESTIMONIES_URL]:
+  for url in [INVESTIGATION_URLS, SEMIANNUAL_REPORTS_URL, TESTIMONIES_URL]:
     doc = beautifulsoup_from_url(url)
     results = doc.select("ul li")
     for result in results:
@@ -119,14 +120,19 @@ def report_from(result, page_url, year_range, agency_slug="agriculture"):
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
   else:
-    published_on_text = result.text.split()[0].strip()
+    try:
+      # This is for the investigation reports
+      published_on = datetime.datetime.strptime(result.text.strip(), '%B %Y (PDF)')
+      title = "Investigation Bulletins {}".format(result.text.strip())
+    except ValueError:
+      published_on_text = result.text.split()[0].strip()
 
-    date_formats = ['%m/%d/%Y', '%m/%Y']
-    for date_format in date_formats:
-      try:
-        published_on = datetime.datetime.strptime(published_on_text, date_format)
-      except ValueError:
-        pass
+      date_formats = ['%m/%d/%Y', '%m/%Y']
+      for date_format in date_formats:
+        try:
+          published_on = datetime.datetime.strptime(published_on_text, date_format)
+        except ValueError:
+          pass
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
