@@ -80,24 +80,26 @@ def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit reports
-  # for year in year_range:
-  #   url = AUDIT_REPORTS_BASE_URL.format(year)
-  #   doc = beautifulsoup_from_url(url)
-  #   results = []
-  #   results.extend(doc.select("tr.ms-rteTableOddRow-default"))
-  #   results.extend(doc.select("tr.ms-rteTableEvenRow-default"))
-  #   for result in results:
-  #     report = audit_report_from(result, url, year_range)
-  #     if report:
-  #       inspector.save_report(report)
+  for year in year_range:
+    if year < 2006:  # This is the oldest year for these reports
+      year = 2006
+    url = AUDIT_REPORTS_BASE_URL.format(year)
+    doc = beautifulsoup_from_url(url)
+    results = []
+    results.extend(doc.select("tr.ms-rteTableOddRow-default"))
+    results.extend(doc.select("tr.ms-rteTableEvenRow-default"))
+    for result in results:
+      report = audit_report_from(result, url, year_range)
+      if report:
+        inspector.save_report(report)
 
-  # for url in [TESTIMONIES_URL, PEER_AUDITS_URL, OTHER_REPORTS_URL]:
-  #   doc = beautifulsoup_from_url(url)
-  #   results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p > a")
-  #   for result in results:
-  #     report = report_from(result, url, year_range)
-  #     if report:
-  #       inspector.save_report(report)
+  for url in [TESTIMONIES_URL, PEER_AUDITS_URL, OTHER_REPORTS_URL]:
+    doc = beautifulsoup_from_url(url)
+    results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p > a")
+    for result in results:
+      report = report_from(result, url, year_range)
+      if report:
+        inspector.save_report(report)
 
   doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p > a")
@@ -144,6 +146,10 @@ def audit_report_from(result, page_url, year_range):
     unreleased = False
     landing_url = None
 
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
   report = {
     'inspector': 'treasury',
     'inspector_url': 'http://www.treasury.gov/about/organizational-structure/ig/',
@@ -182,6 +188,10 @@ def report_from(result, page_url, year_range):
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
 
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
   report = {
     'inspector': 'treasury',
     'inspector_url': 'http://www.treasury.gov/about/organizational-structure/ig/',
@@ -202,6 +212,10 @@ def semiannual_report_from(result, page_url, year_range):
   report_url = urljoin(page_url, result.get('href'))
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
 
   report = {
     'inspector': 'treasury',
