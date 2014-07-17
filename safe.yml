@@ -1,6 +1,9 @@
 # Amtrak (yes, they are gov't enough to have an IG)
 - amtrak
 
+# Department of Commerce
+- commerce
+
 # Department of Homeland Security
 - dhs
 
@@ -11,8 +14,7 @@
 - doj
 
 # Department of Transportation
-# (waiting on #57)
-# - dot
+- dot
 
 # Department of Energy
 - energy
@@ -23,17 +25,23 @@
 # Export-Import Bank
 - exim
 
-# Department of Housing and Urban Development
-- hud
+# Federal Reserve and CFPB
+- fed
+
+# Government Accountability Office
+- gao
+
+# General Services Administration
+- gsa
 
 # Department of Health and Human Services
 - hhs
 
-# Department of the Interior (in testing)
-# - interior 
+# Department of Housing and Urban Development
+- hud
 
-# General Services Administration
-- gsa
+# Department of the Interior
+- interior
 
 # Office of Personnel Management
 - opm
