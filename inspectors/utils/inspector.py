@@ -83,6 +83,8 @@ def validate_report(report):
   # A URL is required, unless 'unreleased' is set to True.
   url = report.get("url")
   if url is not None:
+    if not url.startswith(("http://", "https://")):
+      return "Report URL is not valid: %s" % url
     if report.get("file_type") is None:
       return "Couldn't figure out `file_type` from URL, please set it explicitly."
   else:
@@ -91,6 +93,13 @@ def validate_report(report):
     if report.get("landing_url") is None:
       return "Unreleased reports still need a landing_url"
 
+  # If summary_url or landing_url are present, check those too.
+  if report.get("landing_url"):
+    if not report.get("landing_url").startswith(("http://", "https://")):
+      return "Landing page URL is not valid: %s" % report.get("landing_url")
+  if report.get("summary_url"):
+    if not report.get("summary_url").startswith(("http://", "https://")):
+      return "Summary URL is not valid: %s" % report.get("summary_url")
 
   # report_id can't have slashes, it'll mess up the directory structure
   if "/" in report["report_id"]:
