@@ -22,6 +22,7 @@ from utils import utils, inspector
 # http://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-2014.aspx
 
 AUDIT_REPORTS_BASE_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-{}.aspx"
+TESTIMONIES_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/testimony_index.aspx"
 
 AGENCY_NAMES = {
   "bep": "The Bureau of Engraving & Printing",
@@ -65,30 +66,30 @@ def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit reports
-  for year in year_range:
-    url = AUDIT_REPORTS_BASE_URL.format(year)
+  # for year in year_range:
+  #   url = AUDIT_REPORTS_BASE_URL.format(year)
+  #   doc = beautifulsoup_from_url(url)
+  #   results = []
+  #   results.extend(doc.select("tr.ms-rteTableOddRow-default"))
+  #   results.extend(doc.select("tr.ms-rteTableEvenRow-default"))
+  #   for result in results:
+  #     report = audit_report_from(result, url, year_range)
+  #     if report:
+  #       inspector.save_report(report)
+
+  for url in [TESTIMONIES_URL]:
     doc = beautifulsoup_from_url(url)
-    results = []
-    results.extend(doc.select("tr.ms-rteTableOddRow-default"))
-    results.extend(doc.select("tr.ms-rteTableEvenRow-default"))
+    results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p > a")
     for result in results:
       report = report_from(result, url, year_range)
       if report:
         inspector.save_report(report)
 
-  # for url in [SEMIANNUAL_REPORTS_URL, TESTIMONIES_URL]:
-  #   doc = beautifulsoup_from_url(url)
-  #   results = doc.select("ul li")
-  #   for result in results:
-  #     report = report_from(result, year_range)
-  #     if report:
-  #       inspector.save_report(report)
-
 def clean_text(text):
   # A lot of text on this page has extra characters
   return text.replace('\u200b', '').replace('\xa0', ' ').strip()
 
-def report_from(result, page_url, year_range):
+def audit_report_from(result, page_url, year_range):
   published_on_text = clean_text(result.select("td")[1].text)
   date_formats = ['%m/%d/%Y', '%m/%d%Y']
   for date_format in date_formats:
@@ -137,6 +138,32 @@ def report_from(result, page_url, year_range):
   if landing_url:
     report['landing_url'] = landing_url
 
+  return report
+
+def report_from(result, page_url, year_range):
+  try:
+    title, date1, date2 = result.text.rsplit(",", 2)
+    published_on_text = date1 + date2
+    published_on = datetime.datetime.strptime(published_on_text.strip(), '%B %d %Y')
+  except ValueError:
+    title, date1, date2, date3 = result.text.rsplit(maxsplit=3)
+    published_on_text = date1 + date2 + date3
+    published_on = datetime.datetime.strptime(published_on_text.strip(), '%B%d,%Y')
+
+  report_id, title = title.split(maxsplit=1)
+  report_id = report_id.rstrip(":")
+  report_url = urljoin(page_url, result.get('href'))
+
+  report = {
+    'inspector': 'treasury',
+    'inspector_url': 'http://www.treasury.gov/about/organizational-structure/ig/',
+    'agency': 'treasury',
+    'agency_name': "Department of the Treasury",
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
   return report
 
 def beautifulsoup_from_url(url):
