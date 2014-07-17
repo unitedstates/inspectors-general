@@ -192,6 +192,8 @@ def extract_reports_for_topic(topic, year_range, archives=False):
 
 def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_name):
   doc = beautifulsoup_from_url(subtopic_url)
+  if not doc:
+    raise Exception("Failure fetching subtopic URL: %s" % subtopic_url)
 
   results = None
 
@@ -251,6 +253,18 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   if title in BLACKLIST_TITLES:
     return
 
+  # Try a quick check from the listing page to see if we can bail out based on
+  # the year
+  try:
+    published_on_text = result.find_previous("dt").text.strip()
+    published_on = datetime.datetime.strptime(published_on_text, "%m-%d-%Y")
+  except (AttributeError, ValueError):
+    published_on = None
+
+  if published_on and published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
   else:
@@ -287,6 +301,8 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
 
 def report_from_landing_url(report_url):
   doc = beautifulsoup_from_url(report_url)
+  if not doc:
+    raise Exception("Failure fetching report landing URL: %s" % report_url)
 
   possible_tags = (
     doc.select("h1") +
@@ -418,11 +434,13 @@ def get_subtopic_map(topic_url):
 
 def beautifulsoup_from_url(url):
   body = utils.download(url)
+  if body is None: return None
+
   doc = BeautifulSoup(body)
 
   # Some of the pages will return meta refreshes
   if doc.find("meta") and doc.find("meta").attrs.get('http-equiv') == 'REFRESH':
-    redirect_url = urljoin(topic_url, doc.find("meta").attrs['content'].split("url=")[1])
+    redirect_url = urljoin(url, doc.find("meta").attrs['content'].split("url=")[1])
     return beautifulsoup_from_url(redirect_url)
   else:
     return doc

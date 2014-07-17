@@ -5,6 +5,7 @@ from utils import utils, inspector
 from bs4 import BeautifulSoup
 import bs4
 import os
+import logging
 import time
 from datetime import datetime
 import calendar
@@ -30,7 +31,7 @@ def run(options):
   year_range = inspector.year_range(options)
   only_id = options.get('report_id')
 
-  print("## Downloading reports from %i to %i" % (year_range[0], year_range[-1]))
+  logging.info("## Downloading reports from %i to %i" % (year_range[0], year_range[-1]))
 
   url = url_for()
   body = utils.download(url)
@@ -44,7 +45,7 @@ def run(options):
       # check that the fetched year is in the range
       if year not in year_range:
         continue
-      print("## Downloading year %i " % year)
+      logging.info("## Downloading year %i " % year)
     except ValueError:
       continue
 
@@ -56,7 +57,7 @@ def run(options):
       report = report_from(item)
 
       if report['report_id'] in BLACKLIST:
-        print("Skipping downed report: remember to report this and get it fixed!")
+        logging.warn("Skipping downed report: remember to report this and get it fixed!")
         continue
 
       # can limit it to just one report, for debugging convenience

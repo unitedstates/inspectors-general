@@ -5,6 +5,7 @@ from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
 import urllib.parse
+import logging
 
 # oldest year: 2002
 
@@ -29,7 +30,7 @@ def run(options):
   limit = int(options.get('limit', 0))
 
   for component in components:
-    print("## Fetching reports for component %s" % component)
+    logging.info("## Fetching reports for component %s" % component)
     url = url_for(options, component)
     body = utils.download(url)
 
@@ -47,7 +48,7 @@ def run(options):
         continue
 
       if inspector.year_from(report) not in year_range:
-        # print "[%s] Skipping, not in requested range." % report['report_id']
+        # logging.info("[%s] Skipping, not in requested range." % report['report_id'])
         continue
 
       inspector.save_report(report)
@@ -56,7 +57,7 @@ def run(options):
       if limit and (count >= limit):
         break
 
-    print("## Fetched %i reports for component %s\n\n" % (count, component))
+    logging.info("## Fetched %i reports for component %s\n\n" % (count, component))
 
 
 def report_from(result, component, url):

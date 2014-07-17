@@ -4,4 +4,4 @@
 /cache
 /todo.txt
 /admin.yml
-nohup.out
+*.out
