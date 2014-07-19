@@ -4,6 +4,7 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -26,6 +27,10 @@ from utils import utils, inspector
 AUDIT_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/areports{}.html"
 SEMIANNUAL_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/sarpages.html"
 
+INSPECTION_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/aireports.html"
+
+OTHER_REPORTS_URL = [INSPECTION_REPORTS_URL]
+
 REPORT_PUBLISHED_MAP = {
   "statelocal032002": datetime.datetime(2002, 3, 21),
   "statloc082001": datetime.datetime(2001, 8, 3),
@@ -33,6 +38,7 @@ REPORT_PUBLISHED_MAP = {
   "A17A0002": datetime.datetime(2001, 2, 28),
   "A1790019": datetime.datetime(2000, 2, 28),  # Approximation
   "A17C0008": datetime.datetime(2003, 1, 31),
+  "PESMemo": datetime.datetime(2001, 1, 1),  # Approximation
 }
 
 def run(options):
@@ -55,15 +61,23 @@ def run(options):
   #         inspector.save_report(report)
 
   # Get semiannual reports
-  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
-  table = doc.find("table", {"border": 1})
-  for index, result in enumerate(table.select("tr")):
-    if index < 2:
-      # The first two rows are headers
-      continue
-    report = semiannual_report_from(result, SEMIANNUAL_REPORTS_URL, year_range)
-    if report:
-      inspector.save_report(report)
+  # doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  # table = doc.find("table", {"border": 1})
+  # for index, result in enumerate(table.select("tr")):
+  #   if index < 2:
+  #     # The first two rows are headers
+  #     continue
+  #   report = semiannual_report_from(result, SEMIANNUAL_REPORTS_URL, year_range)
+  #   if report:
+  #     inspector.save_report(report)
+
+  for url in OTHER_REPORTS_URL:
+    doc = beautifulsoup_from_url(url)
+    results = doc.select("div.contentText ul li")
+    for result in results:
+      report = report_from(result, url, year_range)
+      if report:
+        inspector.save_report(report)
 
 def audit_report_from(result, agency_name, page_url, year_range):
   if not result.text.strip():
@@ -132,6 +146,33 @@ def semiannual_report_from(result, page_url, year_range):
   title = "Semiannual Report - {}".format(date_range_text)
   published_on_text = date_range_text.split("-")[-1].strip()
   published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+
+  report = {
+    'inspector': 'education',
+    'inspector_url': 'http://www2.ed.gov/about/offices/list/oig/',
+    'agency': 'education',
+    'agency_name': "Department of Education",
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  return report
+
+def report_from(result, url, year_range):
+  report_url = urljoin(url, result.select("a")[0].get('href'))
+  report_filename = report_url.split("/")[-1]
+  report_id, extension = os.path.splitext(report_filename)
+
+  title = result.text.split(" ACN:")[0]
+  if report_id in REPORT_PUBLISHED_MAP:
+    published_on = REPORT_PUBLISHED_MAP[report_id]
+  else:
+    try:
+      published_on_text = re.search("[Issued|Date]:\s+([\d/]+)", result.text).groups()[0]
+    except AttributeError:
+      import pdb;pdb.set_trace()
+    published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
 
   report = {
     'inspector': 'education',
