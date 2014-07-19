@@ -3,3 +3,4 @@ scrapelib
 PyQuery
 BeautifulSoup4
 pyyaml
+PyPDF2
