@@ -4,6 +4,7 @@ import re
 import logging
 import datetime
 import urllib.parse
+import PyPDF2
 
 # Save a report to disk, provide output along the way.
 #
@@ -40,6 +41,10 @@ def save_report(report):
       return False
 
     logging.warn("\treport: %s" % report_path)
+
+    # Disabled for now.
+    # page_count = extract_page_count(report)
+    # logging.debug("\tpages: %i" % page_count)
 
     text_path = extract_report(report)
     logging.warn("\ttext: %s" % text_path)
@@ -83,6 +88,8 @@ def validate_report(report):
   # A URL is required, unless 'unreleased' is set to True.
   url = report.get("url")
   if url is not None:
+    if not url.startswith(("http://", "https://")):
+      return "Report URL is not valid: %s" % url
     if report.get("file_type") is None:
       return "Couldn't figure out `file_type` from URL, please set it explicitly."
   else:
@@ -91,6 +98,13 @@ def validate_report(report):
     if report.get("landing_url") is None:
       return "Unreleased reports still need a landing_url"
 
+  # If summary_url or landing_url are present, check those too.
+  if report.get("landing_url"):
+    if not report.get("landing_url").startswith(("http://", "https://")):
+      return "Landing page URL is not valid: %s" % report.get("landing_url")
+  if report.get("summary_url"):
+    if not report.get("summary_url").startswith(("http://", "https://")):
+      return "Summary URL is not valid: %s" % report.get("summary_url")
 
   # report_id can't have slashes, it'll mess up the directory structure
   if "/" in report["report_id"]:
@@ -125,6 +139,30 @@ def download_report(report):
   if result:
     return report_path
   else:
+    return None
+
+def extract_page_count(report):
+  report_path = path_for(report, report['file_type'])
+  real_report_path = os.path.join(utils.data_dir(), report_path)
+
+  file_type_lower = report['file_type'].lower()
+  if file_type_lower == "pdf":
+    pdf_file = open(real_report_path, "rb")
+    try:
+      pdf_reader = PyPDF2.PdfFileReader(pdf_file, strict=False, overwriteWarnings=False)
+      if pdf_reader.isEncrypted:
+        result = pdf_reader.decrypt("")
+        if not result:
+          raise Exception("PDF file requires a password")
+      page_count = pdf_reader.getNumPages()
+      report['page_count'] = page_count
+      return page_count
+    finally:
+      pdf_file.close()
+  elif file_type_lower == "htm" or file_type_lower == "html":
+    return None
+  else:
+    logging.warn("Unknown file type, don't know how to extract page count!")
     return None
 
 # relies on putting text next to report_path
