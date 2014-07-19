@@ -21,7 +21,10 @@ from utils import utils, inspector
 # - Fix the published date for A06K0003
 # on http://www2.ed.gov/about/offices/list/oig/areports2011.html
 
+# TODO use agency names for audit reports
+
 AUDIT_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/areports{}.html"
+SEMIANNUAL_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/sarpages.html"
 
 REPORT_PUBLISHED_MAP = {
   "statelocal032002": datetime.datetime(2002, 3, 21),
@@ -36,20 +39,31 @@ def run(options):
   year_range = inspector.year_range(options)
 
   # Get the audit reports
-  for year in year_range:
-    url = audit_url_for(year)
-    doc = beautifulsoup_from_url(url)
-    agency_tables = doc.find_all("table", {"border": 1})
-    for agency_table in agency_tables:
-      agency_name = agency_table.find_previous("p").text.strip()
-      results = agency_table.select("tr")
-      for index, result in enumerate(results):
-        if not index:
-          # First row is the header
-          continue
-        report = audit_report_from(result, agency_name, url, year_range)
-        if report:
-          inspector.save_report(report)
+  # for year in year_range:
+  #   url = audit_url_for(year)
+  #   doc = beautifulsoup_from_url(url)
+  #   agency_tables = doc.find_all("table", {"border": 1})
+  #   for agency_table in agency_tables:
+  #     agency_name = agency_table.find_previous("p").text.strip()
+  #     results = agency_table.select("tr")
+  #     for index, result in enumerate(results):
+  #       if not index:
+  #         # First row is the header
+  #         continue
+  #       report = audit_report_from(result, agency_name, url, year_range)
+  #       if report:
+  #         inspector.save_report(report)
+
+  # Get semiannual reports
+  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  table = doc.find("table", {"border": 1})
+  for index, result in enumerate(table.select("tr")):
+    if index < 2:
+      # The first two rows are headers
+      continue
+    report = semiannual_report_from(result, SEMIANNUAL_REPORTS_URL, year_range)
+    if report:
+      inspector.save_report(report)
 
 def audit_report_from(result, agency_name, page_url, year_range):
   if not result.text.strip():
@@ -109,6 +123,27 @@ def audit_url_for(year):
     return AUDIT_REPORTS_URL.format("")
   else:
     return AUDIT_REPORTS_URL.format(year)
+
+def semiannual_report_from(result, page_url, year_range):
+  report_url = urljoin(page_url, result.select("a")[0].get('href'))
+  report_filename = report_url.split("/")[-1]
+  report_id, extension = os.path.splitext(report_filename)
+  date_range_text = result.select("td")[1].text
+  title = "Semiannual Report - {}".format(date_range_text)
+  published_on_text = date_range_text.split("-")[-1].strip()
+  published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+
+  report = {
+    'inspector': 'education',
+    'inspector_url': 'http://www2.ed.gov/about/offices/list/oig/',
+    'agency': 'education',
+    'agency_name': "Department of Education",
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  return report
 
 def beautifulsoup_from_url(url):
   body = utils.download(url)
