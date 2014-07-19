@@ -42,7 +42,9 @@ def save_report(report):
 
     logging.warn("\treport: %s" % report_path)
 
-    extract_page_count(report)
+    # Disabled for now.
+    # page_count = extract_page_count(report)
+    # logging.debug("\tpages: %i" % page_count)
 
     text_path = extract_report(report)
     logging.warn("\ttext: %s" % text_path)
