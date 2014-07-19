@@ -2,38 +2,13 @@
 
 A project to collect reports from the [offices of Inspectors General](http://en.wikipedia.org/wiki/Office_of_the_Inspector_General) across the US federal government.
 
-**Done so far**:
+So far we have **over 20** inspector general offices scraped, downloaded, and stable. See our [safe list](safe.yml) for details.
 
-* [Department of Defense](http://www.dodig.mil/)
-* [Department of Energy](http://energy.gov/ig/)
-* [Department of Transportation](https://www.oig.dot.gov/)
-* [General Services Administration](http://www.gsaig.gov/)
-* [Securities and Exchange Commission (SEC)](https://www.sec.gov/oig/)
-* [US Postal Service](http://www.uspsoig.gov/)
-* [Department of Homeland Security](http://www.oig.dhs.gov/), which includes:
-  * Secret Service
-  * Federal Emergency Management Service (FEMA)
-  * Transportation Security Administration (TSA)
-  * Immigration and Customs Enforcement (ICE)
-  * Customs and Border Protection (CBP)
-  * Citizenship and Immigration Services (CIS)
-  * Coast Guard
-  * (and others)
-* [Office of Personnel Management (OPM)](https://www.opm.gov/our-inspector-general/reports/)
-* [Environmental Protection Agency (EPA)](http://www.epa.gov/oig/reports.html)
-* [Department of Justice](http://www.justice.gov/oig/reports/)
-  * Federal Bureau of Investigation (FBI)
-  * United States Marshals Service (USMS)
-  * Drug Enforcement Administration (DEA)
-  * Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF)
-  * (and others)
-* [Department of Housing and Urban Development (HUD)](http://www.hudoig.gov/)
-* [Amtrak](http://amtrakoig.gov/)
-* [Export-Import Bank](http://www.exim.gov/oig/index.cfm)
+**How you can help:** [Matt Rumsey](https://twitter.com/mattrumsey) kindly [compiled a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. The left-hand column tracks who's completed what IG.
 
-Thanks to [Matt Rumsey](https://twitter.com/mattrumsey) for [compiling a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. The left-hand column tracks who's completed what IG. A yellow highlight means it's a high priority.
+The best way to "claim" an IG is to **create an open pull request** with an empty scraper as soon as you've begun work -- you don't need to wait until the scraper is finished to submit a pull request.
 
-Eric Mill has written [a piece explaining what the project is](http://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/) and why it's being done. From it:
+[Eric Mill](https://twitter.com/konklone) has written [a piece explaining what the project is](http://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/) and why it's being done. From it:
 
 > **What's an inspector general?**
 >

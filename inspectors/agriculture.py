@@ -1,0 +1,158 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import datetime
+import logging
+import os
+from urllib.parse import urljoin
+
+from bs4 import BeautifulSoup
+from utils import utils, inspector
+
+# http://www.usda.gov/oig/rptsaudits.htm
+# Oldest report: 1978
+
+# options:
+#   standard since/year options for a year range to fetch from.
+#
+# Notes for IG's web team:
+#
+
+SEMIANNUAL_REPORTS_URL = "http://www.usda.gov/oig/rptssarc.htm"
+AGENCY_BASE_URL = "http://www.usda.gov/oig/"
+TESTIMONIES_URL = "http://www.usda.gov/oig/rptsigtranscripts.htm"
+INVESTIGATION_URLS = "http://www.usda.gov/oig/newinv.htm"
+
+AGENCY_URLS = {
+  "AARC": "rptsauditsaarc.htm",
+  "AMS": "rptsauditsams.htm",
+  "APHIS": "rptsauditsaphis.htm",
+  "ARS": "rptsauditsars.htm",
+  "CR": "rptsauditscr.htm",
+  "CCC": "rptsauditsccc.htm",
+  "CSRE": "rptsauditscsrees.htm",
+  "FSA": "rptsauditsfsa.htm",
+  "FNS": "rptsauditsfns.htm",
+  "FSIS": "rptsauditsfsis.htm",
+  "FAS": "rptsauditsfas.htm",
+  "FS": "rptsauditsfs.htm",
+  "GIPSA": "rptsauditsgipsa.htm",
+  "NASS": "rptsauditsnass.htm",
+  "NIFA": "rptsauditsnifa.htm",
+  "NRCS": "rptsauditsnrcs.htm",
+  "REE": "rptsauditsree.htm",
+  "RMA": "rptsauditsrma.htm",
+  "RBS": "rptsauditsrbs.htm",
+  "RBEG": "rptsauditsrbeg.htm",
+  "RD": "rptsauditsrd.htm",
+  "RHS": "rptsauditsrhs.htm",
+  "RUS": "rptsauditsrus.htm",
+  "USDA": "rptsauditsmulti.htm",
+}
+AGENCY_NAMES = {
+  "AARC": "Alternative Agricultural Research & Comm. Center",
+  "AMS": "Agricultural Marketing Service",
+  "APHIS": "Animal Plant Health Inspection Service",
+  "ARS": "Agricultural Research Service",
+  "CR": "Civil Rights",
+  "CCC": "Commodity Credit Corporation",
+  "CSRE": "Cooperative State Research, Ed. & Extension Service",
+  "FSA": "Farm Service Agency",
+  "FNS": "Food and Nutrition Service",
+  "FSIS": "Food Safety and Inspection Service",
+  "FAS": "Foreign Agricultural Service",
+  "FS": "Forest Service",
+  "GIPSA": "Grain Inspection, Packers and Stockyards Administration",
+  "NASS": "National Agricultural Statistics Service",
+  "NIFA": "National Institute of Food and Agriculture",
+  "NRCS": "Natural Resources Conservation Service",
+  "REE": "Research, Education, and Economics",
+  "RMA": "Risk Management Agency",
+  "RBS": "Rural Business-Cooperative Service",
+  "RBEG": "Rural Business Enterprise Grant",
+  "RD": "Rural Development",
+  "RHS": "Rural Housing Service",
+  "RUS": "Rural Utilities Service",
+  "USDA": "USDA (Multi-Agency)",
+}
+
+REPORT_PUBLISHED_MAPPING = {
+  "TestimonyBlurb2": datetime.datetime(2004, 7, 14),
+}
+
+def run(options):
+  year_range = inspector.year_range(options)
+
+  # Pull the audit reports
+  for agency_slug, agency_path in AGENCY_URLS.items():
+    agency_url = urljoin(AGENCY_BASE_URL, agency_path)
+    doc = beautifulsoup_from_url(agency_url)
+    results = doc.select("ul li")
+    for result in results:
+      report = report_from(result, agency_url, year_range, agency_slug)
+      if report:
+        inspector.save_report(report)
+
+  for url in [INVESTIGATION_URLS, SEMIANNUAL_REPORTS_URL, TESTIMONIES_URL]:
+    doc = beautifulsoup_from_url(url)
+    results = doc.select("ul li")
+    for result in results:
+      report = report_from(result, url, year_range)
+      if report:
+        inspector.save_report(report)
+
+def report_from(result, page_url, year_range, agency_slug="agriculture"):
+  try:
+    # Try to find the link with text first. Sometimes there are hidden links
+    # (no text) that we want to ignore.
+    link = result.find_all("a", text=True)[0]
+  except IndexError:
+    link = result.find_all("a")[0]
+  title = link.text.strip()
+  report_url = urljoin(page_url, link.get('href'))
+  report_filename = report_url.split("/")[-1]
+  report_id = os.path.splitext(report_filename)[0]
+
+  # These are just summary versions of other reports. Skip for now.
+  if '508 Compliant Version' in title:
+    return
+
+  if report_id in REPORT_PUBLISHED_MAPPING:
+    published_on = REPORT_PUBLISHED_MAPPING[report_id]
+  else:
+    try:
+      # This is for the investigation reports
+      published_on = datetime.datetime.strptime(result.text.strip(), '%B %Y (PDF)')
+      title = "Investigation Bulletins {}".format(result.text.strip())
+    except ValueError:
+      published_on_text = result.text.split()[0].strip()
+
+      date_formats = ['%m/%d/%Y', '%m/%Y']
+      for date_format in date_formats:
+        try:
+          published_on = datetime.datetime.strptime(published_on_text, date_format)
+        except ValueError:
+          pass
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  report = {
+    'inspector': 'agriculture',
+    'inspector_url': 'http://www.usda.gov/oig/',
+    'agency': agency_slug.lower(),
+    'agency_name': AGENCY_NAMES.get(agency_slug, 'Department of Agriculture'),
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  return report
+
+def beautifulsoup_from_url(url):
+  body = utils.download(url)
+  return BeautifulSoup(body)
+
+
+utils.run(run) if (__name__ == "__main__") else None

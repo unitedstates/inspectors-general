@@ -4,6 +4,7 @@ import re
 import logging
 import datetime
 import urllib.parse
+import PyPDF2
 
 # Save a report to disk, provide output along the way.
 #
@@ -40,6 +41,10 @@ def save_report(report):
       return False
 
     logging.warn("\treport: %s" % report_path)
+
+    # Disabled for now.
+    # page_count = extract_page_count(report)
+    # logging.debug("\tpages: %i" % page_count)
 
     text_path = extract_report(report)
     logging.warn("\ttext: %s" % text_path)
@@ -134,6 +139,30 @@ def download_report(report):
   if result:
     return report_path
   else:
+    return None
+
+def extract_page_count(report):
+  report_path = path_for(report, report['file_type'])
+  real_report_path = os.path.join(utils.data_dir(), report_path)
+
+  file_type_lower = report['file_type'].lower()
+  if file_type_lower == "pdf":
+    pdf_file = open(real_report_path, "rb")
+    try:
+      pdf_reader = PyPDF2.PdfFileReader(pdf_file, strict=False, overwriteWarnings=False)
+      if pdf_reader.isEncrypted:
+        result = pdf_reader.decrypt("")
+        if not result:
+          raise Exception("PDF file requires a password")
+      page_count = pdf_reader.getNumPages()
+      report['page_count'] = page_count
+      return page_count
+    finally:
+      pdf_file.close()
+  elif file_type_lower == "htm" or file_type_lower == "html":
+    return None
+  else:
+    logging.warn("Unknown file type, don't know how to extract page count!")
     return None
 
 # relies on putting text next to report_path
