@@ -42,9 +42,7 @@ def save_report(report):
 
     logging.warn("\treport: %s" % report_path)
 
-    page_count = extract_page_count(report)
-    if page_count != None:
-      logging.warn("\t\t%d page%s" % (page_count, (page_count != 1) and "s" or ""))
+    extract_page_count(report)
 
     text_path = extract_report(report)
     logging.warn("\ttext: %s" % text_path)
