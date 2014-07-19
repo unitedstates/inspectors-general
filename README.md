@@ -4,9 +4,7 @@ A project to collect reports from the [offices of Inspectors General](http://en.
 
 So far we have **over 20** inspector general offices scraped, downloaded, and stable. See our [safe list](safe.yml) for details.
 
-**How can I help?**
-
-[Matt Rumsey](https://twitter.com/mattrumsey) kindly [compiled a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. The left-hand column tracks who's completed what IG.
+**How you can help:** [Matt Rumsey](https://twitter.com/mattrumsey) kindly [compiled a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. The left-hand column tracks who's completed what IG.
 
 The best way to "claim" an IG is to **create an open pull request** with an empty scraper as soon as you've begun work -- you don't need to wait until the scraper is finished to submit a pull request.
 
