@@ -149,7 +149,7 @@ def extract_page_count(report):
   if file_type_lower == "pdf":
     pdf_file = open(real_report_path, "rb")
     try:
-      pdf_reader = PyPDF2.PdfFileReader(pdf_file)
+      pdf_reader = PyPDF2.PdfFileReader(pdf_file, strict=False, overwriteWarnings=False)
       if pdf_reader.isEncrypted:
         result = pdf_reader.decrypt("")
         if not result:
