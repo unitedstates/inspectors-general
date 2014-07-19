@@ -151,20 +151,20 @@ def text_from_pdf(pdf_path):
 
 def page_count_from_pdf(pdf_path):
   try:
-    subprocess.Popen(["pdftk", "--version"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
+    subprocess.Popen(["pdfinfo", "-v"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
   except FileNotFoundError:
-    logging.warn("Install pdftk to extract page counts! The pdftk executable must be in a directory that is in your PATH environment variable.")
+    logging.warn("Install pdfinfo to extract page counts! The pdfinfo executable must be in a directory that is in your PATH environment variable.")
     return None
 
   real_pdf_path = os.path.join(data_dir(), pdf_path)
 
   try:
-    output = subprocess.check_output("pdftk \"%s\" dump_data" % (real_pdf_path), shell=True)
+    output = subprocess.check_output("pdfinfo \"%s\"" % (real_pdf_path), shell=True)
   except subprocess.CalledProcessError as exc:
     logging.warn("Error extracting page count for %s:\n\n%s" % (pdf_path, format_exception(exc)))
     return None
 
-  match = re.search(b"NumberOfPages:\\s+([0-9])+\\s", output)
+  match = re.search(b"Pages:\\s+([0-9]+)\\s", output)
   if match:
     return int(match.group(1))
   return None
