@@ -74,6 +74,17 @@ def preprocess_report(report):
     if len(split) > 1:
       report['file_type'] = split[-1]
 
+  # strip trailing spaces from common string fields,
+  # but leave the presence check for the validate function
+  common_strings = (
+    "published_on", "report_id", "title", "inspector", "inspector_url",
+    "agency", "agency_name", "url", "landing_url", "summary"
+  )
+  for field in common_strings:
+    value = report.get(field)
+    if (value is not None):
+      report[field] = value.strip()
+
 
 # Ensure required fields are present
 def validate_report(report):
