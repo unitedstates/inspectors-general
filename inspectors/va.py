@@ -110,7 +110,7 @@ def report_from(result, year_range):
     'inspector_url': 'http://www.va.gov/oig',
     'agency': agency_slug,
     'agency_name': agency_name,
-    'report_id': report_id,
+    'report_id': report_id.strip(),
     'url': report_url.strip(),
     'landing_url': landing_url,
     'topic': topic,

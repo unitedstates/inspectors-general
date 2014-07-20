@@ -182,7 +182,7 @@ def write_report(report):
 
 
 def path_for(report, ext):
-  return "%s/%s/%s/report.%s" % (report['inspector'], report['year'], report['report_id'], ext)
+  return "%s/%s/%s/report.%s" % (report['inspector'], report['year'], report['report_id'].strip(), ext)
 
 def cache(inspector, path):
   return os.path.join(utils.cache_dir(), inspector, path)
