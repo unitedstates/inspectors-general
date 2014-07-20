@@ -1,3 +1,23 @@
+###
+#
+# This list contains handles for inspector general scrapers that are sufficiently
+# stable that a production app depending on this project could lean on this list.
+#
+# Generally, this means that the scraper has successfully completed a "dry run"
+# since its earliest year. (Scrapes the whole site, but does not download PDFs.)
+#
+# For example:
+#   ./inspectors/fcc.py --dry_run --since=1994
+#
+# Data from this run will be casually reviewed for quality. Inclusion here
+# does *not* mean that the data quality has been fully vetted, only that it is
+# acceptably unlikely that you will experience crashes or see broken data.
+#
+# To run only scrapers that appear on this list, run:
+#    ./igs --safe
+#
+###
+
 # Department of Agriculture
 - agriculture
 
