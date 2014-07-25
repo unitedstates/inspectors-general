@@ -16,7 +16,10 @@ from utils import utils, inspector
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
-#
+# - Some reports have links with a '.PDF' extension, but they can only be
+# accessed using a '.pdf' extension. There is a 404 otherwise. The
+# `LOWER_PDF_REPORT_IDS` constant caontains a list of the report ids that this
+# applies to.
 
 SEMIANNUAL_REPORTS_URL = "http://www.usda.gov/oig/rptssarc.htm"
 AGENCY_BASE_URL = "http://www.usda.gov/oig/"
@@ -80,6 +83,31 @@ REPORT_PUBLISHED_MAPPING = {
   "TestimonyBlurb2": datetime.datetime(2004, 7, 14),
 }
 
+# These reports have links that end with a '.PDF' extension, but must can only
+# be accessed using a '.pdf' extension.
+LOWER_PDF_REPORT_IDS = [
+  "sarc1978_2_Part_1",
+  "sarc1979_2",
+  "sarc1980_2",
+  "sarc1981_2",
+  "sarc1982_2",
+  "sarc1983_2",
+  "sarc1984_2",
+  "sarc1985_2",
+  "sarc1986_2",
+  "sarc1987_2",
+  "sarc1988_2",
+  "sarc1989_2",
+  "sarc1990_2",
+  "sarc1991_2",
+  "sarc1992_2",
+  "sarc1993_2",
+  "sarc1994_2",
+  "sarc1995_2",
+  "sarc1996_2",
+  "sarc1997_2",
+]
+
 def run(options):
   year_range = inspector.year_range(options)
 
@@ -109,7 +137,7 @@ def report_from(result, page_url, year_range, agency_slug="agriculture"):
   except IndexError:
     link = result.find_all("a")[0]
   title = link.text.strip()
-  report_url = urljoin(page_url, link.get('href'))
+  report_url = urljoin(page_url, link.get('href').strip())
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]
 
@@ -137,6 +165,9 @@ def report_from(result, page_url, year_range, agency_slug="agriculture"):
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
+
+  if report_id in LOWER_PDF_REPORT_IDS:
+    report_url = ".".join([report_url.rsplit(".", 1)[0], 'pdf'])
 
   report = {
     'inspector': 'agriculture',
