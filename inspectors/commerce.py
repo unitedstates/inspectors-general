@@ -43,7 +43,7 @@ TOPIC_NAMES = {
   "AI": "Audits Initiated",
   "T": "Testimony",
 }
-BASE_TOPIC_URL = "http://www.oig.doc.gov/Pages/{}.aspx?YearStart=01/01/1996&YearEnd=12/31/2014"
+BASE_TOPIC_URL = "http://www.oig.doc.gov/Pages/{}.aspx"
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -58,7 +58,7 @@ def run(options):
     extract_reports_for_topic(topic, year_range)
 
 def extract_reports_for_topic(topic, year_range):
-  topic_url = BASE_TOPIC_URL.format(TOPIC_TO_URL_SLUG[topic])
+  topic_url = url_for(year_range).format(TOPIC_TO_URL_SLUG[topic])
 
   topic_page = beautifulsoup_from_url(topic_url)
   results = topic_page.select("div.row")
@@ -67,6 +67,10 @@ def extract_reports_for_topic(topic, year_range):
     report = report_from(result, topic, topic_url, year_range)
     if report:
       inspector.save_report(report)
+
+def url_for(year_range):
+  return "%s?YearStart=01/01/%s&YearEnd=12/31/%s" % (BASE_TOPIC_URL, year_range[0], year_range[-1])
+
 
 def report_from(result, topic, topic_url, year_range):
   published_on_text = result.select("div.row-date")[0].text
