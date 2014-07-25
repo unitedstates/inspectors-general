@@ -21,6 +21,8 @@ from utils import utils, inspector
 # http://www2.ed.gov/about/offices/list/oig/areports2003.html
 # - Fix the published date for A06K0003
 # on http://www2.ed.gov/about/offices/list/oig/areports2011.html
+# - Multiple reports on http://www2.ed.gov/about/offices/list/oig/ireports.html
+# say that they were published in 'Decemver' or 'Deccember' instead of 'December'
 
 # TODO use agency names for audit reports
 
@@ -28,8 +30,9 @@ AUDIT_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/areports{}.html"
 SEMIANNUAL_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/sarpages.html"
 
 INSPECTION_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/aireports.html"
+INVESTIGATIVE_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/ireports.html"
 
-OTHER_REPORTS_URL = [INSPECTION_REPORTS_URL]
+OTHER_REPORTS_URL = [INVESTIGATIVE_REPORTS_URL, INSPECTION_REPORTS_URL]
 
 REPORT_PUBLISHED_MAP = {
   "statelocal032002": datetime.datetime(2002, 3, 21),
@@ -168,11 +171,23 @@ def report_from(result, url, year_range):
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
   else:
+    result_text = result.text.replace(",", "").replace("\n", " ")
+    result_text = " ".join(result_text.split())  # Remove any double spaces
+    result_text = result_text.replace("Decemver", "December").replace("Deccember", "December")  # See note to IG Web team
     try:
-      published_on_text = re.search("[Issued|Date]:\s+([\d/]+)", result.text).groups()[0]
+      published_on_text = "/".join(re.search("(\d+)/(\d+)/(\d+)", result_text).groups())
+      published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
     except AttributeError:
-      import pdb;pdb.set_trace()
-    published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
+      try:
+        published_on_text = "/".join(re.search("(\d+)/(\d+)", result_text).groups())
+        published_on = datetime.datetime.strptime(published_on_text, '%m/%Y')
+      except AttributeError:
+        try:
+          published_on_text = "/".join(re.search("(\w+) (\d+) (\d+)", result_text).groups())
+          published_on = datetime.datetime.strptime(published_on_text, '%B/%d/%Y')
+        except AttributeError:
+          published_on_text = "/".join(re.search("(\w+) (\d+)", result_text).groups())
+          published_on = datetime.datetime.strptime(published_on_text, '%B/%Y')
 
   report = {
     'inspector': 'education',
