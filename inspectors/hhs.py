@@ -132,6 +132,9 @@ REPORT_PUBLISHED_MAPPING = {
   "CMP-March2011-Final": datetime.datetime(2011, 3, 1),
   "hcfacreport2004": datetime.datetime(2005, 9, 1),
 
+  # This is a published draft for next year, date taken from PDF metadata
+  'FY2015_HHSOIG_Congressional_Justification': datetime.datetime(2014, 3, 4),
+
   # This has an incorrect datetime (2028)
   'oei-06-98-00321': datetime.datetime(2000, 12, 1),
 
