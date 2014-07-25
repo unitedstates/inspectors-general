@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 # scraper should be instantiated at class-load time, so that it can rate limit appropriately
 import scrapelib
-scraper = scrapelib.Scraper(requests_per_minute=120, follow_robots=False, retry_attempts=3)
+scraper = scrapelib.Scraper(requests_per_minute=120, retry_attempts=3)
 scraper.user_agent = "unitedstates/inspectors-general (https://github.com/unitedstates/inspectors-general)"
 
 from . import admin
