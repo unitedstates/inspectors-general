@@ -31,8 +31,9 @@ SEMIANNUAL_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/sarpages.htm
 
 INSPECTION_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/aireports.html"
 INVESTIGATIVE_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/ireports.html"
+CONGRESSIONAL_TESTIMONY_URL = "http://www2.ed.gov/about/offices/list/oig/testimon.html"
 
-OTHER_REPORTS_URL = [INVESTIGATIVE_REPORTS_URL, INSPECTION_REPORTS_URL]
+OTHER_REPORTS_URL = [CONGRESSIONAL_TESTIMONY_URL]#INVESTIGATIVE_REPORTS_URL, INSPECTION_REPORTS_URL]
 
 REPORT_PUBLISHED_MAP = {
   "statelocal032002": datetime.datetime(2002, 3, 21),
