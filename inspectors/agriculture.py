@@ -18,7 +18,7 @@ from utils import utils, inspector
 # Notes for IG's web team:
 # - Some reports have links with a '.PDF' extension, but they can only be
 # accessed using a '.pdf' extension. There is a 404 otherwise. The
-# `LOWER_PDF_REPORT_IDS` constant caontains a list of the report ids that this
+# `LOWER_PDF_REPORT_IDS` constant contains a list of the report ids that this
 # applies to.
 
 SEMIANNUAL_REPORTS_URL = "http://www.usda.gov/oig/rptssarc.htm"
