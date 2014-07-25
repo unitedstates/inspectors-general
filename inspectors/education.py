@@ -32,8 +32,10 @@ SEMIANNUAL_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/sarpages.htm
 INSPECTION_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/aireports.html"
 INVESTIGATIVE_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/ireports.html"
 CONGRESSIONAL_TESTIMONY_URL = "http://www2.ed.gov/about/offices/list/oig/testimon.html"
+SPECIAL_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/specialreportstocongress.html"
+OTHER_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/otheroigproducts.html"
 
-OTHER_REPORTS_URL = [CONGRESSIONAL_TESTIMONY_URL]#INVESTIGATIVE_REPORTS_URL, INSPECTION_REPORTS_URL]
+OTHER_REPORTS_URL = [OTHER_REPORTS_URL, SPECIAL_REPORTS_URL, CONGRESSIONAL_TESTIMONY_URL, INVESTIGATIVE_REPORTS_URL, INSPECTION_REPORTS_URL]
 
 REPORT_PUBLISHED_MAP = {
   "statelocal032002": datetime.datetime(2002, 3, 21),
@@ -43,38 +45,41 @@ REPORT_PUBLISHED_MAP = {
   "A1790019": datetime.datetime(2000, 2, 28),  # Approximation
   "A17C0008": datetime.datetime(2003, 1, 31),
   "PESMemo": datetime.datetime(2001, 1, 1),  # Approximation
+  "s1370001": datetime.datetime(1999, 3, 18),
+  "oigqualitystandardsforalternativeproducts": datetime.datetime(2010, 3, 11),
 }
 
 def run(options):
   year_range = inspector.year_range(options)
 
   # Get the audit reports
-  # for year in year_range:
-  #   url = audit_url_for(year)
-  #   doc = beautifulsoup_from_url(url)
-  #   agency_tables = doc.find_all("table", {"border": 1})
-  #   for agency_table in agency_tables:
-  #     agency_name = agency_table.find_previous("p").text.strip()
-  #     results = agency_table.select("tr")
-  #     for index, result in enumerate(results):
-  #       if not index:
-  #         # First row is the header
-  #         continue
-  #       report = audit_report_from(result, agency_name, url, year_range)
-  #       if report:
-  #         inspector.save_report(report)
+  for year in year_range:
+    url = audit_url_for(year)
+    doc = beautifulsoup_from_url(url)
+    agency_tables = doc.find_all("table", {"border": 1})
+    for agency_table in agency_tables:
+      agency_name = agency_table.find_previous("p").text.strip()
+      results = agency_table.select("tr")
+      for index, result in enumerate(results):
+        if not index:
+          # First row is the header
+          continue
+        report = audit_report_from(result, agency_name, url, year_range)
+        if report:
+          inspector.save_report(report)
 
   # Get semiannual reports
-  # doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
-  # table = doc.find("table", {"border": 1})
-  # for index, result in enumerate(table.select("tr")):
-  #   if index < 2:
-  #     # The first two rows are headers
-  #     continue
-  #   report = semiannual_report_from(result, SEMIANNUAL_REPORTS_URL, year_range)
-  #   if report:
-  #     inspector.save_report(report)
+  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  table = doc.find("table", {"border": 1})
+  for index, result in enumerate(table.select("tr")):
+    if index < 2:
+      # The first two rows are headers
+      continue
+    report = semiannual_report_from(result, SEMIANNUAL_REPORTS_URL, year_range)
+    if report:
+      inspector.save_report(report)
 
+  # Get other reports
   for url in OTHER_REPORTS_URL:
     doc = beautifulsoup_from_url(url)
     results = doc.select("div.contentText ul li")
