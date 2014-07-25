@@ -62,7 +62,7 @@ def run(options):
 def report_from(result):
   report = {
     'inspector': 'usps',
-    'inspector_url': 'http://uspsoig.gov/',
+    'inspector_url': 'https://uspsoig.gov/',
     'agency': 'usps',
     'agency_name': 'United States Postal Service'
   }
@@ -138,7 +138,7 @@ def last_page_for(doc):
 def url_for(options, page=1):
   year_range = inspector.year_range(options)
 
-  url = "http://www.uspsoig.gov/document-library?"
+  url = "https://uspsoig.gov/document-library?"
 
   # there's always a first year, and it defaults to current year
   since = "%s-01-01" % year_range[0]
