@@ -150,6 +150,31 @@ def text_from_pdf(pdf_path):
     logging.warn("Text not extracted to %s" % text_path)
     return None
 
+PAGE_RE = re.compile("Pages: +([0-9]+)\r?\n")
+CREATION_DATE_RE = re.compile("CreationDate: +([^\r\n]*)\r?\n")
+MOD_DATE_RE = re.compile("ModDate: +([^\r\n]*)\r?\n")
+TITLE_RE = re.compile("Title: +([^\r\n]*)\r?\n")
+KEYWORDS_RE = re.compile("Keywords: +([^\r\n]*)\r?\n")
+AUTHOR_RE = re.compile("Author: +([^\r\n]*)\r?\n")
+
+def parse_pdf_datetime(raw):
+    try:
+      my_datetime = datetime.strptime(raw, '%m/%d/%y %H:%M:%S')
+    except ValueError:
+      try:
+        my_datetime = datetime.strptime(raw, '%a %b %d %H:%M:%S %Y')
+      except ValueError:
+        try:
+          my_datetime = datetime.strptime(raw, '%A, %B %d, %Y %H:%M:%S %p')
+        except ValueError as e:
+          raise e
+          pass
+    if my_datetime:
+      return datetime.strftime(my_datetime, '%Y-%m-%d')
+    else:
+      logging.warn('Could not parse PDF date: %s' % raw)
+      return raw
+
 def metadata_from_pdf(pdf_path):
   try:
     subprocess.Popen(["pdfinfo", "-v"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
@@ -168,29 +193,27 @@ def metadata_from_pdf(pdf_path):
 
   metadata = {}
 
-  page_match = re.search("Pages: +([0-9]+)\r?\n", output)
+  page_match = PAGE_RE.search(output)
   if page_match:
     metadata['page_count'] = int(page_match.group(1))
 
-  creation_date_match = re.search("CreationDate: +([^\r\n]*)\r?\n", output)
+  creation_date_match = CREATION_DATE_RE.search(output)
   if creation_date_match:
-    creation_datetime = datetime.strptime(creation_date_match.group(1), '%m/%d/%y %H:%M:%S')
-    metadata['creation_date'] = datetime.strftime(creation_datetime, '%Y-%m-%d')
+    metadata['creation_date'] = parse_pdf_datetime(creation_date_match.group(1))
 
-  mod_date_match = re.search("ModDate: +([^\r\n]*)\r?\n", output)
+  mod_date_match = MOD_DATE_RE.search(output)
   if mod_date_match:
-    mod_datetime = datetime.strptime(mod_date_match.group(1), '%m/%d/%y %H:%M:%S')
-    metadata['modification_date'] = datetime.strftime(creation_datetime, '%Y-%m-%d')
+    metadata['modification_date'] = parse_pdf_datetime(creation_date_match.group(1))
 
-  title_match = re.search("Title: +([^\r\n]*)\r?\n", output)
+  title_match = TITLE_RE.search(output)
   if title_match:
     metadata['title'] = title_match.group(1)
 
-  keywords_match = re.search("Keywords: +([^\r\n]*)\r?\n", output)
+  keywords_match = KEYWORDS_RE.search(output)
   if keywords_match:
     metadata['keywords'] = keywords_match.group(1)
 
-  author_match = re.search("Author: +([^\r\n]*)\r?\n", output)
+  author_match = AUTHOR_RE.search(output)
   if author_match:
     metadata['author'] = author_match.group(1)
 
