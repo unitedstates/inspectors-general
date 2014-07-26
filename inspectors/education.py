@@ -24,8 +24,6 @@ from utils import utils, inspector
 # - Multiple reports on http://www2.ed.gov/about/offices/list/oig/ireports.html
 # say that they were published in 'Decemver' or 'Deccember' instead of 'December'
 
-# TODO use agency names for audit reports
-
 AUDIT_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/areports{}.html"
 SEMIANNUAL_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/sarpages.html"
 
@@ -58,13 +56,12 @@ def run(options):
     doc = beautifulsoup_from_url(url)
     agency_tables = doc.find_all("table", {"border": 1})
     for agency_table in agency_tables:
-      agency_name = agency_table.find_previous("p").text.strip()
       results = agency_table.select("tr")
       for index, result in enumerate(results):
         if not index:
           # First row is the header
           continue
-        report = audit_report_from(result, agency_name, url, year_range)
+        report = audit_report_from(result, url, year_range)
         if report:
           inspector.save_report(report)
 
@@ -88,7 +85,7 @@ def run(options):
       if report:
         inspector.save_report(report)
 
-def audit_report_from(result, agency_name, page_url, year_range):
+def audit_report_from(result, page_url, year_range):
   if not result.text.strip():
     # Just an empty row
     return
