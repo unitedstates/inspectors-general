@@ -166,8 +166,7 @@ def parse_pdf_datetime(raw):
       except ValueError:
         try:
           my_datetime = datetime.strptime(raw, '%A, %B %d, %Y %H:%M:%S %p')
-        except ValueError as e:
-          raise e
+        except ValueError:
           pass
     if my_datetime:
       return datetime.strftime(my_datetime, '%Y-%m-%d')
