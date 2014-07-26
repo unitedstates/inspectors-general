@@ -10,7 +10,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# http://www2.ed.gov/about/offices/list/oig/areports.html
+# https://www2.ed.gov/about/offices/list/oig/areports.html
 # Oldest report: 1995
 
 # options:
@@ -24,14 +24,14 @@ from utils import utils, inspector
 # - Multiple reports on http://www2.ed.gov/about/offices/list/oig/ireports.html
 # say that they were published in 'Decemver' or 'Deccember' instead of 'December'
 
-AUDIT_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/areports{}.html"
-SEMIANNUAL_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/sarpages.html"
+AUDIT_REPORTS_URL = "https://www2.ed.gov/about/offices/list/oig/areports{}.html"
+SEMIANNUAL_REPORTS_URL = "https://www2.ed.gov/about/offices/list/oig/sarpages.html"
 
-INSPECTION_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/aireports.html"
-INVESTIGATIVE_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/ireports.html"
-CONGRESSIONAL_TESTIMONY_URL = "http://www2.ed.gov/about/offices/list/oig/testimon.html"
-SPECIAL_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/specialreportstocongress.html"
-OTHER_REPORTS_URL = "http://www2.ed.gov/about/offices/list/oig/otheroigproducts.html"
+INSPECTION_REPORTS_URL = "https://www2.ed.gov/about/offices/list/oig/aireports.html"
+INVESTIGATIVE_REPORTS_URL = "https://www2.ed.gov/about/offices/list/oig/ireports.html"
+CONGRESSIONAL_TESTIMONY_URL = "https://www2.ed.gov/about/offices/list/oig/testimon.html"
+SPECIAL_REPORTS_URL = "https://www2.ed.gov/about/offices/list/oig/specialreportstocongress.html"
+OTHER_REPORTS_URL = "https://www2.ed.gov/about/offices/list/oig/otheroigproducts.html"
 
 OTHER_REPORTS_URL = [OTHER_REPORTS_URL, SPECIAL_REPORTS_URL, CONGRESSIONAL_TESTIMONY_URL, INVESTIGATIVE_REPORTS_URL, INSPECTION_REPORTS_URL]
 
@@ -119,7 +119,7 @@ def audit_report_from(result, page_url, year_range):
 
   report = {
     'inspector': 'education',
-    'inspector_url': 'http://www2.ed.gov/about/offices/list/oig/',
+    'inspector_url': 'https://www2.ed.gov/about/offices/list/oig/',
     'agency': 'education',
     'agency_name': "Department of Education",
     'report_id': report_id,
@@ -136,7 +136,7 @@ def audit_url_for(year):
 
   if year == 2001:
     # This one needs a capital A. Yup.
-    return "http://www2.ed.gov/about/offices/list/oig/Areports2001.html"
+    return "https://www2.ed.gov/about/offices/list/oig/Areports2001.html"
 
   if year == datetime.datetime.today().year:
     # The current year is on the main page
@@ -155,7 +155,7 @@ def semiannual_report_from(result, page_url, year_range):
 
   report = {
     'inspector': 'education',
-    'inspector_url': 'http://www2.ed.gov/about/offices/list/oig/',
+    'inspector_url': 'https://www2.ed.gov/about/offices/list/oig/',
     'agency': 'education',
     'agency_name': "Department of Education",
     'report_id': report_id,
@@ -194,7 +194,7 @@ def report_from(result, url, year_range):
 
   report = {
     'inspector': 'education',
-    'inspector_url': 'http://www2.ed.gov/about/offices/list/oig/',
+    'inspector_url': 'https://www2.ed.gov/about/offices/list/oig/',
     'agency': 'education',
     'agency_name': "Department of Education",
     'report_id': report_id,
