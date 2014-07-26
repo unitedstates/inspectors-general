@@ -4,6 +4,7 @@ import json
 import logging
 import yaml
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 # scraper should be instantiated at class-load time, so that it can rate limit appropriately
 import scrapelib
@@ -149,24 +150,52 @@ def text_from_pdf(pdf_path):
     logging.warn("Text not extracted to %s" % text_path)
     return None
 
-def page_count_from_pdf(pdf_path):
+def metadata_from_pdf(pdf_path):
   try:
     subprocess.Popen(["pdfinfo", "-v"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
   except FileNotFoundError:
-    logging.warn("Install pdfinfo to extract page counts! The pdfinfo executable must be in a directory that is in your PATH environment variable.")
+    logging.warn("Install pdfinfo to extract metadata! The pdfinfo executable must be in a directory that is in your PATH environment variable.")
     return None
 
   real_pdf_path = os.path.join(data_dir(), pdf_path)
 
   try:
     output = subprocess.check_output("pdfinfo \"%s\"" % (real_pdf_path), shell=True)
+    output = output.decode('utf-8')
   except subprocess.CalledProcessError as exc:
     logging.warn("Error extracting page count for %s:\n\n%s" % (pdf_path, format_exception(exc)))
     return None
 
-  match = re.search(b"Pages:\\s+([0-9]+)\\s", output)
-  if match:
-    return int(match.group(1))
+  metadata = {}
+
+  page_match = re.search("Pages: +([0-9]+)\r?\n", output)
+  if page_match:
+    metadata['page_count'] = int(page_match.group(1))
+
+  creation_date_match = re.search("CreationDate: +([^\r\n]*)\r?\n", output)
+  if creation_date_match:
+    creation_datetime = datetime.strptime(creation_date_match.group(1), '%m/%d/%y %H:%M:%S')
+    metadata['creation_date'] = datetime.strftime(creation_datetime, '%Y-%m-%d')
+
+  mod_date_match = re.search("ModDate: +([^\r\n]*)\r?\n", output)
+  if mod_date_match:
+    mod_datetime = datetime.strptime(mod_date_match.group(1), '%m/%d/%y %H:%M:%S')
+    metadata['modification_date'] = datetime.strftime(creation_datetime, '%Y-%m-%d')
+
+  title_match = re.search("Title: +([^\r\n]*)\r?\n", output)
+  if title_match:
+    metadata['title'] = title_match.group(1)
+
+  keywords_match = re.search("Keywords: +([^\r\n]*)\r?\n", output)
+  if keywords_match:
+    metadata['keywords'] = keywords_match.group(1)
+
+  author_match = re.search("Author: +([^\r\n]*)\r?\n", output)
+  if author_match:
+    metadata['author'] = author_match.group(1)
+
+  if metadata:
+    return metadata
   return None
 
 def format_exception(exception):
