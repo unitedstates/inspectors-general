@@ -67,7 +67,7 @@ def preprocess_report(report):
   # but leave the presence check for the validate function
   common_strings = (
     "published_on", "report_id", "title", "inspector", "inspector_url",
-    "agency", "agency_name", "url", "landing_url", "summary"
+    "agency", "agency_name", "url", "landing_url", "summary", "file_type"
   )
   for field in common_strings:
     value = report.get(field)
