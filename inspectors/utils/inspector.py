@@ -63,17 +63,6 @@ def preprocess_report(report):
   if report.get("type") is None:
     report["type"] = "report"
 
-  # if we have a date, but no explicit year, extract it
-  if report.get("published_on") and (report.get('year') is None):
-    report['year'] = year_from(report)
-
-  # if we have a URL, but no explicit file type, try to detect it
-  if report.get("url") and (report.get("file_type") is None):
-    parsed = urllib.parse.urlparse(report['url'])
-    split = parsed.path.split(".")
-    if len(split) > 1:
-      report['file_type'] = split[-1]
-
   # strip trailing spaces from common string fields,
   # but leave the presence check for the validate function
   common_strings = (
@@ -85,6 +74,16 @@ def preprocess_report(report):
     if (value is not None):
       report[field] = value.strip()
 
+  # if we have a date, but no explicit year, extract it
+  if report.get("published_on") and (report.get('year') is None):
+    report['year'] = year_from(report)
+
+  # if we have a URL, but no explicit file type, try to detect it
+  if report.get("url") and (report.get("file_type") is None):
+    parsed = urllib.parse.urlparse(report['url'])
+    split = parsed.path.split(".")
+    if len(split) > 1:
+      report['file_type'] = split[-1]
 
 # Ensure required fields are present
 def validate_report(report):
