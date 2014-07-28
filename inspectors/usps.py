@@ -25,8 +25,9 @@ import logging
 #             excluding press releases, SARC, and testimony to Congress
 
 # This will actually get adjusted downwards on the fly, so pick a huge number.
-# There are 158 pages total as of 2014-05-08, so let's try, er, 1000.
+# There are 164 pages total (page=163) as of 2014-07-27, so let's try, er, 1000.
 ALL_PAGES = 1000
+
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -45,7 +46,18 @@ def run(options):
     url = url_for(options, page)
     body = utils.download(url)
     doc = BeautifulSoup(body)
-    max_page = last_page_for(doc)
+
+    # for now, while the USPS page controls are missing...
+    # check if there are no results, and if so we no that the
+    # last page was the final one, and to stop.
+    content = doc.select(".view-content")
+    if len(content) == 0:
+      logging.debug("Whoops, overshot the pages! Breaking.")
+      break
+
+    # When the USPS restores their page controls, we can use this again,
+    # which saves one network call each time.
+    # max_page = last_page_for(doc)
 
     results = doc.select(".views-row")
 
