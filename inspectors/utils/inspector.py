@@ -144,7 +144,7 @@ def download_report(report):
 
   result = utils.download(
     report['url'],
-    "%s/%s" % (utils.data_dir(), report_path),
+    os.path.join(utils.data_dir(), report_path),
     {'binary': binary}
   )
   if result:
@@ -186,13 +186,13 @@ def write_report(report):
 
   utils.write(
     utils.json_for(report),
-    "%s/%s" % (utils.data_dir(), data_path)
+    os.path.join(utils.data_dir(), data_path)
   )
   return data_path
 
 
 def path_for(report, ext):
-  return "%s/%s/%s/report.%s" % (report['inspector'], report['year'], report['report_id'], ext)
+  return os.path.join(report['inspector'], str(report['year']), report['report_id'], "report.%s" % ext)
 
 def cache(inspector, path):
   return os.path.join(utils.cache_dir(), inspector, path)
