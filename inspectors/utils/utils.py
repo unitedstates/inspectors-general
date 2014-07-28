@@ -4,6 +4,7 @@ import json
 import logging
 import yaml
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 # scraper should be instantiated at class-load time, so that it can rate limit appropriately
 import scrapelib
@@ -149,24 +150,74 @@ def text_from_pdf(pdf_path):
     logging.warn("Text not extracted to %s" % text_path)
     return None
 
-def page_count_from_pdf(pdf_path):
+PAGE_RE = re.compile("Pages: +([0-9]+)\r?\n")
+CREATION_DATE_RE = re.compile("CreationDate: +([^\r\n]*)\r?\n")
+MOD_DATE_RE = re.compile("ModDate: +([^\r\n]*)\r?\n")
+TITLE_RE = re.compile("Title: +([^\r\n]*)\r?\n")
+KEYWORDS_RE = re.compile("Keywords: +([^\r\n]*)\r?\n")
+AUTHOR_RE = re.compile("Author: +([^\r\n]*)\r?\n")
+
+def parse_pdf_datetime(raw):
+    try:
+      my_datetime = datetime.strptime(raw, '%m/%d/%y %H:%M:%S')
+    except ValueError:
+      try:
+        my_datetime = datetime.strptime(raw, '%a %b %d %H:%M:%S %Y')
+      except ValueError:
+        try:
+          my_datetime = datetime.strptime(raw, '%A, %B %d, %Y %H:%M:%S %p')
+        except ValueError:
+          pass
+    if my_datetime:
+      return datetime.strftime(my_datetime, '%Y-%m-%d')
+    else:
+      logging.warn('Could not parse PDF date: %s' % raw)
+      return raw
+
+def metadata_from_pdf(pdf_path):
   try:
     subprocess.Popen(["pdfinfo", "-v"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
   except FileNotFoundError:
-    logging.warn("Install pdfinfo to extract page counts! The pdfinfo executable must be in a directory that is in your PATH environment variable.")
+    logging.warn("Install pdfinfo to extract metadata! The pdfinfo executable must be in a directory that is in your PATH environment variable.")
     return None
 
   real_pdf_path = os.path.join(data_dir(), pdf_path)
 
   try:
     output = subprocess.check_output("pdfinfo \"%s\"" % (real_pdf_path))
+    output = output.decode('utf-8')
   except subprocess.CalledProcessError as exc:
     logging.warn("Error extracting page count for %s:\n\n%s" % (pdf_path, format_exception(exc)))
     return None
 
-  match = re.search(b"Pages:\\s+([0-9]+)\\s", output)
-  if match:
-    return int(match.group(1))
+  metadata = {}
+
+  page_match = PAGE_RE.search(output)
+  if page_match:
+    metadata['page_count'] = int(page_match.group(1))
+
+  creation_date_match = CREATION_DATE_RE.search(output)
+  if creation_date_match:
+    metadata['creation_date'] = parse_pdf_datetime(creation_date_match.group(1))
+
+  mod_date_match = MOD_DATE_RE.search(output)
+  if mod_date_match:
+    metadata['modification_date'] = parse_pdf_datetime(creation_date_match.group(1))
+
+  title_match = TITLE_RE.search(output)
+  if title_match:
+    metadata['title'] = title_match.group(1)
+
+  keywords_match = KEYWORDS_RE.search(output)
+  if keywords_match:
+    metadata['keywords'] = keywords_match.group(1)
+
+  author_match = AUTHOR_RE.search(output)
+  if author_match:
+    metadata['author'] = author_match.group(1)
+
+  if metadata:
+    return metadata
   return None
 
 def format_exception(exception):

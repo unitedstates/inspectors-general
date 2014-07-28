@@ -41,11 +41,10 @@ def save_report(report):
 
     logging.warn("\treport: %s" % report_path)
 
-    page_count = extract_page_count(report)
-    if page_count != None:
-      logging.debug("\tpages: %i" % page_count)
-    else:
-      logging.debug("\tpages: ?")
+    metadata = extract_metadata(report)
+    if metadata:
+      for key, value in metadata.items():
+        logging.debug("\t%s: %s" % (key, value))
 
     text_path = extract_report(report)
     logging.warn("\ttext: %s" % text_path)
@@ -152,20 +151,20 @@ def download_report(report):
   else:
     return None
 
-def extract_page_count(report):
+def extract_metadata(report):
   report_path = path_for(report, report['file_type'])
   real_report_path = os.path.join(utils.data_dir(), report_path)
 
   file_type_lower = report['file_type'].lower()
   if file_type_lower == "pdf":
-    page_count = utils.page_count_from_pdf(report_path)
-    if page_count != None:
-      report['page_count'] = page_count
-      return page_count
+    metadata = utils.metadata_from_pdf(report_path)
+    if metadata:
+      report['pdf'] = metadata
+      return metadata
   elif file_type_lower == "htm" or file_type_lower == "html":
     return None
   else:
-    logging.warn("Unknown file type, don't know how to extract page count!")
+    logging.warn("Unknown file type, don't know how to extract metadata!")
     return None
 
 # relies on putting text next to report_path
