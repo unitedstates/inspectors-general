@@ -1,5 +1,4 @@
 ipython
-scrapelib
-PyQuery
+scrapelib>=0.10.0
 BeautifulSoup4
 pyyaml

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import datetime
 from urllib.parse import urljoin, urlencode
@@ -162,7 +161,7 @@ def report_from(tds, options):
       'inspector': 'dod'
     }, 'pdf')
 
-    if os.path.exists("%s/%s" % (utils.data_dir(), pdf_path)):
+    if os.path.exists(os.path.join(utils.data_dir(), pdf_path)):
       logging.warn("\tSkipping previously downloaded report, as asked.")
       return
 

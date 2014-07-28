@@ -41,6 +41,11 @@ def save_report(report):
 
     logging.warn("\treport: %s" % report_path)
 
+    metadata = extract_metadata(report)
+    if metadata:
+      for key, value in metadata.items():
+        logging.debug("\t%s: %s" % (key, value))
+
     text_path = extract_report(report)
     logging.warn("\ttext: %s" % text_path)
 
@@ -57,6 +62,17 @@ def preprocess_report(report):
   if report.get("type") is None:
     report["type"] = "report"
 
+  # strip trailing spaces from common string fields,
+  # but leave the presence check for the validate function
+  common_strings = (
+    "published_on", "report_id", "title", "inspector", "inspector_url",
+    "agency", "agency_name", "url", "landing_url", "summary", "file_type"
+  )
+  for field in common_strings:
+    value = report.get(field)
+    if (value is not None):
+      report[field] = value.strip()
+
   # if we have a date, but no explicit year, extract it
   if report.get("published_on") and (report.get('year') is None):
     report['year'] = year_from(report)
@@ -67,7 +83,6 @@ def preprocess_report(report):
     split = parsed.path.split(".")
     if len(split) > 1:
       report['file_type'] = split[-1]
-
 
 # Ensure required fields are present
 def validate_report(report):
@@ -128,12 +143,28 @@ def download_report(report):
 
   result = utils.download(
     report['url'],
-    "%s/%s" % (utils.data_dir(), report_path),
+    os.path.join(utils.data_dir(), report_path),
     {'binary': binary}
   )
   if result:
     return report_path
   else:
+    return None
+
+def extract_metadata(report):
+  report_path = path_for(report, report['file_type'])
+  real_report_path = os.path.join(utils.data_dir(), report_path)
+
+  file_type_lower = report['file_type'].lower()
+  if file_type_lower == "pdf":
+    metadata = utils.metadata_from_pdf(report_path)
+    if metadata:
+      report['pdf'] = metadata
+      return metadata
+  elif file_type_lower == "htm" or file_type_lower == "html":
+    return None
+  else:
+    logging.warn("Unknown file type, don't know how to extract metadata!")
     return None
 
 # relies on putting text next to report_path
@@ -154,13 +185,13 @@ def write_report(report):
 
   utils.write(
     utils.json_for(report),
-    "%s/%s" % (utils.data_dir(), data_path)
+    os.path.join(utils.data_dir(), data_path)
   )
   return data_path
 
 
 def path_for(report, ext):
-  return "%s/%s/%s/report.%s" % (report['inspector'], report['year'], report['report_id'], ext)
+  return os.path.join(report['inspector'], str(report['year']), report['report_id'], "report.%s" % ext)
 
 def cache(inspector, path):
   return os.path.join(utils.cache_dir(), inspector, path)

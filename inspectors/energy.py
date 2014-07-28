@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import datetime
 from urllib.parse import urljoin, urlencode

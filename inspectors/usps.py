@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from utils import utils, inspector
 from bs4 import BeautifulSoup
@@ -12,6 +11,7 @@ import logging
 #   standard since/year options for a year range to fetch from.
 #
 #   pages - number of pages to fetch. defaults to all of them (using a very high number)
+#   begin - what page number to begin at. defaults to 1.
 #   types - limit reports fetched to one or more types, comma-separated. e.g. "audit,testimony"
 #          can include:
 #             audit - Audit Reports
@@ -25,15 +25,19 @@ import logging
 #             excluding press releases, SARC, and testimony to Congress
 
 # This will actually get adjusted downwards on the fly, so pick a huge number.
-# There are 158 pages total as of 2014-05-08, so let's try, er, 1000.
+# There are 164 pages total (page=163) as of 2014-07-27, so let's try, er, 1000.
 ALL_PAGES = 1000
+
 
 def run(options):
   year_range = inspector.year_range(options)
   pages = options.get('pages', ALL_PAGES)
 
+  # default to starting at page 1
+  begin = int(options.get('begin', 1))
+
   max_page = None
-  for page in range(1, (int(pages) + 1)):
+  for page in range(begin, (int(pages) + 1)):
     if max_page and (page > max_page):
       logging.debug("End of pages!")
       break
@@ -42,7 +46,18 @@ def run(options):
     url = url_for(options, page)
     body = utils.download(url)
     doc = BeautifulSoup(body)
-    max_page = last_page_for(doc)
+
+    # for now, while the USPS page controls are missing...
+    # check if there are no results, and if so we no that the
+    # last page was the final one, and to stop.
+    content = doc.select(".view-content")
+    if len(content) == 0:
+      logging.debug("Whoops, overshot the pages! Breaking.")
+      break
+
+    # When the USPS restores their page controls, we can use this again,
+    # which saves one network call each time.
+    # max_page = last_page_for(doc)
 
     results = doc.select(".views-row")
 
@@ -62,7 +77,7 @@ def run(options):
 def report_from(result):
   report = {
     'inspector': 'usps',
-    'inspector_url': 'http://uspsoig.gov/',
+    'inspector_url': 'https://uspsoig.gov/',
     'agency': 'usps',
     'agency_name': 'United States Postal Service'
   }
@@ -138,7 +153,7 @@ def last_page_for(doc):
 def url_for(options, page=1):
   year_range = inspector.year_range(options)
 
-  url = "http://www.uspsoig.gov/document-library?"
+  url = "https://uspsoig.gov/document-library?"
 
   # there's always a first year, and it defaults to current year
   since = "%s-01-01" % year_range[0]
