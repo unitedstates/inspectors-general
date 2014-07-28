@@ -11,6 +11,7 @@ import logging
 #   standard since/year options for a year range to fetch from.
 #
 #   pages - number of pages to fetch. defaults to all of them (using a very high number)
+#   begin - what page number to begin at. defaults to 1.
 #   types - limit reports fetched to one or more types, comma-separated. e.g. "audit,testimony"
 #          can include:
 #             audit - Audit Reports
@@ -31,8 +32,11 @@ def run(options):
   year_range = inspector.year_range(options)
   pages = options.get('pages', ALL_PAGES)
 
+  # default to starting at page 1
+  begin = int(options.get('begin', 1))
+
   max_page = None
-  for page in range(1, (int(pages) + 1)):
+  for page in range(begin, (int(pages) + 1)):
     if max_page and (page > max_page):
       logging.debug("End of pages!")
       break
