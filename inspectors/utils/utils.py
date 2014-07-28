@@ -158,6 +158,7 @@ KEYWORDS_RE = re.compile("Keywords: +([^\r\n]*)\r?\n")
 AUTHOR_RE = re.compile("Author: +([^\r\n]*)\r?\n")
 
 def parse_pdf_datetime(raw):
+    my_datetime = None
     try:
       my_datetime = datetime.strptime(raw, '%m/%d/%y %H:%M:%S')
     except ValueError:
