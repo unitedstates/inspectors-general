@@ -139,7 +139,7 @@ def text_from_pdf(pdf_path):
   real_text_path = os.path.join(data_dir(), text_path)
 
   try:
-    subprocess.check_call("pdftotext -layout \"%s\" \"%s\"" % (real_pdf_path, real_text_path))
+    subprocess.check_call("pdftotext -layout \"%s\" \"%s\"" % (real_pdf_path, real_text_path), shell=True)
   except subprocess.CalledProcessError as exc:
     logging.warn("Error extracting text to %s:\n\n%s" % (text_path, format_exception(exc)))
     return None
@@ -184,10 +184,10 @@ def metadata_from_pdf(pdf_path):
   real_pdf_path = os.path.join(data_dir(), pdf_path)
 
   try:
-    output = subprocess.check_output("pdfinfo \"%s\"" % (real_pdf_path))
+    output = subprocess.check_output("pdfinfo \"%s\"" % (real_pdf_path), shell=True)
     output = output.decode('utf-8')
   except subprocess.CalledProcessError as exc:
-    logging.warn("Error extracting page count for %s:\n\n%s" % (pdf_path, format_exception(exc)))
+    logging.warn("Error extracting metadata for %s:\n\n%s" % (pdf_path, format_exception(exc)))
     return None
 
   metadata = {}
