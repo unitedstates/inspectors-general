@@ -14,6 +14,7 @@ from utils import utils, inspector
 
 # options:
 #   standard since/year options for a year range to fetch from.
+#   report_id: limit to a single report
 #
 # Notes for IG's web team:
 # - Fix the row for A17C0008 on
@@ -49,6 +50,9 @@ REPORT_PUBLISHED_MAP = {
 def run(options):
   year_range = inspector.year_range(options)
 
+  # optional: limit to a single report
+  report_id = options.get("report_id")
+
   # Get the audit reports
   for year in year_range:
     url = audit_url_for(year)
@@ -62,6 +66,10 @@ def run(options):
           continue
         report = audit_report_from(result, url, year_range)
         if report:
+          # optional: filter to a single report
+          if report_id and (report_id != report['report_id']):
+            continue
+
           inspector.save_report(report)
 
   # Get semiannual reports
@@ -73,6 +81,9 @@ def run(options):
       continue
     report = semiannual_report_from(result, SEMIANNUAL_REPORTS_URL, year_range)
     if report:
+      # optional: filter to a single report
+      if report_id and (report_id != report['report_id']):
+        continue
       inspector.save_report(report)
 
   # Get other reports
@@ -82,6 +93,10 @@ def run(options):
     for result in results:
       report = report_from(result, url, year_range)
       if report:
+        # optional: filter to a single report
+        if report_id and (report_id != report['report_id']):
+          continue
+
         inspector.save_report(report)
 
 def audit_report_from(result, page_url, year_range):
