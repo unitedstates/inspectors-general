@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from utils import utils, inspector
 from bs4 import BeautifulSoup
