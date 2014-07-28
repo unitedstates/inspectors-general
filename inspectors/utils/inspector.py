@@ -62,6 +62,17 @@ def preprocess_report(report):
   if report.get("type") is None:
     report["type"] = "report"
 
+  # strip trailing spaces from common string fields,
+  # but leave the presence check for the validate function
+  common_strings = (
+    "published_on", "report_id", "title", "inspector", "inspector_url",
+    "agency", "agency_name", "url", "landing_url", "summary", "file_type"
+  )
+  for field in common_strings:
+    value = report.get(field)
+    if (value is not None):
+      report[field] = value.strip()
+
   # if we have a date, but no explicit year, extract it
   if report.get("published_on") and (report.get('year') is None):
     report['year'] = year_from(report)
@@ -72,18 +83,6 @@ def preprocess_report(report):
     split = parsed.path.split(".")
     if len(split) > 1:
       report['file_type'] = split[-1]
-
-  # strip trailing spaces from common string fields,
-  # but leave the presence check for the validate function
-  common_strings = (
-    "published_on", "report_id", "title", "inspector", "inspector_url",
-    "agency", "agency_name", "url", "landing_url", "summary"
-  )
-  for field in common_strings:
-    value = report.get(field)
-    if (value is not None):
-      report[field] = value.strip()
-
 
 # Ensure required fields are present
 def validate_report(report):
@@ -144,7 +143,7 @@ def download_report(report):
 
   result = utils.download(
     report['url'],
-    "%s/%s" % (utils.data_dir(), report_path),
+    os.path.join(utils.data_dir(), report_path),
     {'binary': binary}
   )
   if result:
@@ -186,13 +185,13 @@ def write_report(report):
 
   utils.write(
     utils.json_for(report),
-    "%s/%s" % (utils.data_dir(), data_path)
+    os.path.join(utils.data_dir(), data_path)
   )
   return data_path
 
 
 def path_for(report, ext):
-  return "%s/%s/%s/report.%s" % (report['inspector'], report['year'], report['report_id'], ext)
+  return os.path.join(report['inspector'], str(report['year']), report['report_id'], "report.%s" % ext)
 
 def cache(inspector, path):
   return os.path.join(utils.cache_dir(), inspector, path)
