@@ -119,7 +119,7 @@ You can also **include any other fields** you think worth keeping.
 
 The `report_id` only needs to be unique within that IG, so you can make it up from other fields. It does need to come out the same every time you run the script. In other words, **don't auto-increment a number** -- if the IG doesn't give you a unique ID already, append other fields together into a consistent, unique ID.
 
-Finally, **err towards errors**: have your scraper choke and die on unexpected input. Better to be forced to discover it that way, then for incomplete or inaccurate data to be silently saved.
+Finally, **err towards errors**: have your scraper choke and die on unexpected input. Better to be forced to discover it that way than for incomplete or inaccurate data to be silently saved.
 
 ## Public domain
 
