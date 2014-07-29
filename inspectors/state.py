@@ -183,19 +183,30 @@ def report_from(result, year_range, agency, topic, subtopic=None):
   report_id = os.path.splitext(report_filename)[0]
 
   try:
-    previous_sibling_text = str(result.previous_sibling).strip()
+    next_sibling_text = result.parent.next_sibling.text.strip()
   except AttributeError:
-    previous_sibling_text = ""
+    try:
+      next_sibling_text = result.next_sibling.next_sibling.text.strip()
+    except AttributeError:
+      next_sibling_text = ""
 
   try:
-    published_on = datetime.datetime.strptime(previous_sibling_text, "-%m/%d/%y")
-  except ValueError:
+    next_sibling_text = "/".join(re.search('(\w+) (\d+), (\d+)', next_sibling_text).groups())
+    published_on = datetime.datetime.strptime(next_sibling_text, '%B/%d/%Y')
+  except AttributeError:
     try:
-      published_on = datetime.datetime.strptime("-".join(title.split()[-2:]), "%b-%Y")
-    except ValueError:
-      # Fall back to when the report was posted to the site
       posted_text = result.find_parent("p").previous_sibling.previous_sibling.text
-      published_on = datetime.datetime.strptime(posted_text, 'Posted %B %d, %Y')
+      posted_text_datetime = "/".join(re.search('(\w+) (\d+), (\d+)', posted_text).groups())
+      published_on = datetime.datetime.strptime(posted_text_datetime, '%B/%d/%Y')
+    except AttributeError:
+      try:
+        published_on = datetime.datetime.strptime("-".join(title.split()[-2:]), "%B-%y")
+      except ValueError:
+        try:
+          published_on = datetime.datetime.strptime("-".join(title.split()[-2:]), "%b-%Y")
+        except ValueError:
+          previous_sibling_text = str(result.previous_sibling).strip()
+          published_on = datetime.datetime.strptime(previous_sibling_text, "-%m/%d/%y")
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
