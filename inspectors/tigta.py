@@ -99,8 +99,8 @@ def report_from(result, format_slug, year, year_range):
   report = {
     'inspector': 'tigta',
     'inspector_url': 'https://www.treasury.gov/tigta/',
-    'agency': 'tigta',
-    'agency_name': 'Treasury Inspector General for Tax Administration',
+    'agency': 'irs',
+    'agency_name': 'Internal Revenue Service',
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -124,8 +124,8 @@ def congressional_testimony_report_from(result, year_range):
   report = {
     'inspector': 'tigta',
     'inspector_url': 'https://www.treasury.gov/tigta/',
-    'agency': 'tigta',
-    'agency_name': 'Treasury Inspector General for Tax Administration',
+    'agency': 'irs',
+    'agency_name': 'Internal Revenue Service',
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -151,8 +151,8 @@ def semiannual_report_from(result, year_range):
   report = {
     'inspector': 'tigta',
     'inspector_url': 'https://www.treasury.gov/tigta/',
-    'agency': 'tigta',
-    'agency_name': 'Treasury Inspector General for Tax Administration',
+    'agency': 'irs',
+    'agency_name': 'Internal Revenue Service',
     'report_id': report_id,
     'url': report_url,
     'title': title,
