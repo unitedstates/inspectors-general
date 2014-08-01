@@ -70,6 +70,7 @@ def parse_result_from_js_url(url, format_slug, year, year_range):
   body = utils.download(url)
   # Pulling out javascript array values that look like:
   # arrid[0]=new AR("200720002","Stronger Management Oversight Is Required to Ensure Valuable Systems Modernization Expertise Is Received From the Federally Funded Research and Development Center Contractor","20061020","01",2,0,0,0);
+  # Look in https://www.treasury.gov/tigta/oa_auditreports_fy14.js for some more examples.
   results = re.findall('arrid\[\d+\]=new AR\((.*)\);', body)
   for result in results:
     report = report_from(result, format_slug, year, year_range)
@@ -78,7 +79,8 @@ def parse_result_from_js_url(url, format_slug, year, year_range):
 
 
 def report_from(result, format_slug, year, year_range):
-  # report id, report description, date string, business unit, report count, executive summary, management response, audit comments
+  # We are going to parse the script of javascript into a list of with the following strucutre:
+  # [report id, report description, date string, business unit, report count, executive summary, management response, audit comments]
   result_pieces = [field.strip() for field in parse_fields(result)]
   report_id = result_pieces[0]
   title = result_pieces[1]
