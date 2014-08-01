@@ -9,25 +9,25 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# https://www.treasury.gov/tigta/publications_semi.shtml
+# http://www.treasury.gov/tigta/publications_semi.shtml
 # Oldest report: 1999
 
 # options:
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
-# - Report https://www.treasury.gov/tigta/auditreports/2014reports/201310018fr.pdf is missing
+# - Report http://www.treasury.gov/tigta/auditreports/2014reports/201310018fr.pdf is missing
 
 # Ideally, we would use the 'No Script' urls (http://www.treasury.gov/tigta/oa_auditreports_fy08_noscript.shtml),
 # but unfortunately some of those don't list all of the published dates that
 # the actual js files list.
-AUDITS_REPORTS_URL = "https://www.treasury.gov/tigta/oa_auditreports_fy{}.js"
-INSPECTIONS_REPORTS_URL = "https://www.treasury.gov/tigta/oie_iereports_fy{}.js"
+AUDITS_REPORTS_URL = "http://www.treasury.gov/tigta/oa_auditreports_fy{}.js"
+INSPECTIONS_REPORTS_URL = "http://www.treasury.gov/tigta/oie_iereports_fy{}.js"
 
-CONGRESSIONAL_TESTIMONY_REPORTS_URL = "https://www.treasury.gov/tigta/publications_congress.shtml"
-SEMIANNUAL_REPORTS_URL = "https://www.treasury.gov/tigta/publications_semi.shtml"
+CONGRESSIONAL_TESTIMONY_REPORTS_URL = "http://www.treasury.gov/tigta/publications_congress.shtml"
+SEMIANNUAL_REPORTS_URL = "http://www.treasury.gov/tigta/publications_semi.shtml"
 
-BASE_REPORT_URL = "https://www.treasury.gov/tigta/"
+BASE_REPORT_URL = "http://www.treasury.gov/tigta/"
 
 MISSING_REPORT_IDS = [
   "201310018",
@@ -69,7 +69,7 @@ def parse_result_from_js_url(url, format_slug, year, year_range):
   body = utils.download(url)
   # Pulling out javascript array values that look like:
   # arrid[0]=new AR("200720002","Stronger Management Oversight Is Required to Ensure Valuable Systems Modernization Expertise Is Received From the Federally Funded Research and Development Center Contractor","20061020","01",2,0,0,0);
-  # Look in https://www.treasury.gov/tigta/oa_auditreports_fy14.js for some more examples.
+  # Look in http://www.treasury.gov/tigta/oa_auditreports_fy14.js for some more examples.
   results = re.findall('arrid\[\d+\]=new AR\((.*)\);', body)
   for result in results:
     report = report_from(result, format_slug, year, year_range)
@@ -87,8 +87,8 @@ def report_from(result, format_slug, year, year_range):
 
   published_on = datetime.datetime.strptime(published_on_text.replace('"', ''), '%Y%m%d')
 
-  # This formatting is described more in https://www.treasury.gov/tigta/oa_auditreports_updated_fy14.js
-  report_url = "https://www.treasury.gov/tigta/{}/{}reports/{}fr.pdf".format(format_slug, year, report_id)
+  # This formatting is described more in http://www.treasury.gov/tigta/oa_auditreports_updated_fy14.js
+  report_url = "http://www.treasury.gov/tigta/{}/{}reports/{}fr.pdf".format(format_slug, year, report_id)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -99,7 +99,7 @@ def report_from(result, format_slug, year, year_range):
 
   report = {
     'inspector': 'tigta',
-    'inspector_url': 'https://www.treasury.gov/tigta/',
+    'inspector_url': 'http://www.treasury.gov/tigta/',
     'agency': 'irs',
     'agency_name': 'Internal Revenue Service',
     'report_id': report_id,
@@ -124,7 +124,7 @@ def congressional_testimony_report_from(result, year_range):
 
   report = {
     'inspector': 'tigta',
-    'inspector_url': 'https://www.treasury.gov/tigta/',
+    'inspector_url': 'http://www.treasury.gov/tigta/',
     'agency': 'irs',
     'agency_name': 'Internal Revenue Service',
     'report_id': report_id,
@@ -151,7 +151,7 @@ def semiannual_report_from(result, year_range):
 
   report = {
     'inspector': 'tigta',
-    'inspector_url': 'https://www.treasury.gov/tigta/',
+    'inspector_url': 'http://www.treasury.gov/tigta/',
     'agency': 'irs',
     'agency_name': 'Internal Revenue Service',
     'report_id': report_id,
