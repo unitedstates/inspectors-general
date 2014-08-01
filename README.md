@@ -119,7 +119,31 @@ You can also **include any other fields** you think worth keeping.
 
 The `report_id` only needs to be unique within that IG, so you can make it up from other fields. It does need to come out the same every time you run the script. In other words, **don't auto-increment a number** -- if the IG doesn't give you a unique ID already, append other fields together into a consistent, unique ID.
 
-Finally, **err towards errors**: have your scraper choke and die on unexpected input. Better to be forced to discover it that way than for incomplete or inaccurate data to be silently saved.
+Finally, **err towards errors**: have your scraper choke and die on unexpected input. Better to be forced to discover it that way, then for incomplete or inaccurate data to be silently saved.
+
+## Review process
+
+Suggested instructions for people reviewing new scrapers:
+
+* Verify that the scraper is getting every possible and useful category of report.
+* Verify that the scraper is using HTTPS, if it's available.
+* Run the scraper for its full archive but without downloading the reports, using `--dry_run` and `--since`.
+* Review scraped metadata for a representative sample of years and report types to ensure sanity and quality.
+* Keep an eye out for announcements, press releases, and other non-report data.
+
+If the full dry run ran without errors, and the data looks good and complete, merge the scraper.
+
+**Adding to safe.yml**
+
+The only people who should update `safe.yml` are those who run servers managing complete synced archives of IG data.
+
+Before adding a scraper to `safe.yml`, it's suggested that you allow a *full* download of the archive to complete (which will also test PDF download and metadata/text extraction code).
+
+**Removing from safe.yml**
+
+If a scraper is throwing **persistent** errors, remove it from `safe.yml` and open a ticket to discuss it.
+
+Ephemeral errors (for example, from connection errors, or other erratically reproducible situations) should be reported as issues first, to be discussed.
 
 ## Public domain
 
