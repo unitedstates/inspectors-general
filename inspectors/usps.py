@@ -47,17 +47,9 @@ def run(options):
     body = utils.download(url)
     doc = BeautifulSoup(body)
 
-    # for now, while the USPS page controls are missing...
-    # check if there are no results, and if so we no that the
-    # last page was the final one, and to stop.
-    content = doc.select(".view-content")
-    if len(content) == 0:
-      logging.debug("Whoops, overshot the pages! Breaking.")
-      break
-
     # When the USPS restores their page controls, we can use this again,
     # which saves one network call each time.
-    # max_page = last_page_for(doc)
+    max_page = last_page_for(doc)
 
     results = doc.select(".views-row")
 
@@ -137,7 +129,7 @@ def type_for(original_type):
 # get the last page number, from a page of search results
 # e.g. <li class="pager-item active last">158</li>
 def last_page_for(doc):
-  page = doc.select("li.pager-item.last")[0].text.strip()
+  page = doc.select("li.pager-item.last")[0].text.replace("of ", "").strip()
   if page and len(page) > 0:
     return int(page)
 
@@ -166,9 +158,12 @@ def url_for(options, page=1):
   params = ["field_doc_cat_tid[]=%s" % CATEGORIES[id] for id in only]
   url += "&%s" % str.join("&", params)
 
+  # they added this crazy thing
+  annoying_prefix = "0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C"
+
   # page is 0-indexed
   if page > 1:
-    url += "&page=%i" % (page - 1)
+    url += "&page=%s%i" % (annoying_prefix, (page - 1))
 
   return url
 
