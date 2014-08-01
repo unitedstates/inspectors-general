@@ -131,17 +131,20 @@ Suggested instructions for people reviewing new scrapers:
 * Review scraped metadata for a representative sample of years and report types to ensure sanity and quality.
 * Keep an eye out for announcements, press releases, and other non-report data.
 
-If the full dry run ran without errors, and the data looks good and complete, merge the scraper.
+If the full dry run ran without errors, and the data looks good and complete:
+
+* merge the scraper
+* update the *pending* section of `safe.yml` with a *commented-out* line for the scraper.
 
 **Adding to safe.yml**
 
-The only people who should update `safe.yml` are those who run servers managing complete synced archives of IG data.
+The only people who should update `safe.yml` with uncommented lines are those who run servers managing complete synced archives of IG data.
 
 Before adding a scraper to `safe.yml`, it's suggested that you allow a *full* download of the archive to complete (which will also test PDF download and metadata/text extraction code).
 
 **Removing from safe.yml**
 
-If a scraper is throwing **persistent** errors, remove it from `safe.yml` and open a ticket to discuss it.
+If a scraper is throwing **persistent** errors, remove it (comment it out) from `safe.yml` and open a ticket to discuss it.
 
 Ephemeral errors (for example, from connection errors, or other erratically reproducible situations) should be reported as issues first, to be discussed.
 
