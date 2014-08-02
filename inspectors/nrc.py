@@ -41,13 +41,15 @@ REPORT_PUBLISHED_MAPPING = {
   "v14n2": datetime.datetime(2002, 3, 31),
 }
 
+PDF_REGEX = re.compile("pdf")
+
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit reports
   for year in year_range:
     url = AUDITS_REPORTS_URL.format(year)
-    doc = beautifulsoup_from_url(url)
+    doc = BeautifulSoup(utils.download(url))
     results = doc.find("table", border="1").select("tr")
     for index, result in enumerate(results):
       if not index:
@@ -58,7 +60,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the congressional testimony
-  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   semiannual_reports_table = doc.find("table", border="1")
   for index, result in enumerate(semiannual_reports_table.select("tr")):
     if index < 2:
@@ -70,7 +72,7 @@ def run(options):
 
   # Pull the other reports
   for reports_url in OTHER_REPORT_URLS:
-    doc = beautifulsoup_from_url(reports_url)
+    doc = BeautifulSoup(utils.download(reports_url))
     results = doc.find("table", border="1").select("tr")
     for index, result in enumerate(results):
       if not index:
@@ -140,11 +142,11 @@ def semiannual_report_from(result, year_range):
   report_link = result.find("a")
   landing_url = urljoin(BASE_REPORT_URL, report_link.get('href'))
 
-  landing_page = beautifulsoup_from_url(landing_url)
+  landing_page = BeautifulSoup(utils.download(landing_url))
   title = " ".join(landing_page.select("#mainSubFull h1")[0].text.split())
 
   try:
-    relative_report_url = landing_page.find(href=re.compile("pdf")).get('href')
+    relative_report_url = landing_page.find(href=PDF_REGEX).get('href')
   except AttributeError:
     # Some of these reports are published as HTML on the landing page
     # Ex. http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr1415/v17n2/
@@ -217,9 +219,5 @@ def other_report_from(result, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  return BeautifulSoup(body)
 
 utils.run(run) if (__name__ == "__main__") else None
