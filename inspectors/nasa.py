@@ -29,7 +29,7 @@ def run(options):
   # Pull the audit reports
   for year in year_range:
     url = AUDITS_REPORTS_URL.format(str(year)[2:4])
-    doc = beautifulsoup_from_url(url)
+    doc = BeautifulSoup(utils.download(url))
     results = doc.select("tr")
     for index, result in enumerate(results):
       if not index or not result.text.strip():
@@ -40,7 +40,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the other reports
-  doc = beautifulsoup_from_url(OTHER_REPORT_URL)
+  doc = BeautifulSoup(utils.download(OTHER_REPORT_URL))
   results = doc.select("#subContainer ul li")
   for result in results:
     report = other_report_from(result, year_range)
@@ -118,9 +118,5 @@ def other_report_from(result, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  return BeautifulSoup(body)
 
 utils.run(run) if (__name__ == "__main__") else None
