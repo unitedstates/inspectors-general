@@ -46,7 +46,7 @@ def run(options):
       parse_result_from_js_url(url, "iereports", year, year_range)
 
   # Pull the congressional testimony
-  doc = beautifulsoup_from_url(CONGRESSIONAL_TESTIMONY_REPORTS_URL)
+  doc = BeautifulSoup(utils.download(CONGRESSIONAL_TESTIMONY_REPORTS_URL))
   results = doc.findAll("ul", type='disc')[0].select("li")
   for result in results:
     report = congressional_testimony_report_from(result, year_range)
@@ -54,7 +54,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.findAll("ul", type='disc')[0].select("li")
   for result in results:
     report = semiannual_report_from(result, year_range)
@@ -77,10 +77,10 @@ def parse_result_from_js_url(url, format_slug, year, year_range):
       inspector.save_report(report)
 
 
-def report_from(result, format_slug, year, year_range):
+def report_from(javascript_attributes, format_slug, year, year_range):
   # We are going to parse the script of javascript into a list of with the following strucutre:
   # [report id, report description, date string, business unit, report count, executive summary, management response, audit comments]
-  result_pieces = [field.strip() for field in parse_fields(result)]
+  result_pieces = [field.strip() for field in parse_fields(javascript_attributes)]
   report_id = result_pieces[0]
   title = result_pieces[1]
   published_on_text = result_pieces[2]
@@ -175,6 +175,10 @@ def inspection_report_url(year):
 
 def parse_fields(text):  # Taken from https://stackoverflow.com/a/4983565
     """
+    This method is used to parse out the values from a raw text string
+    containing a Javascript declaration. See an example input at the call site
+    above.
+
     >>> list(parse_fields('hey,hello,,"hello,world",\'hey,world\''))
     ['hey', 'hello', '', 'hello,world', 'hey,world']
     >>> list(parse_fields('hey,hello,,"hello,world",\'hey,world\','))
@@ -203,9 +207,5 @@ def parse_fields(text):  # Taken from https://stackoverflow.com/a/4983565
             break
 
         pos = m.end(0)
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  return BeautifulSoup(body)
 
 utils.run(run) if (__name__ == "__main__") else None
