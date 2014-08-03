@@ -17,10 +17,15 @@ from utils import utils, inspector
 # Notes for IG's web team:
 #
 
+SPOTLIGHT_REPORTS_URL = "http://www.sigar.mil/Newsroom/spotlight/spotlight.xml"
+SPEECHES_REPORTS_URL = "http://www.sigar.mil/Newsroom/speeches/speeches.xml"
+TESTIMONY_REPORTS_URL = "http://www.sigar.mil/Newsroom/testimony/testimony.xml"
+
+
 REPORT_URLS = [
-  "http://www.sigar.mil/Newsroom/spotlight/spotlight.xml",
-  "http://www.sigar.mil/Newsroom/testimony/testimony.xml",
-  "http://www.sigar.mil/Newsroom/speeches/speeches.xml",
+  SPOTLIGHT_REPORTS_URL,
+  SPEECHES_REPORTS_URL,
+  TESTIMONY_REPORTS_URL,
   "http://www.sigar.mil/audits/auditreports/reports.xml",
   "http://www.sigar.mil/audits/inspectionreports/inspection-reports.xml",
   "http://www.sigar.mil/audits/financialreports/Financial-Audits.xml",
@@ -28,6 +33,8 @@ REPORT_URLS = [
   "http://www.sigar.mil/Audits/alertandspecialreports/alert-special-reports.xml",
   "http://www.sigar.mil/quarterlyreports/index.xml",
 ]
+
+BASE_REPORT_URL = "http://www.sigar.mil/allreports/index.aspx"
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -44,7 +51,7 @@ def run(options):
 def report_from(result, landing_url, year_range):
   title = result.find("title").text.strip()
 
-  report_url = urljoin(landing_url, result.find("link").next.strip())
+  report_url = report_url_for_landing_page(result.find("link").next.strip(), landing_url)
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
 
@@ -67,5 +74,34 @@ def report_from(result, landing_url, year_range):
   }
 
   return report
+
+def report_url_for_landing_page(relative_url, landing_url):
+  """
+  We need to mimic the logic used in http://www.sigar.mil/js/AllReports.js
+
+  case SPOTLIGHT:
+      Title = "Spotlight";
+      Link = Link.replace("../../", "../");
+      break;
+  case SPEECHES:
+      Title = "Speeches";
+      Link = Link.replace("../", "../newsroom/");
+      break;
+  case TESTIMONY:
+      Title = "Testimony";
+      Link = Link.replace("../../", "../");
+      break;
+  """
+
+  relative_url = relative_url.replace("â\x80\x93", "–")
+
+  if landing_url == SPOTLIGHT_REPORTS_URL:
+    relative_url = relative_url.replace("../../", "../")
+  elif landing_url == SPEECHES_REPORTS_URL:
+    relative_url = relative_url.replace("../", "../newsroom/")
+  elif landing_url == TESTIMONY_REPORTS_URL:
+    relative_url = relative_url.replace("../../", "../")
+
+  return urljoin(BASE_REPORT_URL, relative_url)
 
 utils.run(run) if (__name__ == "__main__") else None
