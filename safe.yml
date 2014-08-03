@@ -87,10 +87,14 @@
 # Department of State
 - state
 
+# Treasury IG for Tax Administration
+- tigta
+
 # Department of the Treasury
 - treasury
 
 # US Postal Service
+# (giving USPS an opportunity to fix pagination)
 #- usps
 
 # Department of Veterans' Affairs
@@ -101,5 +105,4 @@
 # Pending a full archival download
 ###
 
-# - tigta
 # - nrc
