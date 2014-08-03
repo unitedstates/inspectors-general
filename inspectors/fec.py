@@ -98,6 +98,7 @@ def report_from(result, year_range, title_prefix=None):
     published_on_text = published_on_text.replace("Period ending ", "")
     published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
+  estimated_date = False
   if not published_on:
     if report_id in REPORT_PUBLISHED_MAPPING:
       published_on = REPORT_PUBLISHED_MAPPING[report_id]
@@ -106,6 +107,7 @@ def report_from(result, year_range, title_prefix=None):
         published_on_text = "-".join(re.search('(\w+)\s+(\d{4})', title).groups())
         published_on = datetime.datetime.strptime(published_on_text, '%B-%Y')
       except (ValueError, AttributeError):
+        estimated_date = True
         try:
           fiscal_year = re.search('FY(\d+)', report_id).groups()[0]
           published_on = datetime.datetime.strptime("November {}".format(fiscal_year), '%B %y')
@@ -134,7 +136,8 @@ def report_from(result, year_range, title_prefix=None):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),  # Date of publication
   }
-
+  if estimated_date:
+    report['estimated_date'] = estimated_date
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
