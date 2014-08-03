@@ -114,11 +114,8 @@ def report_from(result, year_range, title_prefix=None):
             fiscal_year = int(re.search('(\d{4})', report_id).groups()[0])
             published_on = datetime.datetime(fiscal_year, 11, 1)
           except AttributeError:
-            try:
-              fiscal_year = re.search('(\d{2})', report_id).groups()[0]
-              published_on = datetime.datetime.strptime("November {}".format(fiscal_year), '%B %y')
-            except AttributeError:
-              import pdb;pdb.set_trace()
+            fiscal_year = re.search('(\d{2})', report_id).groups()[0]
+            published_on = datetime.datetime.strptime("November {}".format(fiscal_year), '%B %y')
 
   if title_prefix:
     title = "{}{}".format(title_prefix, title)
