@@ -86,7 +86,7 @@ def report_from(result, year_range, title_prefix=None):
   published_on = None
   if report_url.endswith(".pdf"):
     # Inline report
-    title = result.contents[0].rstrip("-").strip()
+    title = result.contents[0].strip().rstrip("-").strip()
   else:
     # Some pages have separate landing pages.
     doc = BeautifulSoup(utils.download(report_url))
