@@ -108,7 +108,7 @@ def report_from(result, year_range, title_prefix=None):
       except (ValueError, AttributeError):
         try:
           fiscal_year = int(re.search('FY(\d+)', report_id).groups()[0])
-          if fiscal_year < 80:
+          if fiscal_year <= 68:
             # We need to convert things like FY05 to 2005
             fiscal_year += 2000
           published_on = datetime.datetime(fiscal_year, 11, 1)
@@ -119,7 +119,7 @@ def report_from(result, year_range, title_prefix=None):
           except AttributeError:
             try:
               fiscal_year = int(re.search('(\d{2})', report_id).groups()[0])
-              if fiscal_year < 80:
+              if fiscal_year <= 68:
                 # We need to convert things like FY05 to 2005
                 fiscal_year += 2000
               published_on = datetime.datetime(fiscal_year, 11, 1)
