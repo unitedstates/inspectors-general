@@ -43,7 +43,7 @@ def run(options):
 
 # suggested: a function that gets report details from a parent element,
 # extract a dict of details that are ready for inspector.save_report().
-def report_from(result, landing_url, year_range):
+def report_from(result, year_range):
   report_id = <report_id>
   report_url = <report_url>
   title = <title>
