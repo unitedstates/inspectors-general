@@ -107,22 +107,16 @@ def report_from(result, year_range, title_prefix=None):
         published_on = datetime.datetime.strptime(published_on_text, '%B-%Y')
       except (ValueError, AttributeError):
         try:
-          fiscal_year = int(re.search('FY(\d+)', report_id).groups()[0])
-          if fiscal_year <= 68:
-            # We need to convert things like FY05 to 2005
-            fiscal_year += 2000
-          published_on = datetime.datetime(fiscal_year, 11, 1)
-        except AttributeError:
+          fiscal_year = re.search('FY(\d+)', report_id).groups()[0]
+          published_on = datetime.datetime.strptime("November {}".format(fiscal_year), '%B %y')
+        except (ValueError, AttributeError):
           try:
             fiscal_year = int(re.search('(\d{4})', report_id).groups()[0])
             published_on = datetime.datetime(fiscal_year, 11, 1)
           except AttributeError:
             try:
-              fiscal_year = int(re.search('(\d{2})', report_id).groups()[0])
-              if fiscal_year <= 68:
-                # We need to convert things like FY05 to 2005
-                fiscal_year += 2000
-              published_on = datetime.datetime(fiscal_year, 11, 1)
+              fiscal_year = re.search('(\d{2})', report_id).groups()[0]
+              published_on = datetime.datetime.strptime("November {}".format(fiscal_year), '%B %y')
             except AttributeError:
               import pdb;pdb.set_trace()
 
