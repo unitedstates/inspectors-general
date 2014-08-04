@@ -54,6 +54,9 @@
 # Federal Communications Commission
 - fcc
 
+# Federal Deposit Insurance Corporation
+- fdic
+
 # Federal Reserve and CFPB
 - fed
 
@@ -111,5 +114,3 @@
 # Pending a full archival download
 ###
 
-# Federal Deposit Insurance Corporation
-# - fdic
