@@ -57,6 +57,9 @@
 # Federal Deposit Insurance Corporation
 - fdic
 
+# Federal Election Commission
+- fec
+
 # Federal Reserve and CFPB
 - fed
 
@@ -113,9 +116,6 @@
 ###
 # Pending a full archival download
 ###
-
-# Federal Election Commission
-# - fec
 
 # Special Inspector General for Afghanistan Reconstruction
 # - sigar
