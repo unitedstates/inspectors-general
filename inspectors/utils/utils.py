@@ -119,6 +119,10 @@ def text_from_html(html_path):
 
   html = open(real_html_path).read()
   doc = BeautifulSoup(html)
+
+  for node in doc.findAll(['script', 'style']):
+    node.extract()
+
   text = doc.text.strip()
 
   write(text, real_text_path, binary=False)
