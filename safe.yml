@@ -87,6 +87,9 @@
 # Securities and Exchange Commission
 - sec
 
+# Special Inspector General for the Troubled Asset Relief Program
+- sigtarp
+
 # Department of State
 - state
 
@@ -107,9 +110,6 @@
 ###
 # Pending a full archival download
 ###
-
-# Special Inspector General for the Troubled Asset Relief Program
-# - sigtarp
 
 # Federal Deposit Insurance Corporation
 # - fdic
