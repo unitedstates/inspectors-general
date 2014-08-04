@@ -203,7 +203,7 @@ def metadata_from_pdf(pdf_path):
 
   mod_date_match = MOD_DATE_RE.search(output)
   if mod_date_match:
-    metadata['modification_date'] = parse_pdf_datetime(creation_date_match.group(1))
+    metadata['modification_date'] = parse_pdf_datetime(mod_date_match.group(1))
 
   title_match = TITLE_RE.search(output)
   if title_match:
