@@ -124,8 +124,11 @@ def text_from_html(html_path):
     node.extract()
 
   text = doc.text
-  text = text.strip()
-  text = re.sub("\n+", "\n", text)
+  lines = text.splitlines()
+  for i in range(len(lines)):
+    lines[i] = lines[i].strip()
+  lines = filter(None, lines)
+  text = "\n".join(lines)
 
   write(text, real_text_path, binary=False)
   return text_path
