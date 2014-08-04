@@ -158,6 +158,8 @@ KEYWORDS_RE = re.compile("Keywords: +([^\r\n]*)\r?\n")
 AUTHOR_RE = re.compile("Author: +([^\r\n]*)\r?\n")
 
 def parse_pdf_datetime(raw):
+    if raw.strip() == "":
+      return None
     my_datetime = None
     try:
       my_datetime = datetime.strptime(raw, '%m/%d/%y %H:%M:%S')
@@ -173,7 +175,7 @@ def parse_pdf_datetime(raw):
       return datetime.strftime(my_datetime, '%Y-%m-%d')
     else:
       logging.warn('Could not parse PDF date: %s' % raw)
-      return raw
+      return None
 
 def metadata_from_pdf(pdf_path):
   try:
