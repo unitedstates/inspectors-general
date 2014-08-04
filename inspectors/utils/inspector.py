@@ -151,6 +151,8 @@ def download_report(report):
   else:
     return None
 
+FILE_EXTENSIONS_HTML = ("htm", "html", "cfm", "php", "asp", "aspx")
+
 def extract_metadata(report):
   report_path = path_for(report, report['file_type'])
   real_report_path = os.path.join(utils.data_dir(), report_path)
@@ -161,7 +163,7 @@ def extract_metadata(report):
     if metadata:
       report['pdf'] = metadata
       return metadata
-  elif file_type_lower == "htm" or file_type_lower == "html":
+  elif file_type_lower in FILE_EXTENSIONS_HTML:
     return None
   else:
     logging.warn("Unknown file type, don't know how to extract metadata!")
@@ -174,7 +176,7 @@ def extract_report(report):
   file_type_lower = report['file_type'].lower()
   if file_type_lower == "pdf":
     return utils.text_from_pdf(report_path)
-  elif file_type_lower.startswith("htm"):
+  elif file_type_lower in FILE_EXTENSIONS_HTML:
     return utils.text_from_html(report_path)
   else:
     logging.warn("Unknown file type, don't know how to extract text!")
