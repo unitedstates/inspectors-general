@@ -123,7 +123,9 @@ def text_from_html(html_path):
   for node in doc.findAll(['script', 'style']):
     node.extract()
 
-  text = doc.text.strip()
+  text = doc.text
+  text = text.strip()
+  text = re.sub("\n+", "\n", text)
 
   write(text, real_text_path, binary=False)
   return text_path
