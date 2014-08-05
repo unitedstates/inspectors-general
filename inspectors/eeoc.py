@@ -84,14 +84,14 @@ def report_from(result, year_range):
     published_on = REPORT_PUBLISHED_MAP[report_id]
   else:
     try:
-      published_on_text = "-".join(re.search('\((\w+) (\d+),*\s(\d{4})\)', result.text).groups())
+      published_on_text = "-".join(re.search('\((\w+) (\d+),?\s(\d{4})\)', result.text).groups())
       published_on = datetime.datetime.strptime(published_on_text, '%B-%d-%Y')
     except AttributeError:
       try:
         published_on_text = "-".join(re.search('\((\w+)\s(\d{4})\)', result.text).groups())
         published_on = datetime.datetime.strptime(published_on_text, '%B-%Y')
       except AttributeError:
-        published_on_text = "-".join(re.search('(\w+) (\d+),*\s(\d{4})', result.text).groups())
+        published_on_text = "-".join(re.search('(\w+) (\d+),?\s(\d{4})', result.text).groups())
         published_on = datetime.datetime.strptime(published_on_text, '%B-%d-%Y')
 
   title = link.text
