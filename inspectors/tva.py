@@ -25,7 +25,7 @@ PDF_REPORT_FORMAT = "http://oig.tva.gov/reports/node/semi/{report_number}/semi{r
 def run(options):
   year_range = inspector.year_range(options)
 
-  # Pull the reports
+  # Pull the audit reports
   for year in year_range:
     if year < 2005:  # This is the earliest audits go back
       continue
@@ -37,6 +37,7 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+  # Pull the semiannual reports
   doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.select("report")
   for result in results:
@@ -48,7 +49,16 @@ def report_from(result, landing_url, year_range):
   header = result.find_previous("p", class_="heading")
 
   published_on_text, title, report_id = header.text.split("-", 2)
-  title = title.strip()
+
+  # Some reports list multiple dates. Split on '&' to get the latter.
+  published_on_text = published_on_text.split("&")[-1].strip()
+  published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  title = " ".join(title.split())
   report_id = report_id.strip().replace("/", "-")
 
   if "summary only" in result.text.lower():
@@ -59,16 +69,8 @@ def report_from(result, landing_url, year_range):
     report_url = urljoin(landing_url, result.find("a").get('href'))
 
   # Skip the last 'p' since it is just the report link
-  summary_text = [paragraph.text for paragraph in result.findAll("p")[:-1]]
-  summary = "\n".join(summary_text)
-
-  # Some reports list multiple dates. Split on '&' to get the latter.
-  published_on_text = published_on_text.split("&")[-1].strip()
-  published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
-
-  if published_on.year not in year_range:
-    logging.debug("[%s] Skipping, not in requested range." % report_url)
-    return
+  summary_text = " ".join([paragraph.text for paragraph in result.findAll("p")[:-1]])
+  summary = " ".join(summary_text.split())  # Remove extra whitespace
 
   report = {
     'inspector': 'tva',
