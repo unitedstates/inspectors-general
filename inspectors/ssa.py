@@ -43,12 +43,16 @@ def run(options):
   # Pull the audit reports
   for year in year_range:
     for page in range(0, ALL_PAGES):
-      reports_from_page(AUDIT_REPORTS_URL, page, year_range, year)
+      reports_found = reports_from_page(AUDIT_REPORTS_URL, page, year_range, year)
+      if not reports_found:
+        break
 
   # Pull the other reports
   for report_format in OTHER_REPORT_URLS:
     for page in range(0, ALL_PAGES):
-      reports_from_page(report_format, page, year_range)
+      reports_found = reports_from_page(report_format, page, year_range)
+      if not reports_found:
+        break
 
 def reports_from_page(url_format, page, year_range, year=''):
   url = url_format.format(page=page, year=year)
@@ -57,7 +61,7 @@ def reports_from_page(url_format, page, year_range, year=''):
   if not results:
     results = doc.select("div.views-row")
   if not results:
-    return
+    return False
 
   for result in results:
     if not result.text.strip():
@@ -66,16 +70,12 @@ def reports_from_page(url_format, page, year_range, year=''):
     report = report_from(result, year_range)
     if report:
       inspector.save_report(report)
+  return True
 
 def report_from(result, year_range):
   landing_page_link = result.find("a")
   title = landing_page_link.text.strip()
   landing_url = urljoin(BASE_REPORT_URL, landing_page_link.get('href'))
-
-  unreleased = False
-  if "Limited Distribution" in title:
-    unreleased = True
-    report_url = None
 
   published_on_text = result.select("span.date-display-single")[0].text.strip()
   published_on = datetime.datetime.strptime(published_on_text, '%A, %B %d, %Y')
@@ -89,15 +89,27 @@ def report_from(result, year_range):
   except IndexError:
     report_id = landing_url.split("/")[-1]
 
+  landing_page = BeautifulSoup(utils.download(landing_url))
+
+  unreleased = False
+  if "Limited Distribution" in title:
+    unreleased = True
+    report_url = None
+  else:
+    try:
+      report_url = result.select("span.file a")[0].get('href')
+    except IndexError:
+      if not unreleased:
+        try:
+          report_url = landing_page.find("a", attrs={"type": 'application/octet-stream;'}).get('href')
+        except AttributeError:
+          unreleased = True
+          report_url = None
+
   try:
-    report_url = result.select("span.file a")[0].get('href')
+    summary = landing_page.select("div.field-type-text-with-summary")[0].text.strip()
   except IndexError:
-    if not unreleased:
-      landing_page = BeautifulSoup(utils.download(landing_url))
-      try:
-        report_url = landing_page.find("a", attrs={"type": 'application/octet-stream;'}).get('href')
-      except AttributeError:
-        report_url = landing_url
+    summary = None
 
   file_type = None
   if report_url:
@@ -120,6 +132,8 @@ def report_from(result, year_range):
     report['unreleased'] = unreleased
   if file_type:
     report['file_type'] = file_type
+  if summary:
+    report['summary'] = summary
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
