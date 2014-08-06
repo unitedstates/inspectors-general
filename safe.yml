@@ -96,6 +96,9 @@
 # Securities and Exchange Commission
 - sec
 
+# Special Inspector General for Afghanistan Reconstruction
+- sigar
+
 # Special Inspector General for the Troubled Asset Relief Program
 - sigtarp
 
@@ -119,9 +122,6 @@
 ###
 # Pending a full archival download
 ###
-
-# Special Inspector General for Afghanistan Reconstruction
-# - sigar
 
 # Tennessee Valley Authority
 # - tva
