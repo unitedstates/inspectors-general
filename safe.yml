@@ -111,6 +111,9 @@
 # Department of the Treasury
 - treasury
 
+# Tennessee Valley Authority
+- tva
+
 # US Postal Service
 # (giving USPS an opportunity to fix pagination)
 #- usps
@@ -122,9 +125,5 @@
 ###
 # Pending a full archival download
 ###
-
-# Tennessee Valley Authority
-# - tva
-
 # Social Security Administration
 # - ssa
