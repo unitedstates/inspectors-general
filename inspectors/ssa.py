@@ -17,6 +17,11 @@ from utils import utils, inspector
 # Notes for IG's web team:
 #
 
+# This will actually get adjusted downwards on the fly, so pick a huge number.
+# The largest one currently is Investigations with 55 pages as of 2014-08-05,
+# so 1,000 should be good.
+ALL_PAGES = 1000
+
 AUDIT_REPORTS_URL = "http://oig.ssa.gov/audits-and-investigations/audit-reports/{year}-01--{year}-12?page={page}"
 INVESTIGATIONS_REPORT_URL = "http://oig.ssa.gov/audits-and-investigations/investigations?page={page}"
 SEMIANNUAL_REPORTS_URL = "http://oig.ssa.gov/newsroom/semiannual-reports?page={page}"
@@ -24,10 +29,10 @@ CONGRESSIONAL_TESTIMONY_URL = "http://oig.ssa.gov/newsroom/congressional-testimo
 PERFORMANCE_REPORTS_URL = "http://oig.ssa.gov/newsroom/performance-reports?page={page}"
 
 OTHER_REPORT_URLS = [
-  PERFORMANCE_REPORTS_URL,
-  CONGRESSIONAL_TESTIMONY_URL,
-  SEMIANNUAL_REPORTS_URL,
   INVESTIGATIONS_REPORT_URL,
+  SEMIANNUAL_REPORTS_URL,
+  CONGRESSIONAL_TESTIMONY_URL,
+  PERFORMANCE_REPORTS_URL,
 ]
 
 BASE_REPORT_URL = "http://oig.ssa.gov/"
@@ -37,36 +42,30 @@ def run(options):
 
   # Pull the audit reports
   for year in year_range:
-    for page in range(0, 999):
-      url = AUDIT_REPORTS_URL.format(year=year, page=page)
-      doc = BeautifulSoup(utils.download(url))
-      results = doc.select("td.views-field")
-      if not results:
-        break
-
-      for result in results:
-        report = report_from(result, year_range)
-        if report:
-          inspector.save_report(report)
+    for page in range(0, ALL_PAGES):
+      reports_from_page(AUDIT_REPORTS_URL, page, year_range, year)
 
   # Pull the other reports
   for report_format in OTHER_REPORT_URLS:
-    for page in range(0, 999):
-      url = report_format.format(page=page)
-      doc = BeautifulSoup(utils.download(url))
-      results = doc.select("td.views-field")
-      if not results:
-        results = doc.select("div.views-row")
-      if not results:
-        break
+    for page in range(0, ALL_PAGES):
+      reports_from_page(report_format, page, year_range)
 
-      for result in results:
-        if not result.text.strip():
-          # Skip empty rows
-          continue
-        report = report_from(result, year_range)
-        if report:
-          inspector.save_report(report)
+def reports_from_page(url_format, page, year_range, year=''):
+  url = url_format.format(page=page, year=year)
+  doc = BeautifulSoup(utils.download(url))
+  results = doc.select("td.views-field")
+  if not results:
+    results = doc.select("div.views-row")
+  if not results:
+    return
+
+  for result in results:
+    if not result.text.strip():
+      # Skip empty rows
+      continue
+    report = report_from(result, year_range)
+    if report:
+      inspector.save_report(report)
 
 def report_from(result, year_range):
   landing_page_link = result.find("a")
