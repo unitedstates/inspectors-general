@@ -81,7 +81,7 @@ def report_from(result, year_range):
   published_on = datetime.datetime.strptime(published_on_text, '%A, %B %d, %Y')
 
   if published_on.year not in year_range:
-    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    logging.debug("[%s] Skipping, not in requested range." % title)
     return
 
   try:
