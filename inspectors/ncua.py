@@ -46,7 +46,6 @@ def run(options):
     if report:
       inspector.save_report(report)
 
-
 def clean_text(text):
   # This character is not technically whitespace so we have to manually replace it
   return text.replace("\u200b", " ").strip()
