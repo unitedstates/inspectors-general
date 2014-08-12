@@ -19,6 +19,9 @@ from utils import utils, inspector
 #
 
 AUDIT_REPORTS_URL = "http://oig.pbgc.gov/evaluations/{year}.html"
+CONGRESSIONAL_REQUESTS_URL = "http://oig.pbgc.gov/requests.html"
+SEMIANNUAL_REPORTS_URL = "http://oig.pbgc.gov/reports.html"
+
 BASE_REPORT_URL = "http://oig.pbgc.gov/"
 
 HEADER_ROW_TEXT = [
@@ -32,16 +35,32 @@ def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit reports
-  for year in year_range:
-    if year < 1998:  # The earliest year for audit reports
-      continue
-    year_url = AUDIT_REPORTS_URL.format(year=year)
-    doc = BeautifulSoup(utils.download(year_url))
-    results = doc.select("tr")
-    for result in results:
-      report = report_from(result, year_range)
-      if report:
-        inspector.save_report(report)
+  # for year in year_range:
+  #   if year < 1998:  # The earliest year for audit reports
+  #     continue
+    # year_url = AUDIT_REPORTS_URL.format(year=year)
+    # doc = BeautifulSoup(utils.download(year_url))
+    # results = doc.select("tr")
+    # for result in results:
+    #   report = report_from(result, year_range)
+    #   if report:
+    #     inspector.save_report(report)
+
+  # Pull the congreesional requests
+  # doc = BeautifulSoup(utils.download(CONGRESSIONAL_REQUESTS_URL))
+  # results = doc.select("tr")
+  # for result in results:
+  #   report = report_from(result, year_range)
+  #   if report:
+  #     inspector.save_report(report)
+
+  # Pull the semiannual reports
+  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  results =  doc.select("div.holder a")
+  for result in results:
+    report = semiannual_report_from(result, year_range)
+    if report:
+      inspector.save_report(report)
 
 def report_from(result, year_range):
   title = result.select("td")[0].text.strip()
@@ -58,33 +77,78 @@ def report_from(result, year_range):
     logging.debug("[%s] Skipping, not in requested range." % title)
     return
 
+  unreleased = False
   link = result.find("a")
   landing_url = urljoin(BASE_REPORT_URL, link.get('href'))
-  landing_page = BeautifulSoup(utils.download(landing_url))
-
-  summary = " ".join(landing_page.select("div.holder")[0].text.split())
-  report_link = landing_page.find("a", href=PDF_REGEX)
-  if report_link:
-    unreleased = False
-    report_url = urljoin(landing_url, report_link.get('href'))
+  if landing_url.endswith(".pdf"):
+    # Inline report
+    report_url = landing_url
+    landing_url = None
+    summary = None
   else:
-    unreleased = True
-    report_url = None
+    landing_page = BeautifulSoup(utils.download(landing_url))
+    summary = " ".join(landing_page.select("div.holder")[0].text.split())
+    report_link = landing_page.find("a", href=PDF_REGEX)
+    if report_link:
+      report_url = urljoin(landing_url, report_link.get('href'))
+    else:
+      unreleased = True
+      report_url = None
 
   report = {
     'inspector': "pbgc",
     'inspector_url': "http://oig.pbgc.gov",
     'agency': "pbgc",
     'agency_name': "Pension Benefit Guaranty Corporation",
-    'summary': summary,
-    'landing_url': landing_url,
     'report_id': report_id,
     'url': report_url,
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
+  if summary:
+    report['summary'] = summary
   if unreleased:
     report['unreleased'] = unreleased
+  if landing_url:
+    report['landing_url'] = landing_url
+  return report
+
+def semiannual_report_from(result, year_range):
+  # This will look like "toggleReport('SARC-47-49');" and we want to pull out
+  # the SARC-47-49
+  report_id_javascript = result.get('onclick')
+  report_id = re.search("'(.*)'", report_id_javascript).groups()[0]
+  landing_url  = "http://oig.pbgc.gov/sarc/{report_id}.html".format(report_id=report_id)
+  landing_page = BeautifulSoup(utils.download(landing_url))
+
+  title = " ".join(landing_page.select("h3")[0].text.split())
+  relative_report_url = landing_page.find("a", text="Read Full Report").get('href')
+  report_url = urljoin(SEMIANNUAL_REPORTS_URL, relative_report_url)
+
+  # There is probably a way to be a bit smarter about this
+  summary = landing_page.text.strip()
+
+  published_on_text = title.rsplit("-")[-1].rsplit("through")[-1].replace(".", "").strip()
+  published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % title)
+    return
+
+  report = {
+    'inspector': "pbgc",
+    'inspector_url': "http://oig.pbgc.gov",
+    'agency': "pbgc",
+    'agency_name': "Pension Benefit Guaranty Corporation",
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  if summary:
+    report['summary'] = summary
+  if landing_url:
+    report['landing_url'] = landing_url
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
