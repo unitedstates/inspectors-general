@@ -42,6 +42,9 @@
 # Department of Education
 - education
 
+# Equal Opportunity Employment Commission
+- eeoc
+
 # Department of Energy
 - energy
 
@@ -53,6 +56,12 @@
 
 # Federal Communications Commission
 - fcc
+
+# Federal Deposit Insurance Corporation
+- fdic
+
+# Federal Election Commission
+- fec
 
 # Federal Reserve and CFPB
 - fed
@@ -87,6 +96,15 @@
 # Securities and Exchange Commission
 - sec
 
+# Special Inspector General for Afghanistan Reconstruction
+- sigar
+
+# Special Inspector General for the Troubled Asset Relief Program
+- sigtarp
+
+# Social Security Administration
+- ssa
+
 # Department of State
 - state
 
@@ -95,6 +113,9 @@
 
 # Department of the Treasury
 - treasury
+
+# Tennessee Valley Authority
+- tva
 
 # US Postal Service
 # (giving USPS an opportunity to fix pagination)
@@ -108,8 +129,3 @@
 # Pending a full archival download
 ###
 
-# Special Inspector General for the Troubled Asset Relief Program
-# - sigtarp
-
-# Federal Deposit Insurance Corporation
-# - fdic

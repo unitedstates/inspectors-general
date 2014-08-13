@@ -63,7 +63,7 @@ def report_from(result, landing_url, year_range):
     except ValueError:
       published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
-  report_url = urljoin(landing_url, result.select("td")[3].text)
+  report_url = urljoin(landing_url, result.select("td")[3].text.strip())
   unreleased = "foia" in report_url.lower() or "not available*" in report_url.lower()
 
   if unreleased:
