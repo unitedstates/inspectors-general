@@ -31,6 +31,8 @@ def save_report(report):
 
   if options.get('dry_run'):
     logging.warn('\tdry run: skipping download and extraction')
+    if report.get('url'):
+      utils.check_report_url(report['url'])
   elif report.get('unreleased', False) is True:
     logging.warn('\tno download/extraction of unreleased report')
   else:
