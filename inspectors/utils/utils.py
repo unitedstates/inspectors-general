@@ -234,7 +234,7 @@ def metadata_from_pdf(pdf_path):
 
 def check_report_url(report_url):
   res = scraper.request(method='HEAD', url=report_url)
-  if res.status_code != 200:
+  if not res.ok:
     raise Exception("Received bad status code %s for %s" %
       (res.status_code, report_url)
     )
