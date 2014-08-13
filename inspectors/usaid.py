@@ -88,9 +88,9 @@ def report_from(result, landing_url, year_range):
   report_id = report_id.replace("/", "-")
 
   report = {
-    'inspector': "aid",
+    'inspector': "usaid",
     'inspector_url': "https://oig.usaid.gov",
-    'agency': "aid",
+    'agency': "usaid",
     'agency_name': "Agency For International Development",
     'report_id': report_id,
     'url': report_url,
@@ -125,9 +125,9 @@ def semiannual_report_from(result, year_range):
   report_id, _ = os.path.splitext(report_filename)
 
   report = {
-    'inspector': "aid",
+    'inspector': "usaid",
     'inspector_url': "https://oig.usaid.gov",
-    'agency': "aid",
+    'agency': "usaid",
     'agency_name': "Agency For International Development",
     'report_id': report_id,
     'url': report_url,
