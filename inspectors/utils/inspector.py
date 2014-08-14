@@ -157,7 +157,6 @@ FILE_EXTENSIONS_HTML = ("htm", "html", "cfm", "php", "asp", "aspx")
 
 def extract_metadata(report):
   report_path = path_for(report, report['file_type'])
-  real_report_path = os.path.join(utils.data_dir(), report_path)
 
   file_type_lower = report['file_type'].lower()
   if file_type_lower == "pdf":
