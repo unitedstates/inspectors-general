@@ -266,9 +266,7 @@ def json_for(object):
   return json.dumps(object, sort_keys=True, indent=2, default=format_datetime)
 
 def format_datetime(obj):
-  if isinstance(obj, datetime.datetime):
-    return eastern_time_zone.localize(obj.replace(microsecond=0)).isoformat()
-  elif isinstance(obj, datetime.date):
+  if isinstance(obj, datetime.date):
     return obj.isoformat()
   elif isinstance(obj, str):
     return obj
