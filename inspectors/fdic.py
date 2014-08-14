@@ -83,6 +83,8 @@ def report_from(result, year_range):
   if unreleased:
     report['unreleased'] = unreleased
     report['landing_url'] = landing_url
+  if missing:
+    report['missing'] = missing
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
