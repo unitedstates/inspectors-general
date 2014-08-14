@@ -12,5 +12,6 @@ notifications:
   email:
     recipients:
       - spulec@gmail.com
+      - eric@konklone.com
     on_success: change
     on_failure: change
