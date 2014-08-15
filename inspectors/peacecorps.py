@@ -46,6 +46,7 @@ def report_from(result, year_range):
   if section_title in SECTION_TITLES_TO_SKIP:
     return
 
+  estimated_date = False
   try:
     published_on_text = title.split("–")[-1].strip()
     published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
@@ -53,6 +54,7 @@ def report_from(result, year_range):
     # For reports where we can only find the year, set them to Nov 1st of that year
     published_on_year =int(section_title.lstrip("FY "))
     published_on = datetime.datetime(published_on_year, 11, 1)
+    estimated_date = True
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -68,6 +70,8 @@ def report_from(result, year_range):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
+  if estimated_date:
+    report['estimated_date'] = estimated_date
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
