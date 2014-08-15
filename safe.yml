@@ -123,6 +123,9 @@
 # U.S. Agency for International Development
 - usaid
 
+# US Postal Service
+- usps
+
 # Department of Veterans' Affairs
 - va
 
@@ -139,7 +142,3 @@
 
 # Railroad Retirement Board
 # - rrb
-
-# US Postal Service
-# (giving USPS an opportunity to fix pagination)
-#- usps
