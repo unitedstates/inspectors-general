@@ -24,7 +24,7 @@ CONGRESSIONAL_TESTIMONY_URL = "http://fhfaoig.gov/testimony"
 SEMIANNUAL_REPORTS_URL = "http://fhfaoig.gov/Reports/Semiannual"
 
 # This will actually get adjusted downwards on the fly, so pick a huge number.
-# There are 4 pages of audits as of 2014-08-14, so let's try, er, 100.
+# There are 4 pages of audits as of 2014-08-14, so let's go with 100.
 ALL_PAGES = 100
 
 
