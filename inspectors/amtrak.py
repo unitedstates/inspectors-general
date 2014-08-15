@@ -67,7 +67,6 @@ def report_from(result):
   category = result.find_all("td", class_="views-field-name")[0].text
   issued = result.find_all("td", class_="views-field-field-issue-date-value")[0].text
   tracking = result.find_all("td", class_="views-field-field-tracking-value")[0].text
-  total_views = result.find_all("td", class_="views-field-totalcount")[0].text
 
   published_on = datetime.strptime(issued.strip(), '%m/%d/%Y')
   report_type = type_for(category)
