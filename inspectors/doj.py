@@ -14,7 +14,7 @@
 
 import re
 from bs4 import BeautifulSoup
-from datetime import datetime, date
+from datetime import datetime
 from utils import utils, inspector
 import logging
 

@@ -143,12 +143,12 @@ def text_from_pdf(pdf_path):
     logging.warn("Install pdftotext to extract text! The pdftotext executable must be in a directory that is in your PATH environment variable.")
     return None
 
-  real_pdf_path = os.path.join(data_dir(), pdf_path)
+  real_pdf_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), pdf_path)))
   text_path = "%s.txt" % os.path.splitext(pdf_path)[0]
-  real_text_path = os.path.join(data_dir(), text_path)
+  real_text_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), text_path)))
 
   try:
-    subprocess.check_call("pdftotext -layout \"%s\" \"%s\"" % (real_pdf_path, real_text_path), shell=True)
+    subprocess.check_call(["pdftotext", "-layout", real_pdf_path, real_text_path], shell=False)
   except subprocess.CalledProcessError as exc:
     logging.warn("Error extracting text to %s:\n\n%s" % (text_path, format_exception(exc)))
     return None
@@ -193,10 +193,10 @@ def metadata_from_pdf(pdf_path):
     logging.warn("Install pdfinfo to extract metadata! The pdfinfo executable must be in a directory that is in your PATH environment variable.")
     return None
 
-  real_pdf_path = os.path.join(data_dir(), pdf_path)
+  real_pdf_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), pdf_path)))
 
   try:
-    output = subprocess.check_output("pdfinfo \"%s\"" % (real_pdf_path), shell=True)
+    output = subprocess.check_output(["pdfinfo", real_pdf_path], shell=False)
     output = output.decode('utf-8')
   except subprocess.CalledProcessError as exc:
     logging.warn("Error extracting metadata for %s:\n\n%s" % (pdf_path, format_exception(exc)))
@@ -232,6 +232,13 @@ def metadata_from_pdf(pdf_path):
     return metadata
   return None
 
+def check_report_url(report_url):
+  res = scraper.request(method='HEAD', url=report_url)
+  if not res.ok:
+    raise Exception("Received bad status code %s for %s" %
+      (res.status_code, report_url)
+    )
+
 def format_exception(exception):
   exc_type, exc_value, exc_traceback = sys.exc_info()
   return "\n".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
@@ -259,9 +266,7 @@ def json_for(object):
   return json.dumps(object, sort_keys=True, indent=2, default=format_datetime)
 
 def format_datetime(obj):
-  if isinstance(obj, datetime.datetime):
-    return eastern_time_zone.localize(obj.replace(microsecond=0)).isoformat()
-  elif isinstance(obj, datetime.date):
+  if isinstance(obj, datetime.date):
     return obj.isoformat()
   elif isinstance(obj, str):
     return obj
