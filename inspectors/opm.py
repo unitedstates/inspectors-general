@@ -6,7 +6,6 @@ import bs4
 import os
 import logging
 import time
-from datetime import datetime
 import calendar
 
 # oldest year: 1998
