@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 import datetime
-from urllib.parse import urljoin, urlencode
-import re
+from urllib.parse import urljoin
 import os
 import logging
 from bs4 import BeautifulSoup
