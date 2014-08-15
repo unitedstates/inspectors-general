@@ -117,17 +117,17 @@
 # Tennessee Valley Authority
 - tva
 
-# US Postal Service
-# (giving USPS an opportunity to fix pagination)
-#- usps
+# U.S. Agency for International Development
+- usaid
 
 # Department of Veterans' Affairs
 - va
 
 
 ###
-# Pending a full archival download
+# Pending review (e.g. a full archive once)
 ###
 
-# U.S. Agency for International Development
-# - usaid
+# US Postal Service
+# (giving USPS an opportunity to fix pagination)
+#- usps
