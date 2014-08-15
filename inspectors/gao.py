@@ -2,7 +2,6 @@
 
 import datetime
 import logging
-import os
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -61,6 +60,7 @@ def report_from(result, year_range):
     'agency': 'gao',
     'agency_name': 'Government Accountability Office',
     'report_id': report_id,
+    'summary': summary,
     'url': report_url,
     'text_url': text_report_url,
     'landing_url': landing_url,
