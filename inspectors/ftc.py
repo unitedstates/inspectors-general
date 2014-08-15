@@ -55,8 +55,9 @@ def report_from(result, landing_url, year_range):
   # Unfortunately we need to estimate the date since we only have the year
   estimated_date = False
   try:
-    published_on_year = result.find_previous("h3").text.strip()
-    published_on = datetime.datetime.strptime("November 1, {}".format(published_on_year), '%B %d, %Y')
+    # For reports where we can only find the year, set them to Nov 1st of that year
+    published_on_year = int(result.find_previous("h3").text.strip())
+    published_on = datetime.datetime(published_on_year, 11, 1)
     estimated_date = True
   except AttributeError:
     published_on_year = int(re.search('Fiscal Year (\d+)', title).groups()[0])
