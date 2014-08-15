@@ -19,6 +19,9 @@ from utils import utils, inspector
 
 REPORTS_URL = "http://www.fdicoig.gov/Search-Engine.asp"
 
+# Reports with this URL should be designated as missing
+GENERIC_MISSING_REPORT_URL = 'http://www.fdicoig.gov/notice.pdf'
+
 def run(options):
   year_range = inspector.year_range(options)
 
@@ -35,14 +38,14 @@ def run(options):
 
 def report_from(result, year_range):
   title = result.find("em").text.strip()
+  landing_url = REPORTS_URL
 
   unreleased = False
   try:
-    report_url = urljoin(REPORTS_URL, result.select("a")[-1].get("href"))
+    report_url = urljoin(REPORTS_URL, result.select("a")[-1].get("href").strip())
   except IndexError:
     unreleased = True
     report_url = None
-    landing_url = REPORTS_URL
 
   if report_url:
     report_filename = report_url.split("/")[-1]
@@ -61,6 +64,12 @@ def report_from(result, year_range):
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
+  missing = False
+  if report_url == GENERIC_MISSING_REPORT_URL:
+    missing = True
+    unreleased = True
+    report_url = None
+
   report = {
     'inspector': "fdic",
     'inspector_url': "http://www.fdicoig.gov",
@@ -74,6 +83,8 @@ def report_from(result, year_range):
   if unreleased:
     report['unreleased'] = unreleased
     report['landing_url'] = landing_url
+  if missing:
+    report['missing'] = missing
   return report
 
 utils.run(run) if (__name__ == "__main__") else None

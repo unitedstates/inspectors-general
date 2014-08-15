@@ -1,0 +1,17 @@
+language: python
+python:
+  - "3.4"
+
+install:
+  - pip install -r requirements.txt
+  - pip install pyflakes
+
+script: pyflakes .
+
+notifications:
+  email:
+    recipients:
+      - spulec@gmail.com
+      - eric@konklone.com
+    on_success: change
+    on_failure: change
