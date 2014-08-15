@@ -53,10 +53,11 @@ def report_from(result, landing_url, year_range):
     file_type = "html"
 
   # Unfortunately we need to estimate the date since we only have the year
-  estimated_date = True
+  estimated_date = False
   try:
     published_on_year = result.find_previous("h3").text.strip()
     published_on = datetime.datetime.strptime("November 1, {}".format(published_on_year), '%B %d, %Y')
+    estimated_date = True
   except AttributeError:
     published_on_year = int(re.search('Fiscal Year (\d+)', title).groups()[0])
 
@@ -81,8 +82,9 @@ def report_from(result, landing_url, year_range):
     'url': report_url,
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
-    'estimated_date': estimated_date,
   }
+  if estimated_date:
+    report['estimated_date'] = estimated_date
   if unreleased:
     report['unreleased'] = unreleased
     report['landing_url'] = landing_url
