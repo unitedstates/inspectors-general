@@ -27,6 +27,14 @@ REPORT_PUBLISHED_MAP = {
   '14-06': datetime.datetime(2014, 6, 30)
 }
 
+BLACKLIST_REPORT_TITLES = [
+  'PDF',
+  'Word97',
+  'WP5.1',
+  'LSC Management Response',
+  'Summary of Audit Findings and Recommendations',
+]
+
 def run(options):
   year_range = inspector.year_range(options)
 
@@ -46,13 +54,7 @@ def run(options):
         inspector.save_report(report)
 
 def report_from(result, landing_url, year_range):
-  if not result.text or result.text in [
-    'PDF',
-    'Word97',
-    'WP5.1',
-    'LSC Management Response',
-    'Summary of Audit Findings and Recommendations',
-  ]:
+  if not result.text or result.text in BLACKLIST_REPORT_TITLES:
     # There are a few empty links due to bad html and some links for alternative
     # formats (PDF) that we will just ignore.
     return
@@ -95,9 +97,6 @@ def report_from(result, landing_url, year_range):
           pass
         else:
           break
-
-  if not published_on:
-    import pdb;pdb.set_trace()
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
