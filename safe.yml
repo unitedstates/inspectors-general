@@ -99,6 +99,9 @@
 # Postal Regulatory Commission
 - prc
 
+# Railroad Retirement Board
+- rrb
+
 # Securities and Exchange Commission
 - sec
 
@@ -145,9 +148,6 @@
 
 # Pension Benefit Guaranty Corporation
 # - pbgc
-
-# Railroad Retirement Board
-# - rrb
 
 # National Endowment for the Humanities
 # - neh
