@@ -19,12 +19,13 @@ from utils import utils, inspector
 
 AUDIT_REPORTS_URL = "http://www.usitc.gov/oig/audit_reports.htm"
 SEMIANNUAL_REPORTS_URL = "http://www.usitc.gov/oig/semiannual_reports.htm"
+PEER_REVIEWS_URL = "http://www.usitc.gov/oig/peer_reviews.htm"
 
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit reports
-  for url in [AUDIT_REPORTS_URL, SEMIANNUAL_REPORTS_URL]:
+  for url in [AUDIT_REPORTS_URL, SEMIANNUAL_REPORTS_URL, PEER_REVIEWS_URL]:
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.text1 ul li")
     for result in results:
@@ -45,9 +46,12 @@ def report_from(result, landing_url, year_range):
     published_on = datetime.datetime.strptime(published_on_text, '%B %Y')
   except ValueError:
     # For reports where we can only find the year, set them to Nov 1st of that year
-    published_on_year = int(result.find_previous("p").text)
-    published_on = datetime.datetime(published_on_year, 11, 1)
     estimated_date = True
+    try:
+      published_on_year = int(result.find_previous("p").text)
+    except ValueError:
+      published_on_year = int(title.split(":")[0])
+    published_on = datetime.datetime(published_on_year, 11, 1)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
