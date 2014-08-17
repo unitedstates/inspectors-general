@@ -66,6 +66,9 @@
 # Federal Reserve and CFPB
 - fed
 
+# Federal Housing Financing Agency
+- fhfa
+
 # Government Accountability Office
 - gao
 
@@ -157,9 +160,6 @@
 ###
 # Pending review (e.g. a full archive once)
 ###
-
-# Federal Housing Financing Agency
-# - fhfa
 
 # Federal Trade Commission
 # - ftc
