@@ -87,11 +87,32 @@
 # NASA
 - nasa
 
+# National Credit Union Administration
+- ncua
+
+# National Endowment for the Humanities
+- neh
+
+# National Labor Relations Board
+- nlrb
+
 # Nuclear Regulatory Commission
 - nrc
 
+# National Science Foundation
+- nsf
+
 # Office of Personnel Management
 - opm
+
+# Pension Benefit Guaranty Corporation
+- pbgc
+
+# Postal Regulatory Commission
+- prc
+
+# Railroad Retirement Board
+- rrb
 
 # Securities and Exchange Commission
 - sec
@@ -117,17 +138,19 @@
 # Tennessee Valley Authority
 - tva
 
+# U.S. Agency for International Development
+- usaid
+
 # US Postal Service
-# (giving USPS an opportunity to fix pagination)
-#- usps
+- usps
 
 # Department of Veterans' Affairs
 - va
 
 
 ###
-# Pending a full archival download
+# Pending review (e.g. a full archive once)
 ###
 
-# U.S. Agency for International Development
-# - usaid
+# Small Business Administration
+# - sba
