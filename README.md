@@ -2,13 +2,15 @@
 
 A project to collect reports from the [offices of Inspectors General](http://en.wikipedia.org/wiki/Office_of_the_Inspector_General) across the US federal government.
 
-So far we have **over 20** inspector general offices scraped, downloaded, and stable. See our [safe list](safe.yml) for details.
+So far we have **over 50** inspector general offices scraped, downloaded, and stable. See our [safe list](safe.yml) for details.
 
-**How you can help:** [Matt Rumsey](https://twitter.com/mattrumsey) kindly [compiled a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. The left-hand column tracks who's completed what IG.
+**How you can help:**
 
-The best way to "claim" an IG is to **create an open pull request** with an empty scraper as soon as you've begun work -- you don't need to wait until the scraper is finished to submit a pull request.
+* Scrape an IG! [Matt Rumsey](https://twitter.com/mattrumsey) kindly [compiled a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. The left-hand column tracks completion status.
+* Review data quality. Visit [oversight.io](https://oversight.io) (still ugly and in-progress) and see what the data looks like in action.
+* We have a [project Slack](https://oversight.slack.com) - anyone who'd like to help out is welcome to join.
 
-[Eric Mill](https://twitter.com/konklone) has written [a piece explaining what the project is](http://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/) and why it's being done. From it:
+[Eric Mill](https://twitter.com/konklone) has written [a piece explaining what the project is](http://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/) and why it's being done:
 
 > **What's an inspector general?**
 >
