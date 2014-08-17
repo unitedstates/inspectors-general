@@ -295,7 +295,7 @@ def metadata_from_doc(doc_path):
     output = subprocess.check_output("file \"%s\"" % (real_doc_path), shell=False)
     output = output.decode('utf-8', errors='replace')
   except subprocess.CalledProcessError as exc:
-    logging.warn("Error extracting metadata for %s:\n\n%s" % (pdf_path, format_exception(exc)))
+    logging.warn("Error extracting metadata for %s:\n\n%s" % (doc_path, format_exception(exc)))
     return None
 
   metadata = {}
