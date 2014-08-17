@@ -220,7 +220,7 @@ def metadata_from_pdf(pdf_path):
 
   try:
     output = subprocess.check_output(["pdfinfo", real_pdf_path], shell=False)
-    output = output.decode('utf-8')
+    output = output.decode('utf-8', errors='replace')
   except subprocess.CalledProcessError as exc:
     logging.warn("Error extracting metadata for %s:\n\n%s" % (pdf_path, format_exception(exc)))
     return None
