@@ -81,6 +81,8 @@ def report_from(result, year_range):
     return
 
   title = result.select("td")[2].text.strip()
+  title_prefixer = re.compile("(Audit|Report)\\s*(Number|Report)\\s*[\\d\\-]+:\\s*", re.I)
+  title = title_prefixer.sub("", title)
   landing_url = urljoin(BASE_REPORT_URL, result.find("a").get('href'))
 
   landing_body = utils.download(landing_url)
