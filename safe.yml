@@ -24,6 +24,9 @@
 # Amtrak (yes, they are gov't enough to have an IG)
 - amtrak
 
+# National Archives and Records Administration
+- archives
+
 # Department of Commerce
 - commerce
 
@@ -66,6 +69,12 @@
 # Federal Reserve and CFPB
 - fed
 
+# Federal Housing Financing Agency
+- fhfa
+
+# Federal Trade Commission
+- ftc
+
 # Government Accountability Office
 - gao
 
@@ -84,8 +93,17 @@
 # Department of Labor
 - labor
 
+# Legal Services Corporation
+- lsc
+
 # NASA
 - nasa
+
+# National Credit Union Administration
+- ncua
+
+# National Endowment for the Humanities
+- neh
 
 # National Labor Relations Board
 - nlrb
@@ -93,11 +111,23 @@
 # Nuclear Regulatory Commission
 - nrc
 
+# National Science Foundation
+- nsf
+
 # Office of Personnel Management
 - opm
 
+# Pension Benefit Guaranty Corporation
+- pbgc
+
 # Postal Regulatory Commission
 - prc
+
+# Railroad Retirement Board
+- rrb
+
+# Small Business Administration
+- sba
 
 # Securities and Exchange Commission
 - sec
@@ -136,18 +166,3 @@
 ###
 # Pending review (e.g. a full archive once)
 ###
-
-# National Credit Union Administration
-# - ncua
-
-# National Science Foundation
-# - nsf
-
-# Pension Benefit Guaranty Corporation
-# - pbgc
-
-# Railroad Retirement Board
-# - rrb
-
-# National Endowment for the Humanities
-# - neh
