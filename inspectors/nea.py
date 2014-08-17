@@ -13,6 +13,7 @@ from utils import utils, inspector
 
 # options:
 #   standard since/year options for a year range to fetch from.
+#   report_id: only bother to process a single report
 #
 # Notes for IG's web team:
 #
@@ -24,13 +25,20 @@ SEMIANNUAL_REPORTS_URL = "http://arts.gov/oig/reports/semi-annual"
 def run(options):
   year_range = inspector.year_range(options)
 
+  only_report_id = options.get('report_id')
+
   # Pull the reports
   for url in [AUDIT_REPORTS_URL, SPECIAL_REVIEWS_URL, SEMIANNUAL_REPORTS_URL]:
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.field-item li")
     for result in results:
       report = report_from(result, url, year_range)
+
       if report:
+        # debugging convenience: can limit to single report
+        if only_report_id and (report['report_id'] != only_report_id):
+          continue
+
         inspector.save_report(report)
 
 def report_from(result, landing_url, year_range):
