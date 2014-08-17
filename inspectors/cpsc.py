@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -38,7 +39,15 @@ def report_from(result, year_range):
   report_url = urljoin(REPORTS_URL, link.get('href'))
   if report_url in BLACKLIST_REPORT_URLS:
     return
-  report_filename = report_url.split("/")[-1]
+
+  # URLs with /PageFiles in them need to use the filename and its
+  # directory to be unique. Other URLs can just use the filename.
+  if re.compile("PageFiles").search(report_url):
+    # e.g. /../132643/fy11fisma.pdf -> 132643-fy11fisma.pdf
+    report_filename = str.join("-", report_url.split("/")[-2:])
+  else:
+    report_filename = report_url.split("/")[-1]
+
   report_id, _ = os.path.splitext(report_filename)
 
   title = link.text
