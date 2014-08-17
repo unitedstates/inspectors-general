@@ -20,6 +20,7 @@ from utils import utils, inspector
 
 AUDIT_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/AuditRpt{year}.aspx"
 SEMIANNUAL_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/SemiAnnRpts.aspx"
+FOIA_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/FOIA2012.aspx"
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -38,6 +39,17 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+  # Pull the FOIA reports
+  doc = BeautifulSoup(utils.download(FOIA_REPORTS_URL))
+  results = doc.select("div.content table tr")
+  for index, result in enumerate(results):
+    if not index:
+      # Skip the header row
+      continue
+    report = report_from(result, year_range)
+    if report:
+      inspector.save_report(report)
+
   # Pull the semiannual reports
   doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.select("div.content a")
@@ -52,11 +64,14 @@ def clean_text(text):
 
 def report_from(result, year_range):
   link = result.find("a")
-  report_id = link.text.replace("/", "-")
+  report_id = "-".join(link.text.replace("/", "-").replace("'", "").split())
   report_url = urljoin(AUDIT_REPORTS_URL, link.get('href'))
-  title = clean_text(result.select("td")[1].text)
+  try:
+    title = clean_text(result.select("td")[1].text)
+  except IndexError:
+    title = clean_text(result.select("td")[0].text)
 
-  published_on_text = clean_text(result.select("td")[2].text)
+  published_on_text = clean_text(result.select("td")[-1].text)
   published_on_text = published_on_text.replace("//", "/")  # Some accidental double slashes
   published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
 
