@@ -24,8 +24,14 @@
 # Amtrak (yes, they are gov't enough to have an IG)
 - amtrak
 
+# National Archives and Records Administration
+- archives
+
 # Department of Commerce
 - commerce
+
+# Consumer Product Safety Commission
+- cpsc
 
 # Department of Homeland Security
 - dhs
@@ -66,6 +72,15 @@
 # Federal Reserve and CFPB
 - fed
 
+# Federal Housing Financing Agency
+- fhfa
+
+# Federal Labor Relations Authority
+- flra
+
+# Federal Trade Commission
+- ftc
+
 # Government Accountability Office
 - gao
 
@@ -83,6 +98,9 @@
 
 # Department of Labor
 - labor
+
+# Legal Services Corporation
+- lsc
 
 # NASA
 - nasa
@@ -113,6 +131,9 @@
 
 # Railroad Retirement Board
 - rrb
+
+# Small Business Administration
+- sba
 
 # Securities and Exchange Commission
 - sec
@@ -151,3 +172,18 @@
 ###
 # Pending review (e.g. a full archive once)
 ###
+
+# International Trade Commission
+# - itc
+
+# Appalachian Regional Commission
+# - arc
+
+# National Endowment for the Arts
+# - nea
+
+# Election Assistance Commission
+# - eac
+
+# Federal Maritime Commission
+# - fmc
