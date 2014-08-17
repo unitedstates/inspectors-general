@@ -2,7 +2,6 @@
 
 import datetime
 import logging
-import os
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -24,26 +23,28 @@ def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit reports
-  doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
-  results = doc.select("div.text1 ul li")
-  for result in results:
-    report = report_from(result, year_range)
-    if report:
-      inspector.save_report(report)
+  for url in [AUDIT_REPORTS_URL, SEMIANNUAL_REPORTS_URL]:
+    doc = BeautifulSoup(utils.download(url))
+    results = doc.select("div.text1 ul li")
+    for result in results:
+      report = report_from(result, url, year_range)
+      if report:
+        inspector.save_report(report)
 
-def report_from(result, year_range):
+def report_from(result, landing_url, year_range):
   link = result.find("a", text=True)
-  report_url = urljoin(AUDIT_REPORTS_URL, link.get('href'))
+  report_url = urljoin(landing_url, link.get('href'))
   report_id = "-".join(link.text.split())
   result_text = [x for x in result.stripped_strings]
-  title = result_text[0]
+  title = " ".join(result_text[0].split())
 
-  if not title or not report_id:
-    import pdb;pdb.set_trace()
-
-  # For reports where we can only find the year, set them to Nov 1st of that year
-  published_on_year = int(result.find_previous("p").text)
-  published_on = datetime.datetime(published_on_year, 11, 1)
+  try:
+    published_on_text = title.split("(")[0].strip()
+    published_on = datetime.datetime.strptime(published_on_text, '%B %Y')
+  except ValueError:
+    # For reports where we can only find the year, set them to Nov 1st of that year
+    published_on_year = int(result.find_previous("p").text)
+    published_on = datetime.datetime(published_on_year, 11, 1)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
