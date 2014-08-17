@@ -56,6 +56,9 @@ def report_from(result, landing_url, year, year_range):
   except IndexError:
     title = result.text
 
+  title_prefixer = re.compile("(Advisory|Management|Audit)\\s*(Letter|Report)\\s*[\\d\\-]+:\\s*", re.I)
+  title = title_prefixer.sub("", title)
+
   estimated_date = False
   try:
     published_on_text = re.search('(\w+ \d+, \d+)', result.text).groups()[0]
