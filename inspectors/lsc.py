@@ -66,6 +66,7 @@ def report_from(result, landing_url, year_range):
 
   title = "{} {}".format(result.text.strip(), result.next_sibling)
 
+  estimated_date = False
   published_on = None
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
@@ -82,6 +83,7 @@ def report_from(result, landing_url, year_range):
           # Since we only have the year, set this to Nov 1st of that year
           published_on_year = int(result.find_previous("h3").text)
           published_on = datetime.datetime(published_on_year, 11, 1)
+          estimated_date = True
 
     if not published_on:
       datetime_formats = [
@@ -112,6 +114,8 @@ def report_from(result, landing_url, year_range):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
+  if estimated_date:
+    report['estimated_date'] = estimated_date
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
