@@ -63,6 +63,7 @@ def report_from(result, landing_url, year_range):
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
   report_id = "-".join(report_id.split())
+  report_id = report_id.replace("\\", "") # strip backslashes
 
   title = "{} {}".format(result.text.strip(), result.next_sibling)
 
