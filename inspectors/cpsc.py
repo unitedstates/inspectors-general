@@ -40,8 +40,6 @@ def report_from(result, year_range):
     return
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
-  if not report_id:
-    import pdb;pdb.set_trace()
 
   title = link.text
   published_on_text = result.select("span.date")[0].text
