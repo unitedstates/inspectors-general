@@ -24,6 +24,9 @@
 # Amtrak (yes, they are gov't enough to have an IG)
 - amtrak
 
+# National Archives and Records Administration
+- archives
+
 # Department of Commerce
 - commerce
 
@@ -163,6 +166,3 @@
 ###
 # Pending review (e.g. a full archive once)
 ###
-
-# National Archives and Records Administration
-# - archives
