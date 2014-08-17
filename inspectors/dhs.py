@@ -94,8 +94,6 @@ def report_from(result, component, url):
   published_on = datetime.strptime(timestamp, "%m/%d/%y")
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
 
-  report_path = urllib.parse.urlsplit(report_url).path
-
   return report
 
 

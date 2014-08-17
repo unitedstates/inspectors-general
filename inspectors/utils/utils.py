@@ -119,7 +119,16 @@ def text_from_html(html_path):
 
   html = open(real_html_path).read()
   doc = BeautifulSoup(html)
-  text = doc.text.strip()
+
+  for node in doc.findAll(['script', 'style']):
+    node.extract()
+
+  text = doc.text
+  lines = text.splitlines()
+  for i in range(len(lines)):
+    lines[i] = lines[i].strip()
+  lines = filter(None, lines)
+  text = "\n".join(lines)
 
   write(text, real_text_path, binary=False)
   return text_path
@@ -134,12 +143,12 @@ def text_from_pdf(pdf_path):
     logging.warn("Install pdftotext to extract text! The pdftotext executable must be in a directory that is in your PATH environment variable.")
     return None
 
-  real_pdf_path = os.path.join(data_dir(), pdf_path)
+  real_pdf_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), pdf_path)))
   text_path = "%s.txt" % os.path.splitext(pdf_path)[0]
-  real_text_path = os.path.join(data_dir(), text_path)
+  real_text_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), text_path)))
 
   try:
-    subprocess.check_call("pdftotext -layout \"%s\" \"%s\"" % (real_pdf_path, real_text_path), shell=True)
+    subprocess.check_call(["pdftotext", "-layout", real_pdf_path, real_text_path], shell=False)
   except subprocess.CalledProcessError as exc:
     logging.warn("Error extracting text to %s:\n\n%s" % (text_path, format_exception(exc)))
     return None
@@ -158,6 +167,8 @@ KEYWORDS_RE = re.compile("Keywords: +([^\r\n]*)\r?\n")
 AUTHOR_RE = re.compile("Author: +([^\r\n]*)\r?\n")
 
 def parse_pdf_datetime(raw):
+    if raw.strip() == "":
+      return None
     my_datetime = None
     try:
       my_datetime = datetime.strptime(raw, '%m/%d/%y %H:%M:%S')
@@ -173,7 +184,7 @@ def parse_pdf_datetime(raw):
       return datetime.strftime(my_datetime, '%Y-%m-%d')
     else:
       logging.warn('Could not parse PDF date: %s' % raw)
-      return raw
+      return None
 
 def metadata_from_pdf(pdf_path):
   try:
@@ -182,10 +193,10 @@ def metadata_from_pdf(pdf_path):
     logging.warn("Install pdfinfo to extract metadata! The pdfinfo executable must be in a directory that is in your PATH environment variable.")
     return None
 
-  real_pdf_path = os.path.join(data_dir(), pdf_path)
+  real_pdf_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), pdf_path)))
 
   try:
-    output = subprocess.check_output("pdfinfo \"%s\"" % (real_pdf_path), shell=True)
+    output = subprocess.check_output(["pdfinfo", real_pdf_path], shell=False)
     output = output.decode('utf-8')
   except subprocess.CalledProcessError as exc:
     logging.warn("Error extracting metadata for %s:\n\n%s" % (pdf_path, format_exception(exc)))
@@ -203,7 +214,7 @@ def metadata_from_pdf(pdf_path):
 
   mod_date_match = MOD_DATE_RE.search(output)
   if mod_date_match:
-    metadata['modification_date'] = parse_pdf_datetime(creation_date_match.group(1))
+    metadata['modification_date'] = parse_pdf_datetime(mod_date_match.group(1))
 
   title_match = TITLE_RE.search(output)
   if title_match:
@@ -220,6 +231,13 @@ def metadata_from_pdf(pdf_path):
   if metadata:
     return metadata
   return None
+
+def check_report_url(report_url):
+  res = scraper.request(method='HEAD', url=report_url)
+  if not res.ok:
+    raise Exception("Received bad status code %s for %s" %
+      (res.status_code, report_url)
+    )
 
 def format_exception(exception):
   exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -248,9 +266,7 @@ def json_for(object):
   return json.dumps(object, sort_keys=True, indent=2, default=format_datetime)
 
 def format_datetime(obj):
-  if isinstance(obj, datetime.datetime):
-    return eastern_time_zone.localize(obj.replace(microsecond=0)).isoformat()
-  elif isinstance(obj, datetime.date):
+  if isinstance(obj, datetime.date):
     return obj.isoformat()
   elif isinstance(obj, str):
     return obj

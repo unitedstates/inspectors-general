@@ -119,7 +119,42 @@ You can also **include any other fields** you think worth keeping.
 
 The `report_id` only needs to be unique within that IG, so you can make it up from other fields. It does need to come out the same every time you run the script. In other words, **don't auto-increment a number** -- if the IG doesn't give you a unique ID already, append other fields together into a consistent, unique ID.
 
-Finally, **err towards errors**: have your scraper choke and die on unexpected input. Better to be forced to discover it that way than for incomplete or inaccurate data to be silently saved.
+In some cases, an IG will not give a clear published date for a report. In these cases, we have a few additional options:
+
+* If there are only a couple of reports with missing dates, hardcoding a mapping of report ids to published dates can often work well. See an example [here](https://github.com/unitedstates/inspectors-general/blob/658888d0d50be6429775dc8a92825837d602f836/inspectors/treasury.py#L69-73).
+* For the websites of some agencies, the `Last-Modified` header lists the date when the report was added to the website which can be used as the `published_on` date. This option should not be used without significant spot-checking.
+* If the website just lists the year the report was added, set the `published_on` to  November 1st of that year and also set `"estimated_date": True` in the report dictionary.
+
+If none of these methods work, open an issue on this repo.
+
+Finally, **err towards errors**: have your scraper choke and die on unexpected input. Better to be forced to discover it that way, then for incomplete or inaccurate data to be silently saved.
+
+## Review process
+
+Suggested instructions for people reviewing new scrapers:
+
+* Verify that the scraper is getting every possible and useful category of report.
+* Verify that the scraper is using HTTPS, if it's available.
+* Run the scraper for its full archive but without downloading the reports, using `--dry_run` and `--since`.
+* Review scraped metadata for a representative sample of years and report types to ensure sanity and quality.
+* Keep an eye out for announcements, press releases, and other non-report data.
+
+If the full dry run ran without errors, and the data looks good and complete:
+
+* merge the scraper
+* update the *pending* section of `safe.yml` with a *commented-out* line for the scraper.
+
+**Adding to safe.yml**
+
+The only people who should update `safe.yml` with uncommented lines are those who run servers managing complete synced archives of IG data.
+
+Before adding a scraper to `safe.yml`, it's suggested that you allow a *full* download of the archive to complete (which will also test PDF download and metadata/text extraction code).
+
+**Removing from safe.yml**
+
+If a scraper is throwing **persistent** errors, remove it (comment it out) from `safe.yml` and open a ticket to discuss it.
+
+Ephemeral errors (for example, from connection errors, or other erratically reproducible situations) should be reported as issues first, to be discussed.
 
 ## Public domain
 

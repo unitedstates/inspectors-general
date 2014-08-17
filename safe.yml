@@ -42,6 +42,9 @@
 # Department of Education
 - education
 
+# Equal Opportunity Employment Commission
+- eeoc
+
 # Department of Energy
 - energy
 
@@ -53,6 +56,12 @@
 
 # Federal Communications Commission
 - fcc
+
+# Federal Deposit Insurance Corporation
+- fdic
+
+# Federal Election Commission
+- fec
 
 # Federal Reserve and CFPB
 - fed
@@ -75,20 +84,70 @@
 # Department of Labor
 - labor
 
+# NASA
+- nasa
+
+# National Credit Union Administration
+- ncua
+
+# National Endowment for the Humanities
+- neh
+
+# National Labor Relations Board
+- nlrb
+
+# Nuclear Regulatory Commission
+- nrc
+
+# National Science Foundation
+- nsf
+
 # Office of Personnel Management
 - opm
+
+# Pension Benefit Guaranty Corporation
+- pbgc
+
+# Postal Regulatory Commission
+- prc
+
+# Railroad Retirement Board
+- rrb
 
 # Securities and Exchange Commission
 - sec
 
+# Special Inspector General for Afghanistan Reconstruction
+- sigar
+
+# Special Inspector General for the Troubled Asset Relief Program
+- sigtarp
+
+# Social Security Administration
+- ssa
+
 # Department of State
 - state
+
+# Treasury IG for Tax Administration
+- tigta
 
 # Department of the Treasury
 - treasury
 
+# Tennessee Valley Authority
+- tva
+
+# U.S. Agency for International Development
+- usaid
+
 # US Postal Service
-#- usps
+- usps
 
 # Department of Veterans' Affairs
 - va
+
+
+###
+# Pending review (e.g. a full archive once)
+###
