@@ -64,6 +64,7 @@ def report_from(result, landing_url, year_range):
   try:
     published_on = datetime.datetime.strptime(report_id.strip(), '%m.%d.%y')
   except ValueError:
+    # For reports where we can only find the year, set them to Nov 1st of that year
     published_on_year_text = result.find_previous("th").text
     published_on_year = int(published_on_year_text.replace("Fiscal Year ", ""))
     published_on = datetime.datetime(published_on_year, 11, 1)
