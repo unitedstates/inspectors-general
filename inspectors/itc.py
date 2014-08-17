@@ -14,6 +14,7 @@ from utils import utils, inspector
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
+#   None of the audit reports have dates in the visible metadata!
 #
 
 AUDIT_REPORTS_URL = "http://www.usitc.gov/oig/audit_reports.htm"
