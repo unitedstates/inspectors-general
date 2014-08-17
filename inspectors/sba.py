@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# http://www.sba.gov/ig
+# http://www.sba.gov/office-of-inspector-general
 # Oldest report: 1994
 
 # options:
@@ -136,7 +136,7 @@ def report_from(result, year_range):
 
   report = {
     'inspector': 'sba',
-    'inspector_url': 'http://www.sba.gov/ig',
+    'inspector_url': 'http://www.sba.gov/office-of-inspector-general',
     'agency': 'sba',
     'agency_name': 'Small Business Administration',
     'report_id': report_id,
