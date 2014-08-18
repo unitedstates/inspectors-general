@@ -84,11 +84,17 @@
 # Federal Labor Relations Authority
 - flra
 
+# Federal Maritime Commission
+- fmc
+
 # Federal Trade Commission
 - ftc
 
 # Government Accountability Office
 - gao
+
+# Government Printing Office
+- gpo
 
 # General Services Administration
 - gsa
@@ -101,6 +107,9 @@
 
 # Department of the Interior
 - interior
+
+# International Trade Commission
+- itc
 
 # Department of Labor
 - labor
@@ -182,11 +191,5 @@
 # Pending review (e.g. a full archive once)
 ###
 
-# International Trade Commission
-# - itc
-
-# Federal Maritime Commission
-# - fmc
-
-# Government Printing Office
-# - gpo
+# Peace Corps
+# - peacecorps
