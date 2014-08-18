@@ -159,12 +159,35 @@ def text_from_pdf(pdf_path):
     logging.warn("Text not extracted to %s" % text_path)
     return None
 
-PAGE_RE = re.compile("Pages: +([0-9]+)\r?\n")
-CREATION_DATE_RE = re.compile("CreationDate: +([^\r\n]*)\r?\n")
-MOD_DATE_RE = re.compile("ModDate: +([^\r\n]*)\r?\n")
-TITLE_RE = re.compile("Title: +([^\r\n]*)\r?\n")
-KEYWORDS_RE = re.compile("Keywords: +([^\r\n]*)\r?\n")
-AUTHOR_RE = re.compile("Author: +([^\r\n]*)\r?\n")
+def text_from_doc(doc_path):
+  try:
+    subprocess.Popen(["abiword", "-?"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
+  except FileNotFoundError:
+    logging.warn("Install AbiWord to extract text! The abiword executable must be in a directory that is in your PATH environment variable.")
+    return None
+
+  real_doc_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), doc_path)))
+  text_path = "%s.txt" % os.path.splitext(doc_path)[0]
+  real_text_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), text_path)))
+
+  try:
+    subprocess.check_call(["abiword", real_doc_path, "--to", "txt"], shell=False)
+  except subprocess.CalledProcessError as exc:
+    logging.warn("Error extracting text to %s:\n\n%s" % (text_path, format_exception(exc)))
+    return None
+
+  if os.path.exists(real_text_path):
+    return text_path
+  else:
+    logging.warn("Text not extracted to %s" % text_path)
+    return None
+
+PDF_PAGE_RE = re.compile("Pages: +([0-9]+)\r?\n")
+PDF_CREATION_DATE_RE = re.compile("CreationDate: +([^\r\n]*)\r?\n")
+PDF_MOD_DATE_RE = re.compile("ModDate: +([^\r\n]*)\r?\n")
+PDF_TITLE_RE = re.compile("Title: +([^\r\n]*)\r?\n")
+PDF_KEYWORDS_RE = re.compile("Keywords: +([^\r\n]*)\r?\n")
+PDF_AUTHOR_RE = re.compile("Author: +([^\r\n]*)\r?\n")
 
 def parse_pdf_datetime(raw):
     if raw.strip() == "":
@@ -177,7 +200,7 @@ def parse_pdf_datetime(raw):
         my_datetime = datetime.strptime(raw, '%a %b %d %H:%M:%S %Y')
       except ValueError:
         try:
-          my_datetime = datetime.strptime(raw, '%A, %B %d, %Y %H:%M:%S %p')
+          my_datetime = datetime.strptime(raw, '%A, %B %d, %Y %I:%M:%S %p')
         except ValueError:
           pass
     if my_datetime:
@@ -204,27 +227,27 @@ def metadata_from_pdf(pdf_path):
 
   metadata = {}
 
-  page_match = PAGE_RE.search(output)
+  page_match = PDF_PAGE_RE.search(output)
   if page_match:
     metadata['page_count'] = int(page_match.group(1))
 
-  creation_date_match = CREATION_DATE_RE.search(output)
+  creation_date_match = PDF_CREATION_DATE_RE.search(output)
   if creation_date_match:
     metadata['creation_date'] = parse_pdf_datetime(creation_date_match.group(1))
 
-  mod_date_match = MOD_DATE_RE.search(output)
+  mod_date_match = PDF_MOD_DATE_RE.search(output)
   if mod_date_match:
     metadata['modification_date'] = parse_pdf_datetime(mod_date_match.group(1))
 
-  title_match = TITLE_RE.search(output)
+  title_match = PDF_TITLE_RE.search(output)
   if title_match:
     metadata['title'] = title_match.group(1)
 
-  keywords_match = KEYWORDS_RE.search(output)
+  keywords_match = PDF_KEYWORDS_RE.search(output)
   if keywords_match:
     metadata['keywords'] = keywords_match.group(1)
 
-  author_match = AUTHOR_RE.search(output)
+  author_match = PDF_AUTHOR_RE.search(output)
   if author_match:
     metadata['author'] = author_match.group(1)
 
@@ -238,6 +261,68 @@ def check_report_url(report_url):
     raise Exception("Received bad status code %s for %s" %
       (res.status_code, report_url)
     )
+
+DOC_PAGE_RE = re.compile("Number of Pages: ([0-9]*),")
+DOC_CREATION_DATE_RE = re.compile("Create Time/Date: ([A-Za-z 0-9:]*),")
+DOC_MOD_DATE_RE = re.compile("Last Saved Time/Date: ([A-Za-z 0-9:]*),")
+DOC_TITLE_RE = re.compile("Title: ([^,]*),")
+DOC_AUTHOR_RE = re.compile("Author: ([^,]*),")
+
+def parse_doc_datetime(raw):
+  if raw.strip() == "":
+    return None
+  my_datetime = None
+  try:
+    my_datetime = datetime.strptime(raw, '%a %b %d %H:%M:%S %Y')
+  except ValueError:
+    pass
+  if my_datetime:
+    return datetime.strftime(my_datetime, '%Y-%m-%d')
+  else:
+    logging.warn('Could not parse DOC date: %s' % raw)
+    return None
+
+def metadata_from_doc(doc_path):
+  try:
+    subprocess.Popen(["file", "-v"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
+  except FileNotFoundError:
+    logging.warn("Install file to extract metadata! The file executable must be in a directory that is in your PATH environment variable.")
+    return None
+
+  real_doc_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), doc_path)))
+
+  try:
+    output = subprocess.check_output(["file", real_doc_path], shell=False)
+    output = output.decode('utf-8', errors='replace')
+  except subprocess.CalledProcessError as exc:
+    logging.warn("Error extracting metadata for %s:\n\n%s" % (doc_path, format_exception(exc)))
+    return None
+
+  metadata = {}
+
+  page_match = DOC_PAGE_RE.search(output)
+  if page_match:
+    metadata['page_count'] = int(page_match.group(1))
+
+  creation_date_match = DOC_CREATION_DATE_RE.search(output)
+  if creation_date_match:
+    metadata['creation_date'] = parse_doc_datetime(creation_date_match.group(1))
+
+  mod_date_match = DOC_MOD_DATE_RE.search(output)
+  if mod_date_match:
+    metadata['mod_date'] = parse_doc_datetime(mod_date_match.group(1))
+
+  title_match = DOC_TITLE_RE.search(output)
+  if title_match:
+    metadata['title'] = title_match.group(1)
+
+  author_match = DOC_AUTHOR_RE.search(output)
+  if author_match:
+    metadata['author'] = author_match.group(1)
+
+  if metadata:
+    return metadata
+  return None
 
 def format_exception(exception):
   exc_type, exc_value, exc_traceback = sys.exc_info()
