@@ -19,12 +19,13 @@ from utils import utils, inspector
 
 AUDIT_REPORTS_URL = "http://www.arc.gov/about/OfficeofInspectorGeneralAuditandInspectionReports.asp"
 SEMIANNUAL_REPORTS_URL = "http://www.arc.gov/about/OfficeofinspectorGeneralSemiannualReports.asp"
+PEER_REVIEWS_URL = "http://www.arc.gov/about/OfficeofInspectorGeneralExternalPeerReviewReports.asp"
 
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit reports
-  for url in [AUDIT_REPORTS_URL, SEMIANNUAL_REPORTS_URL]:
+  for url in [AUDIT_REPORTS_URL, SEMIANNUAL_REPORTS_URL, PEER_REVIEWS_URL]:
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("table p > a")
     for result in results:
@@ -34,12 +35,16 @@ def run(options):
 
 def report_from(result, landing_url, year_range):
   report_url = urljoin(landing_url, result.get('href'))
+  report_url = report_url.replace("../", "")
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
   try:
     title = result.parent.find("em").text
   except AttributeError:
-    title = result.parent.contents[0]
+    try:
+      title = result.parent.contents[0].text
+    except AttributeError:
+      title = result.parent.contents[0]
 
   estimated_date = False
   try:
@@ -47,7 +52,10 @@ def report_from(result, landing_url, year_range):
     published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
   except ValueError:
     # For reports where we can only find the year, set them to Nov 1st of that year
-    published_on_year = int(result.find_previous("strong").text.replace("Fiscal Year ", ""))
+    try:
+      published_on_year = int(result.find_previous("strong").text.replace("Fiscal Year ", ""))
+    except AttributeError:
+      published_on_year = int(result.text.split()[-1])
     published_on = datetime.datetime(published_on_year, 11, 1)
     estimated_date = True
 
