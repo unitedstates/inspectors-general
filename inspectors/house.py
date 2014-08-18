@@ -8,13 +8,19 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# http://www.gpo.gov/oig/
-# Oldest report: 2004
+# http://house.gov/content/learn/officers_and_organizations/inspector_general.php
+# Oldest report: FY 2008, published in 2009.
 
 # options:
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
+#
+#   Only Financial Audit reports are published -- it would be excellent to see other reports.
+#   Financial Audit reports are published without any machine-readable publishing date. The
+#     publishing date seems to only exist in the PDF itself, which can only unreliably be
+#     read by a machine. Including the publishing date in the accompanying HTML or PDF filename
+#     would be very helpful.
 #
 
 IG_URL = 'http://house.gov/content/learn/officers_and_organizations/inspector_general.php'
