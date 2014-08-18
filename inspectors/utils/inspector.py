@@ -141,7 +141,7 @@ def validate_report(report):
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])
-  binary = (report['file_type'].lower() in ('pdf', 'doc'))
+  binary = (report['file_type'].lower() in ('pdf', 'doc', 'ppt'))
 
   result = utils.download(
     report['url'],
