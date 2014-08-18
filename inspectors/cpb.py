@@ -8,13 +8,16 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# http://www.gpo.gov/oig/
-# Oldest report: 2004
+# http://www.cpb.org/oig/
+# Oldest report: 2010
 
 # options:
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
+#
+#   Include the "Issued <Month> <Day>, <Year>" text for every report (in the <li> tag)
+#   Standardize the report file names, and include the year, month, and day consistently.
 #
 
 AUDIT_REPORTS_URL = "http://www.cpb.org/oig/reports/"
