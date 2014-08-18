@@ -21,12 +21,13 @@ AUDIT_REPORTS_URL = "https://www.flra.gov/IG_audit-reports"
 INTERNAL_REVIEWS_URL = "https://www.flra.gov/IG_internal-reviews"
 QA_REVIEWS_URL = "https://www.flra.gov/OIG_QA_Reviews"
 SEMIANNUAL_REPORTS_URL = "https://www.flra.gov/IG_semi-annual_reports"
+PEER_REVIEWS_URL = "https://www.flra.gov/OIG-PEER-REVIEW"
 
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the reports
-  for url in [AUDIT_REPORTS_URL, INTERNAL_REVIEWS_URL, QA_REVIEWS_URL, SEMIANNUAL_REPORTS_URL]:
+  for url in [AUDIT_REPORTS_URL, INTERNAL_REVIEWS_URL, QA_REVIEWS_URL, SEMIANNUAL_REPORTS_URL, PEER_REVIEWS_URL]:
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.node ul li")
     for result in results:
