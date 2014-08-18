@@ -24,6 +24,9 @@
 # Amtrak (yes, they are gov't enough to have an IG)
 - amtrak
 
+# Appalachian Regional Commission
+- arc
+
 # National Archives and Records Administration
 - archives
 
@@ -44,6 +47,9 @@
 
 # Department of Transportation
 - dot
+
+# Election Assistance Commission
+- eac
 
 # Department of Education
 - education
@@ -107,6 +113,9 @@
 
 # National Credit Union Administration
 - ncua
+
+# National Endowment for the Arts
+- nea
 
 # National Endowment for the Humanities
 - neh
@@ -175,15 +184,6 @@
 
 # International Trade Commission
 # - itc
-
-# Appalachian Regional Commission
-# - arc
-
-# National Endowment for the Arts
-# - nea
-
-# Election Assistance Commission
-# - eac
 
 # Federal Maritime Commission
 # - fmc

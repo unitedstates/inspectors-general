@@ -23,6 +23,7 @@ HAVA_AUDITS_URL = "http://www.eac.gov/inspector_general/hava_funds_audits.aspx"
 EAC_AUDITS_URL = "http://www.eac.gov/inspector_general/eac_audits_and_evaluations.aspx"
 CONGRESSIONAL_REPORTS_URL = "http://www.eac.gov/inspector_general/congressional_reports.aspx"
 INVESTIGATIONS_URL = "http://www.eac.gov/inspector_general/investigation_reports.aspx"
+PEER_REVIEWS_URL = "http://www.eac.gov/inspector_general/peer_review_reports.aspx"
 
 REPORT_URLS = [
   CONGRESSIONAL_TESTIMONY_URL,
@@ -30,6 +31,7 @@ REPORT_URLS = [
   EAC_AUDITS_URL,
   CONGRESSIONAL_REPORTS_URL,
   INVESTIGATIONS_URL,
+  PEER_REVIEWS_URL,
 ]
 
 def run(options):
