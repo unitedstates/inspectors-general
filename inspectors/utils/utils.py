@@ -73,7 +73,7 @@ def download(url, destination=None, options=None):
       return True
 
     # otherwise, decode it for return
-    with open(destination, 'r') as f:
+    with open(destination, 'r', encoding='utf-8') as f:
       body = f.read()
 
   # otherwise, download from the web
@@ -117,7 +117,7 @@ def text_from_html(html_path):
   text_path = "%s.txt" % os.path.splitext(html_path)[0]
   real_text_path = os.path.join(data_dir(), text_path)
 
-  html = open(real_html_path).read()
+  html = open(real_html_path, encoding='utf-8').read()
   doc = BeautifulSoup(html)
 
   for node in doc.findAll(['script', 'style']):
@@ -340,10 +340,9 @@ def write(content, destination, binary=False):
   mkdir_p(os.path.dirname(destination))
 
   if binary:
-    mode = "bw"
+    f = open(destination, 'bw')
   else:
-    mode = "w"
-  f = open(destination, mode)
+    f = open(destination, 'w', encoding='utf-8')
   f.write(content)
   f.close()
 
