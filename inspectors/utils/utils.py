@@ -171,7 +171,7 @@ def text_from_doc(doc_path):
   real_text_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), text_path)))
 
   try:
-    subprocess.check_call("abiword \"%s\" --to txt" % real_doc_path, shell=False)
+    subprocess.check_call(["abiword", real_doc_path, "--to txt"], shell=False)
   except subprocess.CalledProcessError as exc:
     logging.warn("Error extracting text to %s:\n\n%s" % (text_path, format_exception(exc)))
     return None
@@ -292,7 +292,7 @@ def metadata_from_doc(doc_path):
   real_doc_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), doc_path)))
 
   try:
-    output = subprocess.check_output("file \"%s\"" % (real_doc_path), shell=False)
+    output = subprocess.check_output(["file", real_doc_path], shell=False)
     output = output.decode('utf-8', errors='replace')
   except subprocess.CalledProcessError as exc:
     logging.warn("Error extracting metadata for %s:\n\n%s" % (doc_path, format_exception(exc)))
