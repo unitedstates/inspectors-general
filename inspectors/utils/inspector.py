@@ -141,7 +141,7 @@ def validate_report(report):
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])
-  binary = (report['file_type'].lower() == 'pdf')
+  binary = (report['file_type'].lower() in ('pdf', 'doc'))
 
   result = utils.download(
     report['url'],
@@ -164,6 +164,11 @@ def extract_metadata(report):
     if metadata:
       report['pdf'] = metadata
       return metadata
+  elif file_type_lower == "doc":
+    metadata = utils.metadata_from_doc(report_path)
+    if metadata:
+      report['doc'] = metadata
+      return metadata
   elif file_type_lower in FILE_EXTENSIONS_HTML:
     return None
   else:
@@ -177,6 +182,8 @@ def extract_report(report):
   file_type_lower = report['file_type'].lower()
   if file_type_lower == "pdf":
     return utils.text_from_pdf(report_path)
+  elif file_type_lower == "doc":
+    return utils.text_from_doc(report_path)
   elif file_type_lower in FILE_EXTENSIONS_HTML:
     return utils.text_from_html(report_path)
   else:

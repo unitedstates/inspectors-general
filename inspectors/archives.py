@@ -16,10 +16,11 @@ from utils import utils, inspector
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
-#
+# - List more than the most recent peer review
 
 AUDIT_REPORTS_URL = "http://www.archives.gov/oig/reports/audit-reports-{year}.html"
 SEMIANNUAL_REPORTS_URL = "http://www.archives.gov/oig/reports/semiannual-congressional.html"
+PEER_REVIEWS_URL = "http://www.archives.gov/oig/reports/peer-review-reports.html"
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -43,6 +44,12 @@ def run(options):
     report = semiannual_report_from(result, year_range)
     if report:
       inspector.save_report(report)
+
+  # Pull the Peer Review
+  doc = BeautifulSoup(utils.download(PEER_REVIEWS_URL))
+  result = doc.find("div", id='content').find("a", text=True)
+  report = peer_review_from(result, year_range)
+  inspector.save_report(report)
 
 def report_from(result, landing_url, year, year_range):
   link = result.find("a")
@@ -98,6 +105,33 @@ def semiannual_report_from(result, year_range):
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
+
+  report = {
+    'inspector': 'archives',
+    'inspector_url': 'http://www.archives.gov/oig/',
+    'agency': 'archives',
+    'agency_name': 'National Archives and Records Administration',
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  return report
+
+def peer_review_from(result, year_range):
+  report_url = urljoin(PEER_REVIEWS_URL, result.get('href'))
+  report_filename = report_url.split("/")[-1]
+  report_id, _ = os.path.splitext(report_filename)
+
+  # For reports where we can only find the year, set them to Nov 1st of that year
+  published_on_year = int(report_url.split("/")[-2])
+  published_on = datetime.datetime(published_on_year, 11, 1)
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  title = "Peer Review {}".format(published_on_year)
 
   report = {
     'inspector': 'archives',
