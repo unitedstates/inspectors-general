@@ -2,7 +2,7 @@
 
 A project to collect reports from the [offices of Inspectors General](http://en.wikipedia.org/wiki/Office_of_the_Inspector_General) across the US federal government.
 
-So far we have **over 50** inspector general offices scraped, downloaded, and stable. See our [safe list](safe.yml) for details.
+So far we have **60** inspector general offices scraped, downloaded, and stable. See our [safe list](safe.yml) for details.
 
 **How you can help:**
 
