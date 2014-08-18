@@ -108,6 +108,9 @@
 # Department of the Interior
 - interior
 
+# International Trade Commission
+- itc
+
 # Department of Labor
 - labor
 
@@ -187,9 +190,6 @@
 ###
 # Pending review (e.g. a full archive once)
 ###
-
-# International Trade Commission
-# - itc
 
 # Peace Corps
 # - peacecorps
