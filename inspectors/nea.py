@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -21,6 +22,16 @@ from utils import utils, inspector
 AUDIT_REPORTS_URL = "http://arts.gov/oig/reports/audits"
 SPECIAL_REVIEWS_URL = "http://arts.gov/oig/reports/specials"
 SEMIANNUAL_REPORTS_URL = "http://arts.gov/oig/reports/semi-annual"
+PEER_REVIEWS_URL = "http://arts.gov/oig/reports/external-peer-reviews"
+FISMA_REPORTS_URL = "http://arts.gov/oig/reports/fisma"
+
+REPORT_URLS = [
+  AUDIT_REPORTS_URL,
+  SPECIAL_REVIEWS_URL,
+  SEMIANNUAL_REPORTS_URL,
+  PEER_REVIEWS_URL,
+  FISMA_REPORTS_URL,
+]
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -28,7 +39,7 @@ def run(options):
   only_report_id = options.get('report_id')
 
   # Pull the reports
-  for url in [AUDIT_REPORTS_URL, SPECIAL_REVIEWS_URL, SEMIANNUAL_REPORTS_URL]:
+  for url in REPORT_URLS:
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.field-item li")
     for result in results:
@@ -57,7 +68,10 @@ def report_from(result, landing_url, year_range):
     published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
   except ValueError:
     # For reports where we can only find the year, set them to Nov 1st of that year
-    published_on_year = int(result.find_previous("h3").text.strip())
+    try:
+      published_on_year = int(result.find_previous("h3").text.strip())
+    except AttributeError:
+      published_on_year = int(re.search('(\d+)', title).group())
     published_on = datetime.datetime(published_on_year, 11, 1)
     estimated_date = True
 
