@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import datetime
+import re
 import logging
 from urllib.parse import urljoin
 
@@ -19,39 +20,56 @@ from utils import utils, inspector
 AUDIT_REPORTS_URL = "http://www.cpb.org/oig/reports/"
 SEMIANNUAL_REPORTS_URL = "http://www.cpb.org/oig/"
 
+ISSUED_DATE_EXTRACTION = re.compile('Issued ([A-Z][a-z]+ \d{1,2}, \d{4})')
+
+REPORT_ID_DATE_EXTRACTION = [
+  re.compile('.*(?P<month>\d{2})(?P<day>\d{2})(?P<year_2>\d{2})$'),
+  re.compile('^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})[-_].*$'),
+  re.compile('OIGPeerReview-(?P<year>\d{4})-(?P<month_name>\w+)$')
+]
+
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the reports
   for url in [AUDIT_REPORTS_URL, SEMIANNUAL_REPORTS_URL]:
     doc = BeautifulSoup(utils.download(url))
-    results = doc.select("div#content div#contentMain ul li.pdf a")
+    results = doc.select("div#content div#contentMain ul li.pdf")
     if not results:
       raise AssertionError("No report links found for %s" % url)
     for result in results:
-      if (not result.text.strip()):
-        # Skip header rows
+      if not result.find('a'):
+        # Skip unlinked PDF's
         continue
       report = report_from(result, url, year_range)
       if report:
         inspector.save_report(report)
 
 def report_from(result, landing_url, year_range):
-  title = result.text
-  report_id = result.get('href').split('/')[-1]
-  report_url = urljoin(landing_url, result.get('href'))
-  logging.debug("[%s] Building report...")
+  print("\n\n")
+  print(result)
+  link = result.find('a')
+  print(link)
+  title = link.text
+  report_id = link.get('href').split('/')[-1].rstrip('.pdf')
+  report_url = urljoin(landing_url, link.get('href'))
 
-  if landing_url is AUDIT_REPORTS_URL:
-    fragments = report_id.split('-')
-    date_string = '%s-%s-%s' % (fragments[0], fragments[1], fragments[2])
-    published_on = datetime.datetime.strptime(date_string, '%Y-%m-%d')
+  logging.debug("[%s] Building report..." % report_id)
+  published_on = None
+  issued_on = ISSUED_DATE_EXTRACTION.search(result.text)
+
+  if issued_on:
+    # year = issued_on.group('year')
+    # month = issued_on.group('month')
+    # day = issued_on.group('day')
+    published_on = datetime.datetime.strptime(issued_on.group(1), '%B %d, %Y')
+    print(published_on)
   else:
-    print(report_id)
+    published_on = extract_date_from_report_id(report_id)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
-    return
+    #return
 
   report = {
     'inspector': 'cpb',
@@ -65,6 +83,38 @@ def report_from(result, landing_url, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
     'unreleased': False,
   }
+  print(report)
   return report
+
+def extract_date_from_report_id(report_id):
+  published_on = ''
+
+  for prog in REPORT_ID_DATE_EXTRACTION:
+    match = prog.match(report_id)
+    if match:
+
+      year = ''
+      try:
+        year = '20%s' % match.group('year_2')
+      except IndexError:
+        year = match.group('year')
+
+      month = ''
+      try:
+        month = datetime.datetime.strptime(match.group('month_name'), '%B').strftime('%m')
+      except IndexError:
+        month = match.group('month')
+
+      day = ''
+      try:
+        day = match.group('day')
+      except IndexError:
+        day = '01' # Default to the first of the month.
+
+      date_string = '%s-%s-%s' % (year, month, day)
+      published_on = datetime.datetime.strptime(date_string, '%Y-%m-%d')
+
+  print(published_on)
+  return published_on
 
 utils.run(run) if (__name__ == "__main__") else None
