@@ -20,7 +20,10 @@ So far we have **60** inspector general offices scraped, downloaded, and stable.
 
 **Python 3**: This project uses Python 3, and is tested on Python 3.4.0. If you don't have Python 3 installed, check out [pyenv](https://github.com/yyuu/pyenv) and [pyenv-virtualenvwrapper](https://github.com/yyuu/pyenv-virtualenvwrapper) for easily installing and switching between multiple versions of Python.
 
-**Dependencies**: You'll need to have `pdftotext` installed. On Ubuntu, `apt-get install poppler-utils`. On OS X, install it via MacPorts with `port install poppler`, or via Homebrew with `brew install poppler`.
+**Dependencies**:
+
+* To extract PDFs (the most common type of report), you'll need `pdftotext`. On Ubuntu, `apt-get install poppler-utils`. On OS X, `brew install poppler`.
+* To extract DOCs, you'll need [`abiword`](http://www.abisource.com/), which you can install via `apt-get` or `brew`.
 
 To run an individual IG scraper, just execute its file directly. For example:
 
