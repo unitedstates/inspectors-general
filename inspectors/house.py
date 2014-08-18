@@ -70,6 +70,7 @@ def report_from(result, landing_url, year_range):
     'report_id': report_id,
     'url': report_url,
     'title': title,
+    'estimated_date': True,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
     'unreleased': False,
   }
