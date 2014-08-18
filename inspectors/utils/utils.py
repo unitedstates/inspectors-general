@@ -73,35 +73,45 @@ def download(url, destination=None, options=None):
       return True
 
     # otherwise, decode it for return
-    with open(destination, 'r') as f:
+    with open(destination, 'r', encoding='utf-8') as f:
       body = f.read()
 
   # otherwise, download from the web
   else:
-    try:
-      logging.info("## Downloading: %s" % url)
-      if destination: logging.info("## \tto: %s" % destination)
-      response = scraper.urlopen(url)
-    except scrapelib.HTTPError as e:
-      # intentionally print instead of using logging,
-      # so that all 404s get printed at the end of the log
-      print("Error downloading %s:\n\n%s" % (url, format_exception(e)))
-      return None
-
+    logging.info("## Downloading: %s" % url)
     if binary:
-      body = response.bytes
-      if isinstance(body, str): raise ValueError("Binary content improperly decoded.")
-    else:
+      if destination:
+        logging.info("## \tto: %s" % destination)
+      else:
+        raise Exception("A destination path is required for downloading a binary file")
+      try:
+        mkdir_p(os.path.dirname(destination))
+        scraper.urlretrieve(url, destination)
+      except scrapelib.HTTPError as e:
+        # intentionally print instead of using logging,
+        # so that all 404s get printed at the end of the log
+        print("Error downloading %s:\n\n%s" % (url, format_exception(e)))
+        return None
+    else: # text
+      try:
+        if destination: logging.info("## \tto: %s" % destination)
+        response = scraper.urlopen(url)
+      except scrapelib.HTTPError as e:
+        # intentionally print instead of using logging,
+        # so that all 404s get printed at the end of the log
+        print("Error downloading %s:\n\n%s" % (url, format_exception(e)))
+        return None
+
       body = response
       if not isinstance(body, str): raise ValueError("Content not decoded.")
 
-    # don't allow 0-byte files
-    if (not body) or (not body.strip()):
-      return None
+      # don't allow 0-byte files
+      if (not body) or (not body.strip()):
+        return None
 
-    # cache content to disk
-    if destination:
-      write(body, destination, binary=binary)
+      # cache content to disk
+      if destination:
+        write(body, destination, binary=binary)
 
   # don't return binary content
   if binary:
@@ -117,7 +127,7 @@ def text_from_html(html_path):
   text_path = "%s.txt" % os.path.splitext(html_path)[0]
   real_text_path = os.path.join(data_dir(), text_path)
 
-  html = open(real_html_path).read()
+  html = open(real_html_path, encoding='utf-8').read()
   doc = BeautifulSoup(html)
 
   for node in doc.findAll(['script', 'style']):
@@ -340,10 +350,9 @@ def write(content, destination, binary=False):
   mkdir_p(os.path.dirname(destination))
 
   if binary:
-    mode = "bw"
+    f = open(destination, 'bw')
   else:
-    mode = "w"
-  f = open(destination, mode)
+    f = open(destination, 'w', encoding='utf-8')
   f.write(content)
   f.close()
 
