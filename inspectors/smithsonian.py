@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -37,24 +38,32 @@ def run(options):
   year_range = inspector.year_range(options)
 
   # # Pull the RSS feed
-  # doc = BeautifulSoup(utils.download(RSS_URL))
-  # results = doc.select("item")
-  # for result in results:
-  #   report = rss_report_from(result, year_range)
-  #   if report:
-  #     inspector.save_report(report)
+  doc = BeautifulSoup(utils.download(RSS_URL))
+  results = doc.select("item")
+  for result in results:
+    report = rss_report_from(result, year_range)
+    if report:
+      inspector.save_report(report)
 
   # # Pull the recent audit reports.
-  # doc = BeautifulSoup(utils.download(RECENT_AUDITS_URL))
-  # results = doc.select("div.block > a")
-  # for result in results:
-  #   report = audit_report_from(result, year_range)
-  #   if report:
-  #     inspector.save_report(report)
+  doc = BeautifulSoup(utils.download(RECENT_AUDITS_URL))
+  results = doc.select("div.block > a")
+  for result in results:
+    report = audit_report_from(result, year_range)
+    if report:
+      inspector.save_report(report)
 
   # Pull the archive audit reports
   doc = BeautifulSoup(utils.download(AUDIT_ARCHIVE_URL))
   results = doc.select("div.block a")
+  for result in results:
+    report = audit_report_from(result, year_range)
+    if report:
+      inspector.save_report(report)
+
+  # Pull the other reports
+  doc = BeautifulSoup(utils.download(OTHER_REPORTS_URl))
+  results = doc.select("div.block > a")
   for result in results:
     report = audit_report_from(result, year_range)
     if report:
@@ -116,9 +125,9 @@ def audit_report_from(result, year_range):
   title = result.text
 
   try:
-    published_on_text = title.split(" Issued ")[-1]
-    published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
-  except ValueError:
+    published_on_text = "/".join(re.search('(\w+) (\d+), (\d+)', title).groups())
+    published_on = datetime.datetime.strptime(published_on_text, '%B/%d/%Y')
+  except AttributeError:
     # For reports where we can only find the year, set them to Nov 1st of that year
     published_on_year = int(result.find_previous("h2").text)
     published_on = datetime.datetime(published_on_year, 11, 1)
