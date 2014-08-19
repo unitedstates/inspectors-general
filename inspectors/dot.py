@@ -7,7 +7,7 @@ import logging
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# http://www.oig.dot.gov/
+# https://www.oig.dot.gov/
 # oldest year: 1996
 
 #
@@ -32,12 +32,12 @@ from utils import utils, inspector
 #   - Read https://github.com/unitedstates/inspectors-general/pull/50 for more details.
 
 TOPIC_TO_URL = {
-  "A": "http://www.oig.dot.gov/audits",
-  "IN": "http://www.oig.dot.gov/investigations",
-  "T": "http://www.oig.dot.gov/testimony",
-  "C": "http://www.oig.dot.gov/correspondence",
-  "R": "http://www.oig.dot.gov/recovery",
-  "SA": "http://www.oig.dot.gov/semiannual-reports",
+  "A": "https://www.oig.dot.gov/audits",
+  "IN": "https://www.oig.dot.gov/investigations",
+  "T": "https://www.oig.dot.gov/testimony",
+  "C": "https://www.oig.dot.gov/correspondence",
+  "R": "https://www.oig.dot.gov/recovery",
+  "SA": "https://www.oig.dot.gov/semiannual-reports",
 }
 
 TYPES_WITHOUT_REPORTS = [
@@ -55,10 +55,10 @@ UNRELEASED_REPORT_IDS = [
 ]
 
 LANDING_URLS_TO_REPORT_LINKS = {
-  "http://www.oig.dot.gov/library-item/5235": "http://www.osc.gov/FY2010/Scanned/10-07%20DI-08-2225/DI-08-2225%20Agency%20Report%20Part%201%20(Revised).PDF",
+  "https://www.oig.dot.gov/library-item/5235": "http://www.osc.gov/FY2010/Scanned/10-07%20DI-08-2225/DI-08-2225%20Agency%20Report%20Part%201%20(Revised).PDF",
 }
 
-BASE_REPORT_PAGE_URL = BASE_REPORT_URL = "http://www.oig.dot.gov/"
+BASE_REPORT_PAGE_URL = BASE_REPORT_URL = "https://www.oig.dot.gov/"
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -149,7 +149,7 @@ def report_from(result, year_range, topic):
 
   # Some investigations provide a report link, but they are just links to other
   # sites. Mark these as unreleased.
-  # Ex. http://www.oig.dot.gov/library-item/5085
+  # Ex. https://www.oig.dot.gov/library-item/5085
   if report_url:
     report_extension = os.path.splitext(os.path.basename(report_url))[1]
     if report_type == 'Investigations' and not report_extension:
