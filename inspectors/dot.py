@@ -55,7 +55,7 @@ UNRELEASED_REPORT_IDS = [
 ]
 
 LANDING_URLS_TO_REPORT_LINKS = {
-  "https://www.oig.dot.gov/library-item/5235": "http://www.osc.gov/FY2010/Scanned/10-07%20DI-08-2225/DI-08-2225%20Agency%20Report%20Part%201%20(Revised).PDF",
+  "https://www.oig.dot.gov/library-item/5235": "https://www.osc.gov/FY2010/Scanned/10-07%20DI-08-2225/DI-08-2225%20Agency%20Report%20Part%201%20(Revised).PDF",
 }
 
 BASE_REPORT_PAGE_URL = BASE_REPORT_URL = "https://www.oig.dot.gov/"
