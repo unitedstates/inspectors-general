@@ -29,19 +29,38 @@ from utils import utils, inspector
 # consistent report ids across pages.
 
 RSS_URL = "http://www.si.edu/Content/OIG/Misc/OIG-RSS.xml"
+RECENT_AUDITS_URL = "http://www.si.edu/OIG/Audits"
+AUDIT_ARCHIVE_URL = "http://www.si.edu/oig/Archive"
+OTHER_REPORTS_URl = "http://www.si.edu/OIG/ReportsToCongress"
 
 def run(options):
   year_range = inspector.year_range(options)
 
-  # Pull the RSS feed
-  doc = BeautifulSoup(utils.download(RSS_URL))
-  results = doc.select("item")
+  # # Pull the RSS feed
+  # doc = BeautifulSoup(utils.download(RSS_URL))
+  # results = doc.select("item")
+  # for result in results:
+  #   report = rss_report_from(result, year_range)
+  #   if report:
+  #     inspector.save_report(report)
+
+  # # Pull the recent audit reports.
+  # doc = BeautifulSoup(utils.download(RECENT_AUDITS_URL))
+  # results = doc.select("div.block > a")
+  # for result in results:
+  #   report = audit_report_from(result, year_range)
+  #   if report:
+  #     inspector.save_report(report)
+
+  # Pull the archive audit reports
+  doc = BeautifulSoup(utils.download(AUDIT_ARCHIVE_URL))
+  results = doc.select("div.block a")
   for result in results:
-    report = report_from(result, year_range)
+    report = audit_report_from(result, year_range)
     if report:
       inspector.save_report(report)
 
-def report_from(result, year_range):
+def rss_report_from(result, year_range):
   report_url = result.find("link").next_sibling.strip()
   if report_url.rstrip("/") == 'http://www.si.edu/oig':
     # This is the default url the IG uses for announcements of things like
@@ -74,6 +93,52 @@ def report_from(result, year_range):
   }
   if file_type:
     report['file_type'] = file_type
+  return report
+
+def audit_report_from(result, year_range):
+  report_url = urljoin(RECENT_AUDITS_URL, result.get('href'))
+  # Strip extra path adjustments
+  report_url = report_url.replace("../", "")
+
+  summary = None
+  if not report_url.endswith(".pdf"):
+    # Some reports link to other page which link to the full report
+    report_page = BeautifulSoup(utils.download(report_url))
+    relative_report_url = report_page.select("div.block a")[0].get('href')
+    report_url = urljoin(report_url, relative_report_url)
+    # Strip extra path adjustments
+    report_url = report_url.replace("../", "")
+
+    summary = "\n".join(paragraph.text for paragraph in report_page.select("div.grid_12 p"))
+
+  report_filename = report_url.split("/")[-1]
+  report_id, _ = os.path.splitext(report_filename)
+  title = result.text
+
+  try:
+    published_on_text = title.split(" Issued ")[-1]
+    published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+  except ValueError:
+    # For reports where we can only find the year, set them to Nov 1st of that year
+    published_on_year = int(result.find_previous("h2").text)
+    published_on = datetime.datetime(published_on_year, 11, 1)
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  report = {
+    'inspector': 'smithsonian',
+    'inspector_url': 'http://www.si.edu/OIG',
+    'agency': 'smithsonian',
+    'agency_name': 'Smithsonian Institution',
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  if summary:
+    report['summary'] = summary
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
