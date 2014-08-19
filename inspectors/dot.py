@@ -42,7 +42,8 @@ TOPIC_TO_URL = {
 
 TYPES_WITHOUT_REPORTS = [
   'New Audit Announcements',
-  'Testimony'
+  'Testimony',
+  'Press Release'
 ]
 
 UNRELEASED_REPORT_TYPES = [
