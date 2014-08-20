@@ -27,12 +27,15 @@ from utils import utils, inspector
 # published.
 #
 # Since a report can be listed on multiple pages, it is important to use
-# consistent report ids across pages.
+# consistent report ids across pages. We only grab reports the first time a
+# a given report id is seen.
 
 RSS_URL = "http://www.si.edu/Content/OIG/Misc/OIG-RSS.xml"
 RECENT_AUDITS_URL = "http://www.si.edu/OIG/Audits"
 AUDIT_ARCHIVE_URL = "http://www.si.edu/oig/Archive"
 OTHER_REPORTS_URl = "http://www.si.edu/OIG/ReportsToCongress"
+
+report_ids_seen = set()
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -82,6 +85,11 @@ def rss_report_from(result, year_range):
 
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
+
+  if report_id in report_ids_seen:
+    return
+  report_ids_seen.add(report_id)
+
   title = result.find("title").text
   published_on_text = result.find("pubdate").text
   published_on = datetime.datetime.strptime(published_on_text, '%a, %d %b %Y %H:%M:%S %z').date()
@@ -122,6 +130,11 @@ def audit_report_from(result, year_range):
 
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
+
+  if report_id in report_ids_seen:
+    return
+  report_ids_seen.add(report_id)
+
   title = result.text
 
   try:
