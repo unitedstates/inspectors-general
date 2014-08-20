@@ -29,7 +29,7 @@ REPORTS_URL = "http://www.cftc.gov/About/OfficeoftheInspectorGeneral/index.htm"
 def run(options):
   year_range = inspector.year_range(options)
 
-  # Pull the reports
+  # Pull the audit reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))
   results = doc.select("ul.text > ul > li")
   for result in results:
