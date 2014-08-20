@@ -80,6 +80,11 @@ def run(options):
 
 def report_from(result, year_range, title_prefix=None):
   report_url = urljoin(REPORTS_URL, result.select("a")[-1].get("href"))
+
+  # Temporary hack to account for link mistake
+  if report_url == "http://www.fec.gov/fecig/documents/Semi14a_000.pdf":
+    report_url = "http://www.fec.gov/fecig/documents/Semi14a.pdf"
+
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
 

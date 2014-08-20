@@ -7,7 +7,7 @@ import logging
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# http://www.oig.dot.gov/
+# https://www.oig.dot.gov/
 # oldest year: 1996
 
 #
@@ -32,16 +32,18 @@ from utils import utils, inspector
 #   - Read https://github.com/unitedstates/inspectors-general/pull/50 for more details.
 
 TOPIC_TO_URL = {
-  "A": "http://www.oig.dot.gov/audits",
-  "IN": "http://www.oig.dot.gov/investigations",
-  "T": "http://www.oig.dot.gov/testimony",
-  "C": "http://www.oig.dot.gov/correspondence",
-  "R": "http://www.oig.dot.gov/recovery",
-  "SA": "http://www.oig.dot.gov/semiannual-reports",
+  "A": "https://www.oig.dot.gov/audits",
+  "IN": "https://www.oig.dot.gov/investigations",
+  "T": "https://www.oig.dot.gov/testimony",
+  "C": "https://www.oig.dot.gov/correspondence",
+  "R": "https://www.oig.dot.gov/recovery",
+  "SA": "https://www.oig.dot.gov/semiannual-reports",
 }
 
 TYPES_WITHOUT_REPORTS = [
   'New Audit Announcements',
+  'Testimony',
+  'Press Release'
 ]
 
 UNRELEASED_REPORT_TYPES = [
@@ -55,10 +57,10 @@ UNRELEASED_REPORT_IDS = [
 ]
 
 LANDING_URLS_TO_REPORT_LINKS = {
-  "http://www.oig.dot.gov/library-item/5235": "http://www.osc.gov/FY2010/Scanned/10-07%20DI-08-2225/DI-08-2225%20Agency%20Report%20Part%201%20(Revised).PDF",
+  "https://www.oig.dot.gov/library-item/5235": "https://www.osc.gov/FY2010/Scanned/10-07%20DI-08-2225/DI-08-2225%20Agency%20Report%20Part%201%20(Revised).PDF",
 }
 
-BASE_REPORT_PAGE_URL = BASE_REPORT_URL = "http://www.oig.dot.gov/"
+BASE_REPORT_PAGE_URL = BASE_REPORT_URL = "https://www.oig.dot.gov/"
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -75,10 +77,10 @@ def run(options):
       body = utils.download(year_url)
 
       doc = BeautifulSoup(body)
-      results = doc.select(".item-list ul li")
+      results = doc.select(".view-business-areas .views-row")
 
       for result in results:
-        report = report_from(result, year_range, topic)
+        report = report_from(result, year_range, topic, options)
         if report:
           inspector.save_report(report)
 
@@ -86,12 +88,20 @@ def urls_for(year_range, topic):
   topic_url = TOPIC_TO_URL[topic]
   return ["%s?date_filter[value][year]=%s" % (topic_url, year) for year in year_range]
 
-def report_from(result, year_range, topic):
+def report_from(result, year_range, topic, options):
   published_date_text = result.select('.date-display-single')[0].text
   published_on = datetime.datetime.strptime(published_date_text, "%m.%d.%Y")
 
   landing_url_link = result.select('a')[0]
   landing_url_relative = landing_url_link['href']
+
+  # scan to see if we're limiting to a single report_id in dev
+  initial_report_id = landing_url_relative.split("/")[-1]
+  only_report_id = options.get('report_id')
+  if only_report_id and (initial_report_id != only_report_id):
+    logging.debug("[%s] Skipping, not the requested report" % initial_report_id)
+    return
+
   title = landing_url_link.text
   landing_url = urljoin(BASE_REPORT_PAGE_URL, landing_url_relative)
 
@@ -105,51 +115,43 @@ def report_from(result, year_range, topic):
 
   report_page_body = utils.download(landing_url)
   report_page = BeautifulSoup(report_page_body)
-  summary = report_page.select(".summary-body")[0].text.strip()
 
-  report_type = report_page.select("#content-wrapper div h2")[0].text
+  # take an expansive view of the 'summary' -
+  #   landing page title, and any paragraphs with summary text
+  summary = report_page.select(".node-library-item")[0].text.strip()
 
-  try:
-    report_id = report_page.select("div.project-id")[0].text
-    report_id = report_id.replace("Project ID: ", "")  # Strip out the text
-  except IndexError:
-    report_id = None
+  # the text from the last link in the breadcrumb
+  crumbs = report_page.select("nav.breadcrumb ol li")
+  if len(crumbs) == 1:
+    report_type = "Press Release"
+  else:
+    report_type = report_page.select("nav.breadcrumb ol li")[1].select("a")[0].text
+
+  # should always work?
+  report_id = landing_url.split("/")[-1]
 
   unreleased = False
   try:
     report_url = urljoin(BASE_REPORT_URL, report_page.select(".download-pdf a")[0]['href'])
-  except IndexError:
-    try:
-      report_url = urljoin(BASE_REPORT_URL, report_page.select("div.item-link a")[0]['href'])
-    except IndexError as exc:
-      if report_type in TYPES_WITHOUT_REPORTS:
-        # Some types just don't have reports(Announcements), ignore them
-        return
-      elif (
-          'For Official Use Only' in summary
-          or report_type in UNRELEASED_REPORT_TYPES
-          or report_id in UNRELEASED_REPORT_IDS
-        ):
-        unreleased = True
-        report_url = None
-        if not report_id:
-          report_id = landing_url.split("/")[-1]
-      elif landing_url in LANDING_URLS_TO_REPORT_LINKS:
-        report_url = LANDING_URLS_TO_REPORT_LINKS[landing_url]
-      else:
-        raise exc
-
-  # Try to pull the filename for a report_id
-  if not report_id:
-    report_id = os.path.splitext(os.path.basename(report_url))[0]
-
-  # Fall back to using the id from the landing_url
-  if not report_id:
-    report_id = landing_url.split("/")[-1]
+  except IndexError as exc:
+    if report_type in TYPES_WITHOUT_REPORTS:
+      # Some types just don't have reports(Announcements), ignore them
+      return
+    elif (
+        'For Official Use Only' in summary
+        or report_type in UNRELEASED_REPORT_TYPES
+        or report_id in UNRELEASED_REPORT_IDS
+      ):
+      unreleased = True
+      report_url = None
+    elif landing_url in LANDING_URLS_TO_REPORT_LINKS:
+      report_url = LANDING_URLS_TO_REPORT_LINKS[landing_url]
+    else:
+      raise exc
 
   # Some investigations provide a report link, but they are just links to other
   # sites. Mark these as unreleased.
-  # Ex. http://www.oig.dot.gov/library-item/5085
+  # Ex. https://www.oig.dot.gov/library-item/5085
   if report_url:
     report_extension = os.path.splitext(os.path.basename(report_url))[1]
     if report_type == 'Investigations' and not report_extension:
