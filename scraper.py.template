@@ -25,7 +25,7 @@ from utils import utils, inspector
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
-# Add ny notes to pass on to the IG's web team, about how they can make their
+# Add any notes to pass on to the IG's web team, about how they can make their
 # website better and more reliable.
 
 REPORTS_URL = <reports_url>
