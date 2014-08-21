@@ -40,7 +40,31 @@ REPORT_PUBLISHED_MAPPING = {
   "Village Resume Project": datetime.datetime(2012, 2, 9), # OCR
   "Selected Contacting Authority Issues": datetime.datetime(2012, 3, 19), # OCR
   "Training event in 2009": datetime.datetime(2012, 6, 10), # OCR
-  "Emerging energy technology fund": datetime.datetime(2013, 4, 11) # OCR
+  "Emerging energy technology fund": datetime.datetime(2013, 4, 11), # OCR
+
+  "FY 2013, Second Half": datetime.datetime(2013, 10, 1), # OCR
+  "FY 2013, First Half": datetime.datetime(2013, 5, 1), # img
+  "FY 2012, Second Half": datetime.datetime(2012, 11, 1), # img
+  "FY 2012, First Half": datetime.datetime(2012, 5, 1), # OCR
+  "FY 2011, Second Half": datetime.datetime(2011, 11, 1), # img
+  "FY 2011, First Half": datetime.datetime(2011, 5, 1), # OCR
+  "FY 2010, Second Half": datetime.datetime(2010, 12, 1), # img
+  "FY 2009, Second Half & FY 2010, First Half": datetime.datetime(2010, 6, 1), # img
+  "FY 2009, First Half": datetime.datetime(2009, 5, 1), # img
+  "FY 2008, Second Half": datetime.datetime(2008, 11, 1), # img
+  "FY 2008, First Half": datetime.datetime(2008, 5, 1), # img
+  "FY 2007, Second Half": datetime.datetime(2007, 11, 1), # img
+  "FY 2007, First Half": datetime.datetime(2007, 5, 1), # img
+
+  "IG-PAR-2012": datetime.datetime(2012, 11, 1), # OCR
+  "IG-PAR-2011": datetime.datetime(2012, 1, 11), # OCR
+  "IG-PAR-2010": datetime.datetime(2011, 1, 11), # img
+  "IG-PAR-2007": datetime.datetime(2007, 11, 15), # img
+
+  # Other report types are not tracked -
+  #  The GAO comptroller decisions requested by IG are done by GAO
+  #  The Audits of agency's financial statements have excerpts by the IG,
+  #    that appear to already be present in the reports above.
 }
 
 def run(options):
