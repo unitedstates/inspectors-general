@@ -126,6 +126,7 @@ def peer_review_from(result, year_range):
   # For reports where we can only find the year, set them to Nov 1st of that year
   published_on_year = int(report_url.split("/")[-2])
   published_on = datetime.datetime(published_on_year, 11, 1)
+  estimated_date = True
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -139,6 +140,7 @@ def peer_review_from(result, year_range):
     'agency': 'archives',
     'agency_name': 'National Archives and Records Administration',
     'report_id': report_id,
+    'estimated_date': estimated_date,
     'url': report_url,
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),

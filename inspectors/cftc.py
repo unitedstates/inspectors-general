@@ -56,6 +56,7 @@ def report_from(result, year_range):
 
   title = link.text
 
+  estimated_date = False
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
   else:
@@ -70,6 +71,7 @@ def report_from(result, year_range):
         # For reports where we can only find the year, set them to Nov 1st of that year
         published_on_year = int(re.search('(\d+)', title).groups()[0])
         published_on = datetime.datetime(published_on_year, 11, 1)
+        estimated_date = True
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -86,7 +88,8 @@ def report_from(result, year_range):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
-
+  if estimated_date:
+    report['estimate_date'] = estimated_date
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
