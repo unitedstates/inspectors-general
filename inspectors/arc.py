@@ -21,19 +21,25 @@ AUDIT_REPORTS_URL = "http://www.arc.gov/about/OfficeofInspectorGeneralAuditandIn
 SEMIANNUAL_REPORTS_URL = "http://www.arc.gov/about/OfficeofinspectorGeneralSemiannualReports.asp"
 PEER_REVIEWS_URL = "http://www.arc.gov/about/OfficeofInspectorGeneralExternalPeerReviewReports.asp"
 
+REPORT_TYPES = {
+  "audit": AUDIT_REPORTS_URL,
+  "semiannual_report": SEMIANNUAL_REPORTS_URL,
+  "peer_review": PEER_REVIEWS_URL,
+}
+
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit reports
-  for url in [AUDIT_REPORTS_URL, SEMIANNUAL_REPORTS_URL, PEER_REVIEWS_URL]:
+  for report_type, url in REPORT_TYPES.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("table p > a")
     for result in results:
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   report_url = urljoin(landing_url, result.get('href'))
   report_url = report_url.replace("../", "")
   report_filename = report_url.split("/")[-1]
@@ -71,6 +77,7 @@ def report_from(result, landing_url, year_range):
     'report_id': report_id,
     'url': report_url,
     'title': title,
+    'type': report_type,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   if estimated_date:
