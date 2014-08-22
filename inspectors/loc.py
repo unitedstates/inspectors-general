@@ -2,7 +2,6 @@
 
 import datetime
 import logging
-import os
 from urllib.parse import urljoin
 import re
 
@@ -146,7 +145,7 @@ class LibraryOfCongressScraper(object):
         published_on = self.date_from_string_or_die(
           published_text, report_url, fallback=text)
 
-      report_id = generate_id(title, published_on)      
+      report_id = generate_id(title, published_on)
       report = self.report_from(report_id, report_url, title, published_on)
       if report:
         if unreleased:
@@ -181,7 +180,7 @@ class LibraryOfCongressScraper(object):
       if ',' in md.group(0):
         return datetime.datetime.strptime(md.group(0), '%B %d, %Y')
       else:
-        return datetime.datetime.strptime(md.group(0), '%B %d %Y')        
+        return datetime.datetime.strptime(md.group(0), '%B %d %Y')
 
     # Ridiculous recursion to avoid exception handling in the top level.
     if fallback:
