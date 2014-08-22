@@ -40,11 +40,23 @@ def run(options):
   # Pull the semiannual reports
   results = doc.select("ul.text td a")
   for result in results:
-    report = report_from(result, year_range)
+    report = report_from(result, year_range, report_type="semiannual_report")
     if report:
       inspector.save_report(report)
 
-def report_from(result, year_range):
+def extract_report_type(text):
+  if 'Peer Review' in text:
+    return "peer_review"
+  elif 'Audit' in text:
+    return "audit"
+  elif 'Investigation' in text:
+    return 'investigation'
+  elif 'Inspection' in text:
+    return "inspection"
+  elif 'Management Challenges' in text:
+    return "management_challenges"
+
+def report_from(result, year_range, report_type=None):
   if result.name == 'a':
     link = result
   else:
@@ -77,6 +89,13 @@ def report_from(result, year_range):
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
+  if not report_type:
+    report_type = extract_report_type(title)
+  if not report_type:
+    report_type = extract_report_type(result.find_previous("p").text)
+  if not report_type:
+    report_type = "other"
+
   report = {
     'inspector': 'cftc',
     'inspector_url': 'http://www.cftc.gov/About/OfficeoftheInspectorGeneral/index.htm',
@@ -86,6 +105,7 @@ def report_from(result, year_range):
     'report_id': report_id,
     'url': report_url,
     'title': title,
+    'type': report_type,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   if estimated_date:
