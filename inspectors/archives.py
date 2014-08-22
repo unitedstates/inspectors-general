@@ -33,7 +33,7 @@ def run(options):
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div#content li")
     for result in results:
-      report = report_from(result, url, year, year_range)
+      report = audit_report_from(result, url, year, year_range)
       if report:
         inspector.save_report(report)
 
@@ -51,7 +51,7 @@ def run(options):
   report = peer_review_from(result, year_range)
   inspector.save_report(report)
 
-def report_from(result, landing_url, year, year_range):
+def audit_report_from(result, landing_url, year, year_range):
   link = result.find("a")
 
   report_url = urljoin(landing_url, link.get('href'))
@@ -87,6 +87,7 @@ def report_from(result, landing_url, year, year_range):
     'report_id': report_id,
     'url': report_url,
     'title': title,
+    'type': 'audit',
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   if estimated_date:
@@ -114,6 +115,7 @@ def semiannual_report_from(result, year_range):
     'report_id': report_id,
     'url': report_url,
     'title': title,
+    'type': 'semiannual_report',
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
@@ -143,6 +145,7 @@ def peer_review_from(result, year_range):
     'estimated_date': estimated_date,
     'url': report_url,
     'title': title,
+    'type': 'peer_review',
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
