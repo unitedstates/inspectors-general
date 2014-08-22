@@ -35,12 +35,12 @@ TOPIC_TO_URL_SLUG = {
   "AI": 'Audits-Initiated',
   "T": 'Testimony',
 }
-TOPIC_NAMES = {
-  "A": "Audits and Evaluations",
-  "I": "Investigations",
-  "C": "Correspondence",
-  "AI": "Audits Initiated",
-  "T": "Testimony",
+TYPE_MAP = {
+  "A": "audit",
+  "I": "investigation",
+  "C": "congress",
+  "AI": "audit",
+  "T": "testimony",
 }
 BASE_TOPIC_URL = "http://www.oig.doc.gov/Pages/{}.aspx"
 
@@ -74,7 +74,7 @@ def url_for(year_range):
 def report_from(result, topic, topic_url, year_range):
   published_on_text = result.select("div.row-date")[0].text
   published_on = datetime.datetime.strptime(published_on_text, '%m.%d.%Y')
-  topic_name = TOPIC_NAMES[topic]
+  report_type = TYPE_MAP[topic]
 
   title = result.select("div.row-title")[0].text
 
@@ -128,7 +128,7 @@ def report_from(result, topic, topic_url, year_range):
     'agency': 'commerce',
     'agency_name': 'Department of Commerce',
     'report_id': report_id,
-    'topic': topic_name,
+    'type': report_type,
     'url': report_url,
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
