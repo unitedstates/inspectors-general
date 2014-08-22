@@ -47,13 +47,13 @@ TYPES_WITHOUT_REPORTS = [
 ]
 
 UNRELEASED_REPORT_TYPES = [
-  'Investigations',
   'Audit Reports',
+  'Correspondence',
+  'Investigations',
 ]
 
 UNRELEASED_REPORT_IDS = [
-  "CC-2000-290",
-  "AV-2009-066"
+  "30277"
 ]
 
 LANDING_URLS_TO_REPORT_LINKS = {
