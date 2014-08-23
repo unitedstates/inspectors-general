@@ -35,7 +35,7 @@ def run(options):
       if not index or not result.text.strip():
         # Skip the header row and any empty rows
         continue
-      report = report_from(result, url, year_range)
+      report = audit_report_from(result, url, year_range)
       if report:
         inspector.save_report(report)
 
@@ -47,7 +47,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def audit_report_from(result, landing_url, year_range):
   report_id = result.select("td")[0].text
   title = result.select("td")[1].text
 
@@ -82,6 +82,7 @@ def report_from(result, landing_url, year_range):
     'inspector_url': 'http://oig.nasa.gov',
     'agency': 'nasa',
     'agency_name': 'National Aeronautics and Space Administration',
+    'type': 'audit',
     'landing_url': landing_url,
     'report_id': report_id,
     'url': report_url,
@@ -112,6 +113,7 @@ def other_report_from(result, year_range):
     'inspector_url': 'http://oig.nasa.gov',
     'agency': 'nasa',
     'agency_name': 'National Aeronautics and Space Administration',
+    'type': 'other',
     'report_id': report_id,
     'url': report_url,
     'title': title,
