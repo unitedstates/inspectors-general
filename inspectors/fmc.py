@@ -50,7 +50,7 @@ def run(options):
     if not index:
       # Skip the header row
       continue
-    report = report_from(result, AUDIT_REPORTS_URL, year_range)
+    report = report_from(result, AUDIT_REPORTS_URL, report_type='audit', year_range=year_range)
     if report:
       inspector.save_report(report)
 
@@ -69,7 +69,7 @@ def run(options):
       if not index:
         # Skip the header row
         continue
-      report = report_from(result, AUDIT_REPORTS_URL, year_range)
+      report = report_from(result, AUDIT_REPORTS_URL, report_type='audit', year_range=year_range)
       if report:
         inspector.save_report(report)
 
@@ -77,11 +77,11 @@ def run(options):
   doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.select("div.col-2-2 p a") + doc.select("div.col-2-2 li a")
   for result in results:
-    report = report_from(result.parent, AUDIT_REPORTS_URL, year_range)
+    report = report_from(result.parent, AUDIT_REPORTS_URL, report_type='semiannual_report', year_range=year_range)
     if report:
       inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   link = result.find("a")
   report_url = urljoin(landing_url, link.get('href'))
   title = link.text
@@ -121,6 +121,7 @@ def report_from(result, landing_url, year_range):
     'inspector_url': 'http://www.fmc.gov/bureaus_offices/office_of_inspector_general.aspx',
     'agency': 'fmc',
     'agency_name': 'Federal Maritime Commission',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
