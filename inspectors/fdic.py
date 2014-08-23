@@ -36,6 +36,24 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+def type_for_report(text):
+  if text == 'audit report':
+    return 'audit'
+  elif text == 'Semiannual Report to the Congress':
+    return 'semiannual_report'
+  elif 'Peer Review' in text:
+    return 'peer_review'
+  elif text in ['evaluation report', 'MLR', 'IR', 'In-Depth Review']:  # Material loss review
+    return 'inspection'
+  elif text == 'testimony':
+    return 'testimony'
+  elif 'Management and Performance Challenges' in text:
+    return 'performance'
+  elif 'press' in text:
+    return 'press'
+  else:
+    return "other"
+
 def report_from(result, year_range):
   title = result.find("em").text.strip()
   landing_url = REPORTS_URL
@@ -64,6 +82,9 @@ def report_from(result, year_range):
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
+  report_type_text = result.select("td")[0].text
+  report_type = type_for_report(report_type_text)
+
   missing = False
   if report_url == GENERIC_MISSING_REPORT_URL:
     missing = True
@@ -75,6 +96,7 @@ def report_from(result, year_range):
     'inspector_url': "http://www.fdicoig.gov",
     'agency': "fdic",
     'agency_name': "Federal Deposit Insurance Corporation",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
