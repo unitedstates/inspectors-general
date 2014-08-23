@@ -76,7 +76,6 @@ def type_from_report_type_text(report_type_text):
     # and try to do some smarter parsing.
     return 'investigation'
   else:
-    import pdb;pdb.set_trace()
     return 'other'
 
 def report_from(report_row, year_range):
