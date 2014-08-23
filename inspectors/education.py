@@ -33,7 +33,13 @@ CONGRESSIONAL_TESTIMONY_URL = "https://www2.ed.gov/about/offices/list/oig/testim
 SPECIAL_REPORTS_URL = "https://www2.ed.gov/about/offices/list/oig/specialreportstocongress.html"
 OTHER_REPORTS_URL = "https://www2.ed.gov/about/offices/list/oig/otheroigproducts.html"
 
-OTHER_REPORTS_URL = [OTHER_REPORTS_URL, SPECIAL_REPORTS_URL, CONGRESSIONAL_TESTIMONY_URL, INVESTIGATIVE_REPORTS_URL, INSPECTION_REPORTS_URL]
+OTHER_REPORTS_URL = {
+  "other": OTHER_REPORTS_URL,
+  "other": SPECIAL_REPORTS_URL,
+  "testimony": CONGRESSIONAL_TESTIMONY_URL,
+  "investigation": INVESTIGATIVE_REPORTS_URL,
+  "inspection": INSPECTION_REPORTS_URL,
+}
 
 REPORT_PUBLISHED_MAP = {
   "statelocal032002": datetime.datetime(2002, 3, 21),
@@ -87,11 +93,11 @@ def run(options):
       inspector.save_report(report)
 
   # Get other reports
-  for url in OTHER_REPORTS_URL:
+  for report_type, url in OTHER_REPORTS_URL.items():
     doc = beautifulsoup_from_url(url)
     results = doc.select("div.contentText ul li")
     for result in results:
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, report_type, year_range)
       if report:
         # optional: filter to a single report
         if report_id and (report_id != report['report_id']):
@@ -136,6 +142,7 @@ def audit_report_from(result, page_url, year_range):
     'inspector_url': 'https://www2.ed.gov/about/offices/list/oig/',
     'agency': 'education',
     'agency_name': "Department of Education",
+    'type': 'audit',
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -172,6 +179,7 @@ def semiannual_report_from(result, page_url, year_range):
     'inspector_url': 'https://www2.ed.gov/about/offices/list/oig/',
     'agency': 'education',
     'agency_name': "Department of Education",
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -179,7 +187,7 @@ def semiannual_report_from(result, page_url, year_range):
   }
   return report
 
-def report_from(result, url, year_range):
+def report_from(result, url, report_type, year_range):
   report_url = urljoin(url, result.select("a")[0].get('href'))
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
@@ -211,6 +219,7 @@ def report_from(result, url, year_range):
     'inspector_url': 'https://www2.ed.gov/about/offices/list/oig/',
     'agency': 'education',
     'agency_name': "Department of Education",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
