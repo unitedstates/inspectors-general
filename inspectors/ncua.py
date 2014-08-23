@@ -35,7 +35,7 @@ def run(options):
       if not index:
         # Skip the header row
         continue
-      report = report_from(result, year_range)
+      report = report_from(result, report_type='audit', year_range=year_range)
       if report:
         inspector.save_report(report)
 
@@ -46,7 +46,7 @@ def run(options):
     if not index:
       # Skip the header row
       continue
-    report = report_from(result, year_range)
+    report = report_from(result, report_type='other', year_range=year_range)
     if report:
       inspector.save_report(report)
 
@@ -62,7 +62,7 @@ def clean_text(text):
   # This character is not technically whitespace so we have to manually replace it
   return text.replace("\u200b", " ").strip()
 
-def report_from(result, year_range):
+def report_from(result, report_type, year_range):
   link = result.find("a")
   report_id = clean_text("-".join(link.text.replace("/", "-").replace("'", "").split()))
   report_url = urljoin(AUDIT_REPORTS_URL, link.get('href'))
@@ -84,6 +84,7 @@ def report_from(result, year_range):
     'inspector_url': "http://www.ncua.gov/about/Leadership/Pages/page_oig.aspx",
     'agency': "ncua",
     'agency_name': "National Credit Union Administration",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -116,6 +117,7 @@ def semiannual_report_from(result, year_range):
     'inspector_url': "http://www.ncua.gov/about/Leadership/Pages/page_oig.aspx",
     'agency': "ncua",
     'agency_name': "National Credit Union Administration",
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'title': title,
