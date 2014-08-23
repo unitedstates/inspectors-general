@@ -55,7 +55,7 @@ def run(options):
   results = audit_list1 + audit_list2
 
   for result in results:
-    report = report_from(result, year_range)
+    report = report_from(result, year_range, report_type='audit')
     if report:
       inspector.save_report(report)
 
@@ -64,7 +64,7 @@ def run(options):
   results = inspections_header.find_next("ul").select("li")
 
   for result in results:
-    report = report_from(result, year_range)
+    report = report_from(result, year_range, report_type='inspection')
     if report:
       inspector.save_report(report)
 
@@ -73,12 +73,12 @@ def run(options):
   results = semiannual_header.find_next("ul").select("li")
 
   for result in results:
-    report = report_from(result, year_range, title_prefix="Semiannual Report - ")
+    report = report_from(result, year_range, report_type='semiannual_report', title_prefix="Semiannual Report - ")
     if report:
       inspector.save_report(report)
 
 
-def report_from(result, year_range, title_prefix=None):
+def report_from(result, year_range, report_type, title_prefix=None):
   report_url = urljoin(REPORTS_URL, result.select("a")[-1].get("href"))
 
   # Temporary hack to account for link mistake
@@ -136,6 +136,7 @@ def report_from(result, year_range, title_prefix=None):
     'inspector_url': "http://www.fec.gov/fecig/fecig.shtml",
     'agency': "fec",
     'agency_name': "Federal Election Commission",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
