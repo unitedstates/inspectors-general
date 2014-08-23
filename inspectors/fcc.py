@@ -20,21 +20,27 @@ AUDIT_REPORTS_URL = "http://transition.fcc.gov/oig/oigreportsaudit.html"
 SEMIANNUAL_REPORTS_URL = "http://transition.fcc.gov/oig/oigreportssemiannual.html"
 OTHER_REPORTS_URL = "http://transition.fcc.gov/oig/oigreportsletters.html"
 
+REPORT_URLS = {
+  "audit": AUDIT_REPORTS_URL,
+  "semiannual_report": SEMIANNUAL_REPORTS_URL,
+  "other": OTHER_REPORTS_URL,
+}
+
 def run(options):
   year_range = inspector.year_range(options)
 
-  for url in [AUDIT_REPORTS_URL, SEMIANNUAL_REPORTS_URL, OTHER_REPORTS_URL]:
+  for report_type, url in REPORT_URLS.items():
     doc = beautifulsoup_from_url(url)
     results = doc.find_all("table", {"border": 2})[0].select("tr")
     for index, result in enumerate(results):
       if index < 2:
         # The first two rows are headers
         continue
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
 
-def report_from(result, page_url, year_range):
+def report_from(result, page_url, report_type, year_range):
   if not result.text.strip():
     # Nothing in the entire row, just an empty row
     return
@@ -66,6 +72,7 @@ def report_from(result, page_url, year_range):
     'inspector_url': 'http://fcc.gov/oig/',
     'agency': 'fcc',
     'agency_name': "Federal Communications Commission",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
