@@ -24,11 +24,16 @@ HEADER_TITLES = [
   'Date',
 ]
 
+REPORT_URLS = {
+  "audit": AUDIT_REPORTS_URL,
+  "semiannual_report": SEMIANNUAL_REPORTS_URL,
+}
+
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the reports
-  for url in [AUDIT_REPORTS_URL, SEMIANNUAL_REPORTS_URL]:
+  for report_type, url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.section1 div.ltext > table tr")
     if not results:
@@ -43,11 +48,11 @@ def run(options):
         ):
         # Skip header rows
         continue
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   title = result.select("td")[-1].text
 
   if "contains sensitive information" in title:
@@ -80,6 +85,7 @@ def report_from(result, landing_url, year_range):
     'agency': 'gpo',
     'agency_name': 'Government Printing Office',
     'file_type': 'pdf',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
