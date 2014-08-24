@@ -55,7 +55,7 @@ def run(options):
       if not index:
         # Skip the header row
         continue
-      report = report_from(result, url, year_range)
+      report = audit_report_from(result, url, year_range)
       if report:
         inspector.save_report(report)
 
@@ -82,7 +82,7 @@ def run(options):
       if report:
         inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def audit_report_from(result, landing_url, year_range):
   title = " ".join(result.contents[1].text.split())
 
   unreleased = False
@@ -125,6 +125,7 @@ def report_from(result, landing_url, year_range):
     'inspector_url': 'http://www.nrc.gov/insp-gen.html',
     'agency': 'nrc',
     'agency_name': 'Nuclear Regulatory Commission',
+    'type': 'audit',
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -181,6 +182,7 @@ def semiannual_report_from(result, year_range):
     'inspector_url': 'http://www.nrc.gov/insp-gen.html',
     'agency': 'nrc',
     'agency_name': 'Nuclear Regulatory Commission',
+    'type': 'semiannual_report',
     'landing_url': landing_url,
     'report_id': report_id,
     'url': report_url,
@@ -213,6 +215,7 @@ def other_report_from(result, year_range):
     'inspector_url': 'http://www.nrc.gov/insp-gen.html',
     'agency': 'nrc',
     'agency_name': 'Nuclear Regulatory Commission',
+    'type': 'other',
     'report_id': report_id,
     'url': report_url,
     'title': title,
