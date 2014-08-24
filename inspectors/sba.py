@@ -69,12 +69,39 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+def report_type_from_text(text):
+  if text == 'Press Releases':
+    return 'press'
+  elif text == 'Congressional Testimony':
+    return 'testimony'
+  elif text == 'Top Management Challenges':
+    return 'management_challenges'
+  elif text == 'Semi-Annual Reports to Congress':
+    return 'semiannual_report'
+  elif any(type_text in text for type_text in [
+    'Recent Investigative & Audit Actions',
+    "Business Loans and Lender Oversight",
+    "Disaster Loans",
+    "Surety Bonds",
+    "SBICs",
+    "Government Contracting and Business Development",
+    "Entrepreneurial Development",
+    "Agency Management",
+    "External Quality Control Reviews of the OIG",
+  ]):
+    return 'audit'
+  else:
+    return 'other'
+
 def report_from(result, year_range):
   published_on_text = result.select("td")[0].text.strip()
   try:
     published_on = datetime.datetime.strptime(published_on_text, '%Y-%m-%d')
   except ValueError:
     published_on = None
+
+  report_type_text = result.select("td")[3].text.strip()
+  report_type = report_type_from_text(report_type_text)
 
   if published_on and published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % published_on_text)
@@ -83,6 +110,7 @@ def report_from(result, year_range):
   title = result.select("td")[2].text.strip()
   title_prefixer = re.compile("(Audit|Report)\\s*(Number|Report)\\s*[\\d\\-]+:\\s*", re.I)
   title = title_prefixer.sub("", title)
+
   landing_url = urljoin(BASE_REPORT_URL, result.find("a").get('href'))
 
   landing_body = utils.download(landing_url)
@@ -141,6 +169,7 @@ def report_from(result, year_range):
     'inspector_url': 'http://www.sba.gov/office-of-inspector-general',
     'agency': 'sba',
     'agency_name': 'Small Business Administration',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
