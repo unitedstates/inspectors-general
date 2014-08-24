@@ -54,11 +54,23 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+def type_from_title(title):
+  if 'Semiannual Report' in title:
+    return 'semiannual_report'
+  elif 'Audit' in title:
+    return 'audit'
+  elif 'Inspection' in title:
+    return 'inspection'
+  else:
+    return 'other'
+
 def report_from(result, year_range):
   published_on_text = result.select("td")[0].text.strip()
   published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
 
   title = result.select("td")[1].text
+
+  report_type = type_from_title(title)
 
   report_link = result.find("a")
   report_url = urljoin(REPORTS_URL, report_link.get('href'))
@@ -74,6 +86,7 @@ def report_from(result, year_range):
     'inspector_url': "http://www.prc.gov/prc-pages/about/offices/office.aspx?office=oig",
     'agency': "prc",
     'agency_name': "Postal Regulatory Commission",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
