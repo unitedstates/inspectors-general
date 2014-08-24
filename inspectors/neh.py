@@ -27,7 +27,7 @@ def run(options):
   doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
   results = doc.select("table.views-table tr")
   for result in results:
-    report = report_from(result, year_range)
+    report = audit_report_from(result, year_range)
     if report:
       inspector.save_report(report)
 
@@ -39,7 +39,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
-def report_from(result, year_range):
+def audit_report_from(result, year_range):
   if result.parent.name == 'thead':
     # If we are a header row, skip
     return
@@ -74,6 +74,7 @@ def report_from(result, year_range):
     'inspector_url': "http://www.neh.gov/about/oig",
     'agency': "neh",
     'agency_name': "National Endowment for the Humanities",
+    'type': 'audit',
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -110,6 +111,7 @@ def semiannual_report_from(result, year_range):
     'inspector_url': "http://www.neh.gov/about/oig",
     'agency': "neh",
     'agency_name': "National Endowment for the Humanities",
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'title': title,

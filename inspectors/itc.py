@@ -21,19 +21,25 @@ AUDIT_REPORTS_URL = "http://www.usitc.gov/oig/audit_reports.htm"
 SEMIANNUAL_REPORTS_URL = "http://www.usitc.gov/oig/semiannual_reports.htm"
 PEER_REVIEWS_URL = "http://www.usitc.gov/oig/peer_reviews.htm"
 
+REPORT_URLS = {
+  "audit": AUDIT_REPORTS_URL,
+  "semiannual_report": SEMIANNUAL_REPORTS_URL,
+  "peer_review": PEER_REVIEWS_URL,
+}
+
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit reports
-  for url in [AUDIT_REPORTS_URL, SEMIANNUAL_REPORTS_URL, PEER_REVIEWS_URL]:
+  for report_type, url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.text1 ul li")
     for result in results:
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   link = result.find("a", text=True)
   report_url = urljoin(landing_url, link.get('href'))
   report_id = "-".join(link.text.split())
@@ -62,6 +68,7 @@ def report_from(result, landing_url, year_range):
     'inspector_url': 'http://www.usitc.gov/oig/',
     'agency': 'itc',
     'agency_name': 'International Trade Commission',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
