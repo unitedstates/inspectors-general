@@ -17,15 +17,11 @@ from utils import utils, inspector
 #
 
 REPORTS_URLS = [
-  # ('http://www.cncsoig.gov/news/semi-annual-reports', 'semiannual_report'),
+  ('http://www.cncsoig.gov/news/semi-annual-reports', 'semiannual_report'),
   ('http://www.cncsoig.gov/news/audit-reports', 'audit'),
-
-  # "Latest" investigations
   ('http://www.cncsoig.gov/operations/investigations', 'investigation'),
-  # "Closed" investigations
+  ('http://www.cncsoig.gov/news/archive', 'investigation'),
   ('http://www.cncsoig.gov/news/closed-cases', 'case'),
-  # "Archived" investigations
-  ('http://www.cncsoig.gov/news/archive', 'investigation')
 ]
 
 # some hardcoded fields for a single peer review
@@ -127,6 +123,22 @@ def report_from(result, reports_page, report_type, year_range):
     report_url = result.select(".cell3 a")[0]['href']
     report_url = urljoin(reports_page, report_url)
     report_id = os.path.splitext(report_url.split("/")[-1])[0]
+
+  elif report_type == "semiannual_report":
+    report_url = result.select(".cell4 a")[0]['href']
+    report_url = urljoin(reports_page, report_url)
+    report_id = os.path.splitext(report_url.split("/")[-1])[0]
+
+    stamps = result.select(".cell2")[0].text.strip().split()
+    # the agency can mess up the date order
+    if stamps[2] == "09.30.2013":
+      stamp = stamps[0]
+    else:
+      stamp = stamps[2]
+    published_on = datetime.datetime.strptime(stamp, "%m.%d.%Y")
+
+    title = str.join(" ", stamps)
+
 
   elif report_type == "case":
     report_type = "investigation"
