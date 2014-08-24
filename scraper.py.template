@@ -46,6 +46,7 @@ def run(options):
 def report_from(result, year_range):
   report_id = <report_id>
   report_url = <report_url>
+  report_type = <report_type>
   title = <title>
   published_on = <published_on>
 
@@ -61,6 +62,7 @@ def report_from(result, year_range):
     'report_id': report_id,  # A string usable as an ID for the report.
     'url': report_url,  # The url of the report
     'title': title,  #  Title of report.
+    'type': report_type, # Type of report (default to 'other')
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),  # Date of publication
   }
 
