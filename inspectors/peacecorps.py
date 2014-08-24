@@ -32,6 +32,15 @@ REPORT_PUBLISHED_MAPPING = {
   "PC_Ecuador_Special_Review_IG1005SR": datetime.datetime(2010, 9, 1),
 }
 
+REPORT_TYPE_MAP = {
+  'Advisories': 'press',
+  'Annual and Strategic Plans': 'other',
+  'Semiannual Reports to Congress': 'semiannual_report',
+  'Special Reports and Reviews': 'other',
+  'Audit Reports': 'audit',
+  'Program Evaluation Reports': 'evaluation',
+}
+
 def run(options):
   year_range = inspector.year_range(options)
 
@@ -50,8 +59,10 @@ def report_from(result, year_range):
   report_id, _ = os.path.splitext(report_filename)
   title = link.text
 
-  section_title = result.find_previous("h3").text.strip()
+  topic_text = result.find_previous("h2").text.strip()
+  report_type = REPORT_TYPE_MAP.get(topic_text, 'other')
 
+  section_title = result.find_previous("h3").text.strip()
   estimated_date = False
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
@@ -74,6 +85,7 @@ def report_from(result, year_range):
     'inspector_url': 'http://www.peacecorps.gov/about/inspgen/',
     'agency': 'peacecorps',
     'agency_name': 'Peace Corps',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
