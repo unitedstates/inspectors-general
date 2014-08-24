@@ -28,12 +28,12 @@ SEMIANNUAL_REPORTS_URL = "http://oig.ssa.gov/newsroom/semiannual-reports?page={p
 CONGRESSIONAL_TESTIMONY_URL = "http://oig.ssa.gov/newsroom/congressional-testimony?page={page}"
 PERFORMANCE_REPORTS_URL = "http://oig.ssa.gov/newsroom/performance-reports?page={page}"
 
-OTHER_REPORT_URLS = [
-  INVESTIGATIONS_REPORT_URL,
-  SEMIANNUAL_REPORTS_URL,
-  CONGRESSIONAL_TESTIMONY_URL,
-  PERFORMANCE_REPORTS_URL,
-]
+OTHER_REPORT_URLS = {
+  "investigation": INVESTIGATIONS_REPORT_URL,
+  "semiannual_report": SEMIANNUAL_REPORTS_URL,
+  "testimony": CONGRESSIONAL_TESTIMONY_URL,
+  "performance": PERFORMANCE_REPORTS_URL,
+}
 
 BASE_REPORT_URL = "http://oig.ssa.gov/"
 
@@ -42,19 +42,20 @@ def run(options):
 
   # Pull the audit reports
   for year in year_range:
+    report_type = 'audit'
     for page in range(0, ALL_PAGES):
-      reports_found = reports_from_page(AUDIT_REPORTS_URL, page, year_range, year)
+      reports_found = reports_from_page(AUDIT_REPORTS_URL, page, report_type, year_range, year)
       if not reports_found:
         break
 
   # Pull the other reports
-  for report_format in OTHER_REPORT_URLS:
+  for report_type, report_format in OTHER_REPORT_URLS.items():
     for page in range(0, ALL_PAGES):
-      reports_found = reports_from_page(report_format, page, year_range)
+      reports_found = reports_from_page(report_format, page, report_type, year_range)
       if not reports_found:
         break
 
-def reports_from_page(url_format, page, year_range, year=''):
+def reports_from_page(url_format, page, report_type, year_range, year=''):
   url = url_format.format(page=page, year=year)
   doc = BeautifulSoup(utils.download(url))
   results = doc.select("td.views-field")
@@ -67,12 +68,12 @@ def reports_from_page(url_format, page, year_range, year=''):
     if not result.text.strip():
       # Skip empty rows
       continue
-    report = report_from(result, year_range)
+    report = report_from(result, report_type, year_range)
     if report:
       inspector.save_report(report)
   return True
 
-def report_from(result, year_range):
+def report_from(result, report_type, year_range):
   landing_page_link = result.find("a")
   title = landing_page_link.text.strip()
   landing_url = urljoin(BASE_REPORT_URL, landing_page_link.get('href'))
@@ -122,6 +123,7 @@ def report_from(result, year_range):
     'inspector_url': "http://oig.ssa.gov",
     'agency': "ssa",
     'agency_name': "Social Security Administration",
+    'type': report_type,
     'landing_url': landing_url,
     'report_id': report_id,
     'url': report_url,
