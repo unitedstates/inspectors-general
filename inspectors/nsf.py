@@ -44,6 +44,9 @@ def run(options):
   doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
   results = doc.select("td.text table tr")
   for result in results:
+    # ignore divider lines
+    if result.select("img"): continue
+
     report = report_from(result, year_range)
     if report:
       inspector.save_report(report)
@@ -85,13 +88,13 @@ def run(options):
 def report_from(result, year_range):
   link = result.find("a")
 
-  report_url = urljoin(AUDIT_REPORTS_URL, link.get('href'))
+  report_url = urljoin(AUDIT_REPORTS_URL, link['href'])
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
 
   title = " ".join(link.parent.text.split())
 
-  last_column_node = result.select("td.tabletext")[-1]
+  last_column_node = result.select("td.tabletext2")[-1]
   if last_column_node.text.strip():
 
     published_on_text, *report_id_text = last_column_node.stripped_strings
@@ -124,7 +127,7 @@ def report_from(result, year_range):
 def case_report_from(result, landing_url, year_range):
   link = result.find("a")
 
-  report_url = urljoin(CASE_REPORTS_URL, link.get('href'))
+  report_url = urljoin(CASE_REPORTS_URL, link.get['href'])
   report_id = link.text
   title = result.contents[5].text
 
@@ -149,7 +152,7 @@ def case_report_from(result, landing_url, year_range):
 
 def semiannual_report_from(result, year_range):
   link = result.find("a")
-  report_url = link.get('href')
+  report_url = link['href']
 
   if not report_url.endswith(".pdf") and not report_url.endswith(".txt"):
     landing_url = report_url
@@ -163,11 +166,11 @@ def semiannual_report_from(result, year_range):
     report_link_text = landing_page.find(text=REPORT_LINK_TEXT)
     report_link = report_link_text.parent
     if report_link.get('href'):
-      relative_report_url = report_link.get('href')
+      relative_report_url = report_link['href']
     elif report_link.findChild("a"):
-      relative_report_url = report_link.findChild("a").get('href')
+      relative_report_url = report_link.findChild("a")['href']
     elif report_link.findParent("a"):
-      relative_report_url = report_link.findParent("a").get('href')
+      relative_report_url = report_link.findParent("a")['href']
     report_url = urljoin(landing_url, relative_report_url)
 
   report_filename = report_url.split("/")[-1]
