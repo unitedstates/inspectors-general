@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+
+import datetime
+import logging
+import os
+from urllib.parse import urljoin
+
+from bs4 import BeautifulSoup
+from utils import utils, inspector
+
+# Copy this file into inspectors, and rename it to [inspector].py,
+# where [inspector] is an unclaimed handle for an IG office,
+#   e.g. "usps.py" for the USPS OIG.
+# Use this handle for the 'inspector' field on report dicts.
+
+# This script's "run" function will be run.
+# You can do anything you want that eventually results in calling:
+#
+#   inspector.save_report(report)
+
+# <oig_url>
+# Oldest report: <oldest_report_year>
+
+# options:
+#   standard since/year options for a year range to fetch from.
+#
+# Notes for IG's web team:
+# Add ny notes to pass on to the IG's web team, about how they can make their
+# website better and more reliable.
+
+REPORTS_URL = <reports_url>
+
+def run(options):
+  year_range = inspector.year_range(options)
+
+  # Pull the reports
+  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  results = doc.select("some-selector")
+  for result in results:
+    report = report_from(result, year_range)
+    if report:
+      inspector.save_report(report)
+
+# suggested: a function that gets report details from a parent element,
+# extract a dict of details that are ready for inspector.save_report().
+def report_from(result, year_range):
+  report_id = <report_id>
+  report_url = <report_url>
+  title = <title>
+  published_on = <published_on>
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  report = {
+    'inspector': <inspector_slug>,  # The handle you chose for the IG. e.g. "usps"
+    'inspector_url': <inspector_url>,  # The IG's primary website URL.
+    'agency': <agency_slug>,  # The handle of the agency the report relates to. This can be the same value as inspector, but it may differ -- some IGs monitor multiple agencies.
+    'agency_name': <agency_name>,  # The full text name of an agency, e.g. "United States Postal Service"
+    'report_id': report_id,  # A string usable as an ID for the report.
+    'url': report_url,  # The url of the report
+    'title': title,  #  Title of report.
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),  # Date of publication
+  }
+
+  return report
+
+utils.run(run) if (__name__ == "__main__") else None
