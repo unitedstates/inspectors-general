@@ -27,6 +27,11 @@ SEMIANNUAL_REPORTS_URL = "http://fhfaoig.gov/Reports/Semiannual"
 # There are 4 pages of audits as of 2014-08-14, so let's go with 100.
 ALL_PAGES = 100
 
+OTHER_REPORT_URLS = {
+  "management_challenges": MANAGEMENT_ALERTS_URL,
+  "testimony": CONGRESSIONAL_TESTIMONY_URL,
+  "semiannual_report": SEMIANNUAL_REPORTS_URL,
+}
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -41,22 +46,22 @@ def run(options):
       break
 
     for result in results:
-      report = report_from(result, year_range)
+      report = report_from(result, year_range, report_type='audit')
       if report:
         inspector.save_report(report)
 
   # Grab the other reports
-  for url in [MANAGEMENT_ALERTS_URL, CONGRESSIONAL_TESTIMONY_URL, SEMIANNUAL_REPORTS_URL]:
+  for report_type, url in OTHER_REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select(".views-field")
     if not results:
       results = doc.select(".views-row")
     for result in results:
-      report = report_from(result, year_range)
+      report = report_from(result, year_range, report_type)
       if report:
         inspector.save_report(report)
 
-def report_from(result, year_range):
+def report_from(result, year_range, report_type):
   link = result.find("a")
 
   report_url = link.get('href')
@@ -80,6 +85,7 @@ def report_from(result, year_range):
     'inspector_url': 'http://fhfaoig.gov',
     'agency': 'fhfa',
     'agency_name': "Federal Housing Financing Agency",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,

@@ -34,11 +34,16 @@ REPORT_ID_DATE_EXTRACTION = [
   re.compile('^Strategic-Plan-(?P<year>\d{4})-\d{4}$'),
 ]
 
+REPORT_TYPE_MAP = {
+  "audit": AUDIT_REPORTS_URL,
+  "semiannual_report": SEMIANNUAL_REPORTS_URL
+}
+
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the reports
-  for url in [AUDIT_REPORTS_URL, SEMIANNUAL_REPORTS_URL]:
+  for report_type, url in REPORT_TYPE_MAP.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div#content div#contentMain ul li.pdf")
     if not results:
@@ -47,11 +52,11 @@ def run(options):
       if not result.find('a'):
         # Skip unlinked PDF's
         continue
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   link = result.find('a')
 
   report_id = link.get('href').split('/')[-1].rstrip('.pdf')
@@ -79,6 +84,7 @@ def report_from(result, landing_url, year_range):
     'agency': 'cpb',
     'agency_name': 'Corporation for Public Broadcasting',
     'file_type': 'pdf',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,

@@ -34,6 +34,21 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+def report_type_from_title(title):
+  if 'Audit' in title or 'Follow-Up Review' in title:
+    return 'audit'
+  elif 'Inspection' in title:
+    return 'inspection'
+  elif 'Semiannual Report' in title:
+    return 'semiannual_report'
+  elif 'Peer Review' in title:
+    return 'peer_review'
+  elif 'Federal Information Security Management' in title:
+    return 'fisma'
+  else:
+    return 'other'
+  import pdb;pdb.set_trace()
+
 def report_from(result, year_range):
   link = result.find("a")
   report_url = urljoin(REPORTS_URL, link.get('href'))
@@ -58,11 +73,14 @@ def report_from(result, year_range):
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
+  report_type = report_type_from_title(title)
+
   report = {
     'inspector': 'cpsc',
     'inspector_url': 'https://www.cpsc.gov/en/about-cpsc/inspector-general/',
     'agency': 'cpsc',
     'agency_name': 'Consumer Product Safety Commission',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,

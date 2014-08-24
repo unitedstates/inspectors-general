@@ -25,6 +25,12 @@ AGENCY_BASE_URL = "http://www.usda.gov/oig/"
 TESTIMONIES_URL = "http://www.usda.gov/oig/rptsigtranscripts.htm"
 INVESTIGATION_URLS = "http://www.usda.gov/oig/newinv.htm"
 
+OTHER_REPORT_TYPES = {
+  "investigation": INVESTIGATION_URLS,
+  "semiannual_report": SEMIANNUAL_REPORTS_URL,
+  "testimony": TESTIMONIES_URL,
+}
+
 AGENCY_URLS = {
   "AARC": "rptsauditsaarc.htm",
   "AMS": "rptsauditsams.htm",
@@ -116,19 +122,20 @@ def run(options):
     doc = beautifulsoup_from_url(agency_url)
     results = doc.select("ul li")
     for result in results:
-      report = report_from(result, agency_url, year_range, agency_slug)
+      report = report_from(result, agency_url, year_range,
+        report_type='audit', agency_slug=agency_slug)
       if report:
         inspector.save_report(report)
 
-  for url in [INVESTIGATION_URLS, SEMIANNUAL_REPORTS_URL, TESTIMONIES_URL]:
+  for report_type, url in OTHER_REPORT_TYPES.items():
     doc = beautifulsoup_from_url(url)
     results = doc.select("ul li")
     for result in results:
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, year_range, report_type=report_type)
       if report:
         inspector.save_report(report)
 
-def report_from(result, page_url, year_range, agency_slug="agriculture"):
+def report_from(result, page_url, year_range, report_type, agency_slug="agriculture"):
   try:
     # Try to find the link with text first. Sometimes there are hidden links
     # (no text) that we want to ignore.
@@ -176,6 +183,7 @@ def report_from(result, page_url, year_range, agency_slug="agriculture"):
     'report_id': report_id,
     'url': report_url,
     'title': title,
+    'type': report_type,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report

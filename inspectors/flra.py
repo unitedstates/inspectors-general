@@ -23,19 +23,27 @@ QA_REVIEWS_URL = "https://www.flra.gov/OIG_QA_Reviews"
 SEMIANNUAL_REPORTS_URL = "https://www.flra.gov/IG_semi-annual_reports"
 PEER_REVIEWS_URL = "https://www.flra.gov/OIG-PEER-REVIEW"
 
+REPORT_URLS = {
+  "audit": AUDIT_REPORTS_URL,
+  "inspection": INTERNAL_REVIEWS_URL,
+  "inspection": QA_REVIEWS_URL,
+  "semiannual_report": SEMIANNUAL_REPORTS_URL,
+  "peer_review": PEER_REVIEWS_URL,
+}
+
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the reports
-  for url in [AUDIT_REPORTS_URL, INTERNAL_REVIEWS_URL, QA_REVIEWS_URL, SEMIANNUAL_REPORTS_URL, PEER_REVIEWS_URL]:
+  for report_type, url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.node ul li")
     for result in results:
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   title = result.text.strip()
 
   if 'Non-Public Report' in title:
@@ -70,6 +78,7 @@ def report_from(result, landing_url, year_range):
     'agency': 'flra',
     'agency_name': 'Federal Labor Relations Authority',
     'file_type': 'pdf',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
