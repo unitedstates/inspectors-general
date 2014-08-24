@@ -46,6 +46,15 @@ TOPIC_TO_URL = {
 }
 BASE_REPORT_URL = "https://www.sec.gov"
 
+TOPIC_TO_REPORT_TYPE = {
+  'ISSUED_REPORTS': 'audit',
+  'INVESTIGATIVE_REPORTS': 'investigation',
+  'INVESTIGATIVE_MEMORANDA': 'investigation',
+  'SEMIANNUAL_REPORTS': 'semiannual_report',
+  'TESTIMONY': 'testimony',
+  'OTHER': 'other',
+}
+
 # Some reports have bugs such that it is hard to find the published time.
 # Hardcode these for now.
 REPORT_URL_TO_PUBLISHED_DATETIMES = {
@@ -107,6 +116,7 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]
   title = report_link.text.strip()
+  report_type = TOPIC_TO_REPORT_TYPE[topic]
 
   published_on_text = result.text.split("\n")[0].split("through")[0].strip().replace(".", "")
   published_on = published_date_for_report(published_on_text, title, report_url, last_published_on)
@@ -123,6 +133,7 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
     'agency': 'sec',
     'agency_name': 'Securities and Exchange Commission',
     'report_id': report_id,
+    'type': report_type,
     'topic': topic,
     'url': report_url,
     'landing_url': landing_url,
