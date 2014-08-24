@@ -25,13 +25,13 @@ SEMIANNUAL_REPORTS_URL = "http://arts.gov/oig/reports/semi-annual"
 PEER_REVIEWS_URL = "http://arts.gov/oig/reports/external-peer-reviews"
 FISMA_REPORTS_URL = "http://arts.gov/oig/reports/fisma"
 
-REPORT_URLS = [
-  AUDIT_REPORTS_URL,
-  SPECIAL_REVIEWS_URL,
-  SEMIANNUAL_REPORTS_URL,
-  PEER_REVIEWS_URL,
-  FISMA_REPORTS_URL,
-]
+REPORT_URLS = {
+  "audit": AUDIT_REPORTS_URL,
+  "evaluation": SPECIAL_REVIEWS_URL,
+  "semiannual_report": SEMIANNUAL_REPORTS_URL,
+  "peer_review": PEER_REVIEWS_URL,
+  "fisma": FISMA_REPORTS_URL,
+}
 
 def run(options):
   year_range = inspector.year_range(options)
@@ -39,11 +39,11 @@ def run(options):
   only_report_id = options.get('report_id')
 
   # Pull the reports
-  for url in REPORT_URLS:
+  for report_type, url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.field-item li")
     for result in results:
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, report_type, year_range)
 
       if report:
         # debugging convenience: can limit to single report
@@ -52,7 +52,7 @@ def run(options):
 
         inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   link = result.find("a")
   if not link:
     return
@@ -84,6 +84,7 @@ def report_from(result, landing_url, year_range):
     'inspector_url': 'http://arts.gov/oig',
     'agency': 'nea',
     'agency_name': 'National Endowment for the Arts',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
