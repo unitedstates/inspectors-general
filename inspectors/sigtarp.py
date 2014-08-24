@@ -16,18 +16,18 @@ from utils import utils, inspector
 # Notes for IG's web team:
 #
 
-REPORT_URLS = [
-  "http://www.sigtarp.gov/pages/quarterly.aspx",
-  "http://www.sigtarp.gov/pages/audit.aspx",
-  "http://www.sigtarp.gov/pages/auditrc.aspx",
-  "http://www.sigtarp.gov/pages/engmem.aspx",
-]
+REPORT_URLS = {
+  "semiannual_report": "http://www.sigtarp.gov/pages/quarterly.aspx",
+  "audit": "http://www.sigtarp.gov/pages/audit.aspx",
+  "audit": "http://www.sigtarp.gov/pages/auditrc.aspx",
+  "audit": "http://www.sigtarp.gov/pages/engmem.aspx",
+}
 
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the reports
-  for report_url in REPORT_URLS:
+  for report_type, report_url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(report_url))
     results =  doc.select("td.mainInner div.ms-WPBody li")
 
@@ -35,11 +35,11 @@ def run(options):
       raise AssertionError("No results found for {}".format(report_url))
 
     for result in results:
-      report = report_from(result, year_range)
+      report = report_from(result, report_type, year_range)
       if report:
         inspector.save_report(report)
 
-def report_from(result, year_range):
+def report_from(result, report_type, year_range):
   result_link = result.find("a")
   title = result_link.text
 
@@ -59,6 +59,7 @@ def report_from(result, year_range):
     'inspector_url': "http://www.sigtarp.gov",
     'agency': 'sigtarp',
     'agency_name': "Special Inspector General for the Troubled Asset Relief Program",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
