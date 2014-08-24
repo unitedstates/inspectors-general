@@ -43,7 +43,7 @@ def run(options):
     doc = BeautifulSoup(utils.download(year_url))
     results = doc.select("tr")
     for result in results:
-      report = report_from(result, year_range)
+      report = report_from(result, report_type='audit', year_range=year_range)
       if report:
         inspector.save_report(report)
 
@@ -51,7 +51,7 @@ def run(options):
   doc = BeautifulSoup(utils.download(CONGRESSIONAL_REQUESTS_URL))
   results = doc.select("tr")
   for result in results:
-    report = report_from(result, year_range)
+    report = report_from(result, report_type='congress', year_range=year_range)
     if report:
       inspector.save_report(report)
 
@@ -71,7 +71,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
-def report_from(result, year_range):
+def report_from(result, report_type, year_range):
   title = result.select("td")[0].text.strip()
   if title in HEADER_ROW_TEXT:
     # Skip the header rows
@@ -109,6 +109,7 @@ def report_from(result, year_range):
     'inspector_url': "http://oig.pbgc.gov",
     'agency': "pbgc",
     'agency_name': "Pension Benefit Guaranty Corporation",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -153,6 +154,7 @@ def semiannual_report_from(result, year_range):
     'inspector_url': "http://oig.pbgc.gov",
     'agency': "pbgc",
     'agency_name': "Pension Benefit Guaranty Corporation",
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -185,6 +187,7 @@ def testimony_report_from(result, year_range):
     'inspector_url': "http://oig.pbgc.gov",
     'agency': "pbgc",
     'agency_name': "Pension Benefit Guaranty Corporation",
+    'type': 'testimony',
     'report_id': report_id,
     'url': report_url,
     'title': title,
