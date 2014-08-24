@@ -26,16 +26,21 @@ REPORT_PUBLISHED_MAP = {
   'OIG-F-16-12-01': datetime.datetime(2011, 12, 14),
 }
 
+REPORT_URLS = {
+  "audit": AUDIT_REPORTS_URL,
+  "inspection": INSPECTION_REPORTS_URL,
+}
+
 
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit and inspections reports
-  for reports_url in [AUDIT_REPORTS_URL, INSPECTION_REPORTS_URL]:
+  for report_type, reports_url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(reports_url))
     results = doc.select("div.field-item")
     for result in results:
-      report = report_from(result, year_range)
+      report = report_from(result, report_type, year_range)
       if report:
         inspector.save_report(report)
 
@@ -47,7 +52,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
-def report_from(result, year_range):
+def report_from(result, report_type, year_range):
   link = result.find("a")
   report_url = link.get('href')
   report_id, title = link.text.split(maxsplit=1)
@@ -73,6 +78,7 @@ def report_from(result, year_range):
     'inspector_url': "https://www.nlrb.gov/who-we-are/inspector-general",
     'agency': 'nlrb',
     'agency_name': "National Labor Relations Board",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -100,6 +106,7 @@ def semiannual_report_from(result, year_range):
     'inspector_url': "https://www.nlrb.gov/who-we-are/inspector-general",
     'agency': 'nlrb',
     'agency_name': "National Labor Relations Board",
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'title': title,
