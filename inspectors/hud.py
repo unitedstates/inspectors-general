@@ -38,8 +38,8 @@ MISSING_REPORT_IDS = [
 
 UNRELEASED_TEXTS = [
   "not appropriate for public disclosure",
-  "Report Not Available to the Public",
-  "Not for public release",
+  "not available to the public",
+  "not for public release",
 ]
 
 def run(options):
@@ -64,6 +64,20 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+def type_from_report_type_text(report_type_text):
+  if report_type_text in ["Audit Reports", 'Audit Guides']:
+    return 'audit'
+  elif report_type_text == 'Semiannual Reports':
+    return 'semiannual_report'
+  elif report_type_text == 'Conference Expenditures':
+    return 'inspection'
+  elif report_type_text in ['Inspections & Evaluations', 'Memorandums']:
+    # Most of these look like investigations, but we should probably come back
+    # and try to do some smarter parsing.
+    return 'investigation'
+  else:
+    return 'other'
+
 def report_from(report_row, year_range):
   published_date_text = report_row.select('span.date-display-single')[0].text
   published_on = datetime.datetime.strptime(published_date_text, "%B %d, %Y")
@@ -83,7 +97,8 @@ def report_from(report_row, year_range):
   article = report_page.select('article')[0]
 
   title = report_page.select('h1.title')[0].text
-  report_type = article.select('div.field-name-field-pub-type div.field-item')[0].text
+  report_type_text = article.select('div.field-name-field-pub-type div.field-item')[0].text
+  report_type = type_from_report_type_text(report_type_text)
 
   try:
     report_id = article.select('div.field-name-field-pub-report-number div.field-item')[0].text.strip()
@@ -114,7 +129,7 @@ def report_from(report_row, year_range):
   unreleased = False
   # Some reports are not available to the general public.
   for text_string in UNRELEASED_TEXTS:
-    if text_string in title or (summary and text_string in summary):
+    if text_string in title.lower() or (summary and text_string in summary.lower()):
       unreleased = True
       break
 

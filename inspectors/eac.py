@@ -25,33 +25,33 @@ CONGRESSIONAL_REPORTS_URL = "http://www.eac.gov/inspector_general/congressional_
 INVESTIGATIONS_URL = "http://www.eac.gov/inspector_general/investigation_reports.aspx"
 PEER_REVIEWS_URL = "http://www.eac.gov/inspector_general/peer_review_reports.aspx"
 
-REPORT_URLS = [
-  CONGRESSIONAL_TESTIMONY_URL,
-  HAVA_AUDITS_URL,
-  EAC_AUDITS_URL,
-  CONGRESSIONAL_REPORTS_URL,
-  INVESTIGATIONS_URL,
-  PEER_REVIEWS_URL,
-]
+REPORT_URLS = {
+  "testimony": CONGRESSIONAL_TESTIMONY_URL,
+  "audit": HAVA_AUDITS_URL,
+  "audit": EAC_AUDITS_URL,
+  "congress": CONGRESSIONAL_REPORTS_URL,
+  "investigation": INVESTIGATIONS_URL,
+  "peer_review": PEER_REVIEWS_URL,
+}
 
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the reports
-  for url in REPORT_URLS:
+  for report_type, url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.mainRegion p a")
     if not results:
       raise AssertionError("No report links found for %s" % url)
     for result in results:
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
 
 def clean_text(text):
   return text.replace('\xa0', ' ').strip()
 
-def report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   report_url = urljoin(landing_url, result.get('href'))
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
@@ -83,6 +83,7 @@ def report_from(result, landing_url, year_range):
     'inspector_url': 'http://www.eac.gov/inspector_general/',
     'agency': 'eac',
     'agency_name': 'Election Assistance Commission',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,

@@ -21,19 +21,24 @@ from utils import utils, inspector
 AUDIT_REPORTS_URL = "http://www.ftc.gov/about-ftc/office-inspector-general/oig-reading-room/oig-audit-reports"
 SEMIANNUAL_REPORTS_URL = "http://www.ftc.gov/about-ftc/office-inspector-general/oig-reading-room/semi-annual-reports-congress"
 
+REPORT_URLS = {
+  "audit": AUDIT_REPORTS_URL,
+  "semiannual_report": SEMIANNUAL_REPORTS_URL,
+}
+
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit reports
-  for url in [AUDIT_REPORTS_URL, SEMIANNUAL_REPORTS_URL]:
+  for report_type, url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("li.views-row")
     for result in results:
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   link = result.find("a")
 
   report_url = urljoin(landing_url, link.get('href').strip())
@@ -79,6 +84,7 @@ def report_from(result, landing_url, year_range):
     'inspector_url': "http://www.ftc.gov/about-ftc/office-inspector-general",
     'agency': 'ftc',
     'agency_name': "Federal Trade Commission",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,

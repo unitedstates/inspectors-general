@@ -58,6 +58,24 @@ def run(options):
 def clean_text(text):
   return text.replace("Â\xa0", " ").strip()
 
+def type_for_report(text):
+  if "Audit" in text:
+    return "audit"
+  elif "Semiannual Report" in text:
+    return "semiannual_report"
+  elif "Inspection" in text:
+    return "inspection"
+  elif "FISMA" in text:
+    return "fisma"
+  elif "Peer Review" in text:
+    return "peer_review"
+  elif "Survey" in text:
+    return "research"
+  elif "Performance" in text:
+    return "performance"
+  else:
+    return "other"
+
 def report_from(result, landing_url, year_range):
   report_url = urljoin(landing_url, result.get('href'))
 
@@ -107,11 +125,15 @@ def report_from(result, landing_url, year_range):
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
+  report_type_text = result.find_previous("p", class_="mainContentheader2").text.strip()
+  report_type = type_for_report(report_type_text)
+
   report = {
     'inspector': 'fca',
     'inspector_url': 'https://www.fca.gov/home/inspector.html',
     'agency': 'fca',
     'agency_name': 'Farm Credit Administration',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -138,6 +160,7 @@ def semiannual_report_from(result, year_range):
     'inspector_url': 'https://www.fca.gov/home/inspector.html',
     'agency': 'fca',
     'agency_name': 'Farm Credit Administration',
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'title': title,

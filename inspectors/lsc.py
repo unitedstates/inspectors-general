@@ -21,7 +21,7 @@ from utils import utils, inspector
 AUDIT_REPORTS_URL = "http://www.oig.lsc.gov/rpts/audit.htm"
 FINANCIAL_STATEMENTS_URL = "http://www.oig.lsc.gov/rpts/corp.htm"
 OTHER_REPORTS_URL = "http://www.oig.lsc.gov/rpts/other.htm"
-SEMIANNUAL_REPORTS_ULR = "http://www.oig.lsc.gov/sar/sar.htm"
+SEMIANNUAL_REPORTS_URL = "http://www.oig.lsc.gov/sar/sar.htm"
 
 REPORT_PUBLISHED_MAP = {
   '14-06': datetime.datetime(2014, 6, 30)
@@ -35,11 +35,18 @@ BLACKLIST_REPORT_TITLES = [
   'Summary of Audit Findings and Recommendations',
 ]
 
+REPORT_URLS = {
+  "semiannual_report": SEMIANNUAL_REPORTS_URL,
+  "other": OTHER_REPORTS_URL,
+  "audit": FINANCIAL_STATEMENTS_URL,
+  "audit": AUDIT_REPORTS_URL,
+}
+
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the audit reports
-  for url in [SEMIANNUAL_REPORTS_ULR]:#OTHER_REPORTS_URL]:#FINANCIAL_STATEMENTS_URL, AUDIT_REPORTS_URL]:
+  for report_type, url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("blockquote > ul > a")
     if not results:
@@ -49,11 +56,11 @@ def run(options):
     if not results:
       results = doc.select("blockquote > a")
     for result in results:
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   if not result.text or result.text in BLACKLIST_REPORT_TITLES:
     # There are a few empty links due to bad html and some links for alternative
     # formats (PDF) that we will just ignore.
@@ -110,6 +117,7 @@ def report_from(result, landing_url, year_range):
     'inspector_url': 'http://www.oig.lsc.gov',
     'agency': 'lsc',
     'agency_name': 'Legal Services Corporation',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,

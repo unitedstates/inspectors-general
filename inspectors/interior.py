@@ -45,6 +45,26 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+def report_type_from_text(report_type_text):
+  if ':' in report_type_text:
+    report_type_text = report_type_text.split(":")[1].strip()
+  else:
+    return 'other'
+
+  if report_type_text in ['Audit', 'External Audit']:
+    return 'audit'
+  elif report_type_text == 'Investigation':
+    return 'investigation'
+  elif report_type_text in ['Inspection', 'Verification Review', 'Memorandum', 'Management Advisory', 'Advisory']:
+    return 'inspection'
+  elif report_type_text in ['Assessment', 'Evaluation']:
+    return 'evaluation'
+  elif report_type_text == 'Semiannual Report':
+    return 'semiannual_report'
+  else:
+    return 'other'
+
+
 def report_from(result, year_range):
   title = result.select("a span")[0].text.strip()
 
@@ -55,13 +75,10 @@ def report_from(result, year_range):
 
   text_tuple = result.select("span")[1].text.split("|")
   published_on_text = text_tuple[0]
-  topic_text = text_tuple[-1]
 
-  if ':' in topic_text:
-    topic = topic_text.split(":")[1].strip()
-  else:
-    # Some reports don't have topics
-    topic = None
+  report_type_text = text_tuple[-1]
+  report_type = report_type_from_text(report_type_text)
+
   published_on = datetime.datetime.strptime(published_on_text.strip(), 'Report Date: %m/%d/%Y')
 
   if published_on.year not in year_range:
@@ -73,13 +90,12 @@ def report_from(result, year_range):
     'inspector_url': 'http://www.doi.gov/oig/',
     'agency': 'interior',
     'agency_name': 'Department of the Interior',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
-  if topic:
-    result['topic'] = topic
   return result
 
 
