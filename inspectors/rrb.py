@@ -28,7 +28,7 @@ def run(options):
   # Pull the semiannual reports
   semiannul_results = doc.select("#AnnualManagementReports select")[0]
   for result in semiannul_results.select("option"):
-    report = report_from(result, year_range)
+    report = semiannual_report_from(result, year_range)
     if report:
       inspector.save_report(report)
 
@@ -38,7 +38,7 @@ def run(options):
     if not index:
       # Skip the header row
       continue
-    report = audit_report_from(result, REPORTS_URL, year_range)
+    report = report_from(result, REPORTS_URL, report_type='other', year_range=year_range)
     if report:
       inspector.save_report(report)
 
@@ -52,11 +52,11 @@ def run(options):
       if not index:
         # Skip the header row
         continue
-      report = audit_report_from(result, year_url, year_range)
+      report = report_from(result, year_url, report_type='audit', year_range=year_range)
       if report:
         inspector.save_report(report)
 
-def audit_report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   title = " ".join(result.select("td")[0].text.strip().split())
 
   published_on_text = result.select("td")[1].text.strip()
@@ -85,6 +85,7 @@ def audit_report_from(result, landing_url, year_range):
     'inspector_url': "http://www.rrb.gov/oig/",
     'agency': 'rrb',
     'agency_name': "Railroad Retirement Board",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -95,7 +96,7 @@ def audit_report_from(result, landing_url, year_range):
     report['landing_url'] = landing_url
   return report
 
-def report_from(result, year_range):
+def semiannual_report_from(result, year_range):
   relative_report_url = result.get('value')
   if not relative_report_url:
     # Skip the header
@@ -120,6 +121,7 @@ def report_from(result, year_range):
     'inspector_url': "http://www.rrb.gov/oig/",
     'agency': 'rrb',
     'agency_name': "Railroad Retirement Board",
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'title': title,
