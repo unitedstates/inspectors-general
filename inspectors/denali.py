@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.oig.denali.gov/
-# Oldest report: 2006?
+# Oldest report: 2006
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -38,7 +38,7 @@ REPORT_PUBLISHED_MAPPING = {
   "Togiak": datetime.datetime(2009, 9, 1), # img
   "Unalakleet": datetime.datetime(2007, 1, 1), # img
   "Village Resume Project": datetime.datetime(2012, 2, 9), # OCR
-  "Selected Contacting Authority Issues": datetime.datetime(2012, 3, 19), # OCR
+  "Selected Contracting Authority Issues": datetime.datetime(2012, 3, 19), # OCR
   "Training event in 2009": datetime.datetime(2012, 6, 10), # OCR
   "Emerging energy technology fund": datetime.datetime(2013, 4, 11), # OCR
 
@@ -70,21 +70,42 @@ REPORT_PUBLISHED_MAPPING = {
 def run(options):
   year_range = inspector.year_range(options)
 
-  # Pull the reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))
-  results = doc.select("some-selector")
+  results = doc.select("#mainContent blockquote a")
   for result in results:
     report = report_from(result, year_range)
     if report:
       inspector.save_report(report)
 
-# suggested: a function that gets report details from a parent element,
-# extract a dict of details that are ready for inspector.save_report().
 def report_from(result, year_range):
-  report_id = <report_id>
-  report_url = <report_url>
-  title = <title>
-  published_on = <published_on>
+
+  # ignore GAO decisions requested by IG, and other annual audits
+  header = result.parent.parent.find_previous_sibling("h4").text.strip().lower()
+  if header.startswith("gao comptroller"):
+    logging.debug("Skipping GAO comptroller report.");
+    return
+  elif header.startswith("annual audits of"):
+    logging.debug("Skipping annual audits, redundant content.")
+    return
+
+  if header.startswith("inspection"):
+    category = "inspection"
+  elif header.startswith("semiannual"):
+    category = "semiannual_report"
+  else:
+    category = "other"
+
+  report_id = os.path.splitext(os.path.basename(result['href']))[0]
+  report_url = urljoin(REPORTS_URL, result['href'])
+  title = result.text.strip()
+
+  if REPORT_PUBLISHED_MAPPING.get(title):
+    published_on = REPORT_PUBLISHED_MAPPING.get(title)
+  else:
+    published_on = REPORT_PUBLISHED_MAPPING.get(report_id)
+
+  if not published_on:
+    raise Exception("Couldn't look up hardcoded report: %s, %s" % (title, report_id))
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -98,6 +119,7 @@ def report_from(result, year_range):
     'report_id': report_id,
     'url': report_url,
     'title': title,
+    'type': category,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
 
