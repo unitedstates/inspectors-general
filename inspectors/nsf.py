@@ -47,7 +47,7 @@ def run(options):
     # ignore divider lines
     if result.select("img"): continue
 
-    report = report_from(result, year_range)
+    report = report_from(result, report_type='audit', year_range=year_range)
     if report:
       inspector.save_report(report)
 
@@ -81,11 +81,11 @@ def run(options):
   for result in results:
     if not result.text.strip():
       continue
-    report = report_from(result, year_range)
+    report = report_from(result, report_type='testimony', year_range=year_range)
     if report:
       inspector.save_report(report)
 
-def report_from(result, year_range):
+def report_from(result, report_type, year_range):
   link = result.find("a")
 
   report_url = urljoin(AUDIT_REPORTS_URL, link['href'])
@@ -94,9 +94,12 @@ def report_from(result, year_range):
 
   title = " ".join(link.parent.text.split())
 
-  last_column_node = result.select("td.tabletext2")[-1]
-  if last_column_node.text.strip():
+  try:
+    last_column_node = result.select("td.tabletext2")[-1]
+  except IndexError:
+    last_column_node = result.select("td.tabletext")[-1]
 
+  if last_column_node.text.strip():
     published_on_text, *report_id_text = last_column_node.stripped_strings
     if report_id_text:
       # If an explicit report_id is listed, use that.
@@ -116,6 +119,7 @@ def report_from(result, year_range):
     'inspector_url': "https://www.nsf.gov/oig/",
     'agency': "nsf",
     'agency_name': "National Science Foundation",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -127,7 +131,7 @@ def report_from(result, year_range):
 def case_report_from(result, landing_url, year_range):
   link = result.find("a")
 
-  report_url = urljoin(CASE_REPORTS_URL, link.get['href'])
+  report_url = urljoin(CASE_REPORTS_URL, link['href'])
   report_id = link.text
   title = result.contents[5].text
 
@@ -143,6 +147,7 @@ def case_report_from(result, landing_url, year_range):
     'inspector_url': "https://www.nsf.gov/oig/",
     'agency': "nsf",
     'agency_name': "National Science Foundation",
+    'type': 'inspection',
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -190,6 +195,7 @@ def semiannual_report_from(result, year_range):
     'inspector_url': "https://www.nsf.gov/oig/",
     'agency': "nsf",
     'agency_name': "National Science Foundation",
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'title': title,
