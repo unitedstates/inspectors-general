@@ -21,18 +21,17 @@ SPOTLIGHT_REPORTS_URL = "http://www.sigar.mil/Newsroom/spotlight/spotlight.xml"
 SPEECHES_REPORTS_URL = "http://www.sigar.mil/Newsroom/speeches/speeches.xml"
 TESTIMONY_REPORTS_URL = "http://www.sigar.mil/Newsroom/testimony/testimony.xml"
 
-
-REPORT_URLS = [
-  SPOTLIGHT_REPORTS_URL,
-  SPEECHES_REPORTS_URL,
-  TESTIMONY_REPORTS_URL,
-  "http://www.sigar.mil/audits/auditreports/reports.xml",
-  "http://www.sigar.mil/audits/inspectionreports/inspection-reports.xml",
-  "http://www.sigar.mil/audits/financialreports/Financial-Audits.xml",
-  "http://www.sigar.mil/SpecialProjects/projectreports/reports.xml",
-  "http://www.sigar.mil/Audits/alertandspecialreports/alert-special-reports.xml",
-  "http://www.sigar.mil/quarterlyreports/index.xml",
-]
+REPORT_URLS = {
+  "other": SPOTLIGHT_REPORTS_URL,
+  "press": SPEECHES_REPORTS_URL,
+  "testimony": TESTIMONY_REPORTS_URL,
+  "audit": "http://www.sigar.mil/audits/auditreports/reports.xml",
+  "inspection": "http://www.sigar.mil/audits/inspectionreports/inspection-reports.xml",
+  "audit": "http://www.sigar.mil/audits/financialreports/Financial-Audits.xml",
+  "other": "http://www.sigar.mil/SpecialProjects/projectreports/reports.xml",
+  "other": "http://www.sigar.mil/Audits/alertandspecialreports/alert-special-reports.xml",
+  "semiannual_report": "http://www.sigar.mil/quarterlyreports/index.xml",
+}
 
 BASE_REPORT_URL = "http://www.sigar.mil/allreports/index.aspx"
 
@@ -40,15 +39,15 @@ def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the reports
-  for report_url in REPORT_URLS:
+  for report_type, report_url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(report_url))
     results = doc.select("item")
     for result in results:
-      report = report_from(result, report_url, year_range)
+      report = report_from(result, report_url, report_type, year_range)
       if report:
         inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   title = result.find("title").text.strip()
 
   report_url = report_url_for_landing_page(result.find("link").next.strip(), landing_url)
@@ -67,6 +66,7 @@ def report_from(result, landing_url, year_range):
     'inspector_url': "http://www.sigar.mil",
     'agency': 'sigar',
     'agency_name': "Special Inspector General for Afghanistan Reconstruction",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
