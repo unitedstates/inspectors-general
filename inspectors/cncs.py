@@ -18,13 +18,13 @@ from utils import utils, inspector
 
 REPORTS_URLS = [
   # ('http://www.cncsoig.gov/news/semi-annual-reports', 'semiannual_report'),
-  ('http://www.cncsoig.gov/news/audit-reports', 'audit'),
+  # ('http://www.cncsoig.gov/news/audit-reports', 'audit'),
 
-  # # "Latest" investigations
+  # "Latest" investigations
   # ('http://www.cncsoig.gov/operations/investigations', 'investigation'),
-  # # "Closed" investigations
-  # # ('http://www.cncsoig.gov/news/closed-cases', 'investigation'),
-  # # "Archived" investigations
+  # "Closed" investigations
+  ('http://www.cncsoig.gov/news/closed-cases', 'cases'),
+  # "Archived" investigations
   # ('http://www.cncsoig.gov/news/archive', 'investigation')
 ]
 
@@ -48,6 +48,7 @@ def run(options):
   for (reports_page, report_type) in REPORTS_URLS:
 
     page = start
+    last_page = options.get("end") # reset for each area
     while True:
       url = url_for(reports_page, page)
       doc = BeautifulSoup(utils.download(url))
@@ -83,9 +84,10 @@ def last_page_from(doc):
 def report_from(result, reports_page, report_type, year_range):
   unreleased = False
   summary = None
+  landing_url = None
 
   # audits have some data, but link to landing page for summary and URL
-  if result.select(".cell3"):
+  if report_type == "audit":
     landing_a = result.select(".cell3 a")[0]
     landing_url = urljoin(reports_page, landing_a['href'])
     title = landing_a.text.strip()
@@ -106,6 +108,15 @@ def report_from(result, reports_page, report_type, year_range):
     stamp = result.select(".cell2")[0].text.strip()
     published_on = datetime.datetime.strptime(stamp, "%m.%d.%Y")
 
+  elif report_type == "investigation":
+    stamp = result.select(".cell2")[0].text.strip()
+    published_on = datetime.datetime.strptime(stamp, "%Y-%m-%d")
+    title = result.select(".cell3 p")[0].text.strip()
+
+    report_url = result.select(".cell3 a")[0]['href']
+    report_url = urljoin(reports_page, report_url)
+    report_id = os.path.splitext(report_url.split("/")[-1])[0]
+
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
@@ -117,7 +128,6 @@ def report_from(result, reports_page, report_type, year_range):
     'agency_name': 'Corporation for National and Community Service',
     'report_id': report_id,
     'url': report_url,
-    'landing_url': landing_url,
     'title': title,
     'type': report_type,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),  # Date of publication
@@ -128,6 +138,9 @@ def report_from(result, reports_page, report_type, year_range):
 
   if summary:
     report['summary'] = summary
+
+  if landing_url:
+    report['landing_url'] = landing_url
 
   return report
 
