@@ -18,14 +18,14 @@ from utils import utils, inspector
 
 REPORTS_URLS = [
   # ('http://www.cncsoig.gov/news/semi-annual-reports', 'semiannual_report'),
-  # ('http://www.cncsoig.gov/news/audit-reports', 'audit'),
+  ('http://www.cncsoig.gov/news/audit-reports', 'audit'),
 
   # "Latest" investigations
-  # ('http://www.cncsoig.gov/operations/investigations', 'investigation'),
+  ('http://www.cncsoig.gov/operations/investigations', 'investigation'),
   # "Closed" investigations
   ('http://www.cncsoig.gov/news/closed-cases', 'case'),
   # "Archived" investigations
-  # ('http://www.cncsoig.gov/news/archive', 'investigation')
+  ('http://www.cncsoig.gov/news/archive', 'investigation')
 ]
 
 # some hardcoded fields for a single peer review
@@ -131,8 +131,6 @@ def report_from(result, reports_page, report_type, year_range):
   elif report_type == "case":
     report_type = "investigation"
     title = result.select("div")[0].text
-
-
 
     id_p = None
     summary = ""
