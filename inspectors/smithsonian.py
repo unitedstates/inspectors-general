@@ -52,7 +52,7 @@ def run(options):
   doc = BeautifulSoup(utils.download(RECENT_AUDITS_URL))
   results = doc.select("div.block > a")
   for result in results:
-    report = audit_report_from(result, year_range)
+    report = report_from(result, year_range)
     if report:
       inspector.save_report(report)
 
@@ -60,7 +60,7 @@ def run(options):
   doc = BeautifulSoup(utils.download(AUDIT_ARCHIVE_URL))
   results = doc.select("div.block a")
   for result in results:
-    report = audit_report_from(result, year_range)
+    report = report_from(result, year_range)
     if report:
       inspector.save_report(report)
 
@@ -68,9 +68,23 @@ def run(options):
   doc = BeautifulSoup(utils.download(OTHER_REPORTS_URl))
   results = doc.select("div.block > a")
   for result in results:
-    report = audit_report_from(result, year_range)
+    report = report_from(result, year_range)
     if report:
       inspector.save_report(report)
+
+def report_type_from_url(report_url):
+  if 'Audit' in report_url or 'Announcements' in report_url:
+    return 'audit'
+  elif 'Semiannual' in report_url:
+    return 'semiannual_report'
+  elif 'Testimony' in report_url:
+    return 'testimony'
+  elif 'Peer_Review' in report_url:
+    return 'peer_review'
+  elif 'PressRelease' in report_url:
+    return 'press'
+  else:
+    return 'other'
 
 def rss_report_from(result, year_range):
   report_url = result.find("link").next_sibling.strip()
@@ -91,6 +105,7 @@ def rss_report_from(result, year_range):
   report_ids_seen.add(report_id)
 
   title = result.find("title").text
+  report_type = report_type_from_url(report_url)
   published_on_text = result.find("pubdate").text
   published_on = datetime.datetime.strptime(published_on_text, '%a, %d %b %Y %H:%M:%S %z').date()
 
@@ -103,6 +118,7 @@ def rss_report_from(result, year_range):
     'inspector_url': 'http://www.si.edu/OIG',
     'agency': 'smithsonian',
     'agency_name': 'Smithsonian Institution',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -112,7 +128,7 @@ def rss_report_from(result, year_range):
     report['file_type'] = file_type
   return report
 
-def audit_report_from(result, year_range):
+def report_from(result, year_range):
   report_url = urljoin(RECENT_AUDITS_URL, result.get('href'))
   # Strip extra path adjustments
   report_url = report_url.replace("../", "")
@@ -136,6 +152,7 @@ def audit_report_from(result, year_range):
   report_ids_seen.add(report_id)
 
   title = result.text
+  report_type = report_type_from_url(report_url)
 
   estimated_date = False
   try:
@@ -156,6 +173,7 @@ def audit_report_from(result, year_range):
     'inspector_url': 'http://www.si.edu/OIG',
     'agency': 'smithsonian',
     'agency_name': 'Smithsonian Institution',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
