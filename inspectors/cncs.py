@@ -23,7 +23,7 @@ REPORTS_URLS = [
   # "Latest" investigations
   # ('http://www.cncsoig.gov/operations/investigations', 'investigation'),
   # "Closed" investigations
-  ('http://www.cncsoig.gov/news/closed-cases', 'cases'),
+  ('http://www.cncsoig.gov/news/closed-cases', 'case'),
   # "Archived" investigations
   # ('http://www.cncsoig.gov/news/archive', 'investigation')
 ]
@@ -56,14 +56,21 @@ def run(options):
       if last_page is None:
         last_page = last_page_from(doc)
 
-      results = doc.select("div#main div.whiteBox")
-      if not results:
-        raise AssertionError("No report links found for %s" % url)
+      if report_type == "case":
+        results = doc.select("div#main div.grayBox2")
+      else:
+        results = doc.select("div#main div.whiteBox")
 
-      for result in results:
-        report = report_from(result, reports_page, report_type, year_range)
-        if report:
-          inspector.save_report(report)
+      if results:
+        for result in results:
+          report = report_from(result, reports_page, report_type, year_range)
+          if report:
+            inspector.save_report(report)
+      elif report_type != "case":
+        raise AssertionError("No report links found for %s" % url)
+      # closed cases have broken pagination (p6, 7, 8 missing) so ignore
+      else:
+        pass
 
       if int(page) >= int(last_page):
         break
@@ -88,6 +95,7 @@ def report_from(result, reports_page, report_type, year_range):
   unreleased = False
   summary = None
   landing_url = None
+  estimated_date = False
 
   # audits have some data, but link to landing page for summary and URL
   if report_type == "audit":
@@ -120,6 +128,30 @@ def report_from(result, reports_page, report_type, year_range):
     report_url = urljoin(reports_page, report_url)
     report_id = os.path.splitext(report_url.split("/")[-1])[0]
 
+  elif report_type == "case":
+    report_type = "investigation"
+    title = result.select("div")[0].text
+
+
+
+    id_p = None
+    summary = ""
+    for p in result.select("p"):
+      text = p.text.strip()
+      summary += text + "\n\n"
+      if text.lower().startswith("case id"):
+        id_p = p
+    summary = summary.strip()
+    report_id = id_p.text.strip().split(" ")[-1]
+
+    landing_url = reports_page
+    unreleased = True
+    report_url = None
+
+    year = int(report_id.split("-")[0])
+    published_on = datetime.date(year, 1, 1)
+    estimated_date = True
+
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
@@ -144,6 +176,9 @@ def report_from(result, reports_page, report_type, year_range):
 
   if landing_url:
     report['landing_url'] = landing_url
+
+  if estimated_date:
+    report['estimated_date'] = estimated_date
 
   return report
 
