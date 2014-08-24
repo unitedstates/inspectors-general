@@ -81,6 +81,8 @@ def last_page_from(doc):
     return int(last['href'].split("=")[-1])
 
 def report_from(result, reports_page, report_type, year_range):
+  unreleased = False
+  summary = None
 
   # audits have some data, but link to landing page for summary and URL
   if result.select(".cell3"):
@@ -90,6 +92,8 @@ def report_from(result, reports_page, report_type, year_range):
 
     # PDF URL and summary are on the report's landing page
     report_url, summary, title_from_landing = extract_from_release_page(landing_url)
+    if not report_url:
+      unreleased = True
 
     if not title:
       title = title_from_landing
@@ -113,10 +117,17 @@ def report_from(result, reports_page, report_type, year_range):
     'agency_name': 'Corporation for National and Community Service',
     'report_id': report_id,
     'url': report_url,
+    'landing_url': landing_url,
     'title': title,
     'type': report_type,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),  # Date of publication
   }
+
+  if unreleased:
+    report['unreleased'] = True
+
+  if summary:
+    report['summary'] = summary
 
   return report
 
@@ -126,8 +137,11 @@ def extract_from_release_page(landing_url):
   doc = BeautifulSoup(utils.download(landing_url))
   main = doc.select("#main #lefSide")[0]
 
-  url = main.select("div")[2].select("a")[0]['href']
-  url = urljoin(landing_url, url)
+  url_elem = main.select("div")[2].select("a")
+  if url_elem:
+    url = urljoin(landing_url, url_elem[0]['href'])
+  else:
+    url = None
 
   summary = ""
   for p in main.select("p"):
