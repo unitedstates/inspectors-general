@@ -2,19 +2,37 @@
 
 A project to collect reports from the [offices of Inspectors General](http://en.wikipedia.org/wiki/Office_of_the_Inspector_General) across the US federal government.
 
-So far we have **60** inspector general offices scraped, downloaded, and stable. See our [safe list](safe.yml) for details.
+We have **65** inspector general offices scraped, downloaded, and stable. See our [safe list](safe.yml) for details.
 
-**How you can help:**
+#### What's an inspector general?
 
-* Scrape an IG! [Matt Rumsey](https://twitter.com/mattrumsey) kindly [compiled a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. The left-hand column tracks completion status.
-* Review data quality. Visit [oversight.io](https://oversight.io) (still ugly and in-progress) and see what the data looks like in action.
-* We have a [project Slack](https://oversight.slack.com) - anyone who'd like to help out is welcome to join.
+From [this piece explaining the project](http://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/):
 
-[Eric Mill](https://twitter.com/konklone) has written [a piece explaining what the project is](http://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/) and why it's being done:
+> Just about every agency in the federal government has an independent unit, usually called the Office of the Inspector General, dedicated to independent oversight. This includes regular audits of the agency's spending, monitoring of active government contractors and investigations into wasteful or corrupt agency practices. They ask tough questions, carry guns, and sue people.
 
-> **What's an inspector general?**
->
-> Just about every agency in the federal government has an independent unit, usually called the Office of the Inspector General, dedicated to independent oversight. This includes regular audits of the agency's spending, monitoring of active government contractors and investigations into wasteful or corrupt agency practices. They ask tough questions, carry guns and sue people.
+#### How you can help
+
+The most important way you can help is by finding and submitting reports from IGs who do not publish their reports online. There are 9 of them, many from the US government's intelligence community.
+
+* [Architect of the Capitol](http://www.aoc.gov/aoc/oig.cfm)
+* [Capitol Police](http://www.uscapitolpolice.gov/oig.php)
+* [Central Intelligence Agency](https://www.cia.gov/offices-of-cia/inspector-general)
+* [Defense Intelligence Agency](http://www.dia.mil/about/inspector-general/)
+* [National Geospatial-Intelligence Agency](https://www1.nga.mil/About/Pages/InspectorGeneral.aspx)
+* [National Reconnaissance Office](http://www.nro.gov/offices/oig/cd.html)
+* [National Security Agency](http://www.nsa.gov/about/oig/index.shtml)
+* [Intelligence Community](http://www.dni.gov/index.php/about/organization/office-of-the-intelligence-community-inspector-general-who-we-are) (ODNI)
+* [Special Inspector General for Iraq Reconstruction](http://www.sigir.mil/)
+
+Generally, getting their reports means **filing [Freedom of Information Act](http://en.wikipedia.org/wiki/Freedom_of_Information_Act_(United_States)) requests**, or finding the results of FOIA requests others have already made.
+
+We also need unpublished reports from the other 65 IGs! We're scraping what they publish online, but most IGs do not proactively publish all of their reports.
+
+We don't yet have a formal process for submitting reports &mdash; for now, either [open an issue](https://github.com/unitedstates/inspectors-general/issues/new) and post a link to the file, or email the report to [eric@konklone.com](mailto:eric@konklone.com).
+
+You can also **review our data quality** and find bugs. Visit [oversight.io](https://oversight.io) (still ugly and in-progress) and see what the data looks like in action.
+
+Finally, we **have a [project Slack](https://oversight.slack.com)** - anyone who'd like to help out is welcome to join.
 
 ### Scraping IG reports
 
@@ -161,7 +179,11 @@ If a scraper is throwing **persistent** errors, remove it (comment it out) from 
 
 Ephemeral errors (for example, from connection errors, or other erratically reproducible situations) should be reported as issues first, to be discussed.
 
-## Public domain
+### Resources
+
+* [Matt Rumsey](https://twitter.com/mattrumsey) kindly [compiled a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. We used this to track activity during the initial scraping phase.
+
+### Public domain
 
 This project is [dedicated to the public domain](LICENSE). As spelled out in [CONTRIBUTING](CONTRIBUTING.md):
 
