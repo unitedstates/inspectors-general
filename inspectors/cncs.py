@@ -41,12 +41,13 @@ PEER_REVIEW_2012 = {
 def run(options):
   year_range = inspector.year_range(options)
 
-  last_page = options.get("pages")
+  last_page = options.get("end")
+  start = int(options.get("start", 1))
 
   # Pull the reports
   for (reports_page, report_type) in REPORTS_URLS:
 
-    page = 1
+    page = start
     while True:
       url = url_for(reports_page, page)
       doc = BeautifulSoup(utils.download(url))
@@ -63,7 +64,7 @@ def run(options):
         if report:
           inspector.save_report(report)
 
-      if page >= last_page:
+      if int(page) >= int(last_page):
         break
       else:
         page += 1
@@ -88,7 +89,10 @@ def report_from(result, reports_page, report_type, year_range):
     title = landing_a.text.strip()
 
     # PDF URL and summary are on the report's landing page
-    report_url, summary = extract_from_release_page(landing_url)
+    report_url, summary, title_from_landing = extract_from_release_page(landing_url)
+
+    if not title:
+      title = title_from_landing
 
     # the report PDF URL can be pulled from the comments
     # we're ignoring this since we're going to the landing page anyhow.
@@ -129,6 +133,9 @@ def extract_from_release_page(landing_url):
   for p in main.select("p"):
     summary += p.text + "\n\n"
 
-  return (url, summary.strip())
+  # will only be used if the title isn't present on the listing
+  title = main.select("h2")[0].text.strip()
+
+  return (url, summary.strip(), title)
 
 utils.run(run) if (__name__ == "__main__") else None
