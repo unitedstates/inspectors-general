@@ -137,6 +137,39 @@ def extract_reports_for_topic(topic, topic_url, year_range):
     logging.debug("## Processing subtopic %s" % subtopic_name)
     extract_reports_for_subtopic(subtopic_url, year_range, topic, subtopic_name)
 
+def report_type_from_text(report_type_text):
+  if 'Semiannual Reports' in report_type_text:
+    return 'semiannual_report'
+  elif 'Management Alerts' in report_type_text:
+    return 'management_challenges'
+  elif 'Inspection' in report_type_text:
+    return 'inspection'
+  elif 'Peer Reviews' in report_type_text:
+    return 'peer_review'
+  elif ('Information Technology Reports' in report_type_text
+    or 'Plans and Reports' in report_type_text
+    or 'Financial Management' in report_type_text
+    or 'BBG Audit Reports' in report_type_text
+    or 'BBG IT Reports' in report_type_text):
+    return 'audit'
+  elif ('Strategic, Performance, and Work Plans' in report_type_text
+    or 'Financial and Activity Reports' in report_type_text):
+    return 'performance'
+  elif ('Other OIG Reports' in report_type_text
+    or 'Other Reports to Congress' in report_type_text
+    or 'FOIA Electronic Reading Room' in report_type_text):
+    return 'other'
+
+def report_type_from_topic(topic):
+  if topic == 'CT':
+    return 'testimony'
+  elif topic == 'I':
+    return 'inspection'
+  elif topic == 'A':
+    return 'audit'
+  else:
+    return 'other'
+
 def extract_reports_for_subtopic(subtopic_url, year_range, topic, subtopic=None):
   if subtopic_url.startswith("http://httphttp://"):
     # See notes to IG's web team
@@ -151,6 +184,10 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic, subtopic=None)
   if not results and "There are currently no reports in this category" not in doc.text:
     raise AssertionError("No report links found for %s" % subtopic_url)
 
+  report_type_text = doc.select("h2.tier3-headline")[0].text.strip()
+  report_type = report_type_from_text(report_type_text)
+  if not report_type:
+    report_type = report_type_from_topic(topic)
   topic_name = TOPIC_NAMES[topic]
   # Broadcasting Board of Governors is a fully independent agency
   if topic == 'BBG' or subtopic == 'Broadcasting Board of Governors':
@@ -159,11 +196,11 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic, subtopic=None)
     agency = 'state'
 
   for result in results:
-    report = report_from(result, year_range, agency, topic_name, subtopic)
+    report = report_from(result, year_range, agency, report_type, topic_name, subtopic)
     if report:
       inspector.save_report(report)
 
-def report_from(result, year_range, agency, topic, subtopic=None):
+def report_from(result, year_range, agency, report_type, topic, subtopic=None):
   title = result.text.strip()
   report_url = result['href']
 
@@ -223,6 +260,7 @@ def report_from(result, year_range, agency, topic, subtopic=None):
     'agency': agency,
     'agency_name': names[agency],
     'report_id': report_id,
+    'type': report_type,
     'topic': topic,
     'url': report_url,
     'title': title,
