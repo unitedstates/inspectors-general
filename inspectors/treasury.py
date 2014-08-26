@@ -54,6 +54,12 @@ AGENCY_NAMES = {
   "tff": "Treasury Forfeiture Fund",
 }
 
+OTHER_URLS = {
+  "testimony": TESTIMONIES_URL,
+  "peer_review": PEER_AUDITS_URL,
+  "other": OTHER_REPORTS_URL,
+}
+
 UNRELEASED_REPORTS = [
   # These reports do not say they are unreleased, but there are no links
   "IGATI",
@@ -89,11 +95,11 @@ def run(options):
       if report:
         inspector.save_report(report)
 
-  for url in [TESTIMONIES_URL, PEER_AUDITS_URL, OTHER_REPORTS_URL]:
+  for report_type, url in OTHER_URLS.items():
     doc = beautifulsoup_from_url(url)
     results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p > a")
     for result in results:
-      report = report_from(result, url, year_range)
+      report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
 
@@ -151,6 +157,7 @@ def audit_report_from(result, page_url, year_range):
     'inspector_url': 'http://www.treasury.gov/about/organizational-structure/ig/',
     'agency': agency_slug,
     'agency_name': AGENCY_NAMES[agency_slug],
+    'type': 'audit',
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -163,7 +170,7 @@ def audit_report_from(result, page_url, year_range):
 
   return report
 
-def report_from(result, page_url, year_range):
+def report_from(result, page_url, report_type, year_range):
   try:
     title, date1, date2 = result.text.rsplit(",", 2)
     published_on_text = date1 + date2
@@ -193,6 +200,7 @@ def report_from(result, page_url, year_range):
     'inspector_url': 'http://www.treasury.gov/about/organizational-structure/ig/',
     'agency': 'treasury',
     'agency_name': "Department of the Treasury",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -218,6 +226,7 @@ def semiannual_report_from(result, page_url, year_range):
     'inspector_url': 'http://www.treasury.gov/about/organizational-structure/ig/',
     'agency': 'treasury',
     'agency_name': "Department of the Treasury",
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'title': title,
