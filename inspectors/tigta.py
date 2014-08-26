@@ -40,10 +40,10 @@ def run(options):
   for year in year_range:
     url = audit_report_url(year)
     if url:
-      parse_result_from_js_url(url, "auditreports", year, year_range)
+      parse_result_from_js_url(url, "auditreports", year, year_range, report_type='audit')
     url = inspection_report_url(year)
     if url:
-      parse_result_from_js_url(url, "iereports", year, year_range)
+      parse_result_from_js_url(url, "iereports", year, year_range, report_type='inspection')
 
   # Pull the congressional testimony
   doc = BeautifulSoup(utils.download(CONGRESSIONAL_TESTIMONY_REPORTS_URL))
@@ -61,7 +61,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
-def parse_result_from_js_url(url, format_slug, year, year_range):
+def parse_result_from_js_url(url, format_slug, year, year_range, report_type):
   """
   Given a link to a javascript file that has report data, add all of the reports
   """
@@ -72,12 +72,12 @@ def parse_result_from_js_url(url, format_slug, year, year_range):
   # Look in http://www.treasury.gov/tigta/oa_auditreports_fy14.js for some more examples.
   results = re.findall('arrid\[\d+\]=new AR\((.*)\);', body)
   for result in results:
-    report = report_from(result, format_slug, year, year_range)
+    report = report_from(result, format_slug, year, year_range, report_type)
     if report:
       inspector.save_report(report)
 
 
-def report_from(javascript_attributes, format_slug, year, year_range):
+def report_from(javascript_attributes, format_slug, year, year_range, report_type):
   # We are going to parse the script of javascript into a list of with the following strucutre:
   # [report id, report description, date string, business unit, report count, executive summary, management response, audit comments]
   result_pieces = [field.strip() for field in parse_fields(javascript_attributes)]
@@ -102,6 +102,7 @@ def report_from(javascript_attributes, format_slug, year, year_range):
     'inspector_url': 'http://www.treasury.gov/tigta/',
     'agency': 'irs',
     'agency_name': 'Internal Revenue Service',
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -127,6 +128,7 @@ def congressional_testimony_report_from(result, year_range):
     'inspector_url': 'http://www.treasury.gov/tigta/',
     'agency': 'irs',
     'agency_name': 'Internal Revenue Service',
+    'type': 'testimony',
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -154,6 +156,7 @@ def semiannual_report_from(result, year_range):
     'inspector_url': 'http://www.treasury.gov/tigta/',
     'agency': 'irs',
     'agency_name': 'Internal Revenue Service',
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'title': title,
