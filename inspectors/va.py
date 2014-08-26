@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import time
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -46,6 +47,9 @@ AGENCY_SLUG_MAP = {
   "Office of Veterans Service Organizations Liaison": "OVSOL",
 }
 
+MAX_ATTEMPTS = 5
+ERROR_PAGE_TEXT = 'This report summary cannnot be displayed at this time.'
+
 def run(options):
   year_range = inspector.year_range(options)
 
@@ -67,6 +71,18 @@ def run(options):
     report = semiannual_report_from(result, year_range)
     inspector.save_report(report)
 
+def report_type_from_topic(topic):
+  if "Audit" in topic or topic in ["CAP Reviews", "CBOC Reports"]:
+    return 'audit'
+  elif 'Inspection' in topic:
+    return 'inspection'
+  elif 'Investigation' in topic:
+    return 'investigation'
+  elif 'FISMA Report' in topic:
+    return 'fisma'
+  else:
+    return 'other'
+
 def report_from(result, year_range):
   link = result.select("a")[0]
   title = link.text
@@ -78,7 +94,16 @@ def report_from(result, year_range):
     logging.debug("[%s] Skipping, not in requested range." % landing_url)
     return
 
-  landing_page = beautifulsoup_from_url(landing_url)
+  # These pages occassionally return text indicating there was a temporary
+  # error so we will retry if necessary.
+  for attempt in range(MAX_ATTEMPTS):
+    landing_page = beautifulsoup_from_url(landing_url)
+    page_text = landing_page.select("div.report-summary")[0].text.strip()
+    if page_text != ERROR_PAGE_TEXT:
+      break
+    time.sleep(3)
+  if attempt == MAX_ATTEMPTS - 1:
+    raise Exception("Could not retrieve url %s", landing_url)
 
   field_mapping = {}
   for field in landing_page.select("div.report-summary tr"):
@@ -88,6 +113,7 @@ def report_from(result, year_range):
 
   report_id = field_mapping['Report Number']
   topic = field_mapping['Report Type']
+  report_type = report_type_from_topic(topic)
   report_url = field_mapping.get('Report Link')
   summary = field_mapping['Summary']
   location = field_mapping['City/State']
@@ -112,6 +138,7 @@ def report_from(result, year_range):
     'report_id': report_id,
     'url': report_url,
     'landing_url': landing_url,
+    'type': report_type,
     'topic': topic,
     'summary': summary,
     'title': title,
@@ -140,6 +167,7 @@ def semiannual_report_from(result, year_range):
     'inspector_url': 'http://www.va.gov/oig',
     'agency': 'VA',
     'agency_name': "Department of Veterans Affairs",
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'topic': "Semiannual Report",
