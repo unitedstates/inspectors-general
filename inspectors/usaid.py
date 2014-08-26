@@ -22,13 +22,16 @@ AUDIT_REPORTS_URL = "https://oig.usaid.gov/auditandspecialbyyear?page={page}"
 TESTIMONY_URL = "https://oig.usaid.gov/testimony?page={page}"
 SEMIANNUAL_REPORTS_URL = "https://oig.usaid.gov/reports/semi-annual"
 
-PAGINATED_REPORT_FORMATS = [TESTIMONY_URL, AUDIT_REPORTS_URL]
+PAGINATED_REPORT_FORMATS = {
+  "testimony": TESTIMONY_URL,
+  "audit": AUDIT_REPORTS_URL,
+}
 
 def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the reports with pagination
-  for report_url_format in PAGINATED_REPORT_FORMATS:
+  for report_type, report_url_format in PAGINATED_REPORT_FORMATS.items():
     for page in range(0, 999):
       url = report_url_format.format(page=page)
       doc = BeautifulSoup(utils.download(url))
@@ -37,7 +40,7 @@ def run(options):
         break
 
       for result in results:
-        report = report_from(result, url, year_range)
+        report = report_from(result, url, report_type, year_range)
         if report:
           inspector.save_report(report)
 
@@ -49,7 +52,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def report_from(result, landing_url, report_type, year_range):
   link = result.find("a")
 
   if link:
@@ -92,6 +95,7 @@ def report_from(result, landing_url, year_range):
     'inspector_url': "https://oig.usaid.gov",
     'agency': "usaid",
     'agency_name': "Agency For International Development",
+    'type': report_type,
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -129,6 +133,7 @@ def semiannual_report_from(result, year_range):
     'inspector_url': "https://oig.usaid.gov",
     'agency': "usaid",
     'agency_name': "Agency For International Development",
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'title': title,
