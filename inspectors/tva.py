@@ -33,7 +33,7 @@ def run(options):
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.content")
     for result in results:
-      report = report_from(result, url, year_range)
+      report = audit_report_from(result, url, year_range)
       if report:
         inspector.save_report(report)
 
@@ -45,7 +45,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
-def report_from(result, landing_url, year_range):
+def audit_report_from(result, landing_url, year_range):
   header = result.find_previous("p", class_="heading")
 
   published_on_text, title, report_id = header.text.split("-", 2)
@@ -77,6 +77,7 @@ def report_from(result, landing_url, year_range):
     'inspector_url': 'http://oig.tva.gov',
     'agency': 'tva',
     'agency_name': 'Tennessee Valley Authority',
+    'type': 'audit',
     'report_id': report_id,
     'url': report_url,
     'title': title,
@@ -117,6 +118,7 @@ def semiannual_report_from(result, year_range):
     'inspector_url': 'http://oig.tva.gov',
     'agency': 'tva',
     'agency_name': 'Tennessee Valley Authority',
+    'type': 'semiannual_report',
     'report_id': report_id,
     'url': report_url,
     'title': title,
