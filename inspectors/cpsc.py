@@ -47,7 +47,6 @@ def report_type_from_title(title):
     return 'fisma'
   else:
     return 'other'
-  import pdb;pdb.set_trace()
 
 def report_from(result, year_range):
   link = result.find("a")
