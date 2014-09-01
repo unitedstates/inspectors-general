@@ -116,6 +116,11 @@ def clean_text(text):
 
 def audit_report_from(result, page_url, year_range):
   published_on_text = clean_text(result.select("td")[1].text)
+
+  # this is the header row
+  if published_on_text.strip() == "Date":
+    return None
+
   date_formats = ['%m/%d/%Y', '%m/%d%Y']
   for date_format in date_formats:
     try:
@@ -127,6 +132,7 @@ def audit_report_from(result, page_url, year_range):
   if not report_summary:
     # There is an extra row that we want to skip
     return
+
   report_id, title = report_summary.split(maxsplit=1)
   report_id = report_id.rstrip(":")
 
