@@ -8,7 +8,7 @@ import logging
 import time
 import calendar
 
-# oldest year: 1998
+archive = 1998
 
 #  Note: reports are only scraped from /our-inspector-general/reports/
 #  I think this is mostly just audit reports (other reports are scattered
@@ -26,7 +26,7 @@ import calendar
 BLACKLIST = ()
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
   only_id = options.get('report_id')
 
   logging.info("## Downloading reports from %i to %i" % (year_range[0], year_range[-1]))

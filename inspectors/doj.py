@@ -6,7 +6,8 @@
 # - I added language information since there were English and Spanish docs
 # - There are html and pdfs for the same docs so all the urls are tracked in urls
 
-# oldest year: 1996
+archive = 1996
+
 #
 # options:
 #   component - Any of the slugs in the `components` dict below,
@@ -494,7 +495,7 @@ def get_content(url):
 
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Can limit search to any of the components listed at the top of this script
   component = options.get('component')

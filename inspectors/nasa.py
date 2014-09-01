@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://oig.nasa.gov/
-# Oldest report: 1998
+archive = 1998
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -24,7 +24,7 @@ AUDITS_REPORTS_URL = "http://oig.nasa.gov/audits/reports/FY{}/tableData.html"
 OTHER_REPORT_URL = "http://oig.nasa.gov/investigations/reports.html"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for year in year_range:

@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://fhfaoig.gov/
-# Oldest report: 2010
+archive = 2010
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -34,7 +34,7 @@ OTHER_REPORT_URLS = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
   pages = options.get('pages', ALL_PAGES)
 
   # Pull the audit reports. Pages are 0-indexed.

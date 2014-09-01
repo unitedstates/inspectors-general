@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.dodig.mil/pubs/index.cfm
-# oldest year: 1986 (FY 1987)
+archive = 1986
 
 #
 # options:
@@ -272,7 +272,7 @@ def fetch_from_landing_page(landing_url):
   return (href, summary, maybe_unreleased, skip)
 
 def urls_for(options, only):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
   for office in only:
     # there's always a first year, and it defaults to current year
     params = {}

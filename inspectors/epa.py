@@ -6,8 +6,8 @@ import re
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# oldest year: 1996
-#
+archive = 1996
+
 # options:
 #   standard since/year options for a year range to fetch from.
 #
@@ -50,7 +50,7 @@ BASE_URL = 'http://www.epa.gov/oig/reports.html'
 RE_YEAR = re.compile(r'\d{4}')
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   only = options.get('topics')
   if only:

@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.cncsoig.gov
-# Oldest report: 1995
+archive = 1995
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -34,7 +34,7 @@ PEER_REVIEW_2012 = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   last_page = options.get("end")
   start = int(options.get("start", 1))

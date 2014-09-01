@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.treasury.gov/tigta/publications_semi.shtml
-# Oldest report: 1999
+archive = 1999
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -34,7 +34,7 @@ MISSING_REPORT_IDS = [
 ]
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for year in year_range:

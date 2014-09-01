@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://transition.fcc.gov/oig/oigreportsaudit.html
-# Oldest report: 1994
+archive = 1994
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -27,7 +27,7 @@ REPORT_URLS = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   for report_type, url in REPORT_URLS.items():
     doc = beautifulsoup_from_url(url)

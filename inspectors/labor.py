@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.oig.dol.gov/auditreports.htm
-# Oldest report: 1979
+archive = 1979
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -31,7 +31,7 @@ UNRELEASED_REPORT_IDS = [
 ]
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for year in year_range:

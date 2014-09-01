@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.prc.gov/prc-pages/about/offices/office.aspx?office=oig
-# Oldest report: 2007
+archive = 2007
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -26,7 +26,7 @@ COOKIES = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Find the number of pages to iterate
   doc = BeautifulSoup(utils.download(REPORTS_URL))

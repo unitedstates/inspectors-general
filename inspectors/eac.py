@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.eac.gov/inspector_general/
-# Oldest report: 2005
+archive = 2005
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -35,7 +35,7 @@ REPORT_URLS = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the reports
   for report_type, url in REPORT_URLS.items():

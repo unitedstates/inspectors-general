@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.sec.gov/about/offices/oig/inspector_general_reppubs_testimony.shtml
-# Oldest report: 1994
+archive = 1994
 
 #
 # options:
@@ -69,7 +69,7 @@ REPORT_URL_TO_PUBLISHED_DATETIMES = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
   topics = options.get('topics')
   if topics:
     topics = topics.split(",")

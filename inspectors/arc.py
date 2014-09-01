@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.arc.gov/oig
-# Oldest report: 2003
+archive = 2003
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -28,7 +28,7 @@ REPORT_TYPES = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for report_type, url in REPORT_TYPES.items():

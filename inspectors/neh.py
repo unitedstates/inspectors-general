@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.neh.gov/about/oig
-# Oldest report: 2000
+archive = 2000
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -21,7 +21,7 @@ AUDIT_REPORTS_URL = "http://www.neh.gov/about/oig/reviews"
 SEMIANNUAL_REPORTS_URL = "http://www.neh.gov/about/oig/semi-annual-reports"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))

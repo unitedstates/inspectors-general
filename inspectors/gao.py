@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.gao.gov/about/workforce/ig_reports.html
-# Oldest report: 2008
+archive = 2008
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -21,7 +21,7 @@ REPORTS_URL = "http://www.gao.gov/about/workforce/ig_reports.html"
 SEMIANNUAL_REPORTS_URL = "http://www.gao.gov/about/workforce/ig_semiannual.html"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit and semiannual reports
   for reports_url in [REPORTS_URL, SEMIANNUAL_REPORTS_URL]:

@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://www.nlrb.gov/who-we-are/inspector-general
-# Oldest report: 1998
+archive = 1998
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -33,7 +33,7 @@ REPORT_URLS = {
 
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit and inspections reports
   for report_type, reports_url in REPORT_URLS.items():

@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.gpo.gov/oig/
-# Oldest report: 2004
+archive = 2004
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -30,7 +30,7 @@ REPORT_URLS = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the reports
   for report_type, url in REPORT_URLS.items():

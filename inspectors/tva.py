@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://oig.tva.gov
-# Oldest report: 1998
+archive = 1998
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -23,7 +23,7 @@ SEMIANNUAL_REPORTS_URL = "http://oig.tva.gov/reports/oig-reports.xml"
 PDF_REPORT_FORMAT = "http://oig.tva.gov/reports/node/semi/{report_number}/semi{report_number}.pdf"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for year in year_range:

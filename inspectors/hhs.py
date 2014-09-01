@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://oig.hhs.gov/reports-and-publications/index.asp
-# Oldest report: 1985
+archive = 1985
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -166,7 +166,7 @@ BLACKLIST_REPORT_URLS = [
 BASE_URL = "https://oig.hhs.gov"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   topics = options.get('topics')
   if topics:

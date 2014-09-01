@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.va.gov/oig/apps/info/OversightReports.aspx
-# Oldest report: 1996
+archive = 1996
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -51,7 +51,7 @@ MAX_ATTEMPTS = 5
 ERROR_PAGE_TEXT = 'This report summary cannnot be displayed at this time.'
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for page in range(1, 1000):

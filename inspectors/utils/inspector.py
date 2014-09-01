@@ -211,11 +211,18 @@ def year_from(report):
   return int(report['published_on'].split("-")[0])
 
 # assume standard options for IG scrapers, since/year
-def year_range(options):
+def year_range(options, archive):
   this_year = datetime.datetime.now().year
 
-  since = options.get('since')
-  if type(since) is not str: since = None
+  # --archive will use scraper's oldest year, if passed in.
+  if archive and options.get('archive'):
+    since = archive
+
+  # otherwise, use --since year if present
+  else:
+    since = options.get('since')
+    if type(since) is not str: since = None
+
   if since:
     since = int(since)
     if since > this_year:

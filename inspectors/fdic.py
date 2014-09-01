@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.fdicoig.gov
-# Oldest report: 1998
+archive = 1998
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -23,7 +23,7 @@ REPORTS_URL = "http://www.fdicoig.gov/Search-Engine.asp"
 GENERIC_MISSING_REPORT_URL = 'http://www.fdicoig.gov/notice.pdf'
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))

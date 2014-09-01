@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.sigtarp.gov
-# Oldest report: 2009
+archive = 2009
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -24,7 +24,7 @@ REPORT_URLS = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the reports
   for report_type, report_url in REPORT_URLS.items():

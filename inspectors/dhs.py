@@ -6,7 +6,7 @@ from datetime import datetime
 import urllib.parse
 import logging
 
-# oldest year: 2002
+archive = 2002
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -16,7 +16,7 @@ import logging
 #   report_id: use in conjunction with 'component' to get only one report
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   component = options.get('component')
   if component:

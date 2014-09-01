@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.oig.lsc.gov
-# Oldest report: 1994
+archive = 1994
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -43,7 +43,7 @@ REPORT_URLS = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for report_type, url in REPORT_URLS.items():

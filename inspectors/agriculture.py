@@ -8,8 +8,9 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
+
 # http://www.usda.gov/oig/rptsaudits.htm
-# Oldest report: 1978
+archive = 1978
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -114,7 +115,7 @@ LOWER_PDF_REPORT_IDS = [
 ]
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for agency_slug, agency_path in AGENCY_URLS.items():

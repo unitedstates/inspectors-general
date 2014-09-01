@@ -5,13 +5,13 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import logging
 
-# oldest year: 2006
+archive = 2006
 
 # options:
 #   --pages: limit the scraper to a certain number of pages
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   max_pages = options.get('pages', None)
   if max_pages:

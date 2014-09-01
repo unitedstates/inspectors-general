@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.cpb.org/oig/
-# Oldest report: 2010
+archive = 2010
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -40,7 +40,7 @@ REPORT_TYPE_MAP = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the reports
   for report_type, url in REPORT_TYPE_MAP.items():

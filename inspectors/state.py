@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://oig.state.gov/lbry/index.htm
-# Oldest report: 1992?
+archive = 1992
 
 #
 # options:
@@ -109,7 +109,7 @@ BLACKLIST_REPORT_URLS = [
 REPORT_URLS_SEEN = set()
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   topics = options.get('topics')
   if topics:
