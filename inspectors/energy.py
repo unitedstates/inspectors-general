@@ -87,7 +87,7 @@ RE_CLASSIFIED = re.compile('report is classified', re.I)
 class EnergyScraper(object):
   def run(self, options):
     self.options = options
-    self.year_range = inspector.year_range(self.options)
+    self.year_range = inspector.year_range(self.options, archive)
     self.first_date = datetime.datetime(self.year_range[0], 1, 1)
     self.last_date = datetime.datetime(self.year_range[-1], 12, 31)
 
