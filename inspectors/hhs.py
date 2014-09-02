@@ -123,6 +123,7 @@ TOPIC_WITH_SUBTOPICS = ['OAS', 'OE']
 REPORT_URL_MAPPING = {
   "https://oig.hhs.gov/reports-and-publications/medicaid-integrity/2011/": "https://oig.hhs.gov/reports-and-publications/medicaid-integrity/2011/medicaid_integrity_reportFY11.pdf",
   "https://oig.hhs.gov/reports-and-publications/compendium/2011.asp": "https://oig.hhs.gov/publications/docs/compendium/2011/CMP-March2011-Final.pdf",
+  "https://oig.hhs.gov/reports-and-publications/oas/reports/region3/30700500.htm": "https://oig.hhs.gov/oas/reports/region3/30700500.htm",
 }
 
 REPORT_PUBLISHED_MAPPING = {
