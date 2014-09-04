@@ -5,7 +5,6 @@ from urllib.parse import urljoin
 import re
 from bs4 import BeautifulSoup
 from utils import utils, inspector
-import logging
 
 archive = 1996
 
@@ -117,7 +116,7 @@ def report_from(tds, published_on_dt, year):
     report['summary_only'] = True
 
   elif not report_url and not glance_url:
-    raise Exception("Couldn't find a link for report %s" % report_id)
+    raise Exception("Couldn't find a link for report!")
 
 
   report_id = tds[0].text.strip()
