@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.cftc.gov/About/OfficeoftheInspectorGeneral/index.htm
-# Oldest report: 2000
+archive = 2000
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -27,7 +27,7 @@ REPORT_PUBLISHED_MAPPING = {
 REPORTS_URL = "http://www.cftc.gov/About/OfficeoftheInspectorGeneral/index.htm"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))

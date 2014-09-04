@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://oig.ssa.gov/
-# Oldest report: 1996
+archive = 1996
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -38,7 +38,7 @@ OTHER_REPORT_URLS = {
 BASE_REPORT_URL = "http://oig.ssa.gov/"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for year in year_range:

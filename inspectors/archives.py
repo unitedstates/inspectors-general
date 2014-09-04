@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.archives.gov/oig/
-# Oldest report: 2005
+archive = 2005
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -23,7 +23,7 @@ SEMIANNUAL_REPORTS_URL = "http://www.archives.gov/oig/reports/semiannual-congres
 PEER_REVIEWS_URL = "http://www.archives.gov/oig/reports/peer-review-reports.html"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for year in year_range:

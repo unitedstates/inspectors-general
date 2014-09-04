@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://oig.hhs.gov/reports-and-publications/index.asp
-# Oldest report: 1985
+archive = 1985
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -123,6 +123,7 @@ TOPIC_WITH_SUBTOPICS = ['OAS', 'OE']
 REPORT_URL_MAPPING = {
   "https://oig.hhs.gov/reports-and-publications/medicaid-integrity/2011/": "https://oig.hhs.gov/reports-and-publications/medicaid-integrity/2011/medicaid_integrity_reportFY11.pdf",
   "https://oig.hhs.gov/reports-and-publications/compendium/2011.asp": "https://oig.hhs.gov/publications/docs/compendium/2011/CMP-March2011-Final.pdf",
+  "https://oig.hhs.gov/reports-and-publications/oas/reports/region3/30700500.htm": "https://oig.hhs.gov/oas/reports/region3/30700500.htm",
 }
 
 REPORT_PUBLISHED_MAPPING = {
@@ -166,7 +167,7 @@ BLACKLIST_REPORT_URLS = [
 BASE_URL = "https://oig.hhs.gov"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   topics = options.get('topics')
   if topics:

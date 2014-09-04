@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://www.nsf.gov/oig/
-# Oldest report: 1989
+archive = 1989
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -38,7 +38,7 @@ REPORT_PUBLISHED_MAP = {
 REPORT_LINK_TEXT = re.compile("Entire.+Document", re.DOTALL)
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))

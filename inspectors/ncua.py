@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.ncua.gov/about/Leadership/Pages/page_oig.aspx
-# Oldest report: 1999
+archive = 1999
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -23,7 +23,7 @@ SEMIANNUAL_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/Semi
 FOIA_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/FOIA2012.aspx"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for year in year_range:

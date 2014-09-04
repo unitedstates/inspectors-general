@@ -9,7 +9,8 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://house.gov/content/learn/officers_and_organizations/inspector_general.php
-# Oldest report: FY 2008, published in 2009.
+
+archive = 2008
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -35,7 +36,7 @@ REPORT_ID_DATE_EXTRACTION = [
 ]
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the reports
   for url in [IG_URL]:

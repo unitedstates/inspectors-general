@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.loc.gov/about/office-of-the-inspector-general/
-# Oldest report: 2001
+archive = 2001
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -61,7 +61,7 @@ def generate_id(title, published_on=None):
 class LibraryOfCongressScraper(object):
   def __init__(self, options):
     self.options = options
-    self.year_range = inspector.year_range(options)
+    self.year_range = inspector.year_range(options, archive)
 
   def run(self):
     self.get_reports_by_year()

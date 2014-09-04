@@ -19,7 +19,7 @@ from utils import utils, inspector
 #   inspector.save_report(report)
 
 # <oig_url>
-# Oldest report: <oldest_report_year>
+archive = <oldest_report_year>
 
 # options:
 #   standard since/year options for a year range to fetch from.

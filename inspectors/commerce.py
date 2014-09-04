@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.oig.doc.gov/Pages/Audits-Evaluations.aspx?YearStart=01/01/1996&YearEnd=12/31/2014
-# Oldest report: 1996
+archive = 1996
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -45,7 +45,7 @@ TYPE_MAP = {
 BASE_TOPIC_URL = "http://www.oig.doc.gov/Pages/{}.aspx"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   topics = options.get('topics')
   if topics:

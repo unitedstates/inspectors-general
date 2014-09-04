@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.peacecorps.gov/about/inspgen/
-# Oldest report: 1989
+archive = 1989
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -42,7 +42,7 @@ REPORT_TYPE_MAP = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))

@@ -6,7 +6,7 @@ from datetime import datetime
 import re
 import logging
 
-# oldest year: 1979
+archive = 1979
 
 def run(options):
   crawl_index(SEMIANNUAL_REPORTS_URL, options)
@@ -15,7 +15,7 @@ def run(options):
   crawl_index(MISCELLANEOUS_REPORTS_URL, options)
 
 def crawl_index(base_url, options, is_meta_index=False):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
   max_pages = options.get('pages')
   if max_pages:
     max_pages = int(max_pages)

@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://www2.ed.gov/about/offices/list/oig/areports.html
-# Oldest report: 1995
+archive = 1995
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -54,7 +54,7 @@ REPORT_PUBLISHED_MAP = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # optional: limit to a single report
   report_id = options.get("report_id")
@@ -213,6 +213,9 @@ def report_from(result, url, report_type, year_range):
         except AttributeError:
           published_on_text = "/".join(re.search("(\w+) (\d+)", result_text).groups())
           published_on = datetime.datetime.strptime(published_on_text, '%B/%Y')
+
+  if "thestartingline.ed.gov" in report_url:
+    return None
 
   report = {
     'inspector': 'education',

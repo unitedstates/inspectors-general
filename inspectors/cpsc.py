@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://www.cpsc.gov/en/about-cpsc/inspector-general/
-# Oldest report: 2003
+archive = 2003
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -25,7 +25,7 @@ BLACKLIST_REPORT_URLS = [
 ]
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   doc = BeautifulSoup(utils.download(REPORTS_URL))
   results = doc.select("ul.summary-list li")

@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://oig.federalreserve.gov/reports/allyearsboardcfpb.htm
-# Oldest report: 2007
+archive = 2007
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -46,7 +46,7 @@ REPORT_PUBLISHED_MAPPING = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   doc = beautifulsoup_from_url(REPORTS_URL)

@@ -8,9 +8,9 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://www.oig.dot.gov/
-# oldest year: 1996
+archive = 1996
 
-#
+
 # options:
 #   standard since/year options for a year range to fetch from.
 #
@@ -63,7 +63,7 @@ LANDING_URLS_TO_REPORT_LINKS = {
 BASE_REPORT_PAGE_URL = BASE_REPORT_URL = "https://www.oig.dot.gov/"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   topics = options.get('topics')
   if topics:

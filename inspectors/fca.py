@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://www.fca.gov/home/inspector.html
-# Oldest report: 1989
+archive = 1989
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -27,7 +27,7 @@ REPORT_PUBLISHED_MAPPING = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the general reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))

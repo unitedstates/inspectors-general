@@ -6,8 +6,8 @@ import re
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# oldest year: 1996
-#
+archive = 1996
+
 # options:
 #   standard since/year options for a year range to fetch from.
 #
@@ -50,7 +50,7 @@ BASE_URL = 'http://www.epa.gov/oig/reports.html'
 RE_YEAR = re.compile(r'\d{4}')
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   only = options.get('topics')
   if only:
@@ -101,8 +101,6 @@ def report_from(tds, published_on_dt, year):
     'summary_only': False
   }
 
-  report_id = tds[0].text
-
   report_url = extract_url(tds[3])
   if report_url:
     report_url = urljoin(BASE_URL, report_url)
@@ -118,7 +116,13 @@ def report_from(tds, published_on_dt, year):
     report['summary_only'] = True
 
   elif not report_url and not glance_url:
-    raise Exception("Couldn't find a link for report %s" % report_id)
+    raise Exception("Couldn't find a link for report!")
+
+
+  report_id = tds[0].text.strip()
+  # fallback, only needed for one testimony, apparently
+  if (report_id == "") or (not report_id):
+    report_id = report_url.split("/")[-1]
 
   published_on = datetime.datetime.strftime(published_on_dt, '%Y-%m-%d')
 

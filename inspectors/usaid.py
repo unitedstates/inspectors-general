@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://oig.usaid.gov
-# Oldest report: 1998
+archive = 1998
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -28,7 +28,7 @@ PAGINATED_REPORT_FORMATS = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the reports with pagination
   for report_type, report_url_format in PAGINATED_REPORT_FORMATS.items():

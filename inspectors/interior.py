@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.doi.gov/oig/reports/index.cfm
-# Oldest report: 1993
+archive = 1993
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -34,7 +34,7 @@ POST_DATA = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   response = utils.scraper.urlopen(REPORT_SEARCH_URL, method='POST', body=POST_DATA)
   doc = BeautifulSoup(response)

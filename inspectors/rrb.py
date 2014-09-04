@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.rrb.gov/oig/Default.asp
-# Oldest report: 1995
+archive = 1995
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -21,7 +21,7 @@ REPORTS_URL = "http://www.rrb.gov/oig/Library.asp"
 AUDIT_REPORTS_URL = "http://www.rrb.gov/oig/reports/FY{year}reports.asp"
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   doc = BeautifulSoup(utils.download(REPORTS_URL))
 

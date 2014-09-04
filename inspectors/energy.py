@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # website: http://energy.gov/ig/
-# oldest year: 1995
+archive = 1995
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -82,12 +82,13 @@ RE_REPORT_ID = re.compile('(.+): (\S+[-/]\S+)')
 RE_NOT_AVAILABLE = re.compile('not available (?:for|of) viewing', re.I)
 RE_NOT_AVAILABLE_2 = re.compile('not publically available', re.I)
 RE_NOT_AVAILABLE_3 = re.compile('official use only', re.I)
+RE_NOT_AVAILABLE_4 = re.compile('to obtain a copy of this report please email', re.I)
 RE_CLASSIFIED = re.compile('report is classified', re.I)
 
 class EnergyScraper(object):
   def run(self, options):
     self.options = options
-    self.year_range = inspector.year_range(self.options)
+    self.year_range = inspector.year_range(self.options, archive)
     self.first_date = datetime.datetime(self.year_range[0], 1, 1)
     self.last_date = datetime.datetime(self.year_range[-1], 12, 31)
 
@@ -148,7 +149,7 @@ class EnergyScraper(object):
     # and this isn't it, back out
     only_report_id = self.options.get('report_id')
     if only_report_id and (only_report_id != report_id):
-      # logging.warn("[%s] Skipping, not what was asked for." % report_id)
+      logging.warn("[%s] Skipping, not what was asked for." % report_id)
       return
 
     report_url, summary, unreleased = self.fetch_from_landing_page(landing_url)
@@ -183,6 +184,7 @@ class EnergyScraper(object):
     if (summary and (RE_NOT_AVAILABLE.search(summary)
                      or RE_NOT_AVAILABLE_2.search(summary)
                      or RE_NOT_AVAILABLE_3.search(summary)
+                     or RE_NOT_AVAILABLE_4.search(summary)
                      or RE_CLASSIFIED.search(summary))):
       unreleased = True
 

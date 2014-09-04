@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.sba.gov/office-of-inspector-general
-# Oldest report: 1994
+archive = 1994
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -36,7 +36,7 @@ REPORT_PUBLISHED_MAPPING = {
 ALL_PAGES = 1000
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Suggested flow, for an IG which paginates results.
   pages = options.get('pages', ALL_PAGES)

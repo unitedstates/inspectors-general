@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import logging
 
-# oldest year: 1998
+archive = 1998
 #
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -30,7 +30,7 @@ ALL_PAGES = 1000
 
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
   pages = options.get('pages', ALL_PAGES)
 
   # default to starting at page 1
@@ -143,7 +143,7 @@ def last_page_for(doc):
 # ignore reports after parsing their data (before saving them).
 # Inefficient, but more efficient than not supporting --year at all.
 def url_for(options, page=1):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   url = "https://uspsoig.gov/document-library?"
 

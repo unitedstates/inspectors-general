@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.nrc.gov/insp-gen.html
-# Oldest report: 1995
+archive = 1995
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -44,7 +44,7 @@ REPORT_PUBLISHED_MAPPING = {
 PDF_REGEX = re.compile("pdf")
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for year in year_range:

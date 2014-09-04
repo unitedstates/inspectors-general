@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.fmc.gov/bureaus_offices/office_of_inspector_general.aspx
-# Oldest report: 2005
+archive = 2005
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -41,7 +41,7 @@ BLACKLIST_REPORT_URLS = [
 ]
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))

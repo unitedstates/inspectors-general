@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.oig.denali.gov/
-# Oldest report: 2006
+archive = 2006
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -68,7 +68,7 @@ REPORT_PUBLISHED_MAPPING = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   doc = BeautifulSoup(utils.download(REPORTS_URL))
   results = doc.select("#mainContent blockquote a")

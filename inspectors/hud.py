@@ -7,13 +7,12 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-#
+archive = 2001
+
 # options:
 #   standard since/year options for a year range to fetch from.
 #
 #   pages - number of pages to fetch. defaults to all of them (using a very high number)
-#
-# Reports available since 2001
 #
 # Notes for IG's web team:
 #   - Filters only work back through 2004, but there are documents back to 2001
@@ -44,7 +43,7 @@ UNRELEASED_TEXTS = [
 
 def run(options):
   pages = options.get('pages', ALL_PAGES)
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   for page in range(1, (int(pages) + 1)):
     logging.debug("## Downloading page %i" % page)

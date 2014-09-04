@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.si.edu/OIG
-# Oldest report: 2003
+archive = 2003
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -38,7 +38,7 @@ OTHER_REPORTS_URl = "http://www.si.edu/OIG/ReportsToCongress"
 report_ids_seen = set()
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # # Pull the RSS feed
   doc = BeautifulSoup(utils.download(RSS_URL))

@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.eeoc.gov/eeoc/oig/index.cfm
-# Oldest report: 2003
+archive = 2003
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -28,7 +28,7 @@ REPORT_PUBLISHED_MAP = {
 }
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))
