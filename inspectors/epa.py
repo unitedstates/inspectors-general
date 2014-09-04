@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 import re
 from bs4 import BeautifulSoup
 from utils import utils, inspector
+import logging
 
 archive = 1996
 
@@ -101,8 +102,6 @@ def report_from(tds, published_on_dt, year):
     'summary_only': False
   }
 
-  report_id = tds[0].text
-
   report_url = extract_url(tds[3])
   if report_url:
     report_url = urljoin(BASE_URL, report_url)
@@ -119,6 +118,12 @@ def report_from(tds, published_on_dt, year):
 
   elif not report_url and not glance_url:
     raise Exception("Couldn't find a link for report %s" % report_id)
+
+
+  report_id = tds[0].text.strip()
+  # fallback, only needed for one testimony, apparently
+  if (report_id == "") or (not report_id):
+    report_id = report_url.split("/")[-1]
 
   published_on = datetime.datetime.strftime(published_on_dt, '%Y-%m-%d')
 
