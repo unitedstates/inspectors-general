@@ -82,6 +82,7 @@ RE_REPORT_ID = re.compile('(.+): (\S+[-/]\S+)')
 RE_NOT_AVAILABLE = re.compile('not available (?:for|of) viewing', re.I)
 RE_NOT_AVAILABLE_2 = re.compile('not publically available', re.I)
 RE_NOT_AVAILABLE_3 = re.compile('official use only', re.I)
+RE_NOT_AVAILABLE_4 = re.compile('to obtain a copy of this report please email', re.I)
 RE_CLASSIFIED = re.compile('report is classified', re.I)
 
 class EnergyScraper(object):
@@ -148,7 +149,7 @@ class EnergyScraper(object):
     # and this isn't it, back out
     only_report_id = self.options.get('report_id')
     if only_report_id and (only_report_id != report_id):
-      # logging.warn("[%s] Skipping, not what was asked for." % report_id)
+      logging.warn("[%s] Skipping, not what was asked for." % report_id)
       return
 
     report_url, summary, unreleased = self.fetch_from_landing_page(landing_url)
@@ -183,6 +184,7 @@ class EnergyScraper(object):
     if (summary and (RE_NOT_AVAILABLE.search(summary)
                      or RE_NOT_AVAILABLE_2.search(summary)
                      or RE_NOT_AVAILABLE_3.search(summary)
+                     or RE_NOT_AVAILABLE_4.search(summary)
                      or RE_CLASSIFIED.search(summary))):
       unreleased = True
 
