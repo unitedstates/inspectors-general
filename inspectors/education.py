@@ -214,6 +214,9 @@ def report_from(result, url, report_type, year_range):
           published_on_text = "/".join(re.search("(\w+) (\d+)", result_text).groups())
           published_on = datetime.datetime.strptime(published_on_text, '%B/%Y')
 
+  if "thestartingline.ed.gov" in report_url:
+    return None
+
   report = {
     'inspector': 'education',
     'inspector_url': 'https://www2.ed.gov/about/offices/list/oig/',
