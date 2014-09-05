@@ -75,7 +75,7 @@ REPORT_AGENCY_MAP = {
 REPORT_PUBLISHED_MAP = {
   "OIG-CA-13-006": datetime.datetime(2013, 3, 29),
   "OIG-13-CA-008": datetime.datetime(2013, 6, 10),
-  "Treasury": datetime.datetime(2010, 11, 19),
+  "Treasury Freedom of Information Act (FOIA) Request Review": datetime.datetime(2010, 11, 19),
 }
 
 def run(options):
@@ -194,6 +194,16 @@ def report_from(result, page_url, report_type, year_range):
   report_id, title = title.split(maxsplit=1)
   report_id = report_id.rstrip(":")
   report_url = urljoin(page_url, result.get('href'))
+
+  if report_id.find('-') == -1:
+    # If the first word of the text doesn't contain a hyphen,
+    # then it's probably part of the title, and not a tracking number.
+    # In this case, fall back to the URL.
+    print("before", report_id)
+    report_filename = report_url.split("/")[-1]
+    report_id, extension = os.path.splitext(report_filename)
+    report_id = unquote(report_id)
+    print("after", report_id)
 
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
