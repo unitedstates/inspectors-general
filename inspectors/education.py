@@ -116,6 +116,8 @@ def audit_report_from(result, page_url, year_range):
   report_id = None
   if len(result.select("td")) != 3:
     report_id = result.select("td")[1].text.strip()
+    if report_id.startswith("ACN: "):
+      report_id = report_id[5:]
   if not report_id:
     report_filename = report_url.split("/")[-1]
     report_id, extension = os.path.splitext(report_filename)
