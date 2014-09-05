@@ -132,6 +132,7 @@ def report_from(result, year_range):
   report_id_node = landing_page.find("div", class_="field-label", text=REPORT_LABEL_REGEX)
   if report_id_node:
     report_id = "-".join(report_id_node.find_next("div", class_="field-item").text.split())
+    report_id = report_id.replace(':', '')
   else:
     report_filename_without_extension, extension = os.path.splitext(report_filename)
     report_filename_slug = "-".join(report_filename_without_extension.split())[:30]
