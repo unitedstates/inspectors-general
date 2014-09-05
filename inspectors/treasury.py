@@ -112,7 +112,7 @@ def run(options):
 
 def clean_text(text):
   # A lot of text on this page has extra characters
-  return text.replace('\u200b', '').replace('\xa0', ' ').strip()
+  return text.replace('\u200b', '').replace('\ufffd', ' ').replace('\xa0', ' ').strip()
 
 def audit_report_from(result, page_url, year_range):
   published_on_text = clean_text(result.select("td")[1].text)
