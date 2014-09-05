@@ -3,7 +3,7 @@
 import datetime
 import logging
 import os
-from urllib.parse import urljoin
+from urllib.parse import urljoin, unquote
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -222,6 +222,7 @@ def semiannual_report_from(result, page_url, year_range):
   report_url = urljoin(page_url, result.get('href'))
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
+  report_id = unquote(report_id)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
