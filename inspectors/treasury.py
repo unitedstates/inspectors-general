@@ -62,7 +62,8 @@ OTHER_URLS = {
 
 UNRELEASED_REPORTS = [
   # These reports do not say they are unreleased, but there are no links
-  "IGATI",
+  "IGATI 2006",
+  "IGATI 2007",
   "OIG-CA-07-001",
   "OIG-08-039",
   "OIG-08-013",
@@ -135,6 +136,10 @@ def audit_report_from(result, page_url, year_range):
 
   report_id, title = report_summary.split(maxsplit=1)
   report_id = report_id.rstrip(":")
+
+  if report_id == 'IGATI':
+    # There are two such annual reports from different years, append the year
+    report_id = '%s %d' % (report_id, published_on.year)
 
   if report_id in REPORT_AGENCY_MAP:
     agency_slug = REPORT_AGENCY_MAP[report_id]
