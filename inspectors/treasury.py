@@ -190,6 +190,7 @@ def report_from(result, page_url, report_type, year_range):
       title = result.text
       published_on = None
 
+  title = clean_text(title)
   report_id, title = title.split(maxsplit=1)
   report_id = report_id.rstrip(":")
   report_url = urljoin(page_url, result.get('href'))
