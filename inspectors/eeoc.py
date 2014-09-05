@@ -33,6 +33,8 @@ def run(options):
   # Pull the reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))
   semiannual_report_results, other_results = doc.select("table tr")[1].select("td")
+  merge_items(semiannual_report_results)
+  merge_items(other_results)
 
   for result in semiannual_report_results.select("li"):
     report = semiannual_report_from(result, year_range, title_prefix="Semiannual Report - ")
@@ -111,5 +113,44 @@ def report_from(result, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
+def merge_items(parent):
+  '''This function loops through all the <li> tags in a subtree of a document,
+  checks if two neighboring items each contain one link to the same href,
+  and if they do, merges them together into one <li> with one <a> tag.'''
+
+  items = parent.find_all("li")
+  for i in range(len(items) - 2, -1, -1):
+    first_item = items[i]
+    second_item = items[i+1]
+
+    first_links = first_item.find_all("a")
+    if len(first_links) != 1:
+      continue
+    second_links = second_item.find_all("a")
+    if len(second_links) != 1:
+      continue
+    first_link = first_links[0]
+    second_link = second_links[0]
+
+    if first_link.get("href") != second_link.get("href"):
+      continue
+
+    # Transplant the contents of the second link into the end of the first link
+    first_link.append(" ")
+    while second_link.contents:
+      temp = second_link.contents[0].extract()
+      first_link.append(temp)
+
+    # Discard the now-empty second link
+    second_link.extract()
+
+    # Transplant everything else inside the <li> to the end of the first <li>
+    while second_item.contents:
+      temp = second_item.contents[0].extract()
+      first_item.append(temp)
+
+    # Discard the now-empty list item
+    second_item.extract()
 
 utils.run(run) if (__name__ == "__main__") else None
