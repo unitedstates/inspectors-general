@@ -42,7 +42,7 @@ def run(options):
 def report_from(result, landing_url, report_type, year_range):
   link = result.find("a", text=True)
   report_url = urljoin(landing_url, link.get('href'))
-  report_id = "-".join(link.text.split())
+  report_id = "-".join(link.text.split()).replace(':', '')
   result_text = [x for x in result.stripped_strings]
   title = " ".join(result_text[0].split())
 
