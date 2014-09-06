@@ -68,6 +68,90 @@ REPORT_URL_TO_PUBLISHED_DATETIMES = {
   "https://www.sec.gov/about/offices/oig/reports/reppubs/other/oig_strategicplan2010-2015-9-1-10-508.pdf": datetime.datetime(2010, 9, 1),
 }
 
+CANNED_REPORTS = [
+  {
+    'report_id': '271fin',
+    'type': 'audit',
+    'topic': 'ISSUED_REPORTS',
+    'url': 'https://www.sec.gov/about/oig/audit/271fin.htm',
+    'landing_url': TOPIC_TO_URL['ISSUED_REPORTS'],
+    'title': 'Property System',
+    'published_on': '1998-09-25',
+  },
+  {
+    'report_id': '384fin',
+    'type': 'audit',
+    'topic': 'ISSUED_REPORTS',
+    'url': 'https://www.sec.gov/about/oig/audit/384fin.pdf',
+    'landing_url': TOPIC_TO_URL['ISSUED_REPORTS'],
+    'title': 'Enforcement Disgorgement Waivers',
+    'published_on': '2005-01-18',
+  },
+  {
+    'report_id': '392fin',
+    'type': 'audit',
+    'topic': 'ISSUED_REPORTS',
+    'url': 'https://www.sec.gov/about/oig/audit/392fin.pdf',
+    'landing_url': TOPIC_TO_URL['ISSUED_REPORTS'],
+    'title': 'NERO IT Management',
+    'published_on': '2005-02-14',
+  },
+  {
+    'report_id': '394fin',
+    'type': 'audit',
+    'topic': 'ISSUED_REPORTS',
+    'url': 'https://www.sec.gov/about/oig/audit/394fin.pdf',
+    'landing_url': TOPIC_TO_URL['ISSUED_REPORTS'],
+    'title': 'Targeting BD Compliance Examinations',
+    'published_on': '2005-09-22',
+  },
+  {
+    'report_id': '398fin',
+    'type': 'audit',
+    'topic': 'ISSUED_REPORTS',
+    'url': 'https://www.sec.gov/about/oig/audit/398fin.pdf',
+    'landing_url': TOPIC_TO_URL['ISSUED_REPORTS'],
+    'title': 'Management of Wireless Communication Devices',
+    'published_on': '2005-03-24',
+  },
+  {
+    'report_id': '399fin',
+    'type': 'audit',
+    'topic': 'ISSUED_REPORTS',
+    'url': 'https://www.sec.gov/about/oig/audit/399fin.pdf',
+    'landing_url': TOPIC_TO_URL['ISSUED_REPORTS'],
+    'title': 'Government Performance & Results Act - 2004',
+    'published_on': '2005-09-27',
+  },
+  {
+    'report_id': '400fin',
+    'type': 'audit',
+    'topic': 'ISSUED_REPORTS',
+    'url': 'https://www.sec.gov/about/oig/audit/400fin.pdf',
+    'landing_url': TOPIC_TO_URL['ISSUED_REPORTS'],
+    'title': 'SERO IT Management',
+    'published_on': '2005-03-24',
+  },
+  {
+    'report_id': '406fin',
+    'type': 'audit',
+    'topic': 'ISSUED_REPORTS',
+    'url': 'https://www.sec.gov/about/oig/audit/406fin.pdf',
+    'landing_url': TOPIC_TO_URL['ISSUED_REPORTS'],
+    'title': '2005 FISMA Executive Summary Report',
+    'published_on': '2005-09-23',
+  },
+  {
+    'report_id': '409fin',
+    'type': 'audit',
+    'topic': 'ISSUED_REPORTS',
+    'url': 'https://www.sec.gov/about/oig/audit/409fin.pdf',
+    'landing_url': TOPIC_TO_URL['ISSUED_REPORTS'],
+    'title': 'Security Certification and Accreditation of ACTS Plus',
+    'published_on': '2005-09-30',
+  },
+]
+
 def run(options):
   year_range = inspector.year_range(options, archive)
   topics = options.get('topics')
@@ -100,6 +184,12 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+  for canned_report in CANNED_REPORTS:
+    report_datetime = datetime.datetime.strptime(canned_report["published_on"], "%Y-%m-%d")
+    if report_datetime.year in year_range:
+      add_common_fields(canned_report)
+      inspector.save_report(canned_report)
+
 def report_from(result, landing_url, topic, year_range, last_published_on):
   try:
     report_link = result.select("a")[0]
@@ -127,11 +217,7 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
 
   logging.debug("### Processing report %s" % report_link)
 
-  return {
-    'inspector': 'sec',
-    'inspector_url': 'http://www.sec.gov/about/offices/oig/inspector_general_investigations_reports.shtml',
-    'agency': 'sec',
-    'agency_name': 'Securities and Exchange Commission',
+  report = {
     'report_id': report_id,
     'type': report_type,
     'topic': topic,
@@ -139,7 +225,15 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
     'landing_url': landing_url,
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
-  }, published_on
+  }
+  add_common_fields(report)
+  return report, published_on
+
+def add_common_fields(report):
+  report['inspector'] = 'sec'
+  report['inspector_url'] = 'http://www.sec.gov/about/offices/oig/inspector_general_investigations_reports.shtml'
+  report['agency'] = 'sec'
+  report['agency_name'] = 'Securities and Exchange Commission'
 
 def find_first_matching_datetime_format_from_text(text_datetime_format_tuples):
   for text, datetime_format in text_datetime_format_tuples:
