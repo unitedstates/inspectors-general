@@ -51,6 +51,12 @@ def run(options):
       # last report and reuse in those cases
       temp = DATE_RE.search(all_text)
       if temp:
+        # For semiannual reports to congress, use the second date from the text
+        # Also, tack the date onto the report_id to disambiguate
+        if page_url == SEMIANNUAL_REPORTS_AND_TESTIMONIES_URL and a_text.strip().startswith('Semiannual Report to Congress'):
+          a_text = a_text.strip() + ' ' + temp.group(0) + ' - '
+          temp = DATE_RE.search(all_text, temp.end() + 1)
+          a_text = a_text + temp.group(0)
         date_text = temp.group(0).replace('Sept ', 'Sep ')
         try:
           published_on = datetime.strptime(date_text, '%B %d, %Y')
