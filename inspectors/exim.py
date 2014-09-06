@@ -17,7 +17,6 @@ def run(options):
     doc = BeautifulSoup(body)
 
     maincontent = doc.select("div#CS_Element_eximpagemaincontent")[0]
-    after_maincontent = maincontent.nextSibling
     all_a = maincontent.find_all("a")
 
     for a in all_a:
