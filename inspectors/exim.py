@@ -11,58 +11,58 @@ archive = 2007
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  for page_url in [WHATS_NEW_URL]:
+  published_on = None
+  for page_url in [WHATS_NEW_URL, WHATS_NEW_ARCHIVE_URL, SEMIANNUAL_REPORTS_AND_TESTIMONIES_URL]:
     body = utils.download(page_url)
     doc = BeautifulSoup(body)
 
     maincontent = doc.select("div#CS_Element_eximpagemaincontent")[0]
     after_maincontent = maincontent.nextSibling
-    all_strong = maincontent.find_all("strong")
+    all_a = maincontent.find_all("a")
 
-    for strong in all_strong:
-      strong_text = strong.text
-      if strong_text.strip() == "":
+    for a in all_a:
+      a_text = str(a.text)
+      if a_text.strip() == "":
         continue
-      all_text = ""
-      node = strong.next
-      link = None
+
+      a_href = a.get("href")
+      if a_href.startswith("mailto:"):
+        continue
+      if a_href.startswith("https://public.govdelivery.com/"):
+        continue
+      if page_url == WHATS_NEW_URL and a_href == "/oig/whats-new-archive.cfm":
+        # end of page
+        break
+
+      all_text = a_text
+      node = a.previous
       while True:
-        if isinstance(node, Tag):
-          if node.name == "strong":
-            if node.text.strip() != "":
-              break
-          elif node.name == "a":
-            if node.text.strip() != "":
-              href = node.get("href")
-              if page_url == WHATS_NEW_URL and href == "/oig/whats-new-archive.cfm":
-                # end of page
-                break
-              for whitelisted in SECOND_LINK_WHITELIST:
-                if href.find(whitelisted) != -1:
-                  break
-              else:
-                if link != None:
-                  raise Exception("Found two different URLs in one entry, something is wrong\n%s\n%s" % (link.get("href"), node.get("href")))
-                link = node
-        elif isinstance(node, NavigableString):
-          all_text = all_text + node
-        node = node.next
+        if is_inside_link(node):
+          break
+        if isinstance(node, NavigableString):
+          all_text = node + all_text
+        node = node.previous
         if not node:
           break
-        if node == after_maincontent:
+        if node == maincontent:
           break
 
-      if not link:
-        raise Exception("Didn't find link for '%s'" % strong_text)
-
-      year = DATE_RE.search(all_text).group(3)
-      if int(year) not in year_range:
+      # Response letters don't get their own date heading -- keep date from
+      # last report and reuse in those cases
+      temp = DATE_RE.search(all_text)
+      if temp:
+        date_text = temp.group(0).replace('Sept ', 'Sep ')
+        try:
+          published_on = datetime.strptime(date_text, '%B %d, %Y')
+        except ValueError:
+          published_on = datetime.strptime(date_text, '%b %d, %Y')
+      if published_on.year not in year_range:
         continue
 
-      report = report_from(all_text, link.text, link.get("href"), page_url)
+      report = report_from(all_text, a_text, a_href, page_url, published_on)
       inspector.save_report(report)
 
-  for page_url in [WHATS_NEW_ARCHIVE_URL, PRESS_RELEASES_URL, PRESS_RELEASES_ARCHIVE_URL, SEMIANNUAL_REPORTS_AND_TESTIMONIES_URL]:
+  for page_url in [PRESS_RELEASES_URL, PRESS_RELEASES_ARCHIVE_URL]:
     done = False
     body = utils.download(page_url)
     doc = BeautifulSoup(body)
@@ -86,15 +86,20 @@ def run(options):
           if index_url.find(link_url) != -1:
             continue
 
-        year = DATE_RE.search(all_text).group(3)
-        if int(year) not in year_range:
+        date_match = DATE_RE.search(all_text)
+        try:
+          date_text = date_match.group(0).replace('Sept ', 'Sep ')
+          published_on = datetime.strptime(date_text, '%B %d, %Y')
+        except ValueError:
+          published_on = datetime.strptime(date_text, '%b %d, %Y')
+        if published_on.year not in year_range:
           continue
 
-        report = report_from(all_text, link_text, link_url, page_url)
+        report = report_from(all_text, link_text, link_url, page_url, published_on)
         inspector.save_report(report)
       if done: break
 
-def report_from(all_text, link_text, link_url, page_url):
+def report_from(all_text, link_text, link_url, page_url, published_on):
   report = {
     'inspector': 'exim',
     'inspector_url': 'http://www.exim.gov/oig/index.cfm',
@@ -109,9 +114,6 @@ def report_from(all_text, link_text, link_url, page_url):
   all_text = all_text.strip()
   report_type = type_for(page_url, all_text)
 
-  date_text = DATE_RE.search(all_text).group(0)
-  published_on = datetime.strptime(date_text, '%B %d, %Y')
-
   report_match = IDENTIFIER_RE.search(all_text)
   if report_match:
     report_id = report_match.group(1)
@@ -121,6 +123,8 @@ def report_from(all_text, link_text, link_url, page_url):
     # we could get the server's filename from the Content-Disposition header
     # but that would require hitting the network and lots of parsing
     report_id = link_text
+  # clip report_id if it gets too long
+  report_id = report_id[:100]
 
   if link_url.endswith(".pdf"):
     file_type = "pdf"
@@ -242,6 +246,14 @@ def recurse_tree(root, inside_link):
         accumulator[1] = accumulator[1] + str(child)
   yield tuple(accumulator)
 
+def is_inside_link(node):
+  x = node
+  while x != None:
+    if x.name == "a":
+      return True
+    x = x.parent
+  return False
+
 def type_for(page_url, text):
   if page_url == WHATS_NEW_URL or page_url == WHATS_NEW_ARCHIVE_URL:
     if text.find("Semiannual Report to Congress") != -1:
@@ -282,7 +294,9 @@ SECOND_LINK_WHITELIST = (
 )
 
 DATE_RE = re.compile("(January|February|March|April|May|June|July|August|" +
-                    "September|October|November|December)\\s+([123]?[0-9]),\\s+" +
+                    "September|October|November|December|" +
+                    "Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)" +
+                    "\\s+([123]?[0-9]),\\s+" +
                     "(20[0-9][0-9])")
 
 IDENTIFIER_RE = re.compile("""\((OIG-[A-Z][A-Z]-[0-9][0-9]-[0-9][0-9])\)""")
