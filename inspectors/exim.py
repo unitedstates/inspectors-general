@@ -126,9 +126,12 @@ def report_from(all_text, link_text, link_url, page_url, published_on):
   all_text = all_text.strip()
   report_type = type_for(page_url, all_text)
 
-  report_match = IDENTIFIER_RE.search(all_text)
-  if report_match:
-    report_id = report_match.group(1)
+  url_match = IDENTIFIER_RE_URL.search(link_url)
+  text_match = IDENTIFIER_RE_TEXT.search(all_text)
+  if url_match:
+    report_id = url_match.group(1)
+  elif text_match:
+    report_id = text_match.group(1)
   elif link_url.rfind("loader.cfm") == -1:
     report_id = link_url[link_url.rfind('/') + 1 : link_url.rfind('.')]
   else:
@@ -332,6 +335,7 @@ DATE_RE = re.compile("(January|February|March|April|May|June|July|August|" +
                     "\\s+([123]?[0-9]),\\s+" +
                     "(20[0-9][0-9])")
 
-IDENTIFIER_RE = re.compile("""\((OIG-[A-Z][A-Z]-[0-9][0-9]-[0-9][0-9])\)""")
+IDENTIFIER_RE_TEXT = re.compile("""\((OIG-[A-Z][A-Z]-[0-9][0-9]-[0-9][0-9])\)""")
+IDENTIFIER_RE_URL = re.compile("""(OIG-[A-Z][A-Z]-[0-9][0-9]-[0-9][0-9])""")
 
 utils.run(run) if (__name__ == "__main__") else None
