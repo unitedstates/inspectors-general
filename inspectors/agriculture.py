@@ -20,6 +20,9 @@ archive = 1978
 # accessed using a '.pdf' extension. There is a 404 otherwise. The
 # `LOWER_PDF_REPORT_IDS` constant contains a list of the report ids that this
 # applies to.
+# - The link to the congressional testimony statement from 2/26/2003 should
+# point to http://www.usda.gov/oig/webdocs/Testimonybudgt-2004.pdf, not
+# http://www.usda.gov/oig/webdocs/IGtestimony110302.pdf
 
 SEMIANNUAL_REPORTS_URL = "http://www.usda.gov/oig/rptssarc.htm"
 AGENCY_BASE_URL = "http://www.usda.gov/oig/"
@@ -145,6 +148,12 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
     link = result.find_all("a")[0]
   title = link.text.strip()
   report_url = urljoin(page_url, link.get('href').strip())
+
+  if report_url == "http://www.usda.gov/oig/webdocs/IGtestimony110302.pdf" and title == "Statement Of Phyllis K. Fong Inspector General: Before The House Appropriations Subcommittee On Agriculture, Rural Development, Food And Drug Administration And Related Agencies (PDF)":
+    # Typo on IG page, retrieved original URL via the Internet Archive Wayback
+    # Machine
+    report_url = "http://www.usda.gov/oig/webdocs/Testimonybudgt-2004.pdf"
+
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]
 
