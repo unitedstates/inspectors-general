@@ -34,6 +34,9 @@ def run(options):
         # end of page
         break
 
+      if deduplicate_url(a_href):
+        continue
+
       all_text = a_text
       node = a.previous
       while True:
@@ -91,6 +94,9 @@ def run(options):
         for index_url in URLS:
           if index_url.find(link_url) != -1:
             continue
+
+        if deduplicate_url(link_url):
+          continue
 
         date_match = DATE_RE.search(all_text)
         try:
@@ -258,6 +264,27 @@ def is_inside_link(node):
     if x.name == "a":
       return True
     x = x.parent
+  return False
+
+_url_dedup_set = set()
+def deduplicate_url(url):
+  '''Records all URLs passed. If a URL has been seen before, return True,
+  or return False if this is the first time the URL has been seen'''
+
+  if url.startswith('/'):
+    url = "http://www.exim.gov" + url
+
+  # At least two files are uploaded twice, once in /oig/uploads/ and once in
+  # /oig/uploads/reports/, with the same name in each. Check both locations
+  # for duplicates.
+  if url in _url_dedup_set:
+    return True
+  if url.replace("http://www.exim.gov/oig/upload/", "http://www.exim.gov/oig/reports/upload/") in _url_dedup_set:
+    return True
+  if url.replace("http://www.exim.gov/oig/reports/upload/", "http://www.exim.gov/oig/upload/") in _url_dedup_set:
+    return True
+
+  _url_dedup_set.add(url)
   return False
 
 def type_for(page_url, text):
