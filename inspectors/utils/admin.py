@@ -96,4 +96,4 @@ def send_slack(body):
 
     request = urllib.request.Request(webhook_url, message_bytes)
     request.add_header('Content-Type', 'application/json; charset=utf-8')
-    result = urllib.request.urlopen(request)
+    urllib.request.urlopen(request)
