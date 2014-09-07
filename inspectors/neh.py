@@ -39,6 +39,8 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+REPORT_ID_RE = re.compile("\\s*(OIG-[0-9]+-[0-9]+\\s+\\([A-Z]+\\))\\s*(?:\\((?:[0-9]+-page\\s+)?PDF\\))?\\s*")
+
 def audit_report_from(result, year_range):
   if result.parent.name == 'thead':
     # If we are a header row, skip
@@ -62,7 +64,11 @@ def audit_report_from(result, year_range):
     unreleased = False
     landing_url = None
     report_url = report_link.get('href')
-    report_id = report_link.text.split()[0]
+    report_id_match = REPORT_ID_RE.match(report_link.text)
+    if report_id_match:
+      report_id = report_id_match.group(1)
+    else:
+      report_id = report_link.text.split()[0]
   else:
     unreleased = True
     report_url = None
