@@ -5,6 +5,7 @@ import sys
 import traceback
 import yaml
 import logging
+import re
 
 import smtplib
 import email.utils
@@ -74,17 +75,88 @@ def send_email(message):
 
     logging.info("Sent email to %s" % settings['to'])
 
+def copy_if_present(key, src, dst):
+    if key in src:
+        dst[key] = src[key]
+
+INSPECTOR_RE = re.compile('''File "\\.?inspectors(?:/|\\\\)([a-z]+)\\.py", line ([0-9]+), in ([^\n]+)\n''')
+HTTP_ERROR_RE = re.compile('''scrapelib\\.HTTPError: ([0-9]+) while retrieving ([^\n]+)\n''')
+
 def send_slack(body):
     options = config["slack"]
     webhook_url = options["webhook"]
 
-    message = {
-        "text": body
-    }
+    body = str(body)
+    lines = body.split('\n')
 
-    def copy_if_present(key, src, dst):
-        if key in src:
-            dst[key] = src[key]
+    # Scan up to the point where the traceback starts
+    index = 0
+    while index < len(lines) and lines[index] != "Traceback (most recent call last):":
+        index = index + 1
+    # Skip the traceback
+    index = index + 1
+    # Scan until the first non-indented line, after the traceback
+    while index < len(lines) and (lines[index] == "" or lines[index][0] == " "):
+        index = index + 1
+    # If we ran off the end of the message because it's in an unexpected
+    # format, just use the whole thing
+    if index == len(lines):
+        index = 0
+    # Take the remaining text as the exception message
+    exception_message = '\n'.join(lines[index:])
+    # Use one line only of the exception message as a fallback message for
+    # text-only clients
+    fallback = lines[index]
+
+    # The exception type should be the first thing after the traceback,
+    # followed by a colon
+    if exception_message.find(':') != -1:
+        class_name = exception_message[:exception_message.find(':')]
+    else:
+        class_name = None
+
+    scraper = None
+    line_num = None
+    function = None
+    scraper_matches = INSPECTOR_RE.findall(body)
+    if scraper_matches:
+        scraper = scraper_matches[-1][0]
+        line_num = scraper_matches[-1][1]
+        function = scraper_matches[-1][2]
+
+    http_error_match = HTTP_ERROR_RE.search(body)
+
+    if http_error_match:
+        pretext = "%s error while downloading %s" % \
+                  (http_error_match.group(1), http_error_match.group(2))
+        message = {
+            "attachments": [
+                {
+                    "fallback": fallback,
+                    "text": body,
+                    "color": "warning",
+                    "pretext": pretext
+                }
+            ]
+        }
+    elif class_name and scraper and line_num and function:
+        pretext = ("%s was thrown while running %s.py " + \
+                  "(line %s, in function %s)") % \
+                  (class_name, scraper, line_num, function)
+        message = {
+            "attachments": [
+                {
+                    "fallback": fallback,
+                    "text": body,
+                    "color": "danger",
+                    "pretext": pretext
+                }
+            ]
+        }
+    else:
+        message = {
+            "text": str(body)
+        }
 
     copy_if_present("username", options, message)
     copy_if_present("icon_url", options, message)
