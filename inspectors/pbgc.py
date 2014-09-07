@@ -78,6 +78,8 @@ def report_from(result, report_type, year_range):
     return
 
   report_id = result.select("td")[1].text.replace("/", "-").replace(" ", "-")
+  if report_id == "N-A":
+    report_id = result.select("td")[0].text.replace("/", "-").replace(" ", "-")
 
   published_on_text = result.select("td")[2].text
   published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
