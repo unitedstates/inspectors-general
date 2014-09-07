@@ -66,7 +66,8 @@ def audit_report_from(result, year_range):
   else:
     unreleased = True
     report_url = None
-    report_id = "{}-{}".format(published_on.date(), "-".join(title.split()))[:50]
+    title_fragment = "-".join(title.split()).replace(":", "")
+    report_id = "{}-{}".format(published_on.date(), title_fragment)[:50]
     landing_url = AUDIT_REPORTS_URL
 
   report = {
