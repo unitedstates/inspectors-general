@@ -10,6 +10,10 @@ import smtplib
 import email.utils
 from email.mime.text import MIMEText
 
+import json
+import urllib.request
+import urllib.parse
+
 # read in an opt-in config file for changing directories and supplying email settings
 # returns None if it's not there, and this should always be handled gracefully
 path = "admin.yml"
@@ -30,6 +34,9 @@ def notify(body):
             details = config.get('email')
             if details:
                 send_email(body)
+
+            if config.get('slack'):
+                send_slack(body)
 
     except Exception as exception:
         print("Exception logging message to admin, halting as to avoid loop")
@@ -66,3 +73,27 @@ def send_email(message):
         server.quit()
 
     logging.info("Sent email to %s" % settings['to'])
+
+def send_slack(body):
+    options = config["slack"]
+    webhook_url = options["webhook"]
+
+    message = {
+        "text": body
+    }
+
+    def copy_if_present(key, src, dst):
+        if key in src:
+            dst[key] = src[key]
+
+    copy_if_present("username", options, message)
+    copy_if_present("icon_url", options, message)
+    copy_if_present("icon_emoji", options, message)
+    copy_if_present("channel", options, message)
+
+    message_json = json.dumps(message)
+    message_bytes = message_json.encode('utf-8')
+
+    request = urllib.request.Request(webhook_url, message_bytes)
+    request.add_header('Content-Type', 'application/json; charset=utf-8')
+    result = urllib.request.urlopen(request)

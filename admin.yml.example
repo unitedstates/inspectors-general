@@ -14,5 +14,20 @@ email:
   from_name:
   to:
 
+# configuration for posting errors to slack.com
+slack:
+  # get this URL from the Integrations page on your Slack
+  webhook: "https://yourslackhere.slack.com/services/hooks/incoming-webhook?token=xxxxxxxxxxxxxxxxxxxxxxxx"
+
+  # change these to customize the appearance of your bot
+  # use either icon_url or icon_emoji
+  username: "Custom Bot Name"
+  icon_url: "https://slack.com/img/icons/app-57.png"
+  icon_emoji: ":sushi:"
+
+  # set this to #channel to override the assigned channel, or set to @username
+  # to only send a direct message
+  channel: "@yournamehere"
+
 # data output directory
 data_directory: data
