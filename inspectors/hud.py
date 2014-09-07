@@ -16,7 +16,8 @@ archive = 2001
 #
 # Notes for IG's web team:
 #   - Filters only work back through 2004, but there are documents back to 2001
-#
+#   - One landing page does not match the linked report, see
+#     http://www.hudoig.gov/reports-publications/audit-reports/housing-authority-of-city-of-conyers-georgia-did-not-maintain
 
 BASE_URL = 'http://www.hudoig.gov/reports-publications/results'
 BASE_REPORT_PAGE_URL = "http://www.hudoig.gov/"
@@ -63,6 +64,8 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+  do_canned_reports(year_range)
+
 def type_from_report_type_text(report_type_text):
   if report_type_text in ["Audit Reports", 'Audit Guides']:
     return 'audit'
@@ -83,6 +86,10 @@ def report_from(report_row, year_range):
 
   landing_url_relative = report_row.select('a')[0]['href']
   landing_url = urljoin(BASE_REPORT_PAGE_URL, landing_url_relative)
+
+  if landing_url == "http://www.hudoig.gov/reports-publications/audit-reports/housing-authority-of-city-of-conyers-georgia-did-not-maintain":
+    # Handle this elsewhere as a canned report
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % landing_url)
@@ -179,5 +186,22 @@ def url_for(year_range, page=1):
     start_year, end_year = '', ''
   return '%s?keys=&date_filter[min][year]=%s&date_filter[max][year]=%s&page=%i' % (BASE_URL, start_year, end_year, page-1)
 
+def do_canned_reports(year_range):
+  report = {
+    'inspector': 'hud',
+    'inspector_url': 'http://www.hudoig.gov/',
+    'agency': 'hud',
+    'agency_name': 'Housing and Urban Development',
+    'report_id': '2009-AT-1011',
+    'url': 'http://www.hudoig.gov/sites/default/files/documents/audit-reports/ig0941011.pdf',
+    'title': 'The City of Miami, Florida, Did Not Properly Administer Its Community Development Block Grant Program',
+    'published_on': '2009-08-18',
+    'landing_url': 'http://www.hudoig.gov/reports-publications/audit-reports/housing-authority-of-city-of-conyers-georgia-did-not-maintain',
+    'type': 'audit',
+    'program_area': 'Public and Indian Housing',
+    'state': 'Georgia'
+  }
+  if '2009' in year_range:
+    inspector.save_report(report)
 
 utils.run(run) if (__name__ == "__main__") else None
