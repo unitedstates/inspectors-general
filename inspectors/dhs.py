@@ -71,11 +71,20 @@ def report_from(result, component, url):
   report['url'] = report_url
   report['title'] = title
 
+  timestamp = result.select("td")[0].text.strip()
+  # can actually be just monthly, e.g. 12/03 (Dec 2003)
+  if len(timestamp.split("/")) == 2:
+    timestamp = "%s/01/%s" % tuple(timestamp.split("/"))
+  published_on = datetime.strptime(timestamp, "%m/%d/%y")
+  report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
+
   report_id = result.select("td")[1].text.strip()
   # A couple reports have no ID (Boston Marathon Bombing reports)
   if len(report_id) == 0:
     filename = urllib.parse.urlparse(report['url']).path.split("/")[-1]
     report_id = filename.split(".")[0]
+  # Audit numbers are frequently reused, so add the year to our ID
+  report_id = "%s_%d" % (report_id, published_on.year)
 
   report['report_id'] = report_id
 
@@ -86,13 +95,6 @@ def report_from(result, component, url):
   else:
     report['agency'] = component
   report['agency_name'] = COMPONENTS[component][2]
-
-  timestamp = result.select("td")[0].text.strip()
-  # can actually be just monthly, e.g. 12/03 (Dec 2003)
-  if len(timestamp.split("/")) == 2:
-    timestamp = "%s/01/%s" % tuple(timestamp.split("/"))
-  published_on = datetime.strptime(timestamp, "%m/%d/%y")
-  report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
 
   return report
 
