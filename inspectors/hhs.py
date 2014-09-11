@@ -181,6 +181,9 @@ def run(options):
       extract_reports_for_topic(topic, year_range, archives=True)
 
 def extract_reports_for_topic(topic, year_range, archives=False):
+  if topic == "OE":
+    extract_reports_for_oei(year_range)
+
   topic_url = TOPIC_TO_ARCHIVE_URL[topic] if archives else TOPIC_TO_URL[topic]
 
   if topic in TOPIC_WITH_SUBTOPICS:
@@ -217,6 +220,41 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
     report = report_from(result, year_range, topic_name, subtopic_url, subtopic_name)
     if report:
       inspector.save_report(report)
+
+def extract_reports_for_oei(year_range):
+  topic_url = TOPIC_TO_URL["OE"]
+  root_body = utils.download(topic_url)
+  root_doc = BeautifulSoup(root_body)
+
+  letter_urls = set()
+  for link in root_doc.select("#leftContentInterior li a"):
+    absolute_url = urljoin(topic_url, link['href'])
+    absolute_url = strip_url_fragment(absolute_url)
+    letter_urls.add(absolute_url)
+
+  for letter_url in letter_urls:
+    letter_body = utils.download(letter_url)
+    letter_doc = BeautifulSoup(letter_body)
+
+    results = doc.select("#leftContentInterior ul li")
+    for result in results:
+      if 'crossref' in result.parent.parent.attrs.get('class', []):
+        continue
+      if result.parent.parent.attrs.get('id') == 'related':
+        continue
+      # TODO: get URL out of result, save result in data structure, combine
+      # results for one URL using extract()/insert(). Later, loop through
+      # Frakensteined results and pass to report_from as usual.
+      # Calling extract() on each result will unhook it from the parent
+      # document, which means the document can get garbage collected earlier.
+      report = report_from(result, year_range, topic_name, subtopic_url, subtopic_name)
+      # Note to self, no way these subtopic names mean anything for OEI.
+      # They were pulled from the first link pointing to each page, so
+      # Anesthesia reports would have subtopic_name=Accreditation, since that's
+      # the first link seen in get_subtopic_map(). Check whether they are
+      # actually used in report_from().
+      if report:
+        inspector.save_report(report)
 
 def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   # Ignore links to other subsections
