@@ -252,6 +252,9 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
 
+  if report_filename == "11302505.pdf":
+    report_id = report_id + "_early_alert"
+
   title = result_link.text.strip()
   if title in BLACKLIST_TITLES:
     return
