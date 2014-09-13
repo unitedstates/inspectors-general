@@ -4,6 +4,7 @@ import datetime
 import logging
 import os
 from urllib.parse import urljoin, urlparse, urlunparse
+import itertools
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -59,6 +60,14 @@ archive = 1985
 #  - Add missing report for 'Use of Discounted Airfares by the Office of the Secretary' (A-03-07-00500)
 #  linked to from https://oig.hhs.gov/reports-and-publications/oas/dept.asp
 #  - The report https://oig.hhs.gov/oas/reports/region5/50800067.asp returns a 500.
+#  - The link to the report for "Personnel Suitability and Security (OAI-02-86-00079; 11/87)"
+#  points to a copy of the report OAI-07-86-00079.
+#  - The link to the report for "Errors Resulting in Overpayment In the AFDC Program (OAI-04-86-0024; 06/87)"
+#  points to a copy of the report OEI-05-90-00720.
+#  - The date for OEI-07-91-01470 is incorrectly listed as 4/94 on the S page,
+#  and correctly listed as 4/92 on the O page.
+#  - There is a typo in one of the links on https://oig.hhs.gov/reports-and-publications/oei/h.asp,
+#  it should point to #hospitals, not #hospiatls.
 
 TOPIC_TO_URL = {
   "OAS": 'https://oig.hhs.gov/reports-and-publications/oas/index.asp',
@@ -183,6 +192,7 @@ def run(options):
 def extract_reports_for_topic(topic, year_range, archives=False):
   if topic == "OE":
     extract_reports_for_oei(year_range)
+    return
 
   topic_url = TOPIC_TO_ARCHIVE_URL[topic] if archives else TOPIC_TO_URL[topic]
 
@@ -222,6 +232,7 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
       inspector.save_report(report)
 
 def extract_reports_for_oei(year_range):
+  topic_name = TOPIC_NAMES["OE"]
   topic_url = TOPIC_TO_URL["OE"]
   root_body = utils.download(topic_url)
   root_doc = BeautifulSoup(root_body)
@@ -232,29 +243,48 @@ def extract_reports_for_oei(year_range):
     absolute_url = strip_url_fragment(absolute_url)
     letter_urls.add(absolute_url)
 
+  all_results_links = {}
+  all_results_unreleased = []
   for letter_url in letter_urls:
     letter_body = utils.download(letter_url)
     letter_doc = BeautifulSoup(letter_body)
 
-    results = doc.select("#leftContentInterior ul li")
+    results = letter_doc.select("#leftContentInterior ul li")
     for result in results:
       if 'crossref' in result.parent.parent.attrs.get('class', []):
         continue
       if result.parent.parent.attrs.get('id') == 'related':
         continue
-      # TODO: get URL out of result, save result in data structure, combine
-      # results for one URL using extract()/insert(). Later, loop through
-      # Frakensteined results and pass to report_from as usual.
-      # Calling extract() on each result will unhook it from the parent
-      # document, which means the document can get garbage collected earlier.
-      report = report_from(result, year_range, topic_name, subtopic_url, subtopic_name)
-      # Note to self, no way these subtopic names mean anything for OEI.
-      # They were pulled from the first link pointing to each page, so
-      # Anesthesia reports would have subtopic_name=Accreditation, since that's
-      # the first link seen in get_subtopic_map(). Check whether they are
-      # actually used in report_from().
-      if report:
-        inspector.save_report(report)
+
+      node = result
+      while node and node.name != "h2":
+        node = node.previous
+      if node and node.name == "h2":
+        subtopic_name = str(node.text)
+      else:
+        subtopic_name = "(unknown)"
+
+      links = result.findAll("a")
+      if len(links) == 0:
+        result.extract()
+        all_results_unreleased.append([result, subtopic_name])
+      else:
+        url = links[0].get("href")
+        if url not in all_results_links:
+          result.extract()
+          all_results_links[url] = [result, subtopic_name]
+        else:
+          existing_result = all_results_links[url][0]
+          for temp in result.contents:
+            temp.extract()
+            existing_result.append(temp)
+          all_results_links[url][1] = "%s, %s" % (all_results_links[url][1], subtopic_name)
+
+  subtopic_url = TOPIC_TO_URL["OE"]
+  for result, subtopic_name in itertools.chain(all_results_links.values(), all_results_unreleased):
+    report = report_from(result, year_range, topic_name, subtopic_url, subtopic_name)
+    if report:
+      inspector.save_report(report)
 
 def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   # Ignore links to other subsections
@@ -406,20 +436,25 @@ def get_published_date_from_tag(possible_tag):
       pass
 
 def published_on_from_inline_link(result, report_filename, title, report_id, report_url):
+  published_on = None
   try:
     published_on_text = result.find_previous("dt").text.strip()
     published_on = datetime.datetime.strptime(published_on_text, "%m-%d-%Y")
   except (ValueError, AttributeError):
-    try:
-      cite_text = result.find_next("cite").text
-      if ';' in cite_text:
-        published_on_text = cite_text.split(";")[-1].rstrip(")")
-      elif ':' in cite_text:
-        published_on_text = cite_text.split(":")[-1].rstrip(")")
-      else:
-        published_on_text = cite_text.split(",")[-1].rstrip(")")
-      published_on = datetime.datetime.strptime(published_on_text.strip(), '%m/%y')
-    except (AttributeError, ValueError):
+    for cite in result.find_all("cite"):
+      try:
+        cite_text = cite.text
+        if ';' in cite_text:
+          published_on_text = cite_text.split(";")[-1].rstrip(")")
+        elif ':' in cite_text:
+          published_on_text = cite_text.split(":")[-1].rstrip(")")
+        else:
+          published_on_text = cite_text.split(",")[-1].rstrip(")")
+        published_on = datetime.datetime.strptime(published_on_text.strip(), '%m/%y')
+        break
+      except (AttributeError, ValueError):
+        pass
+  if published_on == None:
       try:
         fiscal_year = int(result.text.split(":")[0].split()[1])
         published_on = datetime.datetime(fiscal_year - 1, 10, 1)
