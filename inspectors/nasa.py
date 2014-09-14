@@ -69,7 +69,7 @@ def audit_report_from(result, landing_url, year_range):
   if unreleased:
     report_url = None
 
-  if report_id == 'N/A':
+  if report_id in ('N/A', 'NA'):
     report_filename = report_url.split("/")[-1]
     report_id, extension = os.path.splitext(report_filename)
 
