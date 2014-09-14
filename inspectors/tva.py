@@ -59,7 +59,7 @@ def audit_report_from(result, landing_url, year_range):
     return
 
   title = " ".join(title.split())
-  report_id = report_id.strip().replace("/", "-")
+  report_id = report_id.strip().replace("/", "-").replace(":", "")
 
   if "summary only" in result.text.lower():
     unreleased = True

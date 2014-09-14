@@ -77,7 +77,7 @@ def report_from(result, landing_url, report_type, year_range):
 
   try:
     report_id_text = result.select("div.views-field-field-auditreport-doc-data")[0].text.strip()
-    report_id = "-".join(report_id_text.replace("/", "-").split())
+    report_id = "-".join(report_id_text.replace("/", "-").replace(":", "").split())
   except IndexError:
     report_id = None
 

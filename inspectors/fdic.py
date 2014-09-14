@@ -70,6 +70,7 @@ def report_from(result, year_range):
     report_id, extension = os.path.splitext(report_filename)
   else:
     report_id = "-".join(title.split())[:50]
+    report_id = report_id.replace(":", "")
 
   published_on_text = result.select("td")[2].text
   try:

@@ -64,7 +64,7 @@ def clean_text(text):
 
 def report_from(result, report_type, year_range):
   link = result.find("a")
-  report_id = clean_text("-".join(link.text.replace("/", "-").replace("'", "").split()))
+  report_id = clean_text("-".join(link.text.replace("/", "-").replace("'", "").replace(":", "").split()))
   report_url = urljoin(AUDIT_REPORTS_URL, link.get('href'))
   try:
     title = clean_text(result.select("td")[1].text)
