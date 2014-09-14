@@ -90,6 +90,9 @@ def report_from(result, landing_url, report_type, year_range):
 
   report_id = report_id.replace("/", "-")
 
+  if title.startswith("Follow-Up"):
+    report_id = report_id + "-follow-up"
+
   report = {
     'inspector': "usaid",
     'inspector_url': "https://oig.usaid.gov",
