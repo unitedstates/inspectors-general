@@ -50,6 +50,7 @@ def report_from(result, landing_url, report_type, year_range):
     unreleased = True
     report_url = None
     report_id = "-".join(title.split())
+    report_id = report_id.replace(":", "")
   else:
     unreleased = False
     link = result.find("a")

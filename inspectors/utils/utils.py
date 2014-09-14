@@ -88,18 +88,14 @@ def download(url, destination=None, options=None):
         mkdir_p(os.path.dirname(destination))
         scraper.urlretrieve(url, destination)
       except scrapelib.HTTPError as e:
-        # intentionally print instead of using logging,
-        # so that all 404s get printed at the end of the log
-        print("Error downloading %s:\n\n%s" % (url, format_exception(e)))
+        log_http_error(e, url)
         return None
     else: # text
       try:
         if destination: logging.info("## \tto: %s" % destination)
         response = scraper.urlopen(url)
       except scrapelib.HTTPError as e:
-        # intentionally print instead of using logging,
-        # so that all 404s get printed at the end of the log
-        print("Error downloading %s:\n\n%s" % (url, format_exception(e)))
+        log_http_error(e, url)
         return None
 
       body = response
@@ -119,6 +115,16 @@ def download(url, destination=None, options=None):
   else:
     # whether from disk or web, unescape HTML entities
     return unescape(body)
+
+def log_http_error(e, url):
+  # intentionally print instead of using logging,
+  # so that all 404s get printed at the end of the log
+  message = "Error downloading %s:\n\n%s" % (url, format_exception(e))
+  print(message)
+  if admin.config and admin.config.get("slack"):
+    admin.send_slack(message)
+  else:
+    print(admin.config, admin.config.get("slack"))
 
 # uses BeautifulSoup to do a naive extraction of text from HTML,
 # then writes it and returns the /data-relative path.

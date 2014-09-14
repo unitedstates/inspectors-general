@@ -223,7 +223,7 @@ def extract_info(content, directory, year_range):
           title = b.string
 
         # formating links consistently
-        if link[:1] != "/":
+        if not link.startswith("/") and not link.startswith("http://") and not link.startswith("https://"):
           link = "/" + link
         # id
         doc_id = str(link)[1:-4]
@@ -250,6 +250,10 @@ def extract_info(content, directory, year_range):
           if doc_id[4:5] == "/":
             if doc_id[:2] == "19" or doc_id[:2] == "20":
               doc_id = doc_id[5:]
+
+        ag_match = re.match("http://www[.]justice[.]gov/archive/ag/annualreports/([^/]+)/(?:TableofContents|index)[.]html?", link)
+        if ag_match:
+          doc_id = ag_match.group(1)
 
         # if it's still got slashes, just turn them into dashes
         # the ol' slash and dash
@@ -516,7 +520,7 @@ def run(options):
         link = base_url + l.get("href")
         source_links[link] = name
 
-  # For each component's landing page, run the processor ove rit
+  # For each component's landing page, run the processor over it
   keys = list(source_links.keys())
   keys.sort()
 
