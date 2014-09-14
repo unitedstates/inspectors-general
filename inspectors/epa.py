@@ -119,7 +119,7 @@ def report_from(tds, published_on_dt, year):
     raise Exception("Couldn't find a link for report!")
 
 
-  report_id = tds[0].text.strip()
+  report_id = re.sub("\s+", " ", tds[0].text).strip()
   # fallback, only needed for one testimony, apparently
   if (report_id == "") or (not report_id):
     report_id = report_url.split("/")[-1]
