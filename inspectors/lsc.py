@@ -4,7 +4,7 @@ import datetime
 import logging
 import os
 import re
-from urllib.parse import urljoin
+from urllib.parse import urljoin, unquote
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -22,6 +22,7 @@ AUDIT_REPORTS_URL = "http://www.oig.lsc.gov/rpts/audit.htm"
 FINANCIAL_STATEMENTS_URL = "http://www.oig.lsc.gov/rpts/corp.htm"
 OTHER_REPORTS_URL = "http://www.oig.lsc.gov/rpts/other.htm"
 SEMIANNUAL_REPORTS_URL = "http://www.oig.lsc.gov/sar/sar.htm"
+CLIENT_TRUST_FUND_URL = "http://www.oig.lsc.gov/rpts/ctf.htm"
 
 REPORT_PUBLISHED_MAP = {
   '14-06': datetime.datetime(2014, 6, 30)
@@ -33,20 +34,22 @@ BLACKLIST_REPORT_TITLES = [
   'WP5.1',
   'LSC Management Response',
   'Summary of Audit Findings and Recommendations',
+  'Client Trust Fund Inspection Reports',
 ]
 
 REPORT_URLS = {
-  "semiannual_report": SEMIANNUAL_REPORTS_URL,
-  "other": OTHER_REPORTS_URL,
-  "audit": FINANCIAL_STATEMENTS_URL,
-  "audit": AUDIT_REPORTS_URL,
+  SEMIANNUAL_REPORTS_URL: "semiannual_report",
+  OTHER_REPORTS_URL: "other",
+  FINANCIAL_STATEMENTS_URL: "audit",
+  AUDIT_REPORTS_URL: "audit",
+  CLIENT_TRUST_FUND_URL: "audit",
 }
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  for report_type, url in REPORT_URLS.items():
+  for url, report_type in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("blockquote > ul > a")
     if not results:
@@ -60,6 +63,8 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+REPORT_NO_RE = re.compile("[0-9]{2}-[0-9]{2,3}[A-Z]?")
+
 def report_from(result, landing_url, report_type, year_range):
   if not result.text or result.text in BLACKLIST_REPORT_TITLES:
     # There are a few empty links due to bad html and some links for alternative
@@ -68,7 +73,15 @@ def report_from(result, landing_url, report_type, year_range):
 
   report_url = urljoin(landing_url, result.get('href'))
   report_filename = report_url.split("/")[-1]
-  report_id, _ = os.path.splitext(report_filename)
+
+  report_no_match = REPORT_NO_RE.match(result.text.strip())
+  if report_no_match:
+    report_id = report_no_match.group(0)
+    if landing_url == CLIENT_TRUST_FUND_URL:
+      report_id = "CTF-" + report_id
+  else:
+    report_id, _ = os.path.splitext(report_filename)
+    report_id = unquote(report_id)
   report_id = "-".join(report_id.split())
   report_id = report_id.replace("\\", "") # strip backslashes
 
