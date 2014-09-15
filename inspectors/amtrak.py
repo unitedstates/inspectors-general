@@ -71,6 +71,8 @@ def report_from(result):
   published_on = datetime.strptime(issued.strip(), '%m/%d/%Y')
   report_type = type_for(category)
   report_id = tracking.strip()
+  if report_id and title.lower().startswith('closeout'):
+    report_id = report_id + "_closeout"
   if not report_id:
     report_id = url[url.rfind('/') + 1 : url.rfind('.')]
 

@@ -33,6 +33,9 @@ def run(options):
         # end of page
         break
 
+      if deduplicate_url(a_href):
+        continue
+
       all_text = a_text
       node = a.previous
       while True:
@@ -50,6 +53,12 @@ def run(options):
       # last report and reuse in those cases
       temp = DATE_RE.search(all_text)
       if temp:
+        # For semiannual reports to congress, use the second date from the text
+        # Also, tack the date onto the report_id to disambiguate
+        if page_url == SEMIANNUAL_REPORTS_AND_TESTIMONIES_URL and a_text.strip().startswith('Semiannual Report to Congress'):
+          a_text = a_text.strip() + ' ' + temp.group(0) + ' - '
+          temp = DATE_RE.search(all_text, temp.end() + 1)
+          a_text = a_text + temp.group(0)
         date_text = temp.group(0).replace('Sept ', 'Sep ')
         try:
           published_on = datetime.strptime(date_text, '%B %d, %Y')
@@ -85,6 +94,9 @@ def run(options):
           if index_url.find(link_url) != -1:
             continue
 
+        if deduplicate_url(link_url):
+          continue
+
         date_match = DATE_RE.search(all_text)
         try:
           date_text = date_match.group(0).replace('Sept ', 'Sep ')
@@ -113,9 +125,12 @@ def report_from(all_text, link_text, link_url, page_url, published_on):
   all_text = all_text.strip()
   report_type = type_for(page_url, all_text)
 
-  report_match = IDENTIFIER_RE.search(all_text)
-  if report_match:
-    report_id = report_match.group(1)
+  url_match = IDENTIFIER_RE_URL.search(link_url)
+  text_match = IDENTIFIER_RE_TEXT.search(all_text)
+  if url_match:
+    report_id = url_match.group(1)
+  elif text_match:
+    report_id = text_match.group(1)
   elif link_url.rfind("loader.cfm") == -1:
     report_id = link_url[link_url.rfind('/') + 1 : link_url.rfind('.')]
   else:
@@ -253,6 +268,27 @@ def is_inside_link(node):
     x = x.parent
   return False
 
+_url_dedup_set = set()
+def deduplicate_url(url):
+  '''Records all URLs passed. If a URL has been seen before, return True,
+  or return False if this is the first time the URL has been seen'''
+
+  if url.startswith('/'):
+    url = "http://www.exim.gov" + url
+
+  # At least two files are uploaded twice, once in /oig/uploads/ and once in
+  # /oig/uploads/reports/, with the same name in each. Check both locations
+  # for duplicates.
+  if url in _url_dedup_set:
+    return True
+  if url.replace("http://www.exim.gov/oig/upload/", "http://www.exim.gov/oig/reports/upload/") in _url_dedup_set:
+    return True
+  if url.replace("http://www.exim.gov/oig/reports/upload/", "http://www.exim.gov/oig/upload/") in _url_dedup_set:
+    return True
+
+  _url_dedup_set.add(url)
+  return False
+
 def type_for(page_url, text):
   if page_url == WHATS_NEW_URL or page_url == WHATS_NEW_ARCHIVE_URL:
     if text.find("Semiannual Report to Congress") != -1:
@@ -298,6 +334,7 @@ DATE_RE = re.compile("(January|February|March|April|May|June|July|August|" +
                     "\\s+([123]?[0-9]),\\s+" +
                     "(20[0-9][0-9])")
 
-IDENTIFIER_RE = re.compile("""\((OIG-[A-Z][A-Z]-[0-9][0-9]-[0-9][0-9])\)""")
+IDENTIFIER_RE_TEXT = re.compile("""\((OIG-[A-Z][A-Z]-[0-9][0-9]-[0-9][0-9])\)""")
+IDENTIFIER_RE_URL = re.compile("""(OIG-[A-Z][A-Z]-[0-9][0-9]-[0-9][0-9])""")
 
 utils.run(run) if (__name__ == "__main__") else None

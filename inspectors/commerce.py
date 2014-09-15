@@ -96,7 +96,14 @@ def report_from(result, topic, topic_url, year_range):
 
     landing_page = beautifulsoup_from_url(landing_url)
     try:
-      report_url_relative = landing_page.select("div.oig_Publications a")[-1].get('href')
+      if landing_url.endswith("/Top-Management-Challenges-FY-2011.aspx"):
+        # Testimony on this landing page already shows up elsewhere, so we pick
+        # the report instead
+        report_url_relative = landing_page.select("div.oig_Publications a")\
+            [-2].get('href')
+      else:
+        report_url_relative = landing_page.select("div.oig_Publications a")\
+            [-1].get('href')
     except IndexError:
       # If there is no linked report, this page is the report. We know that
       # these are not unreleased reports or we would have caught them above

@@ -26,7 +26,7 @@ BASE_REPORT_URL = "http://www.sba.gov/"
 REPORT_LABEL_REGEX = re.compile("Report Number")
 
 REPORT_PUBLISHED_MAPPING = {
-  "-oig_recovery_oversightframewrk": datetime.datetime(2009, 3, 11),
+  "-oig_recovery_oversightframewrk_1": datetime.datetime(2009, 3, 11),
   "-oig_recovery_work_plan_1": datetime.datetime(2009, 11, 1),
   "ROM-11-03": datetime.datetime(2011, 3, 2),
 }
@@ -132,9 +132,12 @@ def report_from(result, year_range):
   report_id_node = landing_page.find("div", class_="field-label", text=REPORT_LABEL_REGEX)
   if report_id_node:
     report_id = "-".join(report_id_node.find_next("div", class_="field-item").text.split())
+    report_id = report_id.replace(':', '')
+    if report_id.startswith('9-'):
+      report_id = '%s %d' % (report_id, published_on.year)
   else:
     report_filename_without_extension, extension = os.path.splitext(report_filename)
-    report_filename_slug = "-".join(report_filename_without_extension.split())[:30]
+    report_filename_slug = "-".join(report_filename_without_extension.split())[:43]
     report_id = "{}-{}".format(published_on_text, report_filename_slug)
 
   if report_id in REPORT_PUBLISHED_MAPPING:

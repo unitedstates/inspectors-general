@@ -116,6 +116,8 @@ def audit_report_from(result, page_url, year_range):
   report_id = None
   if len(result.select("td")) != 3:
     report_id = result.select("td")[1].text.strip()
+    if report_id.startswith("ACN: "):
+      report_id = report_id[5:]
   if not report_id:
     report_filename = report_url.split("/")[-1]
     report_id, extension = os.path.splitext(report_filename)
@@ -132,6 +134,13 @@ def audit_report_from(result, page_url, year_range):
         published_on = datetime.datetime.strptime(published_on_text, date_format)
       except ValueError:
         pass
+
+  # The following report is linked to twice from the IG's website, once with
+  # the date 02/06/2003 (correct) and once with the date 02/06/2002. Both links
+  # point to the same PDF file, have the same title, and have the same ACN.
+  # If we are processing the duplicate entry, suppress it.
+  if report_id == "A17D0002" and published_on.year == 2002 and published_on.month == 2 and published_on.day == 6:
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)

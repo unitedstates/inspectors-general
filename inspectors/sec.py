@@ -211,6 +211,10 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
   published_on_text = result.text.split("\n")[0].split("through")[0].strip().replace(".", "")
   published_on = published_date_for_report(published_on_text, title, report_url, last_published_on)
 
+  # Skip duplicate report
+  if report_id == '283fin' and published_on.year == 1999 and published_on.month == 3 and published_on.day == 16:
+    return None, published_on
+
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % landing_url)
     return None, published_on

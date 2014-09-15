@@ -22,8 +22,10 @@ archive = 1995
 AUDITS_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/{}/"
 SEMIANNUAL_REPORTS_URL = "http://www.nrc.gov/insp-gen/pubs.html"
 OTHER_REPORT_URLS = [
-  "http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0304/",
-  "http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0272/"
+  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0304/",
+   "NUREG-BR-0304-"),
+  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0272/",
+   "NUREG-BR-0272-")
 ]
 
 BASE_REPORT_URL = "http://www.nrc.gov"
@@ -71,14 +73,14 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the other reports
-  for reports_url in OTHER_REPORT_URLS:
+  for reports_url, id_prefix in OTHER_REPORT_URLS:
     doc = BeautifulSoup(utils.download(reports_url))
     results = doc.find("table", border="1").select("tr")
     for index, result in enumerate(results):
       if not index:
         # Skip the header row
         continue
-      report = other_report_from(result, year_range)
+      report = other_report_from(result, year_range, id_prefix)
       if report:
         inspector.save_report(report)
 
@@ -193,12 +195,12 @@ def semiannual_report_from(result, year_range):
     report['file_type'] = file_type
   return report
 
-def other_report_from(result, year_range):
+def other_report_from(result, year_range, id_prefix):
   report_link = result.find("a")
   report_url = urljoin(BASE_REPORT_URL, report_link.get('href'))
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
-  report_id = "NUREG-BR-0304-{}".format(report_id)
+  report_id = id_prefix + report_id
 
   volume_text = result.select("td")[0].text.strip()
   title = "OIG Fraud Bulletin/Information Digest - {}".format(volume_text)

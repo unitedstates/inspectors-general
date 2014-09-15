@@ -4,6 +4,7 @@ import datetime
 import logging
 import os
 from urllib.parse import urljoin, urlparse, urlunparse
+import itertools
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -59,6 +60,14 @@ archive = 1985
 #  - Add missing report for 'Use of Discounted Airfares by the Office of the Secretary' (A-03-07-00500)
 #  linked to from https://oig.hhs.gov/reports-and-publications/oas/dept.asp
 #  - The report https://oig.hhs.gov/oas/reports/region5/50800067.asp returns a 500.
+#  - The link to the report for "Personnel Suitability and Security (OAI-02-86-00079; 11/87)"
+#  points to a copy of the report OAI-07-86-00079.
+#  - The link to the report for "Errors Resulting in Overpayment In the AFDC Program (OAI-04-86-0024; 06/87)"
+#  points to a copy of the report OEI-05-90-00720.
+#  - The date for OEI-07-91-01470 is incorrectly listed as 4/94 on the S page,
+#  and correctly listed as 4/92 on the O page.
+#  - There is a typo in one of the links on https://oig.hhs.gov/reports-and-publications/oei/h.asp,
+#  it should point to #hospitals, not #hospiatls.
 
 TOPIC_TO_URL = {
   "OAS": 'https://oig.hhs.gov/reports-and-publications/oas/index.asp',
@@ -181,6 +190,10 @@ def run(options):
       extract_reports_for_topic(topic, year_range, archives=True)
 
 def extract_reports_for_topic(topic, year_range, archives=False):
+  if topic == "OE":
+    extract_reports_for_oei(year_range)
+    return
+
   topic_url = TOPIC_TO_ARCHIVE_URL[topic] if archives else TOPIC_TO_URL[topic]
 
   if topic in TOPIC_WITH_SUBTOPICS:
@@ -218,6 +231,61 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
     if report:
       inspector.save_report(report)
 
+def extract_reports_for_oei(year_range):
+  topic_name = TOPIC_NAMES["OE"]
+  topic_url = TOPIC_TO_URL["OE"]
+  root_body = utils.download(topic_url)
+  root_doc = BeautifulSoup(root_body)
+
+  letter_urls = set()
+  for link in root_doc.select("#leftContentInterior li a"):
+    absolute_url = urljoin(topic_url, link['href'])
+    absolute_url = strip_url_fragment(absolute_url)
+    letter_urls.add(absolute_url)
+
+  all_results_links = {}
+  all_results_unreleased = []
+  for letter_url in letter_urls:
+    letter_body = utils.download(letter_url)
+    letter_doc = BeautifulSoup(letter_body)
+
+    results = letter_doc.select("#leftContentInterior ul li")
+    for result in results:
+      if 'crossref' in result.parent.parent.attrs.get('class', []):
+        continue
+      if result.parent.parent.attrs.get('id') == 'related':
+        continue
+
+      node = result
+      while node and node.name != "h2":
+        node = node.previous
+      if node and node.name == "h2":
+        subtopic_name = str(node.text)
+      else:
+        subtopic_name = "(unknown)"
+
+      links = result.findAll("a")
+      if len(links) == 0:
+        result.extract()
+        all_results_unreleased.append([result, subtopic_name])
+      else:
+        url = links[0].get("href")
+        if url not in all_results_links:
+          result.extract()
+          all_results_links[url] = [result, subtopic_name]
+        else:
+          existing_result = all_results_links[url][0]
+          for temp in result.contents:
+            temp.extract()
+            existing_result.append(temp)
+          all_results_links[url][1] = "%s, %s" % (all_results_links[url][1], subtopic_name)
+
+  subtopic_url = TOPIC_TO_URL["OE"]
+  for result, subtopic_name in itertools.chain(all_results_links.values(), all_results_unreleased):
+    report = report_from(result, year_range, topic_name, subtopic_url, subtopic_name)
+    if report:
+      inspector.save_report(report)
+
 def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   # Ignore links to other subsections
   if result.get('class') and result['class'][0] == 'crossref':
@@ -251,6 +319,9 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
 
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
+
+  if report_filename == "11302505.pdf":
+    report_id = report_id + "_early_alert"
 
   title = result_link.text.strip()
   if title in BLACKLIST_TITLES:
@@ -365,59 +436,64 @@ def get_published_date_from_tag(possible_tag):
       pass
 
 def published_on_from_inline_link(result, report_filename, title, report_id, report_url):
+  published_on = None
   try:
     published_on_text = result.find_previous("dt").text.strip()
     published_on = datetime.datetime.strptime(published_on_text, "%m-%d-%Y")
   except (ValueError, AttributeError):
-    try:
-      cite_text = result.find_next("cite").text
-      if ';' in cite_text:
-        published_on_text = cite_text.split(";")[-1].rstrip(")")
-      elif ':' in cite_text:
-        published_on_text = cite_text.split(":")[-1].rstrip(")")
-      else:
-        published_on_text = cite_text.split(",")[-1].rstrip(")")
-      published_on = datetime.datetime.strptime(published_on_text.strip(), '%m/%y')
-    except (AttributeError, ValueError):
+    for cite in result.find_all("cite"):
       try:
-        fiscal_year = int(result.text.split(":")[0].split()[1])
+        cite_text = cite.text
+        if ';' in cite_text:
+          published_on_text = cite_text.split(";")[-1].rstrip(")")
+        elif ':' in cite_text:
+          published_on_text = cite_text.split(":")[-1].rstrip(")")
+        else:
+          published_on_text = cite_text.split(",")[-1].rstrip(")")
+        published_on = datetime.datetime.strptime(published_on_text.strip(), '%m/%y')
+        break
+      except (AttributeError, ValueError):
+        pass
+  if published_on == None:
+    try:
+      fiscal_year = int(result.text.split(":")[0].split()[1])
+      published_on = datetime.datetime(fiscal_year - 1, 10, 1)
+    except (ValueError, IndexError):
+      try:
+        fiscal_year = int(report_filename.split("-")[0])
         published_on = datetime.datetime(fiscal_year - 1, 10, 1)
-      except (ValueError, IndexError):
+      except ValueError:
         try:
-          fiscal_year = int(report_filename.split("-")[0])
-          published_on = datetime.datetime(fiscal_year - 1, 10, 1)
+          published_on = datetime.datetime.strptime(title.replace(": ", ":"), "Compendium:%B %Y Edition")
         except ValueError:
           try:
-            published_on = datetime.datetime.strptime(title.replace(": ", ":"), "Compendium:%B %Y Edition")
+            published_on = datetime.datetime.strptime(report_id.split("-")[-1], "%m%d%Y")
           except ValueError:
             try:
-              published_on = datetime.datetime.strptime(report_id.split("-")[-1], "%m%d%Y")
-            except ValueError:
+              report_year = int(report_url.split("/")[-2:-1][0])
+              published_on = datetime.datetime(report_year, 1, 1)
+            except (ValueError, IndexError):
               try:
-                report_year = int(report_url.split("/")[-2:-1][0])
-                published_on = datetime.datetime(report_year, 1, 1)
-              except (ValueError, IndexError):
-                try:
-                  fiscal_year = int(title.replace("Fiscal Year ", ""))
-                  published_on = datetime.datetime(fiscal_year - 1, 10, 1)
-                except ValueError:
-                  # Try using the last-modified header
-                  response = utils.scraper.request(method='HEAD', url=report_url)
-                  last_modified = response.headers['Last-Modified']
-                  published_on = datetime.datetime.strptime(last_modified, '%a, %d %b %Y %H:%M:%S %Z')
-                  if published_on.year < 2003:
-                    # We don't trust the last-modified for dates before 2003
-                    # since a lot of historical reports were published at this
-                    # time. For these reports, fallback to a hacky method based
-                    # on the report id. For example: oei-04-12-00490. These are
-                    # the dates that the report_id was assigned which is before
-                    # the report was actually published
-                    published_on_text = "-".join(report_id.split("-")[1:3])
-                    try:
-                      published_on = datetime.datetime.strptime(published_on_text, '%m-%y')
-                    except ValueError:
-                      pass
-                      # Fall back to the Last-Modified header
+                fiscal_year = int(title.replace("Fiscal Year ", ""))
+                published_on = datetime.datetime(fiscal_year - 1, 10, 1)
+              except ValueError:
+                # Try using the last-modified header
+                response = utils.scraper.request(method='HEAD', url=report_url)
+                last_modified = response.headers['Last-Modified']
+                published_on = datetime.datetime.strptime(last_modified, '%a, %d %b %Y %H:%M:%S %Z')
+                if published_on.year < 2003:
+                  # We don't trust the last-modified for dates before 2003
+                  # since a lot of historical reports were published at this
+                  # time. For these reports, fallback to a hacky method based
+                  # on the report id. For example: oei-04-12-00490. These are
+                  # the dates that the report_id was assigned which is before
+                  # the report was actually published
+                  published_on_text = "-".join(report_id.split("-")[1:3])
+                  try:
+                    published_on = datetime.datetime.strptime(published_on_text, '%m-%y')
+                  except ValueError:
+                    pass
+                    # Fall back to the Last-Modified header
   return published_on
 
 def get_subtopic_map(topic_url):

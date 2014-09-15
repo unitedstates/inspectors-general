@@ -59,6 +59,10 @@ def report_from(result, landing_url, report_type, year_range):
       published_on_year = int(title.split(":")[0])
     published_on = datetime.datetime(published_on_year, 11, 1)
 
+  if landing_url == SEMIANNUAL_REPORTS_URL and link.text.find("-") == -1:
+    # Need to add a date to some semiannual report IDs
+    report_id = "%s-%s" % (report_id, published_on.strftime("%m-%y"))
+
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
