@@ -149,7 +149,10 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
   title = link.text.strip()
   report_url = urljoin(page_url, link.get('href').strip())
 
-  if report_url == "http://www.usda.gov/oig/webdocs/IGtestimony110302.pdf" and title == "Statement Of Phyllis K. Fong Inspector General: Before The House Appropriations Subcommittee On Agriculture, Rural Development, Food And Drug Administration And Related Agencies (PDF)":
+  if report_url == "http://www.usda.gov/oig/webdocs/IGtestimony110302.pdf" and\
+      title == "Statement Of Phyllis K. Fong Inspector General: Before The "\
+      "House Appropriations Subcommittee On Agriculture, Rural Development, "\
+      "Food And Drug Administration And Related Agencies (PDF)":
     # Typo on IG page, retrieved original URL via the Internet Archive Wayback
     # Machine
     report_url = "http://www.usda.gov/oig/webdocs/Testimonybudgt-2004.pdf"
