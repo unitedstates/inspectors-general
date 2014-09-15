@@ -15,7 +15,9 @@ archive = 1998
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
-#
+# The search engine has a bad PDF link for "FDIC Office of Inspector General's
+# Semiannual Report to the Congress 4/1/2003 - 9/30/2003", while reports.shtml
+# doesn't
 
 REPORTS_URL = "http://www.fdicoig.gov/Search-Engine.asp"
 
@@ -64,6 +66,9 @@ def report_from(result, year_range):
   except IndexError:
     unreleased = True
     report_url = None
+
+  if report_url == "http://www.fdicoig.gov/semi-reports/sar2003mar/oigsemi-03-09.pdf":
+    report_url = "http://www.fdicoig.gov/semi-reports/Semi2003OCT/sarOCT03.shtml"
 
   if report_url:
     report_filename = report_url.split("/")[-1]
