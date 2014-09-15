@@ -119,8 +119,9 @@ def validate_report(report):
       return "Summary URL is not valid: %s" % report.get("summary_url")
 
   # report_id can't have slashes, it'll mess up the directory structure
-  if "/" in report["report_id"]:
-    return "Invalid / in report_id - find another way: %r" % report["report_id"]
+  for character in "/\\:*?\"<>|\r\n":
+    if character in report["report_id"]:
+      return "Invalid %s in report_id - find another way: %r" % (character, report["report_id"])
 
   if report.get("year") is None:
     return "Couldn't get `year`, for some reason."
