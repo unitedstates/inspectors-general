@@ -68,6 +68,9 @@ def report_from(result, year_range):
   if report_url:
     report_filename = report_url.split("/")[-1]
     report_id, extension = os.path.splitext(report_filename)
+    if report_url.find("/evaluations/") != -1:
+      if not report_url.endswith("e"):
+        report_id = report_id + "e"
   else:
     report_id = "-".join(title.split())[:50]
     report_id = report_id.replace(":", "")
