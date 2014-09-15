@@ -148,7 +148,6 @@ def url_for(options, page=1):
   url = "https://uspsoig.gov/document-library?"
 
   # there's always a first year, and it defaults to current year
-  since = "%s-01-01" % year_range[0]
   datetime_since = datetime(year=year_range[0], month=1, day=1)
 
   # Expected date format: Monday, September 1, 2014
