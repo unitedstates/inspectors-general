@@ -149,7 +149,11 @@ def url_for(options, page=1):
 
   # there's always a first year, and it defaults to current year
   since = "%s-01-01" % year_range[0]
-  url += "&field_doc_date_value[value][date]=%s" % since
+  datetime_since = datetime(year=year_range[0], month=1, day=1)
+
+  # Expected date format: Monday, September 1, 2014
+  usps_formatted_datetime = datetime_since.strftime("%A, %B %d, %Y")
+  url += "&field_doc_date_value[value][date]=%s" % usps_formatted_datetime
 
   only = options.get('types')
   if not only:
