@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import os.path
+
+from inspectors.utils import utils
+
+def main():
+  cwd = os.getcwd()
+  scripts_dir = os.path.join(cwd, 'scripts')
+  if not os.path.isdir(scripts_dir):
+    qa_dir = os.path.dirname(sys.argv[0])
+    scripts_dir = os.path.join(qa_dir, 'scripts')
+  if not os.path.isdir(scripts_dir):
+    print("Could not find the scripts directory. Try running again from the "\
+        "same directory that 'qa' is in.")
+    sys.exit(1)
+  sys.path.append(scripts_dir)
+
+  script_names = []
+  for file in os.listdir(scripts_dir):
+    file_path = os.path.join(scripts_dir, file)
+    if os.path.isfile(file_path):
+      name, extension = os.path.splitext(file)
+      if extension == ".py":
+        script_names.append(name)
+
+  script_names.sort()
+  script_names_joined = ",".join(script_names)
+
+  def print_help():
+    print("Usage: qa {all,%s} [--only=dod,epa,gao,nasa,...] [--safe] [--help]"%\
+        (script_names_joined))
+
+  ig_list = []
+  opts = utils.options()
+  if "safe" in opts:
+    ig_list = utils.safe_igs()
+  elif "only" in opts:
+    ig_list = opts["only"].split(",")
+
+  all = "all" in sys.argv
+  if "help" in opts or "help" in sys.argv:
+    print_help()
+  else:
+    ran_one = False
+    for script_name in script_names:
+      if all or script_name in sys.argv:
+        print("Running " + script_name)
+        __import__(script_name).run(ig_list)
+        ran_one = True
+    if not ran_one:
+      print_help()
+
+main()
