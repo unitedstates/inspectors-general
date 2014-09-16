@@ -81,6 +81,7 @@ def copy_if_present(key, src, dst):
 
 INSPECTOR_RE = re.compile('''File "\\.?inspectors(?:/|\\\\)([a-z]+)\\.py", line ([0-9]+), in ([^\n]+)\n''')
 HTTP_ERROR_RE = re.compile('''scrapelib\\.HTTPError: ([0-9]+) while retrieving ([^\n]+)\n''')
+TRACEBACK_STR = "Traceback (most recent call last):"
 
 def send_slack(body):
     options = config["slack"]
@@ -91,7 +92,7 @@ def send_slack(body):
 
     # Scan up to the point where the traceback starts
     index = 0
-    while index < len(lines) and lines[index] != "Traceback (most recent call last):":
+    while index < len(lines) and lines[index].find(TRACEBACK_STR) != -1:
         index = index + 1
     # Skip the traceback
     index = index + 1
@@ -100,7 +101,7 @@ def send_slack(body):
         index = index + 1
     # If we ran off the end of the message because it's in an unexpected
     # format, just use the whole thing
-    if index == len(lines):
+    if index >= len(lines):
         index = 0
     # Take the remaining text as the exception message
     exception_message = '\n'.join(lines[index:])
@@ -150,6 +151,17 @@ def send_slack(body):
                     "text": body,
                     "color": "danger",
                     "pretext": pretext
+                }
+            ]
+        }
+    elif body.startswith("QA results for"):
+        message = {
+            "attachments": [
+                {
+                    "fallback": fallback,
+                    "text": "\n".join(lines[1:]),
+                    "color": "danger",
+                    "pretext": fallback
                 }
             ]
         }

@@ -3,8 +3,10 @@
 import sys
 import os
 import os.path
+import io
 
 from inspectors.utils import utils
+from inspectors.utils import admin
 
 def main():
   cwd = os.getcwd()
@@ -48,8 +50,21 @@ def main():
     for script_name in script_names:
       if all or script_name in sys.argv:
         print("Running " + script_name)
-        __import__(script_name).run(ig_list)
         ran_one = True
+
+        saved_stdout = sys.stdout
+        stringio = io.StringIO()
+        sys.stdout = stringio
+        try:
+          __import__(script_name).run(ig_list)
+        except Exception as e:
+          sys.stdout = saved_stdout
+          admin.notify(e)
+        finally:
+          sys.stdout = saved_stdout
+        value = stringio.getvalue()
+        if value:
+          admin.notify('QA results for `%s`:\n%s' % (script_name, value))
     if not ran_one:
       print_help()
 
