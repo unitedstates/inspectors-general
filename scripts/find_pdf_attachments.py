@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-def run(ig_list):
-  import os, os.path, subprocess, tempfile, shutil
-  import logging
-  from inspectors.utils import utils
+import os, os.path, subprocess, tempfile, shutil
+import logging
 
+def run(ig_list):
+  from inspectors.utils import utils
   data_dir = utils.data_dir()
   for inspector in os.listdir(data_dir):
     if not ig_list or inspector in ig_list:

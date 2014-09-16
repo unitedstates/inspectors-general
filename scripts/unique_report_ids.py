@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-def run(ig_list):
-  import os, os.path, json
-  from inspectors.utils import utils
+import os, os.path, json
 
+def run(ig_list):
+  from inspectors.utils import utils
   options = utils.options()
-  report_id_history = {}
   data_dir = utils.data_dir()
+
+  report_id_history = {}
   for inspector in os.listdir(data_dir):
     if not ig_list or inspector in ig_list:
       inspector_path = os.path.join(data_dir, inspector)
