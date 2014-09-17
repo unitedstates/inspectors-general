@@ -20,6 +20,7 @@ archive = 1994
 # - It would be useful if all of the reports displayed published dates.
 # - It would be nice to add reports for pages like this:
 # http://www.fec.gov/fecig/transit.htm
+# - There are two broken links due to an extra "_000" or "_001" in link targets
 
 REPORTS_URL = "http://www.fec.gov/fecig/fecig.shtml"
 
@@ -81,9 +82,13 @@ def run(options):
 def report_from(result, year_range, report_type, title_prefix=None):
   report_url = urljoin(REPORTS_URL, result.select("a")[-1].get("href"))
 
-  # Temporary hack to account for link mistake
+  # Temporary hacks to account for link mistakes
   if report_url == "http://www.fec.gov/fecig/documents/Semi14a_000.pdf":
     report_url = "http://www.fec.gov/fecig/documents/Semi14a.pdf"
+  if report_url == "http://www.fec.gov/fecig/documents/ReviewofOutstanding" \
+                    "RecommendationsasofJune2014_001.pdf":
+    report_url = "http://www.fec.gov/general/documents/ReviewofOutstanding" \
+                  "RecommendationsasofJune2014.pdf"
 
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
