@@ -30,7 +30,7 @@ def run(ig_list):
                     print("%s has the following attachments: %s" % (original, ', '.join(attachments)))
                 finally:
                   shutil.rmtree(extract_dir)
-              except subprocess.CalledProcessException as e:
+              except subprocess.CalledProcessError as e:
                 print(e)
               finally:
                 try:
