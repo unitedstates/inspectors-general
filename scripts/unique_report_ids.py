@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
-import os, os.path, json
+import sys, os, os.path, json
+from inspectors.utils import utils
+import logging
 
-def run(ig_list):
-  from inspectors.utils import utils
-  options = utils.options()
+def run(options):
   data_dir = utils.data_dir()
+  ig_list = options.get("inspectors")
 
   report_id_history = {}
   for inspector in os.listdir(data_dir):
+    logging.debug("[%s] Checking..." % inspector)
+
     if not ig_list or inspector in ig_list:
       inspector_path = os.path.join(data_dir, inspector)
       if os.path.isdir(inspector_path):
@@ -31,8 +34,8 @@ def run(ig_list):
           report_id_history = {}
 
 def main():
-  import sys, os, os.path
   sys.path.append(os.getcwd())
   sys.path.append(os.path.abspath(".."))
-  run([])
+  run([]) #?
+
 main() if (__name__ == "__main__") else None

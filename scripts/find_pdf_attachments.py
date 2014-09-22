@@ -2,12 +2,16 @@
 
 import os, os.path, subprocess, tempfile, shutil
 import logging
+from inspectors.utils import utils
 
-def run(ig_list):
-  from inspectors.utils import utils
+def run(options):
+  ig_list = options.get("inspectors")
+
   data_dir = utils.data_dir()
   for inspector in os.listdir(data_dir):
     if not ig_list or inspector in ig_list:
+      logging.debug("[%s] Checking..." % inspector)
+
       inspector_path = os.path.join(data_dir, inspector)
       if os.path.isdir(inspector_path):
         for dirpath, dirnames, filenames in os.walk(inspector_path):

@@ -16,12 +16,15 @@ from . import admin
 
 # will pass correct options on to individual scrapers whether
 # run through ./igs or individually, because argv[1:] is the same
-def run(run_method):
+def run(run_method, additional=None):
   cli_options = options()
   configure_logging(cli_options)
 
+  if additional:
+    cli_options.update(additional)
+
   try:
-    run_method(cli_options)
+    return run_method(cli_options)
   except Exception as exception:
     admin.notify(exception)
 

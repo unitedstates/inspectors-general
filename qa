@@ -42,30 +42,44 @@ def main():
   elif "only" in opts:
     ig_list = opts["only"].split(",")
 
+  successful = True
+
   all = "all" in sys.argv
   if "help" in opts or "help" in sys.argv:
     print_help()
   else:
     ran_one = False
+
+    total_report = ""
+
     for script_name in script_names:
       if all or script_name in sys.argv:
-        print("Running " + script_name)
+        print("Running %s..." % script_name)
         ran_one = True
 
+
+        # captures STDOUT during script run,
+        # depends on using print() and not logging.warn()
         saved_stdout = sys.stdout
         stringio = io.StringIO()
         sys.stdout = stringio
-        try:
-          __import__(script_name).run(ig_list)
-        except Exception as e:
-          sys.stdout = saved_stdout
-          admin.notify(e)
-        finally:
-          sys.stdout = saved_stdout
+
+        run_method = __import__(script_name).run
+        utils.run(run_method, {'inspectors': ig_list})
+
+        sys.stdout = saved_stdout
         value = stringio.getvalue()
         if value:
-          admin.notify('QA results for `%s`:\n%s' % (script_name, value))
+          total_report += ('QA results for `%s`:\n\n%s\n\n' % (script_name, value))
+          successful = False
+
     if not ran_one:
       print_help()
+
+    if successful:
+      exit(0)
+    else:
+      admin.notify(total_report)
+      exit(1)
 
 main()

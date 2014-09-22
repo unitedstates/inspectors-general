@@ -2,6 +2,8 @@
 
 import os, os.path
 import re
+from inspectors.utils import utils
+import logging
 
 PAGE_NOT_FOUND_PATTERN = b"(<title>(404 Page Not Found - CFTC|CPB: Page Not Found|DoD IG - Error Message|404: NOT FOUND|Page Not Found|Maintenance|Page Not Found Smithsonian|404)</title>|That page was not found\\.&#160; If possible we will redirect you to that content now\\.|The Office of Inspector General [(]OIG[)] is an independent unit established by law which is responsible for promoting economy, efficiency, and effectiveness and detecting and preventing fraud, waste, and mismanagement in the General Services Administration's [(]GSA[)] programs and operations\\.)"
 PAGE_NOT_FOUND_BYTES_RE = re.compile(PAGE_NOT_FOUND_PATTERN)
@@ -22,11 +24,13 @@ URLS = {
 
 IGS_WITH_BAD_404 = tuple(URLS.keys())
 
-def run(ig_list):
-  from inspectors.utils import utils
+def run(options):
+
+  ig_list = options.get("inspectors")
 
   for inspector, url in URLS.items():
-    if not ig_list or inspector in ig_list:
+    if (not ig_list) or (inspector in ig_list):
+      logging.debug("[%s] Checking..." % inspector)
       result = utils.scraper.urlopen(url)
       match = PAGE_NOT_FOUND_STRING_RE.search(result)
       if not match:
