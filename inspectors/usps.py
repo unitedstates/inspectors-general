@@ -158,7 +158,8 @@ def url_for(options, page=1):
   if not only:
     only = "audit,congress,research"
   only = only.split(",")
-  params = ["field_doc_cat_tid[]=%s" % CATEGORIES[id] for id in only]
+  params = ["field_doc_cat_tid[]=%s" % id for (name, id) in CATEGORIES \
+                                                        if (name in only)]
   url += "&%s" % str.join("&", params)
 
   # they added this crazy thing
@@ -171,14 +172,15 @@ def url_for(options, page=1):
   return url
 
 
-CATEGORIES = {
-  'audit': '1920',
-  'testimony': '1933',
-  'press': '1921',
-  'research': '1922',
-  'interactive': '3487',
-  'congress': '1923'
-}
+CATEGORIES = [
+  ('audit', '1920'),
+  ('testimony', '1933'),
+  ('other', '3534'),
+  ('press', '1921'),
+  ('congress', '1923'),
+  ('research', '1922'),
+  ('other', '3557'),
+]
 
 
 utils.run(run) if (__name__ == "__main__") else None
