@@ -64,7 +64,7 @@ def run(options):
           published_on = datetime.strptime(date_text, '%B %d, %Y')
         except ValueError:
           published_on = datetime.strptime(date_text, '%b %d, %Y')
-      if published_on.year not in year_range:
+      if (published_on is None) or (published_on.year not in year_range):
         continue
 
       report = report_from(all_text, a_text, a_href, page_url, published_on)
