@@ -47,7 +47,7 @@ def run(options):
       if report:
         inspector.save_report(report)
 
-  # Pull the congreesional requests
+  # Pull the congressional requests
   doc = BeautifulSoup(utils.download(CONGRESSIONAL_REQUESTS_URL))
   results = doc.select("tr")
   for result in results:
@@ -72,7 +72,11 @@ def run(options):
       inspector.save_report(report)
 
 def report_from(result, report_type, year_range):
-  title = result.select("td")[0].text.strip()
+  if len(result.select("td")) > 0:
+    title = result.select("td")[0].text.strip()
+  else:
+    return
+
   if title in HEADER_ROW_TEXT:
     # Skip the header rows
     return
