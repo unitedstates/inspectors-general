@@ -9,7 +9,7 @@ import itertools
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# https://oig.hhs.gov/reports-and-publications/index.asp
+# http://oig.hhs.gov/reports-and-publications/index.asp
 archive = 1985
 
 # options:
@@ -41,71 +41,71 @@ archive = 1985
 #  - A large number of reports don't list a date when they were published.
 #  See "Adverse Events in Hospitals: Medicare's Responses to Alleged Serious
 #  Events"(OEI-01-08-00590) referenced at
-#  https://oig.hhs.gov/reports-and-publications/oei/a.asp
+#  http://oig.hhs.gov/reports-and-publications/oei/a.asp
 #  As a fallback, this scraper uses the HTTP Last-Modified header for reports
 #  published after 2002. For reports published before 2002, we use the report id
 #  month-year as an approximation of the published date.
 #  - Fix published date for http://oig.hhs.gov/oas/reports/region3/31200010.asp
 #  on http://oig.hhs.gov/reports-and-publications/oas/cms.asp. It currently
 #  says 08-03-2102
-#  - Fix published date for https://oig.hhs.gov/oei/reports/oei-06-98-00321.pdf
-#  on https://oig.hhs.gov/reports-and-publications/oei/s.asp. It currently
+#  - Fix published date for http://oig.hhs.gov/oei/reports/oei-06-98-00321.pdf
+#  on http://oig.hhs.gov/reports-and-publications/oei/s.asp. It currently
 #  says Dec 2028.
-#  - Fix published date for https://oig.hhs.gov/oas/reports/region7/70903133.asp
+#  - Fix published date for http://oig.hhs.gov/oas/reports/region7/70903133.asp
 #  It currently says 14-21-2010.
-#  - Fix published date for https://oig.hhs.gov/oas/reports/region3/31300031.asp
+#  - Fix published date for http://oig.hhs.gov/oas/reports/region3/31300031.asp
 #  It currently says 03-05-2015.
-#  - Fix published date for https://oig.hhs.gov/oas/reports/region9/91102005.asp
+#  - Fix published date for http://oig.hhs.gov/oas/reports/region9/91102005.asp
 #  It currently says 04-23-3012.
 #  - Add missing report for 'Use of Discounted Airfares by the Office of the Secretary' (A-03-07-00500)
-#  linked to from https://oig.hhs.gov/reports-and-publications/oas/dept.asp
-#  - The report https://oig.hhs.gov/oas/reports/region5/50800067.asp returns a 500.
+#  linked to from http://oig.hhs.gov/reports-and-publications/oas/dept.asp
+#  - The report http://oig.hhs.gov/oas/reports/region5/50800067.asp returns a 500.
 #  - The link to the report for "Personnel Suitability and Security (OAI-02-86-00079; 11/87)"
 #  points to a copy of the report OAI-07-86-00079.
 #  - The link to the report for "Errors Resulting in Overpayment In the AFDC Program (OAI-04-86-0024; 06/87)"
 #  points to a copy of the report OEI-05-90-00720.
 #  - The date for OEI-07-91-01470 is incorrectly listed as 4/94 on the S page,
 #  and correctly listed as 4/92 on the O page.
-#  - There is a typo in one of the links on https://oig.hhs.gov/reports-and-publications/oei/h.asp,
+#  - There is a typo in one of the links on http://oig.hhs.gov/reports-and-publications/oei/h.asp,
 #  it should point to #hospitals, not #hospiatls.
 
 TOPIC_TO_URL = {
-  "OAS": 'https://oig.hhs.gov/reports-and-publications/oas/index.asp',
-  "OE": 'https://oig.hhs.gov/reports-and-publications/oei/subject_index.asp',
-  "HCF": 'https://oig.hhs.gov/reports-and-publications/hcfac/index.asp',
-  "SAR": 'https://oig.hhs.gov/reports-and-publications/semiannual/index.asp',
-  "MIR": 'https://oig.hhs.gov/reports-and-publications/medicaid-integrity/index.asp',
-  "TMPC": 'https://oig.hhs.gov/reports-and-publications/top-challenges/',
-  "CPR": 'https://oig.hhs.gov/reports-and-publications/compendium/index.asp',
-  "SP": 'https://oig.hhs.gov/reports-and-publications/strategic-plan/index.asp',
-  "WP": 'https://oig.hhs.gov/reports-and-publications/workplan/index.asp',
-  "POR": 'https://oig.hhs.gov/reports-and-publications/portfolio/index.asp',
-  "FOIA": 'https://oig.hhs.gov/reports-and-publications/foia/index.asp',
-  "FRN": 'https://oig.hhs.gov/reports-and-publications/federal-register-notices/index.asp',
-  "RA": 'https://oig.hhs.gov/reports-and-publications/regulatory-authorities/index.asp',
+  "OAS": 'http://oig.hhs.gov/reports-and-publications/oas/index.asp',
+  "OE": 'http://oig.hhs.gov/reports-and-publications/oei/subject_index.asp',
+  "HCF": 'http://oig.hhs.gov/reports-and-publications/hcfac/index.asp',
+  "SAR": 'http://oig.hhs.gov/reports-and-publications/semiannual/index.asp',
+  "MIR": 'http://oig.hhs.gov/reports-and-publications/medicaid-integrity/index.asp',
+  "TMPC": 'http://oig.hhs.gov/reports-and-publications/top-challenges/',
+  "CPR": 'http://oig.hhs.gov/reports-and-publications/compendium/index.asp',
+  "SP": 'http://oig.hhs.gov/reports-and-publications/strategic-plan/index.asp',
+  "WP": 'http://oig.hhs.gov/reports-and-publications/workplan/index.asp',
+  "POR": 'http://oig.hhs.gov/reports-and-publications/portfolio/index.asp',
+  "FOIA": 'http://oig.hhs.gov/reports-and-publications/foia/index.asp',
+  "FRN": 'http://oig.hhs.gov/reports-and-publications/federal-register-notices/index.asp',
+  "RA": 'http://oig.hhs.gov/reports-and-publications/regulatory-authorities/index.asp',
 
-  "B": 'https://oig.hhs.gov/reports-and-publications/budget/index.asp',
-  # "RAOR": 'https://oig.hhs.gov/reports-and-publications/recovery/index.asp',
-  "RAA": 'https://oig.hhs.gov/reports-and-publications/recovery/recovery_reports.asp',
+  "B": 'http://oig.hhs.gov/reports-and-publications/budget/index.asp',
+  # "RAOR": 'http://oig.hhs.gov/reports-and-publications/recovery/index.asp',
+  "RAA": 'http://oig.hhs.gov/reports-and-publications/recovery/recovery_reports.asp',
 }
 
 TOPIC_TO_ARCHIVE_URL = {
-  "OAS": 'https://oig.hhs.gov/reports-and-publications/archives/oas/index.asp',
+  "OAS": 'http://oig.hhs.gov/reports-and-publications/archives/oas/index.asp',
 
   # Some reports missing published dates
-  # "SAR": 'https://oig.hhs.gov/reports-and-publications/archives/semiannual/index.asp',
+  # "SAR": 'http://oig.hhs.gov/reports-and-publications/archives/semiannual/index.asp',
 
   # Some reports missing published dates
-  # "TMPC": 'https://oig.hhs.gov/reports-and-publications/archives/top-challenges/index.asp',
+  # "TMPC": 'http://oig.hhs.gov/reports-and-publications/archives/top-challenges/index.asp',
 
   # No published dates
-  # "CPR": 'https://oig.hhs.gov/reports-and-publications/archives/compendium/redbook.asp',
+  # "CPR": 'http://oig.hhs.gov/reports-and-publications/archives/compendium/redbook.asp',
 
   # Some reports missing published dates
-  # "WP": 'https://oig.hhs.gov/reports-and-publications/archives/workplan/index.asp',
+  # "WP": 'http://oig.hhs.gov/reports-and-publications/archives/workplan/index.asp',
 
-  "FRN": 'https://oig.hhs.gov/reports-and-publications/archives/federal-register-notices/index.asp',
-  "B": 'https://oig.hhs.gov/reports-and-publications/archives/budget/index.asp',
+  "FRN": 'http://oig.hhs.gov/reports-and-publications/archives/federal-register-notices/index.asp',
+  "B": 'http://oig.hhs.gov/reports-and-publications/archives/budget/index.asp',
 }
 
 TOPIC_NAMES = {
@@ -130,9 +130,9 @@ TOPIC_NAMES = {
 TOPIC_WITH_SUBTOPICS = ['OAS', 'OE']
 
 REPORT_URL_MAPPING = {
-  "https://oig.hhs.gov/reports-and-publications/medicaid-integrity/2011/": "https://oig.hhs.gov/reports-and-publications/medicaid-integrity/2011/medicaid_integrity_reportFY11.pdf",
-  "https://oig.hhs.gov/reports-and-publications/compendium/2011.asp": "https://oig.hhs.gov/publications/docs/compendium/2011/CMP-March2011-Final.pdf",
-  "https://oig.hhs.gov/reports-and-publications/oas/reports/region3/30700500.htm": "https://oig.hhs.gov/oas/reports/region3/30700500.htm",
+  "http://oig.hhs.gov/reports-and-publications/medicaid-integrity/2011/": "http://oig.hhs.gov/reports-and-publications/medicaid-integrity/2011/medicaid_integrity_reportFY11.pdf",
+  "http://oig.hhs.gov/reports-and-publications/compendium/2011.asp": "http://oig.hhs.gov/publications/docs/compendium/2011/CMP-March2011-Final.pdf",
+  "http://oig.hhs.gov/reports-and-publications/oas/reports/region3/30700500.htm": "http://oig.hhs.gov/oas/reports/region3/30700500.htm",
 }
 
 REPORT_PUBLISHED_MAPPING = {
@@ -169,11 +169,11 @@ BLACKLIST_REPORT_URLS = [
   'http://get.adobe.com/reader/',
 
   # See note to IG web team
-  'https://oig.hhs.gov/reports/region3/30700500.htm',
-  'https://oig.hhs.gov/oas/reports/region5/50800067.asp',
+  'http://oig.hhs.gov/reports/region3/30700500.htm',
+  'http://oig.hhs.gov/oas/reports/region5/50800067.asp',
 ]
 
-BASE_URL = "https://oig.hhs.gov"
+BASE_URL = "http://oig.hhs.gov"
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -360,7 +360,7 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
 
   result = {
     'inspector': 'hhs',
-    'inspector_url': 'https://oig.hhs.gov',
+    'inspector_url': 'http://oig.hhs.gov',
     'agency': 'hhs',
     'agency_name': 'Health & Human Services',
     'report_id': report_id,
