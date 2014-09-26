@@ -155,14 +155,35 @@ def report_from(result, year_range):
   report_type = report_type_from_url(report_url)
 
   estimated_date = False
+  published_on = None
   try:
     published_on_text = "/".join(re.search('(\w+) (\d+), (\d+)', title).groups())
     published_on = datetime.datetime.strptime(published_on_text, '%B/%d/%Y')
   except AttributeError:
-    # For reports where we can only find the year, set them to Nov 1st of that year
-    published_on_year = int(result.find_previous("h2").text)
-    published_on = datetime.datetime(published_on_year, 11, 1)
-    estimated_date = True
+    pass
+
+  if not published_on:
+    month_year_match = MONTH_YEAR_RE.search(result.text)
+    if month_year_match:
+      date_text = ' '.join(month_year_match.group(0).split())
+      published_on = datetime.datetime.strptime(date_text, '%B %Y')
+      estimated_date = True
+
+  if not published_on:
+    try:
+      # For reports where we can only find the year, set them to Nov 1st of
+      # that year
+      published_on_year = int(result.find_previous("h2").text)
+      published_on = datetime.datetime(published_on_year, 11, 1)
+      estimated_date = True
+    except AttributeError:
+      pass
+
+  if not published_on:
+    result_text = str(result.text)
+    if result_text.find('CNCS') != -1 and \
+                result_text.find('peer review report') != -1:
+      published_on = datetime.datetime(2013, 2, 27)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -184,5 +205,9 @@ def report_from(result, year_range):
   if estimated_date:
     report['estimated_date'] = estimated_date
   return report
+
+MONTH_YEAR_RE = re.compile('(?:January|February|March|April|May|June|July|' \
+                           'August|September|October|November|December)\s+' \
+                           '[0-9]{4}')
 
 utils.run(run) if (__name__ == "__main__") else None
