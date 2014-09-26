@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -268,8 +269,24 @@ def published_date_for_report(published_on_text, title, report_url, last_publish
     # https://www.sec.gov/about/offices/oig/reports/reppubs/other/11-30-2012_memo-to-comm-re-postal-investigation-impact.pdf
     (os.path.basename(report_url).split("_")[0], "%m-%d-%Y"),
   ])
+
+  # Sometimes, splitting on newlines does not work for extracting the date.
+  # If we haven't found a date, try selecting one from the text with a regex.
+  if not published_on:
+    date_match = DATE_RE.search(published_on_text)
+    if date_match:
+      published_on_text = date_match.group(0).replace('.', '')
+      published_on = find_first_matching_datetime_format_from_text([
+        (published_on_text, '%b %d, %Y'),
+        (published_on_text, '%B %d, %Y')
+      ])
   if not published_on:
     published_on = last_published_on
   return published_on
+
+DATE_RE = re.compile('(?:January|Jan\\.?|February|Feb\\.?|March|Mar\\.?|' \
+                     'April|Apr\\.?|May\\.?|June|Jun\\.?|July|Jul\\.?|' \
+                     'August|Aug\\.?|September|Sept?\\.?|October|Oct\\.?|' \
+                     'November|Nov\\.?|December|Dec\\.?) [123]?[0-9], [0-9]{4}')
 
 utils.run(run) if (__name__ == "__main__") else None
