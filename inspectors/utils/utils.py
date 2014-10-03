@@ -126,8 +126,10 @@ def log_http_error(e, url):
   print(message)
   if admin.config and admin.config.get("slack"):
     admin.send_slack(message)
+  elif admin.config:
+    print(admin.config.get("slack"))
   else:
-    print(admin.config, admin.config.get("slack"))
+    print(admin.config)
 
 # uses BeautifulSoup to do a naive extraction of text from HTML,
 # then writes it and returns the /data-relative path.
