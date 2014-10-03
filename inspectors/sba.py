@@ -103,6 +103,8 @@ def report_from(result, year_range):
   report_type_text = result.select("td")[3].text.strip()
   report_type = report_type_from_text(report_type_text)
 
+  # we don't always have the published_on yet, but if so we can
+  # check and short-circuit
   if published_on and published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % published_on_text)
     return
@@ -114,6 +116,11 @@ def report_from(result, year_range):
   landing_url = urljoin(BASE_REPORT_URL, result.find("a").get('href'))
 
   landing_body = utils.download(landing_url)
+
+  if landing_body is None:
+    logging.warn("Bad landing URL, downloaded None: %s" % landing_url)
+    raise Exception("Couldn't download landing URL.")
+
   landing_page = BeautifulSoup(landing_body)
 
   try:
@@ -166,6 +173,11 @@ def report_from(result, year_range):
           except (AttributeError, ValueError):
             published_on_text = re.search('([a-zA-Z0-9]+\d)', published_on_text).groups()[0]
             published_on = datetime.datetime.strptime(published_on_text, '%b%y')
+
+  # okay, now there's *definitely* a published_on
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_id)
+    return
 
   report = {
     'inspector': 'sba',
