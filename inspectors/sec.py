@@ -273,20 +273,33 @@ def published_date_for_report(published_on_text, title, report_url, last_publish
   # Sometimes, splitting on newlines does not work for extracting the date.
   # If we haven't found a date, try selecting one from the text with a regex.
   if not published_on:
-    date_match = DATE_RE.search(published_on_text)
+    date_match = DATE_RE_1.search(published_on_text)
     if date_match:
       published_on_text = date_match.group(0).replace('.', '')
       published_on = find_first_matching_datetime_format_from_text([
         (published_on_text, '%b %d, %Y'),
         (published_on_text, '%B %d, %Y')
       ])
+
+  if not published_on:
+    date_match = DATE_RE_2.search(report_url)
+    if date_match:
+      published_on_text = date_match.group(1)
+      published_on = find_first_matching_datetime_format_from_text([
+        (published_on_text, '%m%d%y')
+      ])
+
   if not published_on:
     published_on = last_published_on
+
+  if not published_on:
+    raise Exception('Could not find a date for "%s"' % title)
   return published_on
 
-DATE_RE = re.compile('(?:January|Jan\\.?|February|Feb\\.?|March|Mar\\.?|' \
+DATE_RE_1 = re.compile('(?:January|Jan\\.?|February|Feb\\.?|March|Mar\\.?|' \
                      'April|Apr\\.?|May\\.?|June|Jun\\.?|July|Jul\\.?|' \
                      'August|Aug\\.?|September|Sept?\\.?|October|Oct\\.?|' \
                      'November|Nov\\.?|December|Dec\\.?) [123]?[0-9], [0-9]{4}')
+DATE_RE_2 = re.compile('[^0-9]([01][0-9][0-3][0-9][901][0-9])[^0-9]')
 
 utils.run(run) if (__name__ == "__main__") else None
