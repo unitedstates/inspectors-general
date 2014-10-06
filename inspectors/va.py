@@ -111,10 +111,15 @@ def report_from(result, year_range):
     field_value = field.select("td")[0].text
     field_mapping[field_name] = field_value
 
+  button_results = landing_page.select("div.big-green-button a")
+  if len(button_results) == 1:
+    report_url = button_results[0].get("href")
+  else:
+    report_url = None
+
   report_id = field_mapping['Report Number']
   topic = field_mapping['Report Type']
   report_type = report_type_from_topic(topic)
-  report_url = field_mapping.get('Report Link')
   summary = field_mapping['Summary']
   location = field_mapping['City/State']
   report_author = field_mapping['Report Author']
