@@ -80,10 +80,13 @@ def report_from(result, year_range, report_type=None):
         published_on_text = "/".join(re.search("(\w+) (\d+), (\d+)", str(link.next_sibling)).groups())
         published_on = datetime.datetime.strptime(published_on_text, '%B/%d/%Y')
       except AttributeError:
-        # For reports where we can only find the year, set them to Nov 1st of that year
-        published_on_year = int(re.search('(\d+)', title).groups()[0])
-        published_on = datetime.datetime(published_on_year, 11, 1)
-        estimated_date = True
+        try:
+          # For reports where we can only find the year, set them to Nov 1st of that year
+          published_on_year = int(re.search('(\d+)', title).groups()[0])
+          published_on = datetime.datetime(published_on_year, 11, 1)
+          estimated_date = True
+        except AttributeError:
+          raise Exception('Could not parse date for report "%s"' % title)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
