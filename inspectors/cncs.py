@@ -143,15 +143,23 @@ def report_from(result, reports_page, report_type, year_range):
     report_type = "investigation"
     title = result.select("div")[0].text
 
-    id_p = None
+    id_text = None
     summary = ""
     for p in result.select("p"):
       text = p.text.strip()
       summary += text + "\n\n"
       if text.lower().startswith("case id"):
-        id_p = p
+        id_text = text
     summary = summary.strip()
-    report_id = id_p.text.strip().split(" ")[-1]
+    if not id_text:
+      for div in result.select("div"):
+        text = div.text.strip()
+        if text.lower().startswith("case id"):
+          id_text = text
+    if not id_text:
+      raise Exception("Could not find Case ID for an investigation\n%s" % \
+                        result.text)
+    report_id = id_text.split(" ")[-1]
 
     landing_url = reports_page
     unreleased = True
