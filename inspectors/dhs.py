@@ -72,9 +72,16 @@ def report_from(result, component, url):
   report['title'] = title
 
   timestamp = result.select("td")[0].text.strip()
+
   # can actually be just monthly, e.g. 12/03 (Dec 2003)
   if len(timestamp.split("/")) == 2:
     timestamp = "%s/01/%s" % tuple(timestamp.split("/"))
+
+  # A date of '99' is also used when only the month and year are given
+  # and no accurate date is available.
+  if timestamp.split("/")[1] == "99":
+    timestamp = "%s/01/%s" % (timestamp.split("/")[0], timestamp.split("/")[2])
+
   published_on = datetime.strptime(timestamp, "%m/%d/%y")
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
 
