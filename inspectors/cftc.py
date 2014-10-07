@@ -19,6 +19,7 @@ archive = 2000
 # - Add published dates for all reports in REPORT_PUBLISHED_MAPPING
 
 REPORT_PUBLISHED_MAPPING = {
+  "oig_mgmtuseitresources": datetime.datetime(2014, 10, 1),
   "oig_auditreportp05": datetime.datetime(2014, 7, 17),
   "oigocoaudit2014": datetime.datetime(2014, 5, 1),
   "oigcommentletter042214": datetime.datetime(2014, 4, 22),
