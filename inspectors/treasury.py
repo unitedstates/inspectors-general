@@ -77,6 +77,8 @@ REPORT_PUBLISHED_MAP = {
   "OIG-CA-13-006": datetime.datetime(2013, 3, 29),
   "OIG-13-CA-008": datetime.datetime(2013, 6, 10),
   "Treasury Freedom of Information Act (FOIA) Request Review": datetime.datetime(2010, 11, 19),
+  "OIG-CA-14-017": datetime.datetime(2014, 9, 30),
+  "OIG-CA-14-015": datetime.datetime(2014, 9, 4),
 }
 
 def run(options):
@@ -98,7 +100,7 @@ def run(options):
 
   for report_type, url in OTHER_URLS.items():
     doc = beautifulsoup_from_url(url)
-    results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p > a")
+    results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p a")
     for result in results:
       report = report_from(result, url, report_type, year_range)
       if report:
@@ -212,6 +214,9 @@ def report_from(result, page_url, report_type, year_range):
 
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
+
+  if not published_on:
+    raise Exception('Could not parse date for report "%s"' % title)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
