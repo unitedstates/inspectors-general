@@ -216,6 +216,13 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
   if report_id == '283fin' and published_on.year == 1999 and published_on.month == 3 and published_on.day == 16:
     return None, published_on
 
+  # Audit Memo No. 39 is posted in two locations,
+  # https://www.sec.gov/about/offices/oig/reports/audits/2005/am39.pdf and
+  # https://www.sec.gov/about/oig/audit/am39.pdf,
+  # skip the second one
+  if report_url == 'https://www.sec.gov/about/oig/audit/am39.pdf':
+    return None, published_on
+
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % landing_url)
     return None, published_on
