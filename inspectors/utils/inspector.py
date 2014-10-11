@@ -4,6 +4,7 @@ import re
 import logging
 import datetime
 import urllib.parse
+import atexit
 
 from . import admin
 # Save a report to disk, provide output along the way.
@@ -144,6 +145,7 @@ def validate_report(report):
 
 _uniqueness_storage_disk = {}
 _uniqueness_storage_runtime = {}
+_uniqueness_messages = []
 def check_uniqueness(inspector, report_id, report_year):
   '''Given the name of an inspector, the ID of a report, and the year of the
   report, this function will check whether a duplicate report_id exists on-disk
@@ -172,33 +174,35 @@ def check_uniqueness(inspector, report_id, report_year):
             report_path = os.path.join(year_path, report_id_disk)
             if os.path.isdir(report_path):
               if report_id_disk in _uniqueness_storage_disk[inspector]:
-                # TODO: admin.notify()
                 msg = "[%s] Duplicate report_id: %s is saved under %d and %d" %\
                         (inspector,
                         report_id_disk,
                         _uniqueness_storage_disk[inspector][report_id_disk],
                         year_disk)
                 print(msg)
-                admin.notify(msg) # this sucks!
+                _uniqueness_messages.append(msg)
               _uniqueness_storage_disk[inspector][report_id_disk] = year_disk
 
   if report_id in _uniqueness_storage_runtime[inspector]:
-    # TODO: admin.notify()
     msg = "[%s] Duplicate report_id: %s has been used twice this session" % \
             (inspector, report_id)
     print(msg)
-    admin.notify(msg) # this sucks!
+    _uniqueness_messages.append(msg)
   elif report_id in _uniqueness_storage_disk[inspector]:
     if report_year != _uniqueness_storage_disk[inspector][report_id]:
-      # TODO: admin.notify()
       msg = "[%s] Duplicate report_id: %s is saved under %d and %d" % \
               (inspector,
               report_id,
               _uniqueness_storage_disk[inspector][report_id],
               report_year)
       print(msg)
-      admin.notify(msg) # this sucks!
+      _uniqueness_messages.append(msg)
   _uniqueness_storage_runtime[inspector].add(report_id)
+
+@atexit.register
+def verify_uniqueness_finalize_summary():
+  if _uniqueness_messages:
+    admin.notify('\n'.join(_uniqueness_messages))
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])
