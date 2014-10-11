@@ -98,6 +98,11 @@ def report_from(result, reports_page, report_type, year_range):
     landing_url = urljoin(reports_page, landing_a['href'])
     title = landing_a.text.strip()
 
+    # http://www.cncsoig.gov/news-entry/97-09 and
+    # http://www.cncsoig.gov/news-entry/97-09-0 are duplicates of each other
+    if landing_url == "http://www.cncsoig.gov/news-entry/97-09-0":
+      return
+
     # PDF URL and summary are on the report's landing page
     report_url, summary, title_from_landing = extract_from_release_page(landing_url)
     if not report_url:
