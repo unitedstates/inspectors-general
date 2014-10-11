@@ -14,8 +14,9 @@ archive = 1990
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
-#   None of the audit reports have dates in the visible metadata!
-#
+# - None of the audit reports have dates in the visible metadata!
+# - There are some typos in report numbers and link URLS for audit reports
+#   between 1999 and 2001. See the comments in report_from() for details.
 
 AUDIT_REPORTS_URL = "http://www.usitc.gov/oig/audit_reports.htm"
 SEMIANNUAL_REPORTS_URL = "http://www.usitc.gov/oig/semiannual_reports.htm"
@@ -39,12 +40,52 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+global flag_inspection_report_01_01
+flag_inspection_report_01_01 = False
+
 def report_from(result, landing_url, report_type, year_range):
   link = result.find("a", text=True)
   report_url = urljoin(landing_url, link.get('href'))
   report_id = "-".join(link.text.split()).replace(':', '')
   result_text = [x for x in result.stripped_strings]
   title = " ".join(result_text[0].split())
+  unreleased = False
+
+  # Some reports have the wrong link and/or number listed on the website
+  if report_id == "Inspection-Report-03-99" and \
+        title.find("Evaluation of the Commission's Passport System's " \
+        "Security") != -1:
+    # The title doesn't match the ID or URL, and this title doesn't show up
+    # anywhere else, so patch in the correct ID/URL and save the report.
+    report_id = "Inspection-Report-01-99"
+    report_url = "http://www.usitc.gov/oig/documents/OIG-IR-01-99.pdf"
+  elif report_id == "Inspection-Report-02-00" and \
+        title.find("Second Follow-up Review of Commission's Preparation for " \
+        "Year 2000") != -1:
+    # The title doesn't match the ID or URL, but the ID/URL is listed with the
+    # correct title elsewhere, and the title is listed with the correct ID/URL
+    # elsewhere, so we can discard this result.
+    return
+  elif report_id == "Inspection-Report-01-01" and \
+        title.find("Self-Assessment of the Commission's Human Capital") != -1:
+    # There are two identical links for the same report, keep track and
+    # discard the second one. Normally this would be achieved by discarding all
+    # duplicate links, but given the other link/text mismatches, it would be
+    # best to address this as a special case, in case there are similar typos
+    # in the future.
+    global flag_inspection_report_01_01
+    if flag_inspection_report_01_01:
+      return
+    else:
+      flag_inspection_report_01_01 = True
+  elif report_id == "Inspection-Report-02-01" and \
+        title.find("Assessment of the Commission's Family-Friendly Programs") != -1:
+    # The report ID and URL for this assessment are wrong, so we will mark it
+    # as unreleased.
+    report_id = "family-friendly-programs"
+    report_url = None
+    unreleased = True
+    landing_url = AUDIT_REPORTS_URL
 
   estimated_date = False
   try:
@@ -80,6 +121,9 @@ def report_from(result, landing_url, report_type, year_range):
   }
   if estimated_date:
     report['estimated_date'] = estimated_date
+  if unreleased:
+    report['unreleased'] = True
+    report['landing_url'] = landing_url
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
