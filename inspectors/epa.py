@@ -3,6 +3,7 @@
 import datetime
 from urllib.parse import urljoin
 import re
+import os.path
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
@@ -122,7 +123,7 @@ def report_from(tds, published_on_dt, year):
   report_id = re.sub("\s+", " ", tds[0].text).strip()
   # fallback, only needed for one testimony, apparently
   if (report_id == "") or (not report_id):
-    report_id = report_url.split("/")[-1]
+    report_id, extension = os.path.splitext(report_url.split("/")[-1])
 
   published_on = datetime.datetime.strftime(published_on_dt, '%Y-%m-%d')
 
