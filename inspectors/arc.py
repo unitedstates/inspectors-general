@@ -52,6 +52,11 @@ def report_from(result, landing_url, report_type, year_range):
     except AttributeError:
       title = result.parent.contents[0]
 
+  # There's a typo in the link for this report, it points to the wrong file
+  if report_id == "Report14-28-TN-17163" and title.find("Report on the Better Basics, Inc., Literacy Program for Clay, Jefferson") != -1:
+    report_url = "http://www.arc.gov/images/aboutarc/members/IG/Report14-34-AL-17208-302-12.pdf"
+    report_id = "Report14-34-AL-17208-302-12"
+
   estimated_date = False
   try:
     published_on_text = title.split("–")[-1].strip()
