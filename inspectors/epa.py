@@ -133,6 +133,10 @@ def report_from(tds, published_on_dt, year):
     title_slug = re.sub(r'\W', '', title[:16])
     report_id = (published_on + '-' + title_slug)
 
+  # Report 2002-M-000013 is listed twice, as it includes multiple documents
+  if title.find("Logic Models Diagrams") != -1:
+    report_id = report_id + "-logic-models-diagrams"
+
   report.update({
     'report_id': report_id,
     'url': report_url,
