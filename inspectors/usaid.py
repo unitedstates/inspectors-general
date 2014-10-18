@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -17,6 +18,7 @@ archive = 1998
 # Notes for IG's web team:
 # - The report https://oig.usaid.gov/content/mcc-oig-semiannual-report-congress-april-1-2005-september-31-2005
 # is listed as going through September 31, 2005, but September only has 30 days.
+# - Some reports have had the wrong files uploaded, see MISMATCHED_REPORT_URLS
 
 AUDIT_REPORTS_URL = "https://oig.usaid.gov/auditandspecialbyyear?page={page}"
 TESTIMONY_URL = "https://oig.usaid.gov/testimony?page={page}"
@@ -51,6 +53,12 @@ def run(options):
     report = semiannual_report_from(result, year_range)
     if report:
       inspector.save_report(report)
+
+MISMATCHED_REPORT_URLS = (
+  "https://oig.usaid.gov/sites/default/files/audit-reports/1-522-02-013-p.pdf",
+  "https://oig.usaid.gov/sites/default/files/audit-reports/7-641-03-002-p.pdf",
+  "https://oig.usaid.gov/sites/default/files/audit-reports/b-118-05-002-p_0.pdf"
+)
 
 def report_from(result, landing_url, report_type, year_range):
   link = result.find("a")
@@ -93,6 +101,23 @@ def report_from(result, landing_url, report_type, year_range):
   if title.startswith("Follow-Up"):
     report_id = report_id + "-follow-up"
 
+  if report_url == "https://oig.usaid.gov/sites/default/files/audit-reports/" \
+        "0-000-12-001-s_0.pdf":
+    # Two versions of this report have been uploaded
+    report_id = report_id + "_final"
+
+  if report_url == "https://oig.usaid.gov/sites/default/files/audit-reports/" \
+        "1-520-01-010-p_0.pdf":
+    # This file has been uploaded twice, once with "_0" and once without
+    return None
+
+  if report_url in MISMATCHED_REPORT_URLS:
+    # The report number and PDF file for these reports are copies of unrelated
+    # reports
+    report_id = "-".join(re.split("[^a-z]+", title.lower()))
+    report_url = None
+    unreleased = True
+
   report = {
     'inspector': "usaid",
     'inspector_url': "https://oig.usaid.gov",
@@ -107,6 +132,7 @@ def report_from(result, landing_url, report_type, year_range):
   if unreleased:
     report['unreleased'] = unreleased
     report['landing_url'] = landing_url
+    del report['url']
   return report
 
 def semiannual_report_from(result, year_range):
