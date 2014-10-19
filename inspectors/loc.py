@@ -151,6 +151,10 @@ class LibraryOfCongressScraper(object):
         if unreleased:
           report['unreleased'] = True
           report['landing_url'] = REPORTS_BY_YEAR_URL
+
+          # Check for duplicate and discard
+          if report_id == "JMCFFY2FSM2-2009-03-01": continue
+
         inspector.save_report(report)
 
   def get_uls_past_audit_header(self, doc):
