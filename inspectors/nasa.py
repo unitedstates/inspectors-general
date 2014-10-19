@@ -53,10 +53,10 @@ def audit_report_from(result, landing_url, year_range):
 
   published_on_text = result.select("td")[2].text
 
-  if report_id == 'IG-11-007-R':
-    # See note to IG web team
-    title = "“Information Technology Management Letter Comments"
-    published_on = datetime.datetime(2010, 11, 16)
+  if report_id == 'IG-11-007-R' and published_on_text == 'IG-11-007-R.pdf':
+    # Skip this row, the next row has everything for this report ID.
+    # See note to IG web team.
+    return
   else:
     try:
       published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%y')
