@@ -85,6 +85,16 @@ def report_from(result, year_range):
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
+  # These report entries are duplicates
+  if report_id in ("2010-E-0003", "2008-E-0005", "2007-E-0019", "2007-E-0018") \
+        and report_type == "other":
+    return
+  if report_id == "2008-G-0003" and \
+        result.select("span")[2].text.strip().startswith("Our January 2003"):
+    return
+  if report_url == "http://www.doi.gov/oig/reports/upload/2003-E-0018.txt":
+    return
+
   result = {
     'inspector': 'interior',
     'inspector_url': 'http://www.doi.gov/oig/',
