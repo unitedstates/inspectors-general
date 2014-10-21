@@ -40,6 +40,7 @@ def run(options):
       inspector.save_report(report)
 
 REPORT_ID_RE = re.compile("\\s*(OIG-[0-9]+-[0-9]+\\s+\\([A-Z]+\\))\\s*(?:\\((?:[0-9]+-page\\s+)?PDF\\))?\\s*")
+PL_NUMBER_RE = re.compile("(PL-[0-9]+-[0-9]+)\\s+\\(OIG\\)")
 
 def audit_report_from(result, year_range):
   if result.parent.name == 'thead':
@@ -73,8 +74,12 @@ def audit_report_from(result, year_range):
     unreleased = True
     report_url = None
     title_fragment = "-".join(title.split()).replace(":", "")
-    report_id = "{}-{}".format(published_on.date(), title_fragment)[:50]
     landing_url = AUDIT_REPORTS_URL
+    prevention_letter_match = PL_NUMBER_RE.search(result.select("td")[-1].text)
+    if prevention_letter_match:
+      report_id = prevention_letter_match.group(1)
+    else:
+      report_id = "{}-{}".format(published_on.date(), title_fragment)[:50]
 
   report = {
     'inspector': "neh",
