@@ -36,18 +36,33 @@ def run(options):
       if deduplicate_url(a_href):
         continue
 
-      all_text = a_text
-      node = a.previous
-      while True:
-        if is_inside_link(node):
-          break
-        if isinstance(node, NavigableString):
-          all_text = node + all_text
-        node = node.previous
-        if not node:
-          break
-        if node == maincontent:
-          break
+      # Now, we want to grab all of the text associated with this link.
+      # If there is just one link inside of a paragraph tag, we can take the
+      # text contents of that paragraph tag. Otherwise, we use "previous" to
+      # grab all the text that comes before the link.
+
+      parent_p = a
+      while parent_p.name != "p":
+        parent_p = parent_p.parent
+      links_in_parent = parent_p.find_all("a")
+      links_in_parent = [link for link in links_in_parent \
+                                if len(link.text.strip())]
+      links_in_parent = set([link.get("href") for link in links_in_parent])
+      if len(links_in_parent) == 1:
+        all_text = parent_p.text
+      else:
+        all_text = a_text
+        node = a.previous
+        while True:
+          if is_inside_link(node):
+            break
+          if isinstance(node, NavigableString):
+            all_text = node + all_text
+          node = node.previous
+          if not node:
+            break
+          if node == maincontent:
+            break
 
       # Response letters don't get their own date heading -- keep date from
       # last report and reuse in those cases
@@ -279,11 +294,16 @@ def deduplicate_url(url):
   # At least two files are uploaded twice, once in /oig/uploads/ and once in
   # /oig/uploads/reports/, with the same name in each. Check both locations
   # for duplicates.
+  # The same goes for /oig/uploads/ and /oig/pressreleases/uploads/.
   if url in _url_dedup_set:
     return True
   if url.replace("http://www.exim.gov/oig/upload/", "http://www.exim.gov/oig/reports/upload/") in _url_dedup_set:
     return True
   if url.replace("http://www.exim.gov/oig/reports/upload/", "http://www.exim.gov/oig/upload/") in _url_dedup_set:
+    return True
+  if url.replace("http://www.exim.gov/oig/upload/", "http://www.exim.gov/oig/pressreleases/upload/") in _url_dedup_set:
+    return True
+  if url.replace("http://www.exim.gov/oig/pressreleases/upload/", "http://www.exim.gov/oig/upload/") in _url_dedup_set:
     return True
 
   _url_dedup_set.add(url)
