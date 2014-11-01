@@ -21,6 +21,7 @@ archive = 2005
 # http://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-2014.aspx
 # - Add published dates for all reports at
 # http://www.treasury.gov/about/organizational-structure/ig/Pages/other-reports.aspx
+# - OIG-07-003 is posted twice, once with the wrong date
 
 AUDIT_REPORTS_BASE_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-{}.aspx"
 TESTIMONIES_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/testimony_index.aspx"
@@ -138,6 +139,10 @@ def audit_report_from(result, page_url, year_range):
 
   report_id, title = report_summary.split(maxsplit=1)
   report_id = report_id.rstrip(":")
+
+  if report_id == 'OIG-07-003' and published_on_text == '11/23/2006':
+    # This report is listed twice, once with the wrong date
+    return
 
   if report_id == 'IGATI':
     # There are two such annual reports from different years, append the year
