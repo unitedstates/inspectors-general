@@ -157,8 +157,17 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
     link = result.find_all("a", text=True)[0]
   except IndexError:
     link = result.find_all("a")[0]
-  title = link.text.strip()
   report_url = urljoin(page_url, link.get('href').strip())
+
+  title = link.text.strip()
+  if title.endswith("(PDF)"):
+    title = title[:-5]
+  if title.endswith("(PDF), (Report No: 30601-01-HY, Size: 847,872 bytes)"):
+    title = title[:-52]
+  title = title.rstrip(" ")
+  title = title.replace("..", ".")
+  title = title.replace("  ", " ")
+  title = title.replace("REcovery", "Recovery")
 
   # These entries on the IG page have the wrong URLs associated with them. The
   # correct URLs were retrieved from an earlier version of the page, via the
@@ -166,19 +175,24 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
   if report_url == "http://www.usda.gov/oig/webdocs/IGtestimony110302.pdf" and \
       title == "Statement Of Phyllis K. Fong Inspector General: Before The " \
       "House Appropriations Subcommittee On Agriculture, Rural Development, " \
-      "Food And Drug Administration And Related Agencies (PDF)":
+      "Food And Drug Administration And Related Agencies":
     report_url = "http://www.usda.gov/oig/webdocs/Testimonybudgt-2004.pdf"
   elif report_url == "http://www.usda.gov/oig/webdocs/Ebt.PDF" and \
       title == "Statement Of Roger C. Viadero: Before The U.S. House Of " \
       "Representatives Committee On Agriculture Subcommittee On Department " \
       "Operations, Oversight, Nutrition, And Forestry on the Urban Resources " \
-      "Partnership Program (PDF)":
+      "Partnership Program":
     report_url = "http://www.usda.gov/oig/webdocs/URP-Testimony.PDF"
   elif report_url == "http://www.usda.gov/oig/webdocs/foodaidasst.PDF" and \
       title == "Testimony Of Roger C. Viadero: Before The United States " \
       "Senate Committee On Agriculture, Nutrition, And Forestry On The " \
-      "Department's Processing Of Civil Rights Complaints (PDF)":
+      "Department's Processing Of Civil Rights Complaints":
     report_url = "http://www.usda.gov/oig/webdocs/IGstestimony.PDF"
+
+  # This report is listed twice on the same page with slightly different titles
+  if title == "Animal and Plant Health Inspection Service Transition and " \
+      "Coordination of Border Inspection Activities Between USDA and DHS":
+    return
 
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]
