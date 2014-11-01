@@ -149,13 +149,25 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
   title = link.text.strip()
   report_url = urljoin(page_url, link.get('href').strip())
 
-  if report_url == "http://www.usda.gov/oig/webdocs/IGtestimony110302.pdf" and\
-      title == "Statement Of Phyllis K. Fong Inspector General: Before The "\
-      "House Appropriations Subcommittee On Agriculture, Rural Development, "\
+  # These entries on the IG page have the wrong URLs associated with them. The
+  # correct URLs were retrieved from an earlier version of the page, via the
+  # Internet Archive Wayback Machine.
+  if report_url == "http://www.usda.gov/oig/webdocs/IGtestimony110302.pdf" and \
+      title == "Statement Of Phyllis K. Fong Inspector General: Before The " \
+      "House Appropriations Subcommittee On Agriculture, Rural Development, " \
       "Food And Drug Administration And Related Agencies (PDF)":
-    # Typo on IG page, retrieved original URL via the Internet Archive Wayback
-    # Machine
     report_url = "http://www.usda.gov/oig/webdocs/Testimonybudgt-2004.pdf"
+  elif report_url == "http://www.usda.gov/oig/webdocs/Ebt.PDF" and \
+      title == "Statement Of Roger C. Viadero: Before The U.S. House Of " \
+      "Representatives Committee On Agriculture Subcommittee On Department " \
+      "Operations, Oversight, Nutrition, And Forestry on the Urban Resources " \
+      "Partnership Program (PDF)":
+    report_url = "http://www.usda.gov/oig/webdocs/URP-Testimony.PDF"
+  elif report_url == "http://www.usda.gov/oig/webdocs/foodaidasst.PDF" and \
+      title == "Testimony Of Roger C. Viadero: Before The United States " \
+      "Senate Committee On Agriculture, Nutrition, And Forestry On The " \
+      "Department's Processing Of Civil Rights Complaints (PDF)":
+    report_url = "http://www.usda.gov/oig/webdocs/IGstestimony.PDF"
 
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]
