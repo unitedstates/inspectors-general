@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+
+import sys, os
+sys.path.append("inspectors")
+from utils import utils
+import glob
+
+# Helper script to back up downloaded IG data.
+#
+# Currently: only the Internet Archive is supported.
+# For the IA, `IAS3_ACCESS_KEY` and `IAS3_SECRET_KEY` must be set
+# as environment variables.
+#
+# Usage:
+#   ./backup [--ig] [--year] [--report_id]
+#
+# Defaults to all IGs, all years, all reports.
+#
+# --ig: a specific IG to upload.
+# --year: for a specific IG, a specific year to upload.
+# --report_id: for a specific IG and year, a specific report to upload.
+
+options = utils.options()
+backup_options = {
+  'ia_access_key': os.environ.get('IAS3_ACCESS_KEY'),
+  'ia_secret_key': os.environ.get('IAS3_SECRET_KEY')
+}
+
+if (backup_options['ia_access_key'] is None) or (backup_options['ia_secret_key'] is None):
+  print("Set the IAS3_ACCESS_KEY and IAS3_SECRET_KEY environment variables.")
+  exit(1)
+
+def backup(options):
+  print(options)
+
+def backup_report(ig, year, report_id):
+  print(ig)
+  print(year)
+  print(report_id)
+
+utils.run(backup, backup_options)
