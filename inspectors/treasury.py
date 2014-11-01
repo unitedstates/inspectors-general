@@ -87,7 +87,7 @@ def run(options):
   # Pull the audit reports
   for year in year_range:
     if year < 2006:  # This is the oldest year for these reports
-      year = 2006
+      continue
     url = AUDIT_REPORTS_BASE_URL.format(year)
     doc = beautifulsoup_from_url(url)
     results = []
