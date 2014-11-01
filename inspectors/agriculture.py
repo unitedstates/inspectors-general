@@ -121,6 +121,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
+  all_audit_reports = {}
   for agency_slug, agency_path in AGENCY_URLS.items():
     agency_url = urljoin(AGENCY_BASE_URL, agency_path)
     doc = beautifulsoup_from_url(agency_url)
@@ -129,7 +130,17 @@ def run(options):
       report = report_from(result, agency_url, year_range,
         report_type='audit', agency_slug=agency_slug)
       if report:
-        inspector.save_report(report)
+        report_id = report["report_id"]
+        title = report["title"]
+        key = (report_id, title)
+        if key in all_audit_reports:
+          all_audit_reports[key]["agency"] = all_audit_reports[key]["agency"] \
+                + ", " + agency_slug.lower()
+        else:
+          all_audit_reports[key] = report
+
+  for report in all_audit_reports.values():
+    inspector.save_report(report)
 
   for report_type, url in OTHER_REPORT_TYPES.items():
     doc = beautifulsoup_from_url(url)
