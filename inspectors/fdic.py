@@ -15,9 +15,13 @@ archive = 1998
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
-# The search engine has a bad PDF link for "FDIC Office of Inspector General's
-# Semiannual Report to the Congress 4/1/2003 - 9/30/2003", while reports.shtml
-# doesn't
+# - The search engine has a bad PDF link for "FDIC Office of Inspector General's
+#   Semiannual Report to the Congress 4/1/2003 - 9/30/2003", while reports.shtml
+#   doesn't
+# - Similarly, the search engine's entry for the 4/1/2009-9/30/2009 report
+#   points to the wrong file, while reports.shtml has the right one
+# - The press release "pr-08-24-12a.shtml" is posted twice, once with the wrong
+#   title
 
 REPORTS_URL = "http://www.fdicoig.gov/Search-Engine.asp"
 
@@ -67,10 +71,26 @@ def report_from(result, year_range):
     unreleased = True
     report_url = None
 
-  if report_url == "http://www.fdicoig.gov/semi-reports/sar2003mar/oigsemi-03-09.pdf":
+  if report_url == "http://www.fdicoig.gov/semi-reports/sar2003mar/" \
+        "oigsemi-03-09.pdf":
+    # This URL is a typo, results in 404
     report_url = "http://www.fdicoig.gov/semi-reports/Semi2003OCT/sarOCT03.shtml"
 
-  if report_url:
+  if report_url == "http://www.fdicoig.gov/semi-reports/sar2009mar/" \
+        "oigsemi-03-09.pdf" and \
+        title == "FDIC Office of Inspector General's Semiannual Report to " \
+        "the Congress 4/1/2009 - 9/30/2009":
+    # This URL points to the wrong report
+    report_url = "http://www.fdicoig.gov/semi-reports/SAROCT09/" \
+        "OIGSemi_FDIC_09-9-09.pdf"
+
+  if report_url == "http://www.fdicoig.gov/press/pr-08-24-12.shtml" and \
+        title == "Bank President Imprisoned for Embezzlement":
+    # The title and URL don't match, and both were copied from other reports,
+    # so we skip this entry
+    return None
+
+  if report_url and report_url != GENERIC_MISSING_REPORT_URL:
     report_filename = report_url.split("/")[-1]
     report_id, extension = os.path.splitext(report_filename)
     if report_url.find("/evaluations/") != -1:

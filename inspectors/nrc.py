@@ -111,6 +111,9 @@ def audit_report_from(result, landing_url, year_range):
     report_filename = report_url.split("/")[-1]
     report_id, extension = os.path.splitext(report_filename)
 
+  if report_url and os.path.splitext(report_url)[0].endswith("fin"):
+    report_id = report_id + "-final"
+
   try:
     published_on_text = result.contents[3].text
   except IndexError:

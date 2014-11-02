@@ -56,6 +56,8 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+saved_report_urls = set()
+
 def report_from(result, landing_url, report_type, year_range):
   title = " ".join(result.select("td")[0].text.strip().split())
 
@@ -75,6 +77,13 @@ def report_from(result, landing_url, report_type, year_range):
     report_url = urljoin(landing_url, link.get('href'))
     report_filename = report_url.split("/")[-1]
     report_id, _ = os.path.splitext(report_filename)
+
+    # Deduplicate using report_url, "Reinvention 2001" is posted in both the
+    # special reports table and the FY2001 audit reports
+    if report_url in saved_report_urls:
+      return
+    saved_report_urls.add(report_url)
+
   else:
     unreleased = True
     report_url = None

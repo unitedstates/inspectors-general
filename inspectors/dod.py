@@ -101,6 +101,37 @@ RE_FOIA = re.compile('Freedom (?:of|on) Information Act', re.I)
 RE_RESTRICTED = re.compile('Restricted', re.I)
 RE_AFGHANISTAN = re.compile('Provided to the Security Forces of Afghanistan', re.I)
 
+# Landing pages to be skipped (dupes, etc.)
+LANDING_PAGE_BLACKLIST = [
+  'http://www.dodig.mil/pubs/report_summary.cfm?id=%d' % n for n in (
+    3936,
+    3757,
+    3461,
+    3290,
+    3148,
+    3146,
+    2978,
+    2853,
+    2842,
+    2768,
+    2756,
+    2467,
+    2215,
+    1973,
+    1899,
+    1750,
+    1680,
+    1644,
+    1634,
+    1580,
+    1566,
+    1487,
+    1484,
+    1324,
+    1079,
+  )
+]
+
 def run(options):
   only = options.get('topics')
   if only:
@@ -134,6 +165,9 @@ def report_from(tds, options):
   title_link = tds[2].select('a')[0]
   title = title_link.text.strip().replace('\r\n', ' ')
   landing_url = urljoin(BASE_URL, title_link['href'])
+
+  if landing_url in LANDING_PAGE_BLACKLIST:
+    return
 
   published_date = datetime.datetime.strptime(tds[0].text.strip(), '%m-%d-%Y')
   published_on = published_date.strftime('%Y-%m-%d')

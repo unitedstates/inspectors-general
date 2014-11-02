@@ -73,10 +73,22 @@ def reports_from_page(url_format, page, report_type, year_range, year=''):
       inspector.save_report(report)
   return True
 
+visited_landing_urls = set()
+
 def report_from(result, report_type, year_range):
   landing_page_link = result.find("a")
   title = landing_page_link.text.strip()
   landing_url = urljoin(BASE_REPORT_URL, landing_page_link.get('href'))
+
+  # Sometimes the last report on one page is also the first report on the next
+  # page. Here, we skip any duplicate landing pages we've already saved.
+  if landing_url in visited_landing_urls:
+    return
+
+  # This landing page is a duplicate of another one
+  if landing_url == "http://oig.ssa.gov/physical-security-office-disability-" \
+        "adjudication-and-reviews-headquarters-building-limited-0":
+    return
 
   published_on_text = result.select("span.date-display-single")[0].text.strip()
   published_on = datetime.datetime.strptime(published_on_text, '%A, %B %d, %Y')
@@ -89,6 +101,12 @@ def report_from(result, report_type, year_range):
     report_id = result.select("span.field-data")[0].text.strip()
   except IndexError:
     report_id = landing_url.split("/")[-1]
+
+  # This report has the wrong report number entered
+  if landing_url == "http://oig.ssa.gov/audits-and-investigations/" \
+        "audit-reports/congressional-response-report-internet-claim-" \
+        "applications-0":
+    report_id = "A-07-10-20166"
 
   landing_page = BeautifulSoup(utils.download(landing_url))
 
@@ -117,6 +135,8 @@ def report_from(result, report_type, year_range):
     _, extension = os.path.splitext(report_url)
     if not extension:
       file_type = 'html'
+
+  visited_landing_urls.add(landing_url)
 
   report = {
     'inspector': "ssa",

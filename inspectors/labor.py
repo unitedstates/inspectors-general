@@ -33,8 +33,15 @@ UNRELEASED_REPORT_IDS = [
 def run(options):
   year_range = inspector.year_range(options, archive)
 
+  pre_1998_done = False
+
   # Pull the audit reports
   for year in year_range:
+    if year < 1998:
+      if pre_1998_done:
+        continue
+      else:
+        pre_1998_done = True
     for page_number in range(0, 10000):
       year_url = url_for(year, page_number)
       doc = beautifulsoup_from_url(year_url)

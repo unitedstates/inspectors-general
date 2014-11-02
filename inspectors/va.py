@@ -94,6 +94,12 @@ def report_from(result, year_range):
     logging.debug("[%s] Skipping, not in requested range." % landing_url)
     return
 
+  # This landing page is a copy of another one, except it has a broken
+  # report link.
+  if landing_url == \
+        'http://www.va.gov/oig/publications/report-summary.asp?id=2491':
+    return
+
   # These pages occassionally return text indicating there was a temporary
   # error so we will retry if necessary.
   for attempt in range(MAX_ATTEMPTS):

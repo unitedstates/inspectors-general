@@ -41,6 +41,15 @@ archive = 1995
 # so they can be taken off the blacklist.
 BROKEN_IDS = ('OAS-L-04-08')
 
+# Landing pages to skip -- these are duplicates of other landing pages
+DUPLICATE_LANDING_PAGES = (
+  'http://energy.gov/ig/downloads/audit-report-oas-l-11-02-0',
+  'http://energy.gov/ig/downloads/special-inquiry-oas-sr-10-04',
+  'http://energy.gov/ig/downloads/inpsection-report-ig-0671',
+  'http://energy.gov/ig/downloads/inspection-report-ig-0633',
+  'http://energy.gov/ig/downloads/inspection-report-ins-o-98-02-0',
+)
+
 BASE_URL = 'http://energy.gov/ig/calendar-year-reports'
 TOPIC_TO_URL = {
   'E': 'http://energy.gov/ig/listings/energy-reports',
@@ -145,6 +154,11 @@ class EnergyScraper(object):
       logging.warn("[%s] Skipping, broken report." % report_id)
       return
 
+    # Some reports have been uploaded twice, and have two landing pages.
+    if landing_url in DUPLICATE_LANDING_PAGES:
+      logging.warn("Skipping duplicate landing page %s" % landing_url)
+      return
+
     # debugging: if we're limiting to a particular report,
     # and this isn't it, back out
     only_report_id = self.options.get('report_id')
@@ -153,6 +167,13 @@ class EnergyScraper(object):
       return
 
     report_url, summary, unreleased = self.fetch_from_landing_page(landing_url)
+
+    if landing_url == 'http://energy.gov/ig/downloads/audit-report-cr-b-97-04-0':
+      # The metadata on this landing page is incorrect
+      report_id = 'ER-B-97-04'
+      title = 'Audit of Selected Hazardous Waste Remedial Actions Program Costs'
+      summary = ''
+      published_on = '1997-08-11'
 
     if unreleased:
       report['unreleased'] = True

@@ -4,7 +4,9 @@ import re
 import logging
 import datetime
 import urllib.parse
+import atexit
 
+from . import admin
 # Save a report to disk, provide output along the way.
 #
 # 1) download report to disk
@@ -26,6 +28,8 @@ def save_report(report):
     raise Exception("[%s][%s][%s] Invalid report: %s\n\n%s" % (
       report.get('type'), report.get('published_on'), report.get('report_id'),
       validation, str(report)))
+
+  check_uniqueness(report['inspector'], report['report_id'], report['year'])
 
   logging.warn("[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id']))
 
@@ -139,6 +143,66 @@ def validate_report(report):
 
   return True
 
+_uniqueness_storage_disk = {}
+_uniqueness_storage_runtime = {}
+_uniqueness_messages = []
+def check_uniqueness(inspector, report_id, report_year):
+  '''Given the name of an inspector, the ID of a report, and the year of the
+  report, this function will check whether a duplicate report_id exists on-disk
+  under a different year, or whether a duplicate report_id has been saved this
+  session, in the same year or any other year. The index of reports already
+  saved is lazily built on the first call from each inspector. Duplicate
+  reports detected here will be collected, and a summary will be sent via
+  admin.notify().'''
+
+  # Be conservative, don't allow report_id to only differ in case
+  report_id = report_id.lower()
+
+  # Lazily set up data structures and read existing IDs from disk
+  if inspector not in _uniqueness_storage_runtime:
+    _uniqueness_storage_runtime[inspector] = set()
+  if inspector not in _uniqueness_storage_disk:
+    _uniqueness_storage_disk[inspector] = {}
+    data_dir = utils.data_dir()
+    inspector_path = os.path.join(data_dir, inspector)
+    if os.path.isdir(inspector_path):
+      for year_folder in os.listdir(inspector_path):
+        year_disk = int(year_folder)
+        year_path = os.path.join(inspector_path, year_folder)
+        if os.path.isdir(year_path):
+          for report_id_disk in os.listdir(year_path):
+            report_path = os.path.join(year_path, report_id_disk)
+            if os.path.isdir(report_path):
+              if report_id_disk in _uniqueness_storage_disk[inspector]:
+                msg = "[%s] Duplicate report_id: %s is saved under %d and %d" %\
+                        (inspector,
+                        report_id_disk,
+                        _uniqueness_storage_disk[inspector][report_id_disk],
+                        year_disk)
+                print(msg)
+                _uniqueness_messages.append(msg)
+              _uniqueness_storage_disk[inspector][report_id_disk] = year_disk
+
+  if report_id in _uniqueness_storage_runtime[inspector]:
+    msg = "[%s] Duplicate report_id: %s has been used twice this session" % \
+            (inspector, report_id)
+    print(msg)
+    _uniqueness_messages.append(msg)
+  elif report_id in _uniqueness_storage_disk[inspector]:
+    if report_year != _uniqueness_storage_disk[inspector][report_id]:
+      msg = "[%s] Duplicate report_id: %s is saved under %d and %d" % \
+              (inspector,
+              report_id,
+              _uniqueness_storage_disk[inspector][report_id],
+              report_year)
+      print(msg)
+      _uniqueness_messages.append(msg)
+  _uniqueness_storage_runtime[inspector].add(report_id)
+
+@atexit.register
+def verify_uniqueness_finalize_summary():
+  if _uniqueness_messages:
+    admin.notify('\n'.join(_uniqueness_messages))
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])

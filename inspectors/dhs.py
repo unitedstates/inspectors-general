@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import urllib.parse
 import logging
+import re
 
 archive = 2002
 
@@ -28,6 +29,8 @@ def run(options):
 
   limit = int(options.get('limit', 0))
 
+  all_audit_reports = {}
+
   for component in components:
     logging.info("## Fetching reports for component %s" % component)
     url = url_for(options, component)
@@ -43,6 +46,9 @@ def run(options):
     count = 0
     for result in results:
       report = report_from(result, component, url)
+      if not report:
+        continue
+
       if report_id and (report_id != report['report_id']):
         continue
 
@@ -50,7 +56,15 @@ def run(options):
         # logging.info("[%s] Skipping, not in requested range." % report['report_id'])
         continue
 
-      inspector.save_report(report)
+      key = (report["report_id"], report["title"])
+      if key in all_audit_reports:
+        all_audit_reports[key]["agency"] = all_audit_reports[key]["agency"] + \
+                ", " + report["agency"]
+        all_audit_reports[key]["agency_name"] = \
+                all_audit_reports[key]["agency_name"] + ", " + \
+                report["agency_name"]
+      else:
+        all_audit_reports[key] = report
 
       count += 1
       if limit and (count >= limit):
@@ -58,6 +72,10 @@ def run(options):
 
     logging.info("## Fetched %i reports for component %s\n\n" % (count, component))
 
+  for report in all_audit_reports.values():
+    inspector.save_report(report)
+
+PDF_DESCRIPTION_RE = re.compile("(.*)\\(PDF, [0-9]+ pages - [0-9.]+ ?[mMkK][bB]\\)")
 
 def report_from(result, component, url):
   report = {
@@ -68,6 +86,21 @@ def report_from(result, component, url):
   link = result.select("td")[2].select("a")[0]
   report_url = urllib.parse.urljoin(url, link['href'])
   title = link.text.strip()
+  title = title.replace("\xa0", " ")
+  title = title.replace("  ", " ")
+  title = title.replace(", , ", ", ")
+  title = title.rstrip("( ,.")
+  pdf_desc_match = PDF_DESCRIPTION_RE.match(title)
+  if pdf_desc_match:
+    title = pdf_desc_match.group(1)
+  title = title.rstrip("( ,.")
+  if title.endswith("(Redacted)"):
+    title = title[:-10]
+  if title.endswith("(SSI)"):
+    title = title[:-5]
+  title = title.rstrip("( ,.")
+  if title == "DHS' Counterintelligence Activities Summary":
+    title = "DHS' Counterintelligence Activities"
   report['url'] = report_url
   report['title'] = title
 
@@ -92,6 +125,25 @@ def report_from(result, component, url):
     report_id = filename.split(".")[0]
   # Audit numbers are frequently reused, so add the year to our ID
   report_id = "%s_%d" % (report_id, published_on.year)
+
+  # Discard these results, both the URLs and the report numbesr are correctly
+  # listed in other entries
+  if report_id == "OIG-13-48_2013" and report_url == "http://www.oig.dhs.gov/" \
+        "assets/Mgmt/2014/OIG_14-48_Mar14.pdf":
+    return
+  if report_id == "OIG-13-61_2013" and report_url == "http://www.oig.dhs.gov/" \
+        "assets/Mgmt/2014/OIG_14-61_Apr14.pdf":
+    return
+  if report_id == "OIG-13-86_2013" and report_url == "http://www.oig.dhs.gov/" \
+        "assets/Mgmt/2014/OIG_14-86_Apr14.pdf":
+    return
+
+  # Fix typos in this report's date and number
+  if report_id == "OIG-12-105_2012" and report_url == "http://www.oig.dhs.gov/"\
+        "assets/Mgmt/OIG_11-105_Aug11.pdf":
+    published_on = "2011-08-25"
+    report['published_on'] = published_on
+    report_id = "OIG-11-105_2011"
 
   report['report_id'] = report_id
 
