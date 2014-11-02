@@ -78,15 +78,37 @@ def backup_report(ig, year, report_id, options=None):
 
   return True
 
+# one-off: back up a given file, known to be the bulk accompaniment
+def backup_bulk(bulk_path, options):
+  if not os.path.exists(bulk_path):
+    logging.warn("Bulk file doesn't exist! Stopping.")
+    return False
 
-def item_id_for(ig, year, report_id):
-  return "us-inspectors-general.%s-%s-%s" % (ig, year, report_id)
+  logging.warn("Initializing bulk item.")
+  item_id = bulk_item_id()
+  item = internetarchive.get_item(item_id)
 
+  metadata = collection_metadata()
+  metadata.update(bulk_metadata())
+
+  logging.warn("Sending bulk metadata and file!")
+  success = upload_files(item,
+    bulk_path,
+    metadata,
+    options
+  )
+
+  if not success:
+    logging.warn(":( Error uploading bulk file.")
+    return False
+
+  logging.warn(":) Uploaded bulk file successfully.")
+  return True
 
 # metadata that will be applied to ALL items
 # TODO: move some of this out to admin.yml?
 def collection_metadata():
-  return {
+  data = {
     # TODO: collection identifier, once granted
     # 'collection': 'us-inspectors-general',
     'mediatype': 'texts', # best I got
@@ -101,6 +123,16 @@ def collection_metadata():
     'contact-email': 'eric@konklone.com',
     'contact-twitter': '@konklone'
   }
+
+  data['subject'] = ";".join([
+    "inspector general", "us government", "government oversight"
+  ]) # less is more
+
+  data['notes'] = """
+As a work of the United States government, this work is in the public domain inside the United States.
+  """
+
+  return data
 
 # metadata specific to the item
 # required fields on all IG reports:
@@ -118,16 +150,9 @@ Gathered by web scrapers written and maintained by a team of volunteers.
 Submitted to the Internet Archive by Eric Mill.
   """
 
-  data['subject'] = ";".join([
-    "inspector general", "us government", "government oversight"
-  ]) # less is more
-
-  data['notes'] = """
-As a work of the United States government, this work is in the public domain inside the United States.
-  """
-
   data['publisher'] = report['inspector_url']
   data['report-id'] = report['report_id']
+  data['report-inspector'] = report['inspector']
   data['report-year'] = str(report['year'])
 
   if report.get('url'):
@@ -135,6 +160,20 @@ As a work of the United States government, this work is in the public domain ins
 
   if report.get('type'):
     data['report-type'] = report['type']
+
+  return data
+
+def bulk_metadata():
+  data = {}
+
+  data['title'] = "Bulk Download of US Inspector General reports"
+  data['description'] = """
+Bulk download of US federal government inspector general reports.
+Gathered by web scrapers written and maintained by a team of volunteers.
+Submitted to the Internet Archive by Eric Mill.
+"""
+
+  data['publisher'] = "https://github.com/unitedstates/inspectors-general"
 
   return data
 
@@ -171,3 +210,13 @@ def mark_as_uploaded(ig, year, report_id):
 
 def ia_url_for(item_id):
   return "https://archive.org/details/%s" % item_id
+
+
+def item_id_for(ig, year, report_id):
+  return "%s.%s-%s-%s" % (collection_id(), ig, year, report_id)
+
+def collection_id():
+  return "us-inspectors-general"
+
+def bulk_item_id():
+  return "%s.%s" % (collection_id(), "bulk")

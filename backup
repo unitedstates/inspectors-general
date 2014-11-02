@@ -57,6 +57,10 @@ def backup(options):
   print()
   print("Backed up %i reports, with %i errors." % (count, errors))
 
+# backup a single file, meant to be the bulk accompaniment to the collection
+def backup_bulk(options):
+  ia.backup_bulk(options.get("bulk"), options)
+
 def reports_for(options):
   # will hold tuples of form (ig, year, report_id)
   reports = []
@@ -91,4 +95,7 @@ def reports_for(options):
 
   return reports
 
-utils.run(backup, backup_options)
+if options.get("bulk"):
+  utils.run(backup_bulk, backup_options)
+else:
+  utils.run(backup, backup_options)
