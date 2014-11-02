@@ -11,7 +11,7 @@
 ###############################################################################
 
 import internetarchive
-import os, sys, json, logging
+import os, json, logging
 
 # given an IG report, a year, and its report_id:
 # create an item in the Internet Archive
@@ -29,7 +29,7 @@ def backup_report(ig, year, report_id, options=None):
   item = internetarchive.get_item(item_id)
 
   if item.exists and (options.get("force") is not True):
-    logging.warn("[%s][%s][%s] Ooooops, item does exist. Stopping." % (ig, year, report_id))
+    logging.warn("[%s][%s][%s] Ooooops, item does exist. Marking as done, and stopping." % (ig, year, report_id))
     mark_as_uploaded(ig, year, report_id)
     return True
 
@@ -66,17 +66,26 @@ def item_id_for(ig, year, report_id):
 def collection_metadata():
   return {
     # TODO: collection identifier, once granted
+    'collection': 'us-inspectors-general',
     'mediatype': 'texts', # best I got
     'contributor': 'github.com/unitedstates',
 
     # custom metadata
     'project': 'https://github.com/unitedstates/inspectors-general',
-    'contact-email': 'eric@konklone.com'
+    'contact-email': 'eric@konklone.com',
+    'contact-twitter': '@konklone'
   }
 
 # metadata specific to the item
+# required fields on all IG reports:
+#    published_on, report_id, title, inspector, inspector_url,
+#    agency, agency_name
 def item_metadata(report):
-  return {}
+  data = {
+
+  }
+
+  return data
 
 # actually send the report file up to the IA, with attached metadata
 def upload_file(item, path, metadata, options):
