@@ -60,7 +60,13 @@ def run(options):
   report_id = options.get("report_id")
 
   # Get the audit reports
+  pre_1998_audit_flag = False
   for year in year_range:
+    if year <= 1998:
+      if pre_1998_audit_flag:
+        continue
+      else:
+        pre_1998_audit_flag = True
     url = audit_url_for(year)
     doc = beautifulsoup_from_url(url)
     agency_tables = doc.find_all("table", {"border": 1})
