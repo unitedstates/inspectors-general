@@ -179,6 +179,12 @@ If a scraper is throwing **persistent** errors, remove it (comment it out) from 
 
 Ephemeral errors (for example, from connection errors, or other erratically reproducible situations) should be reported as issues first, to be discussed.
 
+### Bulk data and backup
+
+This project's chief maintainer, Eric Mill, runs a copy of this project on a server that automatically backs up the downloaded bulk data.
+
+Data is backed up to the [Internet Archive](https://archive.org). (Proper collection landing page, and bulk data link, forthcoming.)
+
 ### Resources
 
 * [Matt Rumsey](https://twitter.com/mattrumsey) kindly [compiled a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. We used this to track activity during the initial scraping phase.
