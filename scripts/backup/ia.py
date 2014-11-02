@@ -62,18 +62,23 @@ def item_id_for(ig, year, report_id):
 
 
 # metadata that will be applied to ALL items
-
+# TODO: move some of this out to admin.yml?
 def collection_metadata():
   return {
     # TODO: collection identifier, once granted
     # 'collection': 'us-inspectors-general',
     'mediatype': 'texts', # best I got
     'contributor': 'github.com/unitedstates',
+    'creator': 'United States Government',
+    'adder': 'eric@konklone.com',
+    'uploader': 'eric@konklone.com',
+    'language': 'english',
 
     # custom metadata
     'project': 'https://github.com/unitedstates/inspectors-general',
     'contact-email': 'eric@konklone.com',
-    'contact-twitter': '@konklone'
+    'contact-twitter': '@konklone',
+
   }
 
 # metadata specific to the item
@@ -82,8 +87,26 @@ def collection_metadata():
 #    agency, agency_name
 def item_metadata(report):
   data = {
-
+    'title': report['title'],
+    'date': report['published_on']
   }
+
+  data['description'] = """
+  A report by an inspector general in the United States federal government.
+  Gathered by web scrapers written and maintained by a team of volunteers.
+  Submitted to the Internet Archive by Eric Mill.
+  """
+
+  data['subject'] = ";".join([
+    "inspector general", "IG", "us government", "government", "government oversight",
+    "united states", "corruption", "government corruption"
+  ])
+
+  data['notes'] = """
+  As a work of the United States government, this work is in the public domain inside the United States.
+  """
+
+  data['publisher'] = report['inspector_url']
 
   return data
 
