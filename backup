@@ -48,14 +48,18 @@ def backup(options):
   print("About to backup %i reports." % len(reports))
 
   count = 0
-  errors = 0
+  errors = []
   for report in reports:
     success = ia.backup_report(*report, options=options)
     if success: count += 1
-    else: errors += 1
+    else: errors.append(report)
 
   print()
-  print("Backed up %i reports, with %i errors." % (count, errors))
+  print("Backed up %i reports, with %i errors." % (count, len(errors)))
+
+  if len(errors) > 0:
+    for error in errors:
+      print(error)
 
 # backup a single file, meant to be the bulk accompaniment to the collection
 def backup_bulk(options):
@@ -71,6 +75,7 @@ def reports_for(options):
     igs = []
     for path in glob.glob("data/*"):
       igs.append(os.path.basename(os.path.splitext(path)[0]))
+    igs.sort()
 
   for ig in igs:
 
@@ -80,6 +85,7 @@ def reports_for(options):
       years = []
       for path in glob.glob("data/%s/*" % ig):
         years.append(os.path.basename(os.path.splitext(path)[0]))
+      years.sort()
 
     for year in years:
 
@@ -89,6 +95,7 @@ def reports_for(options):
         report_ids = []
         for path in glob.glob("data/%s/%s/*" % (ig, year)):
           report_ids.append(os.path.basename(os.path.splitext(path)[0]))
+        report_ids.sort()
 
       for report_id in report_ids:
         reports.append((ig, year, report_id))
