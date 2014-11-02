@@ -77,8 +77,7 @@ def collection_metadata():
     # custom metadata
     'project': 'https://github.com/unitedstates/inspectors-general',
     'contact-email': 'eric@konklone.com',
-    'contact-twitter': '@konklone',
-
+    'contact-twitter': '@konklone'
   }
 
 # metadata specific to the item
@@ -92,21 +91,28 @@ def item_metadata(report):
   }
 
   data['description'] = """
-  A report by an inspector general in the United States federal government.
-  Gathered by web scrapers written and maintained by a team of volunteers.
-  Submitted to the Internet Archive by Eric Mill.
+A report by an inspector general in the United States federal government.
+Gathered by web scrapers written and maintained by a team of volunteers.
+Submitted to the Internet Archive by Eric Mill.
   """
 
   data['subject'] = ";".join([
-    "inspector general", "IG", "us government", "government", "government oversight",
-    "united states", "corruption", "government corruption"
-  ])
+    "inspector general", "us government", "government oversight"
+  ]) # less is more
 
   data['notes'] = """
-  As a work of the United States government, this work is in the public domain inside the United States.
+As a work of the United States government, this work is in the public domain inside the United States.
   """
 
   data['publisher'] = report['inspector_url']
+  data['report-id'] = report['report_id']
+  data['report-year'] = str(report['year'])
+
+  if report.get('url'):
+    data['original-url'] = report['url']
+
+  if report.get('type'):
+    data['report-type'] = report['type']
 
   return data
 
