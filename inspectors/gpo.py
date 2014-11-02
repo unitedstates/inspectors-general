@@ -64,6 +64,9 @@ def report_from(result, landing_url, report_type, year_range):
     link = result.find("a")
     report_id = link.text
     report_url = urljoin(landing_url, link.get('href'))
+    if landing_url == SEMIANNUAL_REPORTS_URL:
+      if title.find("Transmittal Letter") != -1:
+        report_id = report_id + "-transmittal"
 
   estimated_date = False
   try:

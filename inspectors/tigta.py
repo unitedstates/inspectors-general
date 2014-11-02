@@ -76,6 +76,7 @@ def parse_result_from_js_url(url, format_slug, year, year_range, report_type):
     if report:
       inspector.save_report(report)
 
+saved_report_urls = set()
 
 def report_from(javascript_attributes, format_slug, year, year_range, report_type):
   # We are going to parse the script of javascript into a list of with the following strucutre:
@@ -90,12 +91,18 @@ def report_from(javascript_attributes, format_slug, year, year_range, report_typ
   # This formatting is described more in http://www.treasury.gov/tigta/oa_auditreports_updated_fy14.js
   report_url = "http://www.treasury.gov/tigta/{}/{}reports/{}fr.pdf".format(format_slug, year, report_id)
 
+  # Check if we have already saved this URL, some reports are entered twice
+  if report_url in saved_report_urls:
+    return
+
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
   if report_id in MISSING_REPORT_IDS:
     return
+
+  saved_report_urls.add(report_url)
 
   report = {
     'inspector': 'tigta',

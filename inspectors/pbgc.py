@@ -71,6 +71,8 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+saved_report_urls = set()
+
 def report_from(result, report_type, year_range):
   if len(result.select("td")) > 0:
     title = result.select("td")[0].text.strip()
@@ -112,6 +114,13 @@ def report_from(result, report_type, year_range):
     else:
       unreleased = True
       report_url = None
+
+  if report_url:
+    # OIG MAR-2012-10/PA-12-87 is posted under both Audits/Evaluations/MARs and
+    # Congressional Requests.
+    if report_url in saved_report_urls:
+      return
+    saved_report_urls.add(report_url)
 
   report = {
     'inspector': "pbgc",

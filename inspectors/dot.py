@@ -71,9 +71,12 @@ def run(options):
   else:
     topics = TOPIC_TO_URL.keys()
 
+  all_reports = {}
+
   for topic in topics:
     year_urls = urls_for(year_range, topic)
     for year_url in year_urls:
+      logging.debug("Scraping %s" % year_url)
       body = utils.download(year_url)
 
       doc = BeautifulSoup(body)
@@ -82,7 +85,15 @@ def run(options):
       for result in results:
         report = report_from(result, year_range, topic, options)
         if report:
-          inspector.save_report(report)
+          report_id = report["report_id"]
+          if report_id in all_reports:
+            all_reports[report_id]["topic"] = all_reports[report_id]["topic"] \
+                + ", " + topic
+          else:
+            all_reports[report_id] = report
+
+  for report in all_reports.values():
+    inspector.save_report(report)
 
 def urls_for(year_range, topic):
   topic_url = TOPIC_TO_URL[topic]
