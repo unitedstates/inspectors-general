@@ -4,4 +4,4 @@ BeautifulSoup4
 pyyaml
 
 # for backing up reports. can't use [speedups] while it depends on gevent.
-internetarchive
+-e git+git://github.com/konklone/ia-wrapper.git@py3-hack#egg=internetarchive

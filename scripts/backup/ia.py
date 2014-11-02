@@ -84,12 +84,13 @@ def upload_file(item, path, metadata, options):
     metadata=metadata,
     access_key=options['config']['access_key'],
     secret_key=options['config']['secret_key'],
-    verbose=True,
     debug=options.get("dry_run", False),
 
-    queue_derive=False,
-    ignore_preexisting_bucket=True,
-    retries=3,
+    verbose=True, # I love output
+    queue_derive=False, # don't put it into IA's derivation queue
+    ignore_preexisting_bucket=True, # always overwrite
+
+    retries=3, # it'd be nicer to look up the actual rate limit
     retries_sleep=2
   )
 
