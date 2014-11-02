@@ -66,7 +66,7 @@ def item_id_for(ig, year, report_id):
 def collection_metadata():
   return {
     # TODO: collection identifier, once granted
-    'collection': 'us-inspectors-general',
+    # 'collection': 'us-inspectors-general',
     'mediatype': 'texts', # best I got
     'contributor': 'github.com/unitedstates',
 
