@@ -2,6 +2,7 @@ ipython
 scrapelib>=0.10.0
 BeautifulSoup4
 pyyaml
+lxml
 
 # for backing up reports. can't use [speedups] while it depends on gevent.
 -e git+git://github.com/konklone/ia-wrapper.git@py3-hack#egg=internetarchive
