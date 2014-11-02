@@ -118,8 +118,19 @@ def audit_report_from(result, page_url, year_range):
     # Just an empty row
     return
 
-  title = result.select("td")[0].text.strip()
+  title = result.select("td")[0].text.strip().replace('\n', '')
+  if title == "Enterprise Architecture.":
+    title = "Audit of Enterprise Architecture."
+  if title == "The Department of Education's process for identifying and " \
+        "Monitoring High-Risk Contracts that Support Office of Educational " \
+        "Research and Improvement Programs.":
+    title = "Audit of The Department of Education's process for identifying " \
+        "and Monitoring High-Risk Contracts that Support Office of " \
+        "Educational Research and Improvement (OERI) Programs."
+
   report_url = urljoin(page_url, result.select("td a")[0].get('href'))
+  if report_url.startswith("http://www.ed.gov/"):
+    report_url = report_url.replace("http://www.ed.gov/", "https://www2.ed.gov/")
 
   report_id = None
   if len(result.select("td")) != 3:
@@ -149,6 +160,16 @@ def audit_report_from(result, page_url, year_range):
   # If we are processing the duplicate entry, suppress it.
   if report_id == "A17D0002" and published_on.year == 2002 and published_on.month == 2 and published_on.day == 6:
     return
+
+  # These files are of the same report, but one is higher quality and has a TOC
+  if report_url == "https://www2.ed.gov/about/offices/list/ocfo/FY2001AccountabilityRpt.pdf":
+    report_url = "https://www2.ed.gov/about/offices/list/ocfo/FY2001AccountabilityReport.pdf"
+
+  # The ACN "B19I0001" is used for two different reports
+  if report_url == "https://www2.ed.gov/about/offices/list/oig/auditreports/fy2008/b19i0001a.pdf":
+    report_id = "B19I0001A"
+  elif report_url == "https://www2.ed.gov/about/offices/list/oig/auditreports/fy2008/b19i0001p.pdf":
+    report_id = "B19I0001P"
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -209,6 +230,8 @@ def semiannual_report_from(result, page_url, year_range):
   }
   return report
 
+other_reports_seen = set()
+
 def report_from(result, url, report_type, year_range):
   report_url = urljoin(url, result.select("a")[0].get('href'))
   report_filename = report_url.split("/")[-1]
@@ -238,6 +261,11 @@ def report_from(result, url, report_type, year_range):
 
   if "thestartingline.ed.gov" in report_url:
     return None
+
+  key = (report_id, title, report_url)
+  if key in other_reports_seen:
+    return
+  other_reports_seen.add(key)
 
   report = {
     'inspector': 'education',
