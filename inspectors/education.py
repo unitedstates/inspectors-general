@@ -111,6 +111,8 @@ def run(options):
 
         inspector.save_report(report)
 
+audit_reports_seen = set()
+
 def audit_report_from(result, page_url, year_range):
   if not result.text.strip():
     # Just an empty row
@@ -151,6 +153,11 @@ def audit_report_from(result, page_url, year_range):
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
+
+  key = (report_id, title, report_url)
+  if key in audit_reports_seen:
+    return
+  audit_reports_seen.add(key)
 
   report = {
     'inspector': 'education',
