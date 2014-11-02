@@ -46,6 +46,9 @@ def run(options):
     count = 0
     for result in results:
       report = report_from(result, component, url)
+      if not report:
+        continue
+
       if report_id and (report_id != report['report_id']):
         continue
 
@@ -122,6 +125,25 @@ def report_from(result, component, url):
     report_id = filename.split(".")[0]
   # Audit numbers are frequently reused, so add the year to our ID
   report_id = "%s_%d" % (report_id, published_on.year)
+
+  # Discard these results, both the URLs and the report numbesr are correctly
+  # listed in other entries
+  if report_id == "OIG-13-48_2013" and report_url == "http://www.oig.dhs.gov/" \
+        "assets/Mgmt/2014/OIG_14-48_Mar14.pdf":
+    return
+  if report_id == "OIG-13-61_2013" and report_url == "http://www.oig.dhs.gov/" \
+        "assets/Mgmt/2014/OIG_14-61_Apr14.pdf":
+    return
+  if report_id == "OIG-13-86_2013" and report_url == "http://www.oig.dhs.gov/" \
+        "assets/Mgmt/2014/OIG_14-86_Apr14.pdf":
+    return
+
+  # Fix typos in this report's date and number
+  if report_id == "OIG-12-105_2012" and report_url == "http://www.oig.dhs.gov/"\
+        "assets/Mgmt/OIG_11-105_Aug11.pdf":
+    published_on = "2011-08-25"
+    report['published_on'] = published_on
+    report_id = "OIG-11-105_2011"
 
   report['report_id'] = report_id
 
