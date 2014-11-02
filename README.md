@@ -185,13 +185,14 @@ This project's chief maintainer, Eric Mill, runs a copy of this project on a ser
 
 Data is backed up to the [Internet Archive](https://archive.org). (Proper collection landing page, and bulk data link, forthcoming.)
 
-To generate bulk data, the following command is run from the directory that contains the project's output `data/` directory, where `YYYY-MM-DD` is replaced with the date of the archive.
+To generate bulk data, the following command is run from the project's output `data/` directory.
 
 ```
-zip -r us-inspectors-general.bulk.zip data -x "*.done"
+zip -r ../us-inspectors-general.bulk.zip * -x "*.done"
 ```
 
-This command zips up the `data/` directory, while excluding any `.done` files that track the status of individual file backups.
+This command zips up the contents of the  `data/` directory, while excluding any `.done` files that track the status of individual file backups. The zip file is placed up one directory, so that it doesn't interfere with the automatic directory examination of `data/` that many scripts employ.
+
 
 ### Resources
 
