@@ -185,6 +185,14 @@ This project's chief maintainer, Eric Mill, runs a copy of this project on a ser
 
 Data is backed up to the [Internet Archive](https://archive.org). (Proper collection landing page, and bulk data link, forthcoming.)
 
+To generate bulk data, the following command is run from the directory that contains the project's output `data/` directory, where `YYYY-MM-DD` is replaced with the date of the archive.
+
+```
+zip -r us-inspectors-general.bulk.zip data -x "*.done"
+```
+
+This command zips up the `data/` directory, while excluding any `.done` files that track the status of individual file backups.
+
 ### Resources
 
 * [Matt Rumsey](https://twitter.com/mattrumsey) kindly [compiled a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. We used this to track activity during the initial scraping phase.
