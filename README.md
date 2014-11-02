@@ -187,11 +187,15 @@ Data is backed up to the [Internet Archive](https://archive.org). (Proper collec
 
 To generate bulk data, the following command is run from the project's output `data/` directory.
 
-```
+```bash
 zip -r ../us-inspectors-general.bulk.zip * -x "*.done"
+cd ..
+./backup --bulk=us-inspectors-general.bulk.zip
 ```
 
 This command zips up the contents of the  `data/` directory, while excluding any `.done` files that track the status of individual file backups. The zip file is placed up one directory, so that it doesn't interfere with the automatic directory examination of `data/` that many scripts employ.
+
+Then the file is uploaded to the Internet Archive as part of the collection, to be a convenient bulk mirror of the entire thing.
 
 
 ### Resources
