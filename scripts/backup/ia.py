@@ -11,7 +11,8 @@
 ###############################################################################
 
 import internetarchive
-import os, json, logging
+import os, sys, traceback
+import json, logging, requests
 
 # given an IG report, a year, and its report_id:
 # create an item in the Internet Archive
@@ -179,19 +180,23 @@ Submitted to the Internet Archive by Eric Mill.
 
 # actually send the report file up to the IA, with attached metadata
 def upload_files(item, paths, metadata, options):
-  return item.upload(paths,
-    metadata=metadata,
-    access_key=options['config']['access_key'],
-    secret_key=options['config']['secret_key'],
-    debug=options.get("dry_run", False),
+  try:
+    return item.upload(paths,
+      metadata=metadata,
+      access_key=options['config']['access_key'],
+      secret_key=options['config']['secret_key'],
+      debug=options.get("dry_run", False),
 
-    verbose=True, # I love output
-    # queue_derive=False, # don't put it into IA's derivation queue
-    ignore_preexisting_bucket=True, # always overwrite
+      verbose=True, # I love output
+      # queue_derive=False, # don't put it into IA's derivation queue
+      ignore_preexisting_bucket=True, # always overwrite
 
-    retries=3, # it'd be nicer to look up the actual rate limit
-    retries_sleep=2
-  )
+      retries=3, # it'd be nicer to look up the actual rate limit
+      retries_sleep=2
+    )
+  except requests.exceptions.HTTPError as exc:
+    format_exception(exc)
+    return False
 
 def file_path(ig, year, report_id, file_type):
   return "data/%s/%s/%s/report.%s" % (ig, year, report_id, file_type)
@@ -220,3 +225,7 @@ def collection_id():
 
 def bulk_item_id():
   return "%s.%s" % (collection_id(), "bulk")
+
+def format_exception(exception):
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    return "\n".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
