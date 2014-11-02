@@ -65,13 +65,15 @@ def backup_report(ig, year, report_id, options=None):
     if (report_path != text_path) and os.path.exists(text_path):
       to_upload.append(text_path)
 
-    success = upload_files(item, to_upload, None, options)
+    if len(to_upload) > 0:
+      logging.warn("[%s][%s][%s] Sending %i report files!" % (ig, year, report_id, len(to_upload)))
+      success = upload_files(item, to_upload, None, options)
 
-  if not success:
-    logging.warn("[%s][%s][%s] :( Error uploading report itself." % (ig, year, report_id))
-    return False
+    if not success:
+      logging.warn("[%s][%s][%s] :( Error uploading report itself." % (ig, year, report_id))
+      return False
 
-  logging.warn("[%s][%s][%s] :) Uploaded:\n\t%s" % (ig, year, report_id, ia_url_for(item_id)))
+  logging.warn("[%s][%s][%s] :) Uploaded:\n%s" % (ig, year, report_id, ia_url_for(item_id)))
   mark_as_uploaded(ig, year, report_id)
 
   return True
@@ -145,7 +147,7 @@ def upload_files(item, paths, metadata, options):
     debug=options.get("dry_run", False),
 
     verbose=True, # I love output
-    queue_derive=False, # don't put it into IA's derivation queue
+    # queue_derive=False, # don't put it into IA's derivation queue
     ignore_preexisting_bucket=True, # always overwrite
 
     retries=3, # it'd be nicer to look up the actual rate limit
