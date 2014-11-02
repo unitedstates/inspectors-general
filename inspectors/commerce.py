@@ -106,10 +106,17 @@ def report_from(result, topic, topic_url, year_range):
     link = result.select("a")[0]
     landing_url = link.get('href')
 
+    if landing_url == "http://www.oig.doc.gov/Pages/Letter-to-Sen-Snowe-re-Northeast-Fisheries-Science-Center-2009.02.09.aspx":
+      # Duplicate of http://www.oig.doc.gov/Pages/Letter-to-Sens-Snowe-Collins-Kennedy-Kerry-re-Investigation-Work-Scientific-Methods-of-NMFS-NFSC-2009.02.26.aspx
+      return
+
     landing_page = beautifulsoup_from_url(landing_url)
     try:
-      if landing_url.endswith("/Top-Management-Challenges-FY-2011.aspx"):
-        # Testimony on this landing page already shows up elsewhere, so we pick
+      if landing_url.endswith("/Top-Management-Challenges-FY-2011.aspx") or \
+                landing_url.endswith("/Observations-and-Address-Listers-" \
+                "Reports-Provide-Serious-Indications-That-Important-Address-" \
+                "Canvassing.aspx"):
+        # Testimony on these landing pages already show up elsewhere, so we pick
         # the report instead
         report_url_relative = landing_page.select("div.oig_Publications a")\
             [-2].get('href')
