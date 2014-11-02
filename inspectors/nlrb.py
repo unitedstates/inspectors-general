@@ -63,11 +63,17 @@ def report_from(result, report_type, year_range):
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
   else:
-    published_on_text = re.findall('\((.*?)\)', title)[-1]
-    try:
-      published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
-    except ValueError:
-      published_on = datetime.datetime.strptime(published_on_text, '%B %Y')
+    for paren_text in re.findall('\((.*?)\)', title):
+      try:
+        published_on = datetime.datetime.strptime(paren_text, '%B %d, %Y')
+        break
+      except ValueError:
+        pass
+      try:
+        published_on = datetime.datetime.strptime(paren_text, '%B %Y')
+        break
+      except ValueError:
+        pass
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)

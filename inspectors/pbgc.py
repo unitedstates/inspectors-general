@@ -88,7 +88,10 @@ def report_from(result, report_type, year_range):
     report_id = result.select("td")[0].text.replace("/", "-").replace(" ", "-")
 
   published_on_text = result.select("td")[2].text
-  published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
+  try:
+    published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
+  except ValueError:
+    published_on = datetime.datetime.strptime(published_on_text, '%m/%Y')
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % title)
