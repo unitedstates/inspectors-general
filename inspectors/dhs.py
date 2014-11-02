@@ -28,6 +28,8 @@ def run(options):
 
   limit = int(options.get('limit', 0))
 
+  all_audit_reports = {}
+
   for component in components:
     logging.info("## Fetching reports for component %s" % component)
     url = url_for(options, component)
@@ -50,13 +52,24 @@ def run(options):
         # logging.info("[%s] Skipping, not in requested range." % report['report_id'])
         continue
 
-      inspector.save_report(report)
+      key = (report["report_id"], report["title"])
+      if key in all_audit_reports:
+        all_audit_reports[key]["agency"] = all_audit_reports[key]["agency"] + \
+                ", " + report["agency"]
+        all_audit_reports[key]["agency_name"] = \
+                all_audit_reports[key]["agency_name"] + ", " + \
+                report["agency_name"]
+      else:
+        all_audit_reports[key] = report
 
       count += 1
       if limit and (count >= limit):
         break
 
     logging.info("## Fetched %i reports for component %s\n\n" % (count, component))
+
+  for report in all_audit_reports.values():
+    inspector.save_report(report)
 
 
 def report_from(result, component, url):
