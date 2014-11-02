@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import urllib.parse
 import logging
+import re
 
 archive = 2002
 
@@ -71,6 +72,7 @@ def run(options):
   for report in all_audit_reports.values():
     inspector.save_report(report)
 
+PDF_DESCRIPTION_RE = re.compile("(.*)\\(PDF, [0-9]+ pages - [0-9.]+ ?[mMkK][bB]\\)")
 
 def report_from(result, component, url):
   report = {
@@ -81,6 +83,21 @@ def report_from(result, component, url):
   link = result.select("td")[2].select("a")[0]
   report_url = urllib.parse.urljoin(url, link['href'])
   title = link.text.strip()
+  title = title.replace("\xa0", " ")
+  title = title.replace("  ", " ")
+  title = title.replace(", , ", ", ")
+  title = title.rstrip("( ,.")
+  pdf_desc_match = PDF_DESCRIPTION_RE.match(title)
+  if pdf_desc_match:
+    title = pdf_desc_match.group(1)
+  title = title.rstrip("( ,.")
+  if title.endswith("(Redacted)"):
+    title = title[:-10]
+  if title.endswith("(SSI)"):
+    title = title[:-5]
+  title = title.rstrip("( ,.")
+  if title == "DHS' Counterintelligence Activities Summary":
+    title = "DHS' Counterintelligence Activities"
   report['url'] = report_url
   report['title'] = title
 
