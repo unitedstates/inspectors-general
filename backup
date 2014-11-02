@@ -30,8 +30,42 @@ if (backup_options['ia_access_key'] is None) or (backup_options['ia_secret_key']
   print("Set the IAS3_ACCESS_KEY and IAS3_SECRET_KEY environment variables.")
   exit(1)
 
+# collect reports that match the given arguments
 def backup(options):
-  print(options)
+
+  # will hold tuples of form (ig, year, report_id)
+  reports = []
+
+  if options.get("ig"):
+    igs = [options.get("ig")]
+  else:
+    igs = []
+    for path in glob.glob("data/*"):
+      igs.append(os.path.basename(os.path.splitext(path)[0]))
+
+  for ig in igs:
+
+    if options.get("year"):
+      years = [options.get("year")]
+    else:
+      years = []
+      for path in glob.glob("data/%s/*" % ig):
+        years.append(os.path.basename(os.path.splitext(path)[0]))
+
+    for year in years:
+
+      if options.get("report_id"):
+        report_ids = [options.get("report_id")]
+      else:
+        report_ids = []
+        for path in glob.glob("data/%s/%s/*" % (ig, year)):
+          report_ids.append(os.path.basename(os.path.splitext(path)[0]))
+
+      for report_id in report_ids:
+        reports.append((ig, year, report_id))
+
+  for report in reports:
+    backup_report(*report)
 
 def backup_report(ig, year, report_id):
   print(ig)
