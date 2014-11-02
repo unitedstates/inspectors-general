@@ -24,10 +24,7 @@ import glob
 # --year: for a specific IG, a specific year to upload.
 # --report_id: for a specific IG and year, a specific report to upload.
 #
-# TODO:
 # --force: upload reports whether they exist or not.
-#
-# TODO:
 # --meta: only upload JSON metadata, no report files.
 #
 # TODO:

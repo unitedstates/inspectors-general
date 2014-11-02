@@ -20,6 +20,12 @@ def backup_report(ig, year, report_id, options=None):
 
   logging.warn("")
 
+  # this had better be there
+  report = json.load(open(metadata_path(ig, year, report_id)))
+  if report.get('unreleased'):
+    logging.warn("[%s][%s][%s] Unreleased report, skipping." % (ig, year, report_id))
+    return True
+
   if already_uploaded(ig, year, report_id) and (options.get("force") is not True):
     logging.warn("[%s][%s][%s] Already backed up, skipping." % (ig, year, report_id))
     return True
@@ -33,15 +39,12 @@ def backup_report(ig, year, report_id, options=None):
     mark_as_uploaded(ig, year, report_id)
     return True
 
-  # this had better be there
-  report = json.load(open(metadata_path(ig, year, report_id)))
-
   metadata = collection_metadata()
   metadata.update(item_metadata(report))
 
-  # first, add the metadata file, and attach the IA item metadata to it
+  # 1) add the metadata file, and attach the IA item metadata to it
   logging.warn("[%s][%s][%s] Sending metadata!" % (ig, year, report_id))
-  success = upload_file(item,
+  success = upload_files(item,
     metadata_path(ig, year, report_id),
     metadata,
     options
@@ -49,6 +52,23 @@ def backup_report(ig, year, report_id, options=None):
 
   if not success:
     logging.warn("[%s][%s][%s] :( Error sending metadata." % (ig, year, report_id))
+    return False
+
+  # 2) Unless --meta is on, upload the associated report files.
+  if not options.get("meta"):
+    report_path = file_path(ig, year, report_id, report['file_type'])
+    text_path = file_path(ig, year, report_id, "txt")
+
+    to_upload = []
+    if os.path.exists(report_path):
+      to_upload.append(report_path)
+    if (report_path != text_path) and os.path.exists(text_path):
+      to_upload.append(text_path)
+
+    success = upload_files(item, to_upload, None, options)
+
+  if not success:
+    logging.warn("[%s][%s][%s] :( Error uploading report itself." % (ig, year, report_id))
     return False
 
   logging.warn("[%s][%s][%s] :) Uploaded:\n\t%s" % (ig, year, report_id, ia_url_for(item_id)))
@@ -117,8 +137,8 @@ As a work of the United States government, this work is in the public domain ins
   return data
 
 # actually send the report file up to the IA, with attached metadata
-def upload_file(item, path, metadata, options):
-  return item.upload(path,
+def upload_files(item, paths, metadata, options):
+  return item.upload(paths,
     metadata=metadata,
     access_key=options['config']['access_key'],
     secret_key=options['config']['secret_key'],
