@@ -44,6 +44,8 @@ TYPE_MAP = {
 }
 BASE_TOPIC_URL = "http://www.oig.doc.gov/Pages/{}.aspx"
 
+all_reports = {}
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -56,7 +58,12 @@ def run(options):
   for topic in topics:
     extract_reports_for_topic(topic, year_range)
 
+  for report in all_reports.values():
+    inspector.save_report(report)
+
 def extract_reports_for_topic(topic, year_range):
+  global all_reports
+
   topic_url = url_for(year_range).format(TOPIC_TO_URL_SLUG[topic])
 
   topic_page = beautifulsoup_from_url(topic_url)
@@ -65,7 +72,12 @@ def extract_reports_for_topic(topic, year_range):
   for result in results:
     report = report_from(result, topic, topic_url, year_range)
     if report:
-      inspector.save_report(report)
+      key = (report["report_id"], report["title"])
+      if key in all_reports:
+        all_reports[key]["type"] = all_reports[key]["type"] + ", " + \
+                report["type"]
+      else:
+        all_reports[key] = report
 
 def url_for(year_range):
   return "%s?YearStart=01/01/%s&YearEnd=12/31/%s" % (BASE_TOPIC_URL, year_range[0], year_range[-1])
