@@ -17,7 +17,7 @@ archive = 2004
 # Notes for IG's web team:
 #
 
-TOPIC_MAP = {
+REPORT_TYPE_MAP = {
   "Audit": "audit",
   "Congressionally Mandated Report": "congress",
   "Evaluations and Special Projects": "evaluation",
@@ -81,9 +81,10 @@ def report_from(result, year_range):
     agency = 'state'
     agency_name = 'Department of State'
 
-  topic_name = list(result.select("div.is-darker-grey div.row")[3].strings)[5].strip()
-  topic = TOPIC_MAP[topic_name]
-  subtopic = result.select("div.row.report-listings-data div.callout span")[2].text
+  topic = result.select("div.row.report-listings-data div.callout span")[2].text
+
+  report_type_name = list(result.select("div.is-darker-grey div.row")[3].strings)[5].strip()
+  report_type = REPORT_TYPE_MAP[report_type_name]
 
   result = {
     'inspector': 'state',
@@ -92,7 +93,7 @@ def report_from(result, year_range):
     'agency_name': agency_name,
     'report_id': report_id,
     'topic': topic,
-    'subtopic': subtopic,
+    'type': report_type,
     'url': report_url,
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
