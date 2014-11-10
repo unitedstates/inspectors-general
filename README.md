@@ -183,7 +183,19 @@ Ephemeral errors (for example, from connection errors, or other erratically repr
 
 This project's chief maintainer, Eric Mill, runs a copy of this project on a server that automatically backs up the downloaded bulk data.
 
-Data is backed up to the [Internet Archive](https://archive.org). (Proper collection landing page, and bulk data link, forthcoming.)
+Data is backed up to the [Internet Archive](https://archive.org).
+
+To back up individual reports as items in the collection, run the `backup` script:
+
+```bash
+./backup
+```
+
+This goes through all reports in `data/` for which a report has been released (in other words, where `unreleased` is not `true`), and uploads their metadata and report data to the Internet Archive.
+
+For example, the `treasury` IG's 2014 report `OIG-14-023` report can be found at:
+
+> https://archive.org/details/us-inspectors-general.treasury-2014-OIG-14-023
 
 To generate bulk data, the following command is run from the project's output `data/` directory.
 
@@ -193,10 +205,13 @@ cd ..
 ./backup --bulk=us-inspectors-general.bulk.zip
 ```
 
-This command zips up the contents of the  `data/` directory, while excluding any `.done` files that track the status of individual file backups. The zip file is placed up one directory, so that it doesn't interfere with the automatic directory examination of `data/` that many scripts employ.
+Both zipping and uploading take a long time -- this is a several-hour process at minimum.
+
+The process zips up the contents of the  `data/` directory, while excluding any `.done` files that track the status of individual file backups. The zip file is placed up one directory, so that it doesn't interfere with the automatic directory examination of `data/` that many scripts employ.
 
 Then the file is uploaded to the Internet Archive as part of the collection, to be a convenient bulk mirror of the entire thing.
 
+[TBD: Proper collection landing page, and bulk data link.]
 
 ### Resources
 
