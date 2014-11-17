@@ -67,7 +67,7 @@ def report_from(result, landing_url, report_type, year_range):
     try:
       published_on_text = "-".join(re.search('(\d+) (\w+) (\d{4})', title).groups())
       published_on = datetime.datetime.strptime(published_on_text, '%d-%B-%Y')
-    except AttributeError:
+    except (AttributeError, ValueError):
       # For reports where we can only find the year, set them to Nov 1st of that year
       published_on_year_text = clean_text(result.find_previous("h5").text)
       published_on_year = int(published_on_year_text.replace("Fiscal Year ", ""))
