@@ -36,9 +36,10 @@ def report_from(result, year_range):
   link = result.select("a")[0]
   title = link.text
   landing_url = urljoin(REPORTS_URL, link.get('href'))
-  report_id_node, published_node = result.select("div.release_info")
-  report_id = report_id_node.text.strip().replace(",", "")
-  published_on = datetime.datetime.strptime(published_node.text, '%b %d, %Y')
+  report_url_node, publication_info_node = result.select("div.release_info")
+  publication_info = publication_info_node.text.split(":")
+  report_id = publication_info[0].strip().replace(",", "")
+  published_on = datetime.datetime.strptime(publication_info[1].strip(), '%b %d, %Y')
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % landing_url)
