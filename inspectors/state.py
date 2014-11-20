@@ -28,17 +28,25 @@ REPORT_TYPE_MAP = {
 }
 
 BASE_URL = "http://oig.state.gov/find-a-report?page={page}"
-ARCHIVE_BASE_URL = "http://oig.state.gov/find-a-report/archive?page={page}"
+TESTIMONY_BASE_URL = "http://oig.state.gov/testimony-news?page={page}"
 ALL_PAGES = 1000
 
 def run(options):
   year_range = inspector.year_range(options, archive)
   pages = options.get('pages', ALL_PAGES)
 
-  for page in range(0, int(pages)):
-    logging.debug("## Downloading page %i" % page)
+  # for page in range(0, int(pages)):
+  #   logging.debug("## Downloading page %i" % page)
 
-    url = BASE_URL.format(page=page)
+  #   url = BASE_URL.format(page=page)
+  #   results = extract_reports_for_page(url, page, year_range)
+  #   if not results:
+  #     break
+
+  for page in range(0, int(pages)):
+    logging.debug("## Downloading testimony page %i" % page)
+
+    url = TESTIMONY_BASE_URL.format(page=page)
     results = extract_reports_for_page(url, page, year_range)
     if not results:
       break
@@ -46,7 +54,7 @@ def run(options):
 def extract_reports_for_page(url, page_number, year_range):
   body = utils.download(url)
   doc = BeautifulSoup(body)
-  results = doc.select("div.row.report-listings-copy")
+  results = doc.select("div.row.report-listings-data")
 
   if not results and not page_number:
     # No link on the first page, raise an error
@@ -66,14 +74,22 @@ def report_from(result, year_range):
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
 
-  published_on_text = list(result.select("div.is-darker-grey div.row")[0].strings)[4].strip()
-  published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+  try:
+    published_on_text = list(result.select("div.is-darker-grey div.row")[0].strings)[4].strip()
+    published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+  except ValueError:
+    published_on_text = list(result.select("div.is-darker-grey div.row")[0].strings)[3].strip()
+    published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
-  agency_name = result.select("div.row.report-listings-data div.callout span")[0].text
+  try:
+    agency_name = result.select("div.row.report-listings-data div.callout span")[0].text
+  except IndexError:
+    agency_name = None
+
   if agency_name == 'BBG / Broadcasting Board of Governors':
     agency = 'bbg'
     agency_name = 'Broadcasting Board of Governors'
@@ -81,10 +97,16 @@ def report_from(result, year_range):
     agency = 'state'
     agency_name = 'Department of State'
 
-  topic = result.select("div.row.report-listings-data div.callout span")[2].text
+  try:
+    topic = result.select("div.row.report-listings-data div.callout span")[2].text
+  except IndexError:
+    topic = None
 
-  report_type_name = list(result.select("div.is-darker-grey div.row")[3].strings)[5].strip()
-  report_type = REPORT_TYPE_MAP[report_type_name]
+  try:
+    report_type_name = list(result.select("div.is-darker-grey div.row")[3].strings)[5].strip()
+    report_type = REPORT_TYPE_MAP[report_type_name]
+  except IndexError:
+    report_type = "testimony"
 
   result = {
     'inspector': 'state',
@@ -92,12 +114,13 @@ def report_from(result, year_range):
     'agency': agency,
     'agency_name': agency_name,
     'report_id': report_id,
-    'topic': topic,
     'type': report_type,
     'url': report_url,
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
+  if topic:
+    result['topic'] = topic
   return result
 
 utils.run(run) if (__name__ == "__main__") else None
