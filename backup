@@ -14,7 +14,8 @@ import glob
 # For the IA, `IAS3_ACCESS_KEY` and `IAS3_SECRET_KEY` must be set
 # as environment variables.
 #
-# Usage:
+# PRIMARY USE:
+#
 #   ./backup [--ig] [--year] [--report_id] [--force]
 #
 # Defaults to all IGs, all years, all reports.
@@ -27,9 +28,21 @@ import glob
 # --force: upload reports whether they exist or not.
 # --meta: only upload JSON metadata, no report files.
 #
-# TODO:
+#
+# ALTERNATE USE:
+#
 # --bulk: give a path to a .zip file to upload it as a single bulk item.
 #         this is meant to be the collection's canonical bulk file download.
+#
+# Create the zip file, excluding .done files, with:
+#
+#   cd /path/to/inspectors-general/data
+#   zip -r ../us-inspectors-general.bulk.zip * -x "*.done"
+#
+# Then upload with:
+#
+#   cd /path/to/inspectors-general
+#   ./backup --bulk=us-inspectors-general.bulk.zip
 
 options = utils.options()
 
