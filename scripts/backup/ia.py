@@ -14,6 +14,14 @@ import internetarchive
 import os, sys, traceback
 import json, logging, requests
 
+# The unique collection ID, assigned by Internet Archive staff.
+COLLECTION_NAME = "usinspectorsgeneral"
+
+# The special item ID for the bulk download file, chosen by Eric.
+BULK_ITEM_NAME = "us-inspectors-general.bulk"
+
+
+
 # given an IG report, a year, and its report_id:
 # create an item in the Internet Archive
 def backup_report(ig, year, report_id, options=None):
@@ -86,7 +94,7 @@ def backup_bulk(bulk_path, options):
     return False
 
   logging.warn("Initializing bulk item.")
-  item_id = bulk_item_id()
+  item_id = BULK_ITEM_NAME
   item = internetarchive.get_item(item_id)
 
   metadata = collection_metadata()
@@ -180,6 +188,14 @@ Submitted to the Internet Archive by Eric Mill.
 
 # actually send the report file up to the IA, with attached metadata
 def upload_files(item, paths, metadata, options):
+
+  # for the bulk upload (a giant .zip), don't use the IA's derivation queue
+  if options.get("bulk"):
+    queue_derive = False
+  # for normal reports, definitely derive stuff, to get the sweet viewer
+  else:
+    queue_derive = True
+
   try:
     return item.upload(paths,
       metadata=metadata,
@@ -216,15 +232,8 @@ def mark_as_uploaded(ig, year, report_id):
 def ia_url_for(item_id):
   return "https://archive.org/details/%s" % item_id
 
-
 def item_id_for(ig, year, report_id):
-  return "%s.%s-%s-%s" % (collection_id(), ig, year, report_id)
-
-def collection_id():
-  return "us-inspectors-general"
-
-def bulk_item_id():
-  return "%s.%s" % (collection_id(), "bulk")
+  return "%s.%s-%s-%s" % (COLLECTION_NAME, ig, year, report_id)
 
 def format_exception(exception):
     exc_type, exc_value, exc_traceback = sys.exc_info()
