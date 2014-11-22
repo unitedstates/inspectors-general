@@ -42,9 +42,88 @@ UNRELEASED_TEXTS = [
   "not for public release",
 ]
 
+DUPLICATE_LANDING_PAGES = (
+  "http://www.hudoig.gov/reports-publications/audit-reports-17",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/cheyenne-housing-authority-cheyenne-wyoming-improperly-awarded
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-huntington-park-huntington-park-california-did-not-alwa-0",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-huntington-park-huntington-park-california-did-not-always
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-new-rochelle-home-investment-partnership-program",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-new-rochelle-new-rochelle-new-york-had-administrative
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/holyoke-housing-authority%E2%80%99s-holyoke-massachusetts-lack-of",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/holyoke-housing-authoritys-holyoke-massachusetts-lack-of
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/richard-hutchens-and-associates-management-agent",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/richard-hutchens-associates-management-agent-buffalo-new-york
+
+  "http://www.hudoig.gov/reports-publications/inspections-evaluations/follow-of-inspections-and-evaluations-division-its",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/follow-of-inspections-and-evaluations-division-its-inspection-of
+
+  "http://www.hudoig.gov/reports-publications/inspections-evaluations/%C2%A0american-recovery-and-reinvestment-act-lessons-learned",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/american-recovery-and-reinvestment-act-lessons-learned-initiative
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/idaho-housing-and-finance-association-did-not-always-comply-hom-0",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/idaho-housing-and-finance-association-did-not-always-comply-home
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/lackawanna-municipal-housing-authority-lackawanna-new-york-need-0",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/lackawanna-municipal-housing-authority-lackawanna-new-york-needs
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/ameritrust-mortgage-bankers-inc-lake-success-ny-did-not",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/ameritrust-mortgage-bankers-inc-lake-success-ny-did-not-always
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/miami-dade-county-floridaneeds-strengthen-controls-over-its",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/miami-dade-county-florida-needs-strengthen-controls-over
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/miami-dade-housing-agency-miami-florida-did-not-maintain-adequa-1",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/miami-dade-housing-agency-miami-florida-did-not-maintain-adequate
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-miami-gardens-fl-did-not-adequately-support-salary-cost-0",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-miami-gardens-fl-did-not-adequately-support-salary-costs
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-troy-community-development-block-grant-program",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-troy-new-york-did-not-always-administer-its-community
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-rochester-new-york%E2%80%99s-management-controls-over-asset",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-rochester-new-yorks-management-controls-over-asset
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-newburgh-new-york-did-not-always-administer-its-communi-0",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-newburgh-new-york-did-not-always-administer-its community
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/polk-county-fl-did-not-comply-procurement-and",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/polk-county-fl-did-not-comply-procurement-and-contract
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/broward-county-fl-needs-strengthen-controls-over-its-neighborho-0",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/broward-county-fl-needs-strengthen-controls-over-its-neighborhood
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-west-palm-beach-fl-did-not-administer-its-community",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-west-palm-beach-fl-did-not-properly-administer-its
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-rochester-new-york%E2%80%99s-management-controls-over-asset",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-rochester-new-yorks-management-controls-over-asset
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-newburgh-new-york-did-not-always-administer-its-communi-0",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-newburgh-new-york-did-not-always-administer-its-community
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/all-american-home-mortgage-corp-brooklyn-ny-did-not-always-comp-0",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/all-american-home-mortgage-corp-brooklyn-ny-did-not-always-comply
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/adams-county-colorado-did-not-comply-home-investment-partnerships",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/adams-county-colorado-office-of-community-and-development-did-not
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/women%E2%80%99s-development-center-las-vegas-nv-charged-unallowable-flat",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/womens-development-center-las-vegas-nv-charged-unallowable-flat
+
+  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-fort-lauderdale-florida-did-not-properly-administer",
+  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-fort-lauderdale-florida-did-not-properly-administer-its
+)
+
 def run(options):
   pages = options.get('pages', ALL_PAGES)
   year_range = inspector.year_range(options, archive)
+
+  all_reports = {}
 
   for page in range(1, (int(pages) + 1)):
     logging.debug("## Downloading page %i" % page)
@@ -62,7 +141,22 @@ def run(options):
     for row in rows:
       report = report_from(row, year_range)
       if report:
-        inspector.save_report(report)
+        key = (report["report_id"], report["landing_url"])
+        if not key in all_reports:
+          all_reports[key] = report
+        else:
+          # If we get the exact same landing page twice, skip it, nothing new
+          # to see
+          pass
+
+  for key, report in all_reports.items():
+    if key[1].endswith("-0"):
+      dupe_key = (key[0], key[1][:-2])
+      if dupe_key in all_reports:
+        # If two reports have the same number, and their landing pages differ
+        # by only an extra -0 added at the end, take the one without the -0
+        continue
+    inspector.save_report(report)
 
   do_canned_reports(year_range)
 
@@ -86,6 +180,9 @@ def report_from(report_row, year_range):
 
   landing_url_relative = report_row.select('a')[0]['href']
   landing_url = urljoin(BASE_REPORT_PAGE_URL, landing_url_relative)
+
+  if landing_url in DUPLICATE_LANDING_PAGES:
+    return
 
   if landing_url == "http://www.hudoig.gov/reports-publications/audit-reports/housing-authority-of-city-of-conyers-georgia-did-not-maintain":
     # Handle this elsewhere as a canned report
@@ -113,6 +210,12 @@ def report_from(report_row, year_range):
     # pulling it from the filename.
     report_filename = article.select('div.field-name-field-pub-document a')[0].text
     report_id = os.path.splitext(report_filename)[0]  # Strip off the extension
+
+  # These both have filenames of "appendix", so we use different report IDs
+  if landing_url == "http://www.hudoig.gov/reports-publications/audit-guides/chapter-1-appendix-attribute-sampling":
+    report_id = "Attribute-Sampling"
+  elif landing_url == "http://www.hudoig.gov/reports-publications/audit-guides/appendix-hud-regional-inspector-generals-audit":
+    report_id = "HUD-Regional-Inspector-Generals-for-Audit"
 
   try:
     report_url = article.select('div.field-name-field-pub-document a')[0]['href']
