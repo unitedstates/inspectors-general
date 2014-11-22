@@ -119,7 +119,7 @@ def backup_bulk(bulk_path, options):
 def collection_metadata():
   data = {
     # TODO: collection identifier, once granted
-    # 'collection': 'us-inspectors-general',
+    'collection': COLLECTION_NAME,
     'mediatype': 'texts', # best I got
     'contributor': 'github.com/unitedstates',
     'creator': 'United States Government',
@@ -204,7 +204,7 @@ def upload_files(item, paths, metadata, options):
       debug=options.get("dry_run", False),
 
       verbose=True, # I love output
-      # queue_derive=False, # don't put it into IA's derivation queue
+      queue_derive=queue_derive, # don't put it into IA's derivation queue
       ignore_preexisting_bucket=True, # always overwrite
 
       retries=3, # it'd be nicer to look up the actual rate limit
