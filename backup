@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+
+import sys, os
+sys.path.append("inspectors")
+sys.path.append("scripts/backup")
+import ia
+from utils import utils
+from utils import admin
+import glob
+
+# Helper script to back up downloaded IG data.
+#
+# Currently: only the Internet Archive is supported.
+# For the IA, `IAS3_ACCESS_KEY` and `IAS3_SECRET_KEY` must be set
+# as environment variables.
+#
+# PRIMARY USE:
+#
+#   ./backup [--ig] [--year] [--report_id] [--force]
+#
+# Defaults to all IGs, all years, all reports.
+# Defaults to only uploading reports that do not exist.
+#
+# --ig: a specific IG to upload.
+# --year: for a specific IG, a specific year to upload.
+# --report_id: for a specific IG and year, a specific report to upload.
+#
+# --force: upload reports whether they exist or not.
+# --meta: only upload JSON metadata, no report files.
+#
+#
+# ALTERNATE USE:
+#
+# --bulk: give a path to a .zip file to upload it as a single bulk item.
+#         this is meant to be the collection's canonical bulk file download.
+#
+# Create the zip file, excluding .done files, with:
+#
+#   cd /path/to/inspectors-general/data
+#   zip -r ../us-inspectors-general.bulk.zip * -x "*.done"
+#
+# Then upload with:
+#
+#   cd /path/to/inspectors-general
+#   ./backup --bulk=us-inspectors-general.bulk.zip
+
+options = utils.options()
+
+if (admin.config.get('internet_archive') is None):
+  print("Set Internet Archive credentials in admin.yml.")
+  exit(1)
+
+backup_options = {
+  'config': admin.config['internet_archive']
+}
+
+# collect reports that match the given arguments
+def backup(options):
+
+  reports = reports_for(options)
+  print("About to backup %i reports." % len(reports))
+
+  count = 0
+  errors = []
+  for report in reports:
+    success = ia.backup_report(*report, options=options)
+    if success: count += 1
+    else: errors.append(report)
+
+  print()
+  print("Backed up %i reports, with %i errors." % (count, len(errors)))
+
+  if len(errors) > 0:
+    for error in errors:
+      print(error)
+
+# backup a single file, meant to be the bulk accompaniment to the collection
+def backup_bulk(options):
+  ia.backup_bulk(options.get("bulk"), options)
+
+def reports_for(options):
+  # will hold tuples of form (ig, year, report_id)
+  reports = []
+
+  if options.get("ig"):
+    igs = [options.get("ig")]
+  else:
+    igs = []
+    for path in glob.glob("data/*"):
+      igs.append(os.path.basename(os.path.splitext(path)[0]))
+    igs.sort()
+
+  for ig in igs:
+
+    if options.get("year"):
+      years = [options.get("year")]
+    else:
+      years = []
+      for path in glob.glob("data/%s/*" % ig):
+        years.append(os.path.basename(os.path.splitext(path)[0]))
+      years.sort()
+
+    for year in years:
+
+      if options.get("report_id"):
+        report_ids = [options.get("report_id")]
+      else:
+        report_ids = []
+        for path in glob.glob("data/%s/%s/*" % (ig, year)):
+          report_ids.append(os.path.basename(os.path.splitext(path)[0]))
+        report_ids.sort()
+
+      for report_id in report_ids:
+        reports.append((ig, year, report_id))
+
+  return reports
+
+if options.get("bulk"):
+  utils.run(backup_bulk, backup_options)
+else:
+  utils.run(backup, backup_options)

@@ -31,3 +31,8 @@ slack:
 
 # data output directory
 data_directory: data
+
+# fill in if you will be syncing content to the Internet Archive (admin only, please)
+internet_archive:
+  access_key:
+  secret_key:

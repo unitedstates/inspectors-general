@@ -1,12 +1,12 @@
 ## Inspectors General
 
-A project to collect reports from the [offices of Inspectors General](http://en.wikipedia.org/wiki/Office_of_the_Inspector_General) across the US federal government.
+A project to collect reports from the [offices of Inspectors General](https://en.wikipedia.org/wiki/Office_of_the_Inspector_General) across the US federal government.
 
 We have **65** inspector general offices scraped, downloaded, and stable. See our [safe list](safe.yml) for details.
 
 #### What's an inspector general?
 
-From [this piece explaining the project](http://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/):
+From [this piece explaining the project](https://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/):
 
 > Just about every agency in the federal government has an independent unit, usually called the Office of the Inspector General, dedicated to independent oversight. This includes regular audits of the agency's spending, monitoring of active government contractors and investigations into wasteful or corrupt agency practices. They ask tough questions, carry guns, and sue people.
 
@@ -24,7 +24,7 @@ The most important way you can help is by finding and submitting reports from IG
 * [Intelligence Community](http://www.dni.gov/index.php/about/organization/office-of-the-intelligence-community-inspector-general-who-we-are) (ODNI)
 * [Special Inspector General for Iraq Reconstruction](http://www.sigir.mil/)
 
-Generally, getting their reports means **filing [Freedom of Information Act](http://en.wikipedia.org/wiki/Freedom_of_Information_Act_(United_States)) requests**, or finding the results of FOIA requests others have already made.
+Generally, getting their reports means **filing [Freedom of Information Act](https://en.wikipedia.org/wiki/Freedom_of_Information_Act_(United_States)) requests**, or finding the results of FOIA requests others have already made.
 
 We also need unpublished reports from the other 65 IGs! We're scraping what they publish online, but most IGs do not proactively publish all of their reports.
 
@@ -49,7 +49,7 @@ To run an individual IG scraper, just execute its file directly. For example:
 ./inspectors/usps.py
 ```
 
-This will fetch the current year's reports from the [Inspector General for the US Postal Service](http://uspsoig.gov) and write them to disk, along with JSON metadata.
+This will fetch the current year's reports from the [Inspector General for the US Postal Service](https://uspsoig.gov) and write them to disk, along with JSON metadata.
 
 If you want to go back further, use `--since` or `--year` to specify a year or range:
 
@@ -179,6 +179,40 @@ If a scraper is throwing **persistent** errors, remove it (comment it out) from 
 
 Ephemeral errors (for example, from connection errors, or other erratically reproducible situations) should be reported as issues first, to be discussed.
 
+### Bulk data and backup
+
+This project's chief maintainer, Eric Mill, runs a copy of this project on a server that automatically backs up the downloaded bulk data.
+
+Data is backed up to the [Internet Archive](https://archive.org).
+
+To back up individual reports as items in the collection, run the `backup` script:
+
+```bash
+./backup
+```
+
+This goes through all reports in `data/` for which a report has been released (in other words, where `unreleased` is not `true`), and uploads their metadata and report data to the Internet Archive.
+
+For example, the `treasury` IG's 2014 report `OIG-14-023` report can be found at:
+
+> https://archive.org/details/us-inspectors-general.treasury-2014-OIG-14-023
+
+To generate bulk data, the following command is run from the project's output `data/` directory.
+
+```bash
+zip -r ../us-inspectors-general.bulk.zip * -x "*.done"
+cd ..
+./backup --bulk=us-inspectors-general.bulk.zip
+```
+
+Both zipping and uploading take a long time -- this is a several-hour process at minimum.
+
+The process zips up the contents of the  `data/` directory, while excluding any `.done` files that track the status of individual file backups. The zip file is placed up one directory, so that it doesn't interfere with the automatic directory examination of `data/` that many scripts employ.
+
+Then the file is uploaded to the Internet Archive as part of the collection, to be a convenient bulk mirror of the entire thing.
+
+[TBD: Proper collection landing page, and bulk data link.]
+
 ### Resources
 
 * [Matt Rumsey](https://twitter.com/mattrumsey) kindly [compiled a spreadsheet](https://docs.google.com/spreadsheet/ccc?key=0AoQuErjcV2a0dF9jUjRSczQ5WEVqd3RoS3dtLTdGQnc&usp=sharing) of IG offices. We used this to track activity during the initial scraping phase.
@@ -187,6 +221,6 @@ Ephemeral errors (for example, from connection errors, or other erratically repr
 
 This project is [dedicated to the public domain](LICENSE). As spelled out in [CONTRIBUTING](CONTRIBUTING.md):
 
-> The project is in the public domain within the United States, and copyright and related rights in the work worldwide are waived through the [CC0 1.0 Universal public domain dedication](http://creativecommons.org/publicdomain/zero/1.0/).
+> The project is in the public domain within the United States, and copyright and related rights in the work worldwide are waived through the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
 
 > All contributions to this project will be released under the CC0 dedication. By submitting a pull request, you are agreeing to comply with this waiver of copyright interest.
