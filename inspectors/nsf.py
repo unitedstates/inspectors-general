@@ -137,6 +137,10 @@ def case_report_from(result, landing_url, year_range):
   report_id = link.text
   title = result.contents[5].text
 
+  # catch all until this can be more easily diagnosed
+  if not title:
+    title = "(Untitled)"
+
   published_on_text = result.contents[3].text
   published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%y')
 
