@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# http://www.sba.gov/office-of-inspector-general
+# https://www.sba.gov/office-of-inspector-general
 archive = 1994
 
 # options:
@@ -20,8 +20,8 @@ archive = 1994
 # Notes for IG's web team:
 # - Add the published date for all reports in `REPORT_PUBLISHED_MAPPING`.
 
-REPORTS_AJAX_URL = "http://www.sba.gov/views/ajax"
-BASE_REPORT_URL = "http://www.sba.gov/"
+REPORTS_AJAX_URL = "https://www.sba.gov/views/ajax"
+BASE_REPORT_URL = "https://www.sba.gov/"
 
 REPORT_LABEL_REGEX = re.compile("Report Number")
 
@@ -127,7 +127,7 @@ def report_from(result, year_range):
     report_url = urljoin(BASE_REPORT_URL, landing_page.select("#attachments a")[0].get('href'))
   except IndexError:
     # Some 'reports' don't have attachments.
-    # http://www.sba.gov/oig/audit-report-14-05-independent-auditors-report-sbas-fy-2013-special-purpose-financial-statements
+    # https://www.sba.gov/oig/audit-report-14-05-independent-auditors-report-sbas-fy-2013-special-purpose-financial-statements
     report_url = landing_url
 
   file_type = None
@@ -181,7 +181,7 @@ def report_from(result, year_range):
 
   report = {
     'inspector': 'sba',
-    'inspector_url': 'http://www.sba.gov/office-of-inspector-general',
+    'inspector_url': 'https://www.sba.gov/office-of-inspector-general',
     'agency': 'sba',
     'agency_name': 'Small Business Administration',
     'type': report_type,
