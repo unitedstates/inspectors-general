@@ -50,6 +50,7 @@ AGENCY_NAMES = {
   "ofr": "Office of Financial Research",
   "oig": "Office of the Inspector General",
   "ots": "The Office of Thrift",
+  "restore": "The RESTORE Act",
   "tfi": "Office of Terrorism and Financial Intelligence",
   "ttb": "The Alcohol and Tobacco Tax and Trade Bureau",
   "tff": "Treasury Forfeiture Fund",
