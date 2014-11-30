@@ -6,6 +6,8 @@ import yaml
 from bs4 import BeautifulSoup
 from datetime import datetime
 
+import requests
+
 # scraper should be instantiated at class-load time, so that it can rate limit appropriately
 import scrapelib
 scraper = scrapelib.Scraper(requests_per_minute=120, retry_attempts=3)
@@ -90,14 +92,14 @@ def download(url, destination=None, options=None):
       try:
         mkdir_p(os.path.dirname(destination))
         scraper.urlretrieve(url, destination)
-      except scrapelib.HTTPError as e:
+      except (scrapelib.HTTPError, requests.exceptions.ConnectionError) as e:
         log_http_error(e, url)
         return None
     else: # text
       try:
         if destination: logging.info("## \tto: %s" % destination)
         response = scraper.urlopen(url)
-      except scrapelib.HTTPError as e:
+      except (scrapelib.HTTPError, requests.exceptions.ConnectionError) as e:
         log_http_error(e, url)
         return None
 
