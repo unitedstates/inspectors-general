@@ -2,17 +2,29 @@
 
 A project to collect reports from the [offices of Inspectors General](https://en.wikipedia.org/wiki/Office_of_the_Inspector_General) across the US federal government.
 
-We have **65** inspector general offices scraped, downloaded, and stable. See our [safe list](safe.yml) for details.
+For more information about the project, read:
+
+* [Opening up government reports through teamwork and open data](https://sunlightfoundation.com/blog/2014/11/07/opengov-voices-opening-up-government-reports-through-teamwork-and-open-data/)
+* [Why we've collected a hojillion inspector general reports](http://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/)
+
 
 #### What's an inspector general?
 
-From [this piece explaining the project](https://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/):
+From [one of the above pieces](https://sunlightfoundation.com/blog/2014/05/13/why-weve-collected-a-hojillion-inspector-general-reports/):
 
 > Just about every agency in the federal government has an independent unit, usually called the Office of the Inspector General, dedicated to independent oversight. This includes regular audits of the agency's spending, monitoring of active government contractors and investigations into wasteful or corrupt agency practices. They ask tough questions, carry guns, and sue people.
 
 #### How you can help
 
-The most important way you can help is by finding and submitting reports from IGs who do not publish their reports online. There are 9 of them, many from the US government's intelligence community.
+The initial round of writing scrapers for all 65 federal IGs has come to a close. However, there are two important areas we need help in:
+
+* **Keeping the scrapers working**. They're scrapers: they break. Check the [issues list](https://github.com/unitedstates/inspectors-general/issues) for scrapers in need of attention.
+
+Ask [@konklone](https://twitter.com/konklone) for an invitation to the [project Slack](https://oversight.slack.com) if you want to talk with teammates and get involved.
+
+* Just as importantly, **sending in reports we can't scrape.**
+
+There are 9 IGs who do not publish reports online, many from the US government's intelligence community.
 
 * [Architect of the Capitol](http://www.aoc.gov/aoc/oig.cfm)
 * [Capitol Police](http://www.uscapitolpolice.gov/oig.php)
@@ -28,11 +40,9 @@ Generally, getting their reports means **filing [Freedom of Information Act](htt
 
 We also need unpublished reports from the other 65 IGs! We're scraping what they publish online, but most IGs do not proactively publish all of their reports.
 
+#### Submitting IG reports
+
 We don't yet have a formal process for submitting reports &mdash; for now, either [open an issue](https://github.com/unitedstates/inspectors-general/issues/new) and post a link to the file, or email the report to [eric@konklone.com](mailto:eric@konklone.com).
-
-You can also **review our data quality** and find bugs. Visit [oversight.io](https://oversight.io) (still ugly and in-progress) and see what the data looks like in action.
-
-Finally, we **have a [project Slack](https://oversight.slack.com)** - anyone who'd like to help out is welcome to join.
 
 ### Scraping IG reports
 
@@ -91,36 +101,9 @@ Every scraper will accept the following options:
 * `--dry_run`: Will scrape sites and write JSON metadata to disk, but won't download full reports or extract text.
 
 
-### Contributing a Scraper
-
-The easiest way is to start by copying `scraper.py.template` to `inspectors/[inspector].py`, where "[inspector]" is the filename-friendly handle of the IG office you want to scrape. For example, our scraper for the US Postal Service's IG is [usps.py](https://github.com/unitedstates/inspectors-general/blob/master/inspectors/usps.py).
-
-The template has a suggested workflow and set of methods, but all your task **needs** to do is:
-
-* start execution in a `run(options)` method, and
-* call `inspector.save_report(report)` for every report
-
-This will automatically save reports to disk in the right place, extract text, and avoid re-downloading files. `options` will be a dict parsed from any included command line flags.
-
-You will also need this line at the bottom:
-
-```python
-utils.run(run) if (__name__ == "__main__") else None
-```
-
-You should use `inspectors.year_range(options)` to obtain a range of desired years, and to obey that range during scraping. See an example of [creating it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L22) and [using it](https://github.com/unitedstates/inspectors-general/blob/0b0953060878becc3732962d7622ff48caab54ad/inspectors/opm.py#L37-L38).
-
-Scrapers are welcome to use any command line flags they want, **except** those used by the `igs` runner. Currently, that's `--safe` and `--only`.
-
-Finally, scraper authors are encouraged to note a few things in comments at the top of the scraper:
-
-* The **earliest available year** for reports.
-* Any **additional command line options** you've chosen to support, besides `--since` and `--year`.
-* Any **notes to pass on to the IG's web team**, about how they can make their website better and more reliable.
-
 #### Report metadata
 
-The `report` object must be a dict that contains the following **required fields**:
+Every `report` has an accompanying JSON file with metadata. That JSON file is an object with the following **required fields**:
 
 * `inspector` - The handle you chose for the IG. e.g. "usps"
 * `inspector_url` - The IG's primary website URL.
@@ -138,50 +121,13 @@ Additionally, some information about report URLs is **required**. However, not a
 
 If `unreleased` is `True`, then `url` is *optional* and `landing_url` is *required*.
 
-You can also **include any other fields** you think worth keeping.
+The JSON file may have arbitrary additional fields the scraper author thought worth keeping.
 
-The `report_id` only needs to be unique within that IG, so you can make it up from other fields. It does need to come out the same every time you run the script. In other words, **don't auto-increment a number** -- if the IG doesn't give you a unique ID already, append other fields together into a consistent, unique ID.
-
-In some cases, an IG will not give a clear published date for a report. In these cases, we have a few additional options:
-
-* If there are only a couple of reports with missing dates, hardcoding a mapping of report ids to published dates can often work well. See an example [here](https://github.com/unitedstates/inspectors-general/blob/658888d0d50be6429775dc8a92825837d602f836/inspectors/treasury.py#L69-73).
-* For the websites of some agencies, the `Last-Modified` header lists the date when the report was added to the website which can be used as the `published_on` date. This option should not be used without significant spot-checking.
-* If the website just lists the year the report was added, set the `published_on` to  November 1st of that year and also set `"estimated_date": True` in the report dictionary.
-
-If none of these methods work, open an issue on this repo.
-
-Finally, **err towards errors**: have your scraper choke and die on unexpected input. Better to be forced to discover it that way, then for incomplete or inaccurate data to be silently saved.
-
-## Review process
-
-Suggested instructions for people reviewing new scrapers:
-
-* Verify that the scraper is getting every possible and useful category of report.
-* Verify that the scraper is using HTTPS, if it's available.
-* Run the scraper for its full archive but without downloading the reports, using `--dry_run` and `--since`.
-* Review scraped metadata for a representative sample of years and report types to ensure sanity and quality.
-* Keep an eye out for announcements, press releases, and other non-report data.
-
-If the full dry run ran without errors, and the data looks good and complete:
-
-* merge the scraper
-* update the *pending* section of `safe.yml` with a *commented-out* line for the scraper.
-
-**Adding to safe.yml**
-
-The only people who should update `safe.yml` with uncommented lines are those who run servers managing complete synced archives of IG data.
-
-Before adding a scraper to `safe.yml`, it's suggested that you allow a *full* download of the archive to complete (which will also test PDF download and metadata/text extraction code).
-
-**Removing from safe.yml**
-
-If a scraper is throwing **persistent** errors, remove it (comment it out) from `safe.yml` and open a ticket to discuss it.
-
-Ephemeral errors (for example, from connection errors, or other erratically reproducible situations) should be reported as issues first, to be discussed.
+The `report_id` must be unique within that IG, and should be stable and idempotent.
 
 ### Bulk data and backup
 
-This project's chief maintainer, Eric Mill, runs a copy of this project on a server that automatically backs up the downloaded bulk data.
+This project's chief maintainer, [Eric Mill](https://twitter.com/konklone), runs a copy of this project on a server that automatically backs up the downloaded bulk data.
 
 Data is backed up to the [Internet Archive](https://archive.org).
 
