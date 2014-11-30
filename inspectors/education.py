@@ -180,6 +180,9 @@ def audit_report_from(result, page_url, year_range):
     return
   audit_reports_seen.add(key)
 
+  if "thestartingline.ed.gov" in report_url:
+    return None
+
   report = {
     'inspector': 'education',
     'inspector_url': 'https://www2.ed.gov/about/offices/list/oig/',
@@ -216,6 +219,9 @@ def semiannual_report_from(result, page_url, year_range):
   title = "Semiannual Report - {}".format(date_range_text)
   published_on_text = date_range_text.split("-")[-1].strip()
   published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+
+  if "thestartingline.ed.gov" in report_url:
+    return None
 
   report = {
     'inspector': 'education',
