@@ -19,6 +19,7 @@ archive = 1989
 REPORTS_URL = "http://www.peacecorps.gov/about/inspgen/reports/"
 
 REPORT_PUBLISHED_MAPPING = {
+  "Death_Inquiry_and_Assessment_of_Medical_Care_in_Peace_Corps_Morocco": datetime.datetime(2010,2,1),
   "Burkina_Faso_Medical_Supply_Management_Advisory_Report": datetime.datetime(2013, 3, 14),
   "PCIG_Final_MAR_Certification_of_Volunteer_Payments": datetime.datetime(2013, 9, 24),
   "MAR_Cost_Savings_Opportunity_on_Value_Added_Tax": datetime.datetime(2013, 2, 13),
