@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -153,18 +154,20 @@ def report_from(result, reports_page, report_type, year_range):
     for p in result.select("p"):
       text = p.text.strip()
       summary += text + "\n\n"
-      if text.lower().startswith("case id"):
+      if text.lower().strip("-").strip().startswith("case id"):
         id_text = text
     summary = summary.strip()
     if not id_text:
       for div in result.select("div"):
         text = div.text.strip()
-        if text.lower().startswith("case id"):
+        if text.lower().strip("-").strip().startswith("case id"):
           id_text = text
     if not id_text:
       raise Exception("Could not find Case ID for an investigation\n%s" % \
                         result.text)
-    report_id = id_text.split(" ")[-1]
+
+    #note that some cases have more than one id. We are taking only the last id.
+    report_id = re.sub(r'\([^)]*\)','',id_text).strip().split(" ")[-1]
 
     landing_url = reports_page
     unreleased = True
