@@ -171,6 +171,9 @@ BLACKLIST_REPORT_URLS = [
   # See note to IG web team
   'http://oig.hhs.gov/reports/region3/30700500.htm',
   'http://oig.hhs.gov/oas/reports/region5/50800067.asp',
+
+  #press release, format is completely inconsistent with everything else
+  'http://oig.hhs.gov/newsroom/news-releases/2014/sar14fall.asp'
 ]
 
 BASE_URL = "http://oig.hhs.gov"
@@ -307,12 +310,14 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
 
   report_url = urljoin(subtopic_url, result_link['href']).strip()
 
+
   if report_url in REPORT_URL_MAPPING:
     report_url = REPORT_URL_MAPPING[report_url]
 
   # Ignore reports from other sites
   if BASE_URL not in report_url:
     return
+
 
   if report_url in BLACKLIST_REPORT_URLS:
     return
@@ -353,6 +358,7 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
         report_id,
         report_url,
       )
+
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
