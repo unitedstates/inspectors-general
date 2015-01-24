@@ -145,7 +145,7 @@ def report_from(result, year_range):
     'inspector': 'va',
     'inspector_url': 'http://www.va.gov/oig',
     'agency': agency_slug,
-    'agency_name': agency_name,
+    'agency_name': "Department of Veterans Affairs",
     'report_id': report_id,
     'url': report_url,
     'landing_url': landing_url,
