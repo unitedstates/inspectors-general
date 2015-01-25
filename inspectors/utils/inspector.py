@@ -77,7 +77,7 @@ def preprocess_report(report):
   for field in common_strings:
     value = report.get(field)
     if (value is not None):
-      report[field] = value.strip()
+      report[field] = value.replace("\xa0", " ").strip()
 
   # if we have a date, but no explicit year, extract it
   if report.get("published_on") and (report.get('year') is None):
