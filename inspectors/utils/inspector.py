@@ -77,7 +77,7 @@ def preprocess_report(report):
   for field in common_strings:
     value = report.get(field)
     if (value is not None):
-      report[field] = value.replace("\xa0", " ").strip()
+      report[field] = sanitize(value)
 
   # if we have a date, but no explicit year, extract it
   if report.get("published_on") and (report.get('year') is None):
@@ -203,6 +203,10 @@ def check_uniqueness(inspector, report_id, report_year):
 def verify_uniqueness_finalize_summary():
   if _uniqueness_messages:
     admin.notify('\n'.join(_uniqueness_messages))
+
+# run over common string fields automatically
+def sanitize(string):
+  return string.replace("\xa0", " ").strip()
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])
