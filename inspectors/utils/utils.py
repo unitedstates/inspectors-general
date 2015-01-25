@@ -15,6 +15,11 @@ scraper.user_agent = "unitedstates/inspectors-general (https://github.com/united
 
 from . import admin
 
+# ugh
+WHITELIST_INSECURE_DOMAINS = (
+  "https://www.ignet.gov"
+)
+
 
 # will pass correct options on to individual scrapers whether
 # run through ./igs or individually, because argv[1:] is the same
@@ -83,6 +88,9 @@ def download(url, destination=None, options=None):
 
   # otherwise, download from the web
   else:
+
+    logging.warn(url)
+
     logging.info("## Downloading: %s" % url)
     if binary:
       if destination:
@@ -91,19 +99,37 @@ def download(url, destination=None, options=None):
         raise Exception("A destination path is required for downloading a binary file")
       try:
         mkdir_p(os.path.dirname(destination))
-        scraper.urlretrieve(url, destination)
+
+        if dont_verify(url):
+          logging.warn("SKIPPING RATE LIMITING AND HTTPS VERIFICATION.")
+          scraper.urlretrieve(url, destination, verify=False)
+        else:
+          scraper.urlretrieve(url, destination)
       except (scrapelib.HTTPError, requests.exceptions.ConnectionError) as e:
         log_http_error(e, url)
         return None
     else: # text
       try:
         if destination: logging.info("## \tto: %s" % destination)
-        response = scraper.urlopen(url)
+
+        # Special handler for downloading reports whose server has
+        # misconfigured their HTTPS, and for which no alternative
+        # exists.
+        # This happens very rarely, and scrapelib has a bug with
+        # verification options, so this disables the rate limiting
+        # provided by scrapelib.
+
+        if dont_verify(url):
+          logging.warn("SKIPPING RATE LIMITING AND HTTPS VERIFICATION.")
+          response = requests.get(url, verify=False)
+        else:
+          response = scraper.get(url)
+
       except (scrapelib.HTTPError, requests.exceptions.ConnectionError) as e:
         log_http_error(e, url)
         return None
 
-      body = response
+      body = response.text
       if not isinstance(body, str): raise ValueError("Content not decoded.")
 
       # don't allow 0-byte files
@@ -152,6 +178,12 @@ def text_from_html(html_path):
   write(text, real_text_path, binary=False)
   return text_path
 
+def dont_verify(url):
+  if url.startswith("https:"):
+    for domain in WHITELIST_INSECURE_DOMAINS:
+      if url.startswith(domain):
+        return True
+  return False
 
 # uses pdftotext to get text out of PDFs,
 # then writes it and returns the /data-relative path.
@@ -275,6 +307,10 @@ def metadata_from_pdf(pdf_path):
   return None
 
 def check_report_url(report_url):
+  # skip this for non-verifiable urls
+  if dont_verify(report_url):
+    return
+
   res = scraper.request(method='HEAD', url=report_url)
   if not res.ok:
     raise Exception("Received bad status code %s for %s" %
