@@ -30,6 +30,11 @@ def run(options):
     if year < 2002:  # The oldest page for audit reports
       continue
     doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL.format(year=year)))
+
+    # if it's a 404 page (200 response code), move on
+    if not_found(doc):
+      continue
+
     results = doc.select("div.content table tr")
     for index, result in enumerate(results):
       if not index:
@@ -57,6 +62,9 @@ def run(options):
     report = semiannual_report_from(result, year_range)
     if report:
       inspector.save_report(report)
+
+def not_found(doc):
+  return (doc.select("h2")[0].text.strip().lower() == "page not found")
 
 def clean_text(text):
   # This character is not technically whitespace so we have to manually replace it
