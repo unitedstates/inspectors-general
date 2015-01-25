@@ -217,6 +217,7 @@ def slugify(report_id):
   copy = report_id
   for char in invalid_chars():
     copy = copy.replace(char, "-")
+  return copy
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])
