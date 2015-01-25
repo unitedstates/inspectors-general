@@ -123,7 +123,7 @@ def validate_report(report):
       return "Summary URL is not valid: %s" % report.get("summary_url")
 
   # report_id can't have slashes, it'll mess up the directory structure
-  for character in "/\\:*?\"<>|\r\n":
+  for character in str.join("", invalid_chars()):
     if character in report["report_id"]:
       return "Invalid %s in report_id - find another way: %r" % (character, report["report_id"])
 
@@ -207,6 +207,16 @@ def verify_uniqueness_finalize_summary():
 # run over common string fields automatically
 def sanitize(string):
   return string.replace("\xa0", " ").strip()
+
+# invalid to use in a report ID
+def invalid_chars():
+  return ('/', '\\', ':', '*', '?', '"', '<', '>', '|', '\r', '\n')
+
+# a scraper can use this to slugify a report_id
+def slugify(report_id):
+  copy = report_id
+  for char in invalid_chars():
+    copy = copy.replace(char, "-")
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])
