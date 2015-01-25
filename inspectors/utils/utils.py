@@ -17,7 +17,7 @@ from . import admin
 
 # ugh
 WHITELIST_INSECURE_DOMAINS = (
-  "https://www.ignet.gov"
+  "https://www.ignet.gov",
 )
 
 
