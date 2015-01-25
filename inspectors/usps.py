@@ -127,9 +127,13 @@ def type_for(original_type):
     return None
 
 # get the last page number, from a page of search results
-# e.g. <li class="pager-item active last">158</li>
+# e.g. <li class="pager-item active last">of 158</li>
 def last_page_for(doc):
-  page = doc.select("li.pager-item.last")[0].text.replace("of ", "").strip()
+  pagers = doc.select("li.pager-item.last")
+  if len(pagers) == 0:
+    return 1
+
+  page = pagers[0].text.replace("of ", "").strip()
   if page and len(page) > 0:
     return int(page)
 
