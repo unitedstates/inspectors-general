@@ -83,6 +83,10 @@ def preprocess_report(report):
   if report.get("published_on") and (report.get('year') is None):
     report['year'] = year_from(report)
 
+  # wipe line breaks from URLs (yes, this happens)
+  if report.get("url"):
+    report['url'] = re.sub("[\n\r]*", "", report['url'])
+
   # if we have a URL, but no explicit file type, try to detect it
   if report.get("url") and (report.get("file_type") is None):
     parsed = urllib.parse.urlparse(report['url'])
