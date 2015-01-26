@@ -69,7 +69,8 @@ def run(options):
   results = doc.select("div.leadin")
   for result in results:
     report = semiannual_report_from(result, year_range)
-    inspector.save_report(report)
+    if report:
+      inspector.save_report(report)
 
 def report_type_from_topic(topic):
   if "Audit" in topic or topic in ["CAP Reviews", "CBOC Reports"]:
@@ -172,6 +173,10 @@ def semiannual_report_from(result, year_range):
     published_on = datetime.datetime.strptime(title.split("-")[-1].strip(), '%B %d, %Y')
   except ValueError:
     published_on = datetime.datetime.strptime(title.split(" to ")[-1].strip(), '%B %d, %Y')
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_id)
+    return
 
   report = {
     'inspector': 'va',
