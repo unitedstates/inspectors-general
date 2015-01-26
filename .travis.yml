@@ -2,6 +2,9 @@ language: python
 python:
   - "3.4"
 
+# use docker containers, faster
+sudo: false
+
 install:
   - pip install -r requirements.txt
   - pip install pyflakes
