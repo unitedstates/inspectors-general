@@ -196,7 +196,6 @@ class LibraryOfCongressScraper(object):
     # If the string is not a title but instead a published_on_text, this will
     # definitely fail, but it's no big deal to try.
     temp_id = generate_id(title)
-    print(temp_id)
     if temp_id in REPORT_ID_TO_EST_DATE:
      return REPORT_ID_TO_EST_DATE[temp_id]
 
