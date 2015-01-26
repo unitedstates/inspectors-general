@@ -49,7 +49,8 @@ def run(options):
   doc = BeautifulSoup(utils.download(PEER_REVIEWS_URL))
   result = doc.find("div", id='content').find("a", text=True)
   report = peer_review_from(result, year_range)
-  inspector.save_report(report)
+  if report:
+    inspector.save_report(report)
 
 def audit_report_from(result, landing_url, year, year_range):
   link = result.find("a")

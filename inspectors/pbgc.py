@@ -75,11 +75,11 @@ saved_report_urls = set()
 
 def report_from(result, report_type, year_range):
   if len(result.select("td")) > 0:
-    title = result.select("td")[0].text.strip()
+    title = inspector.sanitize(result.select("td")[0].text)
   else:
     return
 
-  if title in HEADER_ROW_TEXT:
+  if (not title) or (title in HEADER_ROW_TEXT):
     # Skip the header rows
     return
 

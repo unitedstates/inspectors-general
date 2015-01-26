@@ -58,11 +58,11 @@ def report_from(result, landing_url, report_type, year_range):
   if "contains sensitive information" in title:
     unreleased = True
     report_url = None
-    report_id = "-".join(title.split())[:50]
+    report_id = inspector.slugify("-".join(title.split())[:50])
   else:
     unreleased = False
     link = result.find("a")
-    report_id = link.text
+    report_id = inspector.slugify(link.text)
     report_url = urljoin(landing_url, link.get('href'))
     if landing_url == SEMIANNUAL_REPORTS_URL:
       if title.find("Transmittal Letter") != -1:

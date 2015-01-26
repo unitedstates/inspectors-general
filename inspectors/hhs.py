@@ -185,7 +185,8 @@ def run(options):
   if topics:
     topics = topics.split(",")
   else:
-    topics = TOPIC_TO_URL.keys()
+    topics = list(TOPIC_TO_URL.keys())
+    topics.sort()
 
   for topic in topics:
     extract_reports_for_topic(topic, year_range)
@@ -401,7 +402,7 @@ def report_from_landing_url(report_url):
     relative_url = doc.select("#leftContentInterior p.download a")[0]['href']
   except IndexError:
     try:
-      relative_url = doc.select("#leftContentInterior p a")[0]['href']
+      relative_url = doc.select("#leftContentInterior p a")[-1]['href']
     except IndexError:
       relative_url = None
 

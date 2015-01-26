@@ -90,6 +90,10 @@ def run(options):
 def report_from(result, report_type, year_range):
   link = result.find("a")
 
+  if not link:
+    logging.debug("Markup error, skipping: %s" % result)
+    return None
+
   report_url = urljoin(AUDIT_REPORTS_URL, link['href'])
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)

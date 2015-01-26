@@ -92,6 +92,7 @@ RE_NOT_AVAILABLE = re.compile('not available (?:for|of) viewing', re.I)
 RE_NOT_AVAILABLE_2 = re.compile('not publically available', re.I)
 RE_NOT_AVAILABLE_3 = re.compile('official use only', re.I)
 RE_NOT_AVAILABLE_4 = re.compile('to obtain a copy of this report please email', re.I)
+RE_WITHDRAWN = re.compile('report is temporarily unavailable', re.I)
 RE_CLASSIFIED = re.compile('report is classified', re.I)
 
 class EnergyScraper(object):
@@ -202,10 +203,15 @@ class EnergyScraper(object):
     if not summary:
       logging.info('\tno summary text found')
 
+    # sanitize now instead of later, to compare to regexes
+    else:
+      summary = inspector.sanitize(summary)
+
     if (summary and (RE_NOT_AVAILABLE.search(summary)
                      or RE_NOT_AVAILABLE_2.search(summary)
                      or RE_NOT_AVAILABLE_3.search(summary)
                      or RE_NOT_AVAILABLE_4.search(summary)
+                     or RE_WITHDRAWN.search(summary)
                      or RE_CLASSIFIED.search(summary))):
       unreleased = True
 
