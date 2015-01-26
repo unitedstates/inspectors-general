@@ -105,7 +105,7 @@ def download(url, destination=None, options=None):
           scraper.urlretrieve(url, destination, verify=False)
         else:
           scraper.urlretrieve(url, destination)
-      except (scrapelib.HTTPError, requests.exceptions.ConnectionError, requests.packages.urllib3.exceptions.MaxRetryError) as e:
+      except connection_errors() as e:
         log_http_error(e, url)
         return None
     else: # text
@@ -125,7 +125,7 @@ def download(url, destination=None, options=None):
         else:
           response = scraper.get(url)
 
-      except (scrapelib.HTTPError, requests.exceptions.ConnectionError, requests.packages.urllib3.exceptions.MaxRetryError) as e:
+      except connection_errors() as e:
         log_http_error(e, url)
         return None
 
@@ -146,6 +146,19 @@ def download(url, destination=None, options=None):
   else:
     # whether from disk or web, unescape HTML entities
     return unescape(body)
+
+def post(url, data=None, headers=None, **kwargs):
+  response = None
+  try:
+    response = scraper.post(url, data=data, headers=headers)
+  except connection_errors() as e:
+    log_http_error(e, url)
+    return None
+
+  return response
+
+def connection_errors():
+  return (scrapelib.HTTPError, requests.exceptions.ConnectionError, requests.packages.urllib3.exceptions.MaxRetryError)
 
 def log_http_error(e, url):
   # intentionally print instead of using logging,

@@ -49,12 +49,16 @@ def run(options):
       # Only add page= if page > 0
       data['page'] = page
 
-    response = utils.scraper.post(REPORTS_AJAX_URL,
+
+    response = utils.post(REPORTS_AJAX_URL,
         data=data,
         headers={
             "Content-Type": "application/x-www-form-urlencoded",
         },
     )
+    if not response:
+      raise Exception("Failed to fetch data from sba.gov.")
+
     page_html = response.json()[1]['data']
     doc = BeautifulSoup(page_html)
     results = doc.select("tr")
