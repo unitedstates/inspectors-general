@@ -77,7 +77,7 @@ def preprocess_report(report):
   for field in common_strings:
     value = report.get(field)
     if (value is not None):
-      report[field] = value.strip()
+      report[field] = sanitize(value)
 
   # if we have a date, but no explicit year, extract it
   if report.get("published_on") and (report.get('year') is None):
@@ -123,7 +123,7 @@ def validate_report(report):
       return "Summary URL is not valid: %s" % report.get("summary_url")
 
   # report_id can't have slashes, it'll mess up the directory structure
-  for character in "/\\:*?\"<>|\r\n":
+  for character in str.join("", invalid_chars()):
     if character in report["report_id"]:
       return "Invalid %s in report_id - find another way: %r" % (character, report["report_id"])
 
@@ -203,6 +203,21 @@ def check_uniqueness(inspector, report_id, report_year):
 def verify_uniqueness_finalize_summary():
   if _uniqueness_messages:
     admin.notify('\n'.join(_uniqueness_messages))
+
+# run over common string fields automatically
+def sanitize(string):
+  return string.replace("\xa0", " ").strip()
+
+# invalid to use in a report ID
+def invalid_chars():
+  return ('/', '\\', ':', '*', '?', '"', '<', '>', '|', '\r', '\n')
+
+# a scraper can use this to slugify a report_id
+def slugify(report_id):
+  copy = report_id
+  for char in invalid_chars():
+    copy = copy.replace(char, "-")
+  return copy
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])

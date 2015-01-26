@@ -120,20 +120,24 @@ def clean_text(text):
   return text.replace('\u200b', '').replace('\ufffd', ' ').replace('\xa0', ' ').strip()
 
 def audit_report_from(result, page_url, year_range):
-  published_on_text = clean_text(result.select("td")[1].text)
+  published_on_text = clean_text(result.select("td")[0].text)
 
   # this is the header row
   if published_on_text.strip() == "Date":
     return None
 
   date_formats = ['%m/%d/%Y', '%m/%d%Y']
+  published_on = None
   for date_format in date_formats:
     try:
       published_on = datetime.datetime.strptime(published_on_text, date_format)
     except ValueError:
       pass
 
-  report_summary = clean_text(result.select("td")[2].text)
+  if published_on is None:
+    raise Exception("No valid date found for this report: %s" % published_on_text)
+
+  report_summary = clean_text(result.select("td")[1].text)
   if not report_summary:
     # There is an extra row that we want to skip
     return
@@ -149,10 +153,12 @@ def audit_report_from(result, page_url, year_range):
     # There are two such annual reports from different years, append the year
     report_id = '%s %d' % (report_id, published_on.year)
 
+  agency_slug_text = result.select("th")[0].text
+
   if report_id in REPORT_AGENCY_MAP:
     agency_slug = REPORT_AGENCY_MAP[report_id]
   else:
-    agency_slug = clean_text(result.select("td")[0].text.split("&")[0]).lower()
+    agency_slug = clean_text(agency_slug_text.split("&")[0]).lower()
 
   if (report_id in UNRELEASED_REPORTS
     or "If you would like a copy of this report" in title
