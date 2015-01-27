@@ -18,32 +18,43 @@ archive = 1990
 # - There are some typos in report numbers and link URLS for audit reports
 #   between 1999 and 2001. See the comments in report_from() for details.
 
-AUDIT_REPORTS_URL = "http://www.usitc.gov/oig/audit_reports.htm"
+AUDIT_REPORTS_URL = "http://www.usitc.gov/oig/audit_reports.html"
 SEMIANNUAL_REPORTS_URL = "http://www.usitc.gov/oig/semiannual_reports.htm"
 PEER_REVIEWS_URL = "http://www.usitc.gov/oig/peer_reviews.htm"
 
 REPORT_URLS = {
   "audit": AUDIT_REPORTS_URL,
-  "semiannual_report": SEMIANNUAL_REPORTS_URL,
-  "peer_review": PEER_REVIEWS_URL,
+  # "semiannual_report": SEMIANNUAL_REPORTS_URL,
+  # "peer_review": PEER_REVIEWS_URL,
 }
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  for report_type, url in REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(url))
-    results = doc.select("div.text1 ul li")
+  doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
+
+  headers = doc.select("p.Ptitle1")
+  if not headers:
+    raise Exception("ITC scraper not working, no elements found.")
+
+  for header in headers:
+    year = int(header.text.strip())
+    results = header.findNextSibling("ul").select("li")
+
     for result in results:
-      report = report_from(result, url, report_type, year_range)
+      if not inspector.sanitize(result.text):
+        logging.debug("Skipping empty list item.")
+        continue
+
+      report = audit_report_from(year, result, AUDIT_REPORTS_URL, year_range)
       if report:
         inspector.save_report(report)
 
 global flag_inspection_report_01_01
 flag_inspection_report_01_01 = False
 
-def report_from(result, landing_url, report_type, year_range):
+def audit_report_from(year, result, landing_url, year_range):
   link = result.find("a", text=True)
   report_url = urljoin(landing_url, link.get('href'))
   report_id = "-".join(link.text.split()).replace(':', '')
@@ -113,7 +124,7 @@ def report_from(result, landing_url, report_type, year_range):
     'inspector_url': 'http://www.usitc.gov/oig/',
     'agency': 'itc',
     'agency_name': 'International Trade Commission',
-    'type': report_type,
+    'type': 'audit',
     'report_id': report_id,
     'url': report_url,
     'title': title,
