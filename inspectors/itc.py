@@ -32,30 +32,29 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  for report_type, url in REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(url))
+  doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
 
-    headers = doc.select("p.Ptitle1")
-    if not headers:
-      raise Exception("ITC scraper not working, no elements found.")
+  headers = doc.select("p.Ptitle1")
+  if not headers:
+    raise Exception("ITC scraper not working, no elements found.")
 
-    for header in headers:
-      year = int(header.text.strip())
-      results = header.findNextSibling("ul").select("li")
+  for header in headers:
+    year = int(header.text.strip())
+    results = header.findNextSibling("ul").select("li")
 
-      for result in results:
-        if not inspector.sanitize(result.text):
-          logging.debug("Skipping empty list item.")
-          continue
+    for result in results:
+      if not inspector.sanitize(result.text):
+        logging.debug("Skipping empty list item.")
+        continue
 
-        report = report_from(year, result, url, report_type, year_range)
-        if report:
-          inspector.save_report(report)
+      report = audit_report_from(year, result, AUDIT_REPORTS_URL, year_range)
+      if report:
+        inspector.save_report(report)
 
 global flag_inspection_report_01_01
 flag_inspection_report_01_01 = False
 
-def report_from(year, result, landing_url, report_type, year_range):
+def audit_report_from(year, result, landing_url, year_range):
   link = result.find("a", text=True)
   report_url = urljoin(landing_url, link.get('href'))
   report_id = "-".join(link.text.split()).replace(':', '')
@@ -125,7 +124,7 @@ def report_from(year, result, landing_url, report_type, year_range):
     'inspector_url': 'http://www.usitc.gov/oig/',
     'agency': 'itc',
     'agency_name': 'International Trade Commission',
-    'type': report_type,
+    'type': 'audit',
     'report_id': report_id,
     'url': report_url,
     'title': title,
