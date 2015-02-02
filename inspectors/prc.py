@@ -9,7 +9,6 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# http://www.prc.gov/prc-pages/about/offices/office.aspx?office=oig
 archive = 2007
 
 # options:
@@ -18,38 +17,23 @@ archive = 2007
 # Notes for IG's web team:
 #
 
-REPORTS_URL = "http://www.prc.gov/prc-pages/about/offices/reportOIG.aspx"
-
-# This is necessary for the page to return proper responses
-COOKIES = {
-  "ASP.NET_SessionId": "",
-}
+REPORTS_URL = "http://www.prc.gov/oig-reports?page="
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Find the number of pages to iterate
   doc = BeautifulSoup(utils.download(REPORTS_URL))
-  page_count_text = doc.select("div.AspNet-GridView-Pagination")[0].text
-  page_count = int(re.search('Page 1 of (\d+)', page_count_text).groups()[0])
+  page_count = int(doc.select("li.pager-last a")[0]['href'][-1:])
 
   # Iterate over those pages
-  for page in range(1, page_count + 1):
-    response = utils.scraper.post(REPORTS_URL,
-      data={
-          "__EVENTTARGET": "ctl00$ctl00$MainContent$NavTreeSubContent$sv$GridViewSummary",
-          "__EVENTARGUMENT": "Page${page_number}".format(page_number=page),
-      },
-      cookies=COOKIES,
-    )
-    doc = BeautifulSoup(response.content)
-    results = doc.select("div.AspNet-GridView table tr")
+  for page in range(0, page_count + 1):
+    response = utils.download(REPORTS_URL + str(page))
+    doc = BeautifulSoup(response)
+    results = doc.select(".reports")
     if not results:
       break
     for index, result in enumerate(results):
-      if not index:
-        # Skip the header row
-        continue
       report = report_from(result, year_range)
       if report:
         inspector.save_report(report)
@@ -68,12 +52,11 @@ def report_from(result, year_range):
   published_on_text = result.select("td")[0].text.strip()
   published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
 
-  title = result.select("td")[1].text
+  title = result.select(".views-field-title")[0].text.strip()
 
   report_type = type_from_title(title)
 
-  report_link = result.find("a")
-  report_url = urljoin(REPORTS_URL, report_link.get('href'))
+  report_url = result.select(".rolldownload a")[0]['href']
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
 
@@ -83,7 +66,7 @@ def report_from(result, year_range):
 
   report = {
     'inspector': "prc",
-    'inspector_url': "http://www.prc.gov/prc-pages/about/offices/office.aspx?office=oig",
+    'inspector_url': "http://www.prc.gov/offices/oig",
     'agency': "prc",
     'agency_name': "Postal Regulatory Commission",
     'type': report_type,
