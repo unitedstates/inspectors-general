@@ -20,7 +20,7 @@ archive = 1995
 # REPORT_PUBLISHED_MAPPING
 
 AUDITS_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/{}/"
-SEMIANNUAL_REPORTS_URL = "http://www.nrc.gov/insp-gen/pubs.html"
+SEMIANNUAL_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr1415/index.html"
 OTHER_REPORT_URLS = [
   ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0304/",
    "NUREG-BR-0304-"),
