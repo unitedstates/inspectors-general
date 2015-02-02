@@ -3,9 +3,6 @@
 import datetime
 import logging
 import os
-import re
-from urllib.parse import urljoin
-
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
