@@ -97,7 +97,7 @@ def report_from(result, reports_page, report_type, year_range):
   if report_type == "audit":
     landing_a = result.select(".cell3 a")[0]
     landing_url = urljoin(reports_page, landing_a['href'])
-    title = landing_a.text.strip()
+    long_title = landing_a.text.strip()
 
     # http://www.cncsoig.gov/news-entry/97-09 and
     # http://www.cncsoig.gov/news-entry/97-09-0 are duplicates of each other
@@ -105,12 +105,12 @@ def report_from(result, reports_page, report_type, year_range):
       return
 
     # PDF URL and summary are on the report's landing page
-    report_url, summary, title_from_landing = extract_from_release_page(landing_url)
+    report_url, summary, title = extract_from_release_page(landing_url)
     if not report_url:
       unreleased = True
 
     if not title:
-      title = title_from_landing
+      title = long_title
 
     # the report PDF URL can be pulled from the comments
     # we're ignoring this since we're going to the landing page anyhow.
