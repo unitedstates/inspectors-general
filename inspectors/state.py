@@ -7,7 +7,7 @@ import os
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# http://oig.state.gov/find-a-report
+# http://oig.state.gov/reports
 archive = 2004
 
 #
@@ -27,7 +27,7 @@ REPORT_TYPE_MAP = {
   "Strategic and Work Plans": "other",
 }
 
-BASE_URL = "http://oig.state.gov/find-a-report?page={page}"
+BASE_URL = "http://oig.state.gov/reports?page={page}"
 TESTIMONY_BASE_URL = "http://oig.state.gov/testimony-news?page={page}"
 ALL_PAGES = 1000
 
@@ -35,26 +35,26 @@ def run(options):
   year_range = inspector.year_range(options, archive)
   pages = options.get('pages', ALL_PAGES)
 
-  # for page in range(0, int(pages)):
-  #   logging.debug("## Downloading page %i" % page)
+  for page in range(0, int(pages)):
+    logging.debug("## Downloading page %i" % page)
 
-  #   url = BASE_URL.format(page=page)
-  #   results = extract_reports_for_page(url, page, year_range)
-  #   if not results:
-  #     break
+    url = BASE_URL.format(page=page)
+    results = extract_reports_for_page(url, page, year_range, listing_xpath="div.row.report-listings-copy")
+    if not results:
+      break
 
   for page in range(0, int(pages)):
     logging.debug("## Downloading testimony page %i" % page)
 
     url = TESTIMONY_BASE_URL.format(page=page)
-    results = extract_reports_for_page(url, page, year_range)
+    results = extract_reports_for_page(url, page, year_range, listing_xpath="div.row.report-listings-data")
     if not results:
       break
 
-def extract_reports_for_page(url, page_number, year_range):
+def extract_reports_for_page(url, page_number, year_range, listing_xpath):
   body = utils.download(url)
   doc = BeautifulSoup(body)
-  results = doc.select("div.row.report-listings-data")
+  results = doc.select(listing_xpath)
 
   if not results and not page_number:
     # No link on the first page, raise an error
@@ -104,7 +104,7 @@ def report_from(result, year_range):
 
   try:
     report_type_name = list(result.select("div.is-darker-grey div.row")[3].strings)[5].strip()
-    report_type = REPORT_TYPE_MAP[report_type_name]
+    report_type = REPORT_TYPE_MAP.get(report_type_name, "other")
   except IndexError:
     report_type = "testimony"
 
