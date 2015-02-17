@@ -120,7 +120,13 @@ def clean_text(text):
   return text.replace('\u200b', '').replace('\ufffd', ' ').replace('\xa0', ' ').strip()
 
 def audit_report_from(result, page_url, year_range):
-  published_on_text = clean_text(result.select("td")[0].text)
+  if not clean_text(result.text):
+    # Empty row
+    return
+
+  # Get all direct child nodes
+  children = list(result.find_all(True, recursive=False))
+  published_on_text = clean_text(children[1].text)
 
   # this is the header row
   if published_on_text.strip() == "Date":
@@ -137,7 +143,7 @@ def audit_report_from(result, page_url, year_range):
   if published_on is None:
     raise Exception("No valid date found for this report: %s" % published_on_text)
 
-  report_summary = clean_text(result.select("td")[1].text)
+  report_summary = clean_text(children[2].text)
   if not report_summary:
     # There is an extra row that we want to skip
     return
@@ -153,7 +159,7 @@ def audit_report_from(result, page_url, year_range):
     # There are two such annual reports from different years, append the year
     report_id = '%s %d' % (report_id, published_on.year)
 
-  agency_slug_text = result.select("th")[0].text
+  agency_slug_text = children[0].text
 
   if report_id in REPORT_AGENCY_MAP:
     agency_slug = REPORT_AGENCY_MAP[report_id]
