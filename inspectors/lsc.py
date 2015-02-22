@@ -50,7 +50,13 @@ def run(options):
 
   # Pull the audit reports
   for url, report_type in REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(url))
+    page_content = utils.download(url)
+
+    # This typo confuses BS4 and interferes with our selectors
+    page_content = page_content.replace('<h4>2015</h3>', '<h4>2015</h4>')
+
+    doc = BeautifulSoup(page_content)
+
     results = doc.select("blockquote > ul > a")
     if not results:
       results = doc.select("blockquote > ul > li > a")
