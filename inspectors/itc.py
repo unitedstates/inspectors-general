@@ -36,7 +36,7 @@ def run(options):
 
   headers = doc.select("p.Ptitle1")
   if not headers:
-    raise Exception("ITC scraper not working, no elements found.")
+    raise inspector.NoReportsFoundError("ITC")
 
   for header in headers:
     year = int(header.text.strip())

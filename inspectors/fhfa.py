@@ -42,8 +42,11 @@ def run(options):
     doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL.format(page=page)))
     results = doc.select("span.field-content")
     if not results:
-      # No more results, we must have hit the last page
-      break
+      if page == 0:
+        raise inspector.NoReportsFound("FHFA (audit reports)")
+      else:
+        # No more results, we must have hit the last page
+        break
 
     for result in results:
       report = report_from(result, year_range, report_type='audit')
@@ -56,6 +59,8 @@ def run(options):
     results = doc.select(".views-field")
     if not results:
       results = doc.select(".views-row")
+    if not results:
+      raise inspector.NoReportsFound("FHFA (%s)" % report_type)
     for result in results:
       report = report_from(result, year_range, report_type)
       if report:

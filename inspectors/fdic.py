@@ -34,6 +34,8 @@ def run(options):
   # Pull the reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))
   results = doc.find("table", {"cellpadding": "5"}).select("tr")
+  if not results:
+    raise inspector.NoReportsFoundError("FDIC")
   for index, result in enumerate(results):
     if index < 3 or not result.text.strip():
       # The first three rows are headers

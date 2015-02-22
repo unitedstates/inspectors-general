@@ -39,7 +39,7 @@ def run(options):
     if not results:
       results = doc.select("td.three-col-layout-middle div.ltext > table tr")
     if not results:
-      raise AssertionError("No report links found for %s" % url)
+      raise inspector.NoReportsFoundError("Government Printing Office (%s)" % url)
     for result in results:
       if (not result.text.strip() or
           result.find("th") or

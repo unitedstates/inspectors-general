@@ -32,6 +32,8 @@ def run(options):
   # Pull the general reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))
   results = doc.select("div#mainContent li.mainContenttext a")
+  if not results:
+    raise inspector.NoReportsFoundError("Farm Credit Administration (reports)")
   for result in results:
     report = report_from(result, REPORTS_URL, year_range)
     if report:
@@ -40,6 +42,8 @@ def run(options):
   # Pull the archive reports
   doc = BeautifulSoup(utils.download(REPORT_ARCHIVE_URL))
   results = doc.select("div#mainContent li.mainContenttext a") + doc.select("div#mainContent span.mainContenttext a")
+  if not results:
+    raise inspector.NoReportsFoundError("Farm Credit Administration (archive)")
   for result in results:
     if not result.text:
       continue
@@ -50,6 +54,8 @@ def run(options):
   # Pull the semiannual reports
   doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.select("div#mainContent li.mainContenttext a")
+  if not results:
+    raise inspector.NoReportsFoundError("Farm Credit Administration (semiannual reports)")
   for result in results:
     report = semiannual_report_from(result, year_range)
     if report:

@@ -32,6 +32,8 @@ def run(options):
     url = AUDIT_REPORTS_URL.format(year=year)
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.content")
+    if not results:
+      raise inspector.NoReportsFoundError("Tennessee Valley Authority (%d)" % year)
     for result in results:
       report = audit_report_from(result, url, year_range)
       if report:
@@ -40,6 +42,8 @@ def run(options):
   # Pull the semiannual reports
   doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.select("report")
+  if not results:
+    raise inspector.NoReportsFoundError("Tennessee Valley Authority (semiannual reports)")
   for result in results:
     report = semiannual_report_from(result, year_range)
     if report:

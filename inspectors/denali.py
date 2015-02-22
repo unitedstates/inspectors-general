@@ -72,6 +72,8 @@ def run(options):
 
   doc = BeautifulSoup(utils.download(REPORTS_URL))
   results = doc.select("#mainContent blockquote a")
+  if not results:
+    raise inspector.NoReportsFoundError("Denali Commission")
   for result in results:
     report = report_from(result, year_range)
     if report:

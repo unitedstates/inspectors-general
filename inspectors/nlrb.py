@@ -39,6 +39,8 @@ def run(options):
   for report_type, reports_url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(reports_url))
     results = doc.select("div.field-item")
+    if not results:
+      raise inspector.NoReportsFoundError("National Labor Relations Board (%s)" % report_type)
     for result in results:
       report = report_from(result, report_type, year_range)
       if report:
@@ -47,6 +49,8 @@ def run(options):
   # Pull the semiannual reports
   doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.select("div.field-item")
+  if not results:
+    raise inspector.NoReportsFoundError("National Labor Relations Board (semiannual reports)")
   for result in results:
     report = semiannual_report_from(result, year_range)
     if report:

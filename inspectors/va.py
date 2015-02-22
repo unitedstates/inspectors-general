@@ -58,7 +58,10 @@ def run(options):
     doc = beautifulsoup_from_url("{}?RS={}".format(REPORTS_URL, page))
     results = doc.select("div.leadin")
     if not results:
-      break
+      if page == 1:
+        raise inspector.NoReportsFoundError("VA (audit reports)")
+      else:
+        break
     for result in results:
       report = report_from(result, year_range)
       if report:
@@ -67,6 +70,8 @@ def run(options):
   # Pull the semiannual reports
   doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("div.leadin")
+  if not results:
+    raise inspector.NoReportsFoundError("VA (semiannual reports)")
   for result in results:
     report = semiannual_report_from(result, year_range)
     if report:

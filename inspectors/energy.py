@@ -110,6 +110,8 @@ class EnergyScraper(object):
         nodes = page.select('.field-items .node')
       if not nodes:
         nodes = page.select('.node')
+      if not nodes:
+        raise inspector.NoReportsFoundException("Department of Energy (%s)" % url)
 
       for node in nodes:
         report = self.report_from(node)

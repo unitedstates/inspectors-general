@@ -29,6 +29,8 @@ def run(options):
 
   doc = BeautifulSoup(utils.download(REPORTS_URL))
   results = doc.select("ul.summary-list li")
+  if not results:
+    raise inspector.NoReportsFoundError("CPSC")
   for result in results:
     report = report_from(result, year_range)
     if report:

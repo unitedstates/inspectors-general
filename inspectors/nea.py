@@ -44,6 +44,8 @@ def run(options):
   for report_type, url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.field-item li")
+    if not results:
+      raise inspector.NoReportsFoundError("National Endowment for the Arts (%s)" % report_type)
     for result in results:
       report = report_from(result, url, report_type, year_range)
 

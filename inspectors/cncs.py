@@ -63,7 +63,7 @@ def run(options):
           if report:
             inspector.save_report(report)
       elif report_type != "case":
-        raise AssertionError("No report links found for %s" % url)
+        raise inspector.NoReportsFoundError("CNCS (%s)" % url)
       # closed cases have broken pagination (p6, 7, 8 missing) so ignore
       else:
         pass

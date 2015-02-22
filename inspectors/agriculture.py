@@ -126,6 +126,8 @@ def run(options):
     agency_url = urljoin(AGENCY_BASE_URL, agency_path)
     doc = beautifulsoup_from_url(agency_url)
     results = doc.select("ul li")
+    if not results:
+      raise inspector.NoReportsFoundError("Department of Agriculture (%s)" % agency_slug)
     for result in results:
       report = report_from(result, agency_url, year_range,
         report_type='audit', agency_slug=agency_slug)
@@ -145,6 +147,8 @@ def run(options):
   for report_type, url in OTHER_REPORT_TYPES.items():
     doc = beautifulsoup_from_url(url)
     results = doc.select("ul li")
+    if not results:
+      raise inspector.NoReportsFoundError("Department of Agriculture (other reports)")
     for result in results:
       report = report_from(result, url, year_range, report_type=report_type)
       if report:

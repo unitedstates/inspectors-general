@@ -18,7 +18,8 @@ def run(options):
 
     maincontent = doc.select("div#CS_Element_eximpagemaincontent")[0]
     all_a = maincontent.find_all("a")
-
+    if not all_a:
+      raise inspector.NoReportsFoundException("Ex-Im Bank (%s)" % page_url)
     for a in all_a:
       a_text = str(a.text)
       if a_text.strip() == "":

@@ -48,7 +48,10 @@ def run(options):
       continue
     year_url = AUDIT_REPORTS_URL.format(year=year)
     doc = BeautifulSoup(utils.download(year_url))
-    for index, result in enumerate(doc.select("#main table tr")):
+    results = doc.select("#main table tr")
+    if not results:
+      raise inspector.NoReportsFoundError("Railroad Retirement Board (%d)" % year)
+    for index, result in enumerate(results):
       if not index:
         # Skip the header row
         continue

@@ -32,6 +32,8 @@ def run(options):
   for report_type, url in REPORT_URLS.items():
     doc = beautifulsoup_from_url(url)
     results = doc.find_all("table", {"border": 2})[0].select("tr")
+    if not results:
+      raise inspector.NoReportsFoundError("FCC (%s)" % report_type)
     for index, result in enumerate(results):
       if index < 2:
         # The first two rows are headers

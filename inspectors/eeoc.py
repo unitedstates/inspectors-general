@@ -33,6 +33,12 @@ def run(options):
   # Pull the reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))
   semiannual_report_results, other_results = doc.select("table tr")[1].select("td")
+
+  if not semiannual_report_results:
+    raise inspector.NoReportsFoundException("EEOC (semiannual reports)")
+  if not other_results:
+    raise inspector.NoReportsFoundException("EEOC (other reports)")
+
   merge_items(semiannual_report_results)
   merge_items(other_results)
 

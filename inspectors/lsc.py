@@ -58,6 +58,8 @@ def run(options):
       results = doc.select("blockquote > font > ul > a")
     if not results:
       results = doc.select("blockquote > a")
+    if not results:
+      raise inspector.NoReportsFoundError("Legal Services Corporation (%s)" % url)
     for result in results:
       report = report_from(result, url, report_type, year_range)
       if report:

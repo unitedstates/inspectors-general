@@ -68,7 +68,10 @@ def extract_reports_for_topic(topic, year_range):
 
   topic_page = beautifulsoup_from_url(topic_url)
   results = topic_page.select("div.row")
-
+  if not results:
+    temp_text = topic_page.select("div.item")[0].text
+    if temp_text.find("No items available for ") == -1:
+      raise inspector.NoReportsFoundError("Department of Commerce (%s)" % topic)
   for result in results:
     report = report_from(result, topic, topic_url, year_range)
     if report:

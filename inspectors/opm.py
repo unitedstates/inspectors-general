@@ -36,7 +36,8 @@ def run(options):
 
   doc = BeautifulSoup(body)
   results = doc.select("section")
-
+  if not results:
+    raise inspector.NoReportsFoundError("OPM")
   for result in results:
     try:
       year = int(result.get("title"))

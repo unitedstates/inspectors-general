@@ -40,6 +40,8 @@ def run(options):
   doc = BeautifulSoup(response)
 
   results = doc.select("div.report")
+  if not results:
+    raise inspector.NoReportsFoundError("Department of the Interior")
   for result in results:
     report = report_from(result, year_range)
     if report:

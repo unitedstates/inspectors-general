@@ -45,6 +45,8 @@ def run(options):
   # Pull the audit reports
   doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
   results = doc.select("td.text table tr")
+  if not results:
+    raise inspector.NoReportsFoundError("National Science Foundation (audit reports")
   for result in results:
     # ignore divider lines
     if result.select("img"): continue
@@ -56,6 +58,8 @@ def run(options):
   # Pull the semiannual reports
   doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.select("td.text table tr")
+  if not results:
+    raise inspector.NoReportsFoundError("National Science Foundation (semiannual reports)")
   for result in results:
     if not result.text.strip():
       continue
@@ -70,6 +74,8 @@ def run(options):
   )
   doc = BeautifulSoup(response.content)
   results = doc.select("td.text table tr")
+  if not results:
+    raise inspector.NoReportsFoundError("National Science Foundation (case reports)")
   for index, result in enumerate(results):
     if not index or not result.text.strip():  # Skip the header row and empty rows
       continue
@@ -80,6 +86,8 @@ def run(options):
   # Pull the testimony
   doc = BeautifulSoup(utils.download(TESTIMONY_REPORTS_URL))
   results = doc.select("td.text table tr")
+  if not results:
+    raise inspector.NoReportsFoundError("National Science Foundation (testimony)")
   for result in results:
     if not result.text.strip():
       continue

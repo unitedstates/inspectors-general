@@ -33,6 +33,8 @@ def run(options):
   # Pull the audit reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))
   results = doc.select("ul.text > ul > li")
+  if not results:
+    raise inspector.NoReportsFoundError("CFTC audit reports")
   for result in results:
     report = report_from(result, year_range)
     if report:
@@ -40,6 +42,8 @@ def run(options):
 
   # Pull the semiannual reports
   results = doc.select("ul.text td a")
+  if not results:
+    raise inspector.NoReportsFoundError("CFTC semiannual reports")
   for result in results:
     report = report_from(result, year_range, report_type="semiannual_report")
     if report:

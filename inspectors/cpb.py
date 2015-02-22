@@ -47,7 +47,7 @@ def run(options):
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div#content div#contentMain ul li.pdf")
     if not results:
-      raise AssertionError("No report links found for %s" % url)
+      raise inspector.NoReportsFoundError("CPB (%s)" % url)
     for result in results:
       if not result.find('a'):
         # Skip unlinked PDF's
