@@ -45,6 +45,8 @@ def run(options):
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.field-item li")
     if not results:
+      results = doc.select("div.field-item tr")
+    if not results:
       raise inspector.NoReportsFoundError("National Endowment for the Arts (%s)" % report_type)
     for result in results:
       report = report_from(result, url, report_type, year_range)
@@ -75,7 +77,10 @@ def report_from(result, landing_url, report_type, year_range):
     try:
       published_on_year = int(result.find_previous("h3").text.strip())
     except AttributeError:
-      published_on_year = int(re.search('(\d+)', title).group())
+      try:
+        published_on_year = int(result.find_previous("strong").text.strip())
+      except AttributeError:
+        published_on_year = int(re.search('(\d+)', title).group())
     published_on = datetime.datetime(published_on_year, 11, 1)
     estimated_date = True
 
