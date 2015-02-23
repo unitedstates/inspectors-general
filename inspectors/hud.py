@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -21,6 +22,7 @@ archive = 2001
 
 BASE_URL = 'http://www.hudoig.gov/reports-publications/results'
 BASE_REPORT_PAGE_URL = "http://www.hudoig.gov/"
+ARCHIVES_URL = "http://archives.hud.gov/offices/oig/reports/oigstate.cfm"
 ALL_PAGES = 1000
 
 # TODO: There is a set of reports which don't have pdfs linked for some reason
@@ -36,8 +38,37 @@ MISSING_REPORT_IDS = [
   "SAR 52",
 ]
 
+# These reports 404
+BAD_LINKS = [
+  'ig021803',
+  "ig031004",
+  'ig0701002',
+  'ig131004',
+  'ig131006',
+  "ig141805",
+  'ig231001',
+  'ig231002',
+  "ig231003",
+  'ig231004',
+  'ig331802',
+  'ig351010',
+  'ig351011',
+  'ig351012',
+  'ig351013',
+  'ig351016',
+  'ig351803',
+  'ig431006',
+  'ig451002',
+  'ig581004',
+  'ig631006',
+  "ig770001",
+  'ig851805',
+  "oig31020",
+  "oig31822",
+]
+
 UNRELEASED_TEXTS = [
-  "not appropriate for public disclosure",
+  "appropriate for public disclosure",
   "not available to the public",
   "not for public release",
 ]
@@ -161,6 +192,31 @@ def run(options):
         continue
     inspector.save_report(report)
 
+  archives_body = utils.download(ARCHIVES_URL)
+  archives_page = BeautifulSoup(archives_body)
+  state_links = archives_page.find("table", {"bgcolor": "CCCCCC"}).find_all("a")
+  if not state_links:
+    raise AssertionError("No state links found for %s" % ARCHIVES_URL)
+  for state_link in state_links:
+    relative_url = state_link.get('href')
+    state_name = state_link.text.strip()
+    state_url = urljoin(ARCHIVES_URL, relative_url)
+    if state_url in [
+      "http://archives.hud.gov/offices/oig/reports/pr-vi.cfm",
+      "http://archives.hud.gov/offices/oig/reports/vt.cfm",
+      ]:
+      # Puerto Rico/U.S. Virgin Islands is currently broken
+      continue
+    state_body = utils.download(state_url)
+    state_page = BeautifulSoup(state_body)
+    reports = state_page.select("font > h3")
+    if not reports:
+      raise AssertionError("No report links found for %s" % state_url)
+
+    for report in reports:
+      report = report_from_archive(report, state_name, state_url, year_range)
+      inspector.save_report(report)
+
   do_canned_reports(year_range)
 
 def type_from_report_type_text(report_type_text):
@@ -281,6 +337,54 @@ def report_from(report_row, year_range):
     report['missing'] = True
 
   return report
+
+def report_from_archive(report, state_name, landing_url, year_range):
+  report_link = report.find_previous("a")
+  relative_url = report_link.get('href')
+  report_url = urljoin(landing_url, relative_url)
+  report_filename = relative_url.split("/")[-1]
+  report_id = os.path.splitext(report_filename)[0]  # Strip off the extension
+  title = report.text.strip()
+  summary = report.find_next("p").text.strip()
+
+  DATE_REGEX = "(\w+) (\d+)\s?,\s?(\d+)"
+  try:
+    published_on_text_header = report_link.find_parent("p").text
+    published_on_text = "/".join(re.search(DATE_REGEX, published_on_text_header).groups())
+  except AttributeError:
+    try:
+      published_on_text_header = report_link.find_previous("br").previous_sibling
+      published_on_text = "/".join(re.search(DATE_REGEX, published_on_text_header).groups())
+    except (AttributeError, TypeError):
+      try:
+        published_on_text_header = report_link.find_previous("p").text
+        published_on_text = "/".join(re.search(DATE_REGEX, published_on_text_header).groups())
+      except AttributeError:
+        published_on_text_header = report_link.find_previous("p").find_previous("p").find_previous("p").text
+        published_on_text = "/".join(re.search(DATE_REGEX, published_on_text_header).groups())
+
+  published_on = datetime.datetime.strptime(published_on_text, '%B/%d/%Y')
+
+  report = {
+    'inspector': 'hud',
+    'inspector_url': 'http://www.hudoig.gov/',
+    'agency': 'hud',
+    'agency_name': 'Housing and Urban Development',
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+    'landing_url': landing_url,
+    'type': "audit",
+    'state': state_name,
+    'summary': summary,
+  }
+  if report_id in BAD_LINKS:
+    report['unreleased'] = True
+    report['missing'] = True
+    report['url'] = None
+  return report
+
 
 def url_for(year_range, page=1):
   start_year = year_range[0]
