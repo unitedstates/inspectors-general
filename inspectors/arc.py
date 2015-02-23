@@ -34,6 +34,8 @@ def run(options):
   for report_type, url in REPORT_TYPES.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("table p > a")
+    if not results:
+      raise inspector.NoReportsFoundError("ARC (%s)" % report_type)
     for result in results:
       report = report_from(result, url, report_type, year_range)
       if report:

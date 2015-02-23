@@ -326,3 +326,10 @@ def year_range(options, archive):
     year_range = list(range(this_year, this_year + 1))
 
   return year_range
+
+class NoReportsFoundError(AssertionError):
+  def __init__(self, value):
+    self.value = value
+
+  def __str__(self):
+    return "No reports were found for %s" % self.value

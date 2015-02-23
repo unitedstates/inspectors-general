@@ -64,6 +64,8 @@ def run(options):
   current_year = None
   index = BeautifulSoup(index_body)
   tables = index.select('table.style1')
+  if not tables:
+    raise inspector.NoReportsFoundException("EPA")
   for table in tables:
     trs = table.select('tr')
     for tr in trs:

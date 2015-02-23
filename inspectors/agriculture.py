@@ -126,6 +126,11 @@ def run(options):
     agency_url = urljoin(AGENCY_BASE_URL, agency_path)
     doc = beautifulsoup_from_url(agency_url)
     results = doc.select("ul li")
+    if not results:
+      results = [ancestor_tag_by_name(x, 'tr') for x in \
+        doc.select('img[src$="pdf-pic1.gif"]')]
+    if not results:
+      raise inspector.NoReportsFoundError("Department of Agriculture (%s)" % agency_slug)
     for result in results:
       report = report_from(result, agency_url, year_range,
         report_type='audit', agency_slug=agency_slug)
@@ -145,12 +150,18 @@ def run(options):
   for report_type, url in OTHER_REPORT_TYPES.items():
     doc = beautifulsoup_from_url(url)
     results = doc.select("ul li")
+    if not results:
+      raise inspector.NoReportsFoundError("Department of Agriculture (other reports)")
     for result in results:
       report = report_from(result, url, year_range, report_type=report_type)
       if report:
         inspector.save_report(report)
 
+DATE_FORMATS = ['%m/%d/%Y', '%m/%Y']
+
 def report_from(result, page_url, year_range, report_type, agency_slug="agriculture"):
+  published_on = None
+
   try:
     # Try to find the link with text first. Sometimes there are hidden links
     # (no text) that we want to ignore.
@@ -159,15 +170,26 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
     link = result.find_all("a")[0]
   report_url = urljoin(page_url, link.get('href').strip())
 
-  title = link.text.strip()
-  if title.endswith("(PDF)"):
-    title = title[:-5]
-  if title.endswith("(PDF), (Report No: 30601-01-HY, Size: 847,872 bytes)"):
-    title = title[:-52]
-  title = title.rstrip(" ")
-  title = title.replace("..", ".")
-  title = title.replace("  ", " ")
-  title = title.replace("REcovery", "Recovery")
+  if result.name == 'li':
+    title = link.text.strip()
+    if title.endswith("(PDF)"):
+      title = title[:-5]
+    if title.endswith("(PDF), (Report No: 30601-01-HY, Size: 847,872 bytes)"):
+      title = title[:-52]
+    title = title.rstrip(" ")
+    title = title.replace("..", ".")
+    title = title.replace("  ", " ")
+    title = title.replace("REcovery", "Recovery")
+  elif result.name == 'tr':
+    published_on_element = result.strong.extract()
+    published_on_text = published_on_element.text.strip().rstrip(":")
+    for date_format in DATE_FORMATS:
+      try:
+        published_on = datetime.datetime.strptime(published_on_text, date_format)
+      except ValueError:
+        pass
+    title = result.text
+    title = title[:title.find('(')].strip()
 
   # These entries on the IG page have the wrong URLs associated with them. The
   # correct URLs were retrieved from an earlier version of the page, via the
@@ -203,20 +225,20 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
 
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
-  else:
+  if not published_on:
     try:
       # This is for the investigation reports
       published_on = datetime.datetime.strptime(result.text.strip(), '%B %Y (PDF)')
       title = "Investigation Bulletins {}".format(result.text.strip())
     except ValueError:
-      published_on_text = result.text.split()[0].strip()
-
-      date_formats = ['%m/%d/%Y', '%m/%Y']
-      for date_format in date_formats:
-        try:
-          published_on = datetime.datetime.strptime(published_on_text, date_format)
-        except ValueError:
-          pass
+      pass
+  if not published_on:
+    published_on_text = result.text.split()[0].strip()
+    for date_format in DATE_FORMATS:
+      try:
+        published_on = datetime.datetime.strptime(published_on_text, date_format)
+      except ValueError:
+        pass
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -242,5 +264,10 @@ def beautifulsoup_from_url(url):
   body = utils.download(url)
   return BeautifulSoup(body)
 
+def ancestor_tag_by_name(element, name):
+  for parent in element.parents:
+    if parent.name == name:
+      return parent
+  return None
 
 utils.run(run) if (__name__ == "__main__") else None

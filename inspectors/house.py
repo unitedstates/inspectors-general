@@ -43,7 +43,7 @@ def run(options):
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.relatedContent ul.links li a")
     if not results:
-      raise AssertionError("No report links found for %s" % url)
+      raise inspector.NoReportsFoundError("House of Representatives (%s)" % url)
     for result in results:
       report = report_from(result, url, year_range)
       if report:

@@ -36,6 +36,8 @@ def run(options):
       continue
 
     results = doc.select("div.content table tr")
+    if not results:
+      raise inspector.NoReportsFoundError("NCUA (%d)" % year)
     for index, result in enumerate(results):
       if not index:
         # Skip the header row
@@ -47,6 +49,8 @@ def run(options):
   # Pull the FOIA reports
   doc = BeautifulSoup(utils.download(FOIA_REPORTS_URL))
   results = doc.select("div.content table tr")
+  if not results:
+    raise inspector.NoReportsFoundError("NCUA (FOIA)")
   for index, result in enumerate(results):
     if not index:
       # Skip the header row
@@ -58,6 +62,8 @@ def run(options):
   # Pull the semiannual reports
   doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.select("div.content a")
+  if not results:
+    raise inspector.NoReportsFoundError("NCUA (semiannual reports)")
   for result in results:
     report = semiannual_report_from(result, year_range)
     if report:

@@ -52,7 +52,8 @@ def run(options):
     max_page = last_page_for(doc)
 
     results = doc.select(".views-row")
-
+    if not results:
+      raise inspector.NoReportsFoundError("USPS")
     for result in results:
       report = report_from(result)
 

@@ -58,7 +58,7 @@ def extract_reports_for_page(url, page_number, year_range, listing_xpath):
 
   if not results and not page_number:
     # No link on the first page, raise an error
-    raise AssertionError("No report links found for %s" % url)
+    raise inspector.NoReportsFoundError("Department of State (%s)" % url)
 
   for result in results:
     report = report_from(result.parent, year_range)

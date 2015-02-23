@@ -39,6 +39,8 @@ def run(options):
         done = True
 
       results = doc.select("table.views-table > tbody > tr")
+      if not results:
+        raise inspector.NoReportsFoundError("Amtrak")
       for result in results:
         report = report_from(result)
         inspector.save_report(report)

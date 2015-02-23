@@ -70,6 +70,8 @@ def run(options):
     url = audit_url_for(year)
     doc = beautifulsoup_from_url(url)
     agency_tables = doc.find_all("table", {"border": 1})
+    if not agency_tables:
+      raise inspector.NoReportsFoundException("Department of Education (%d audit reports)" % year)
     for agency_table in agency_tables:
       results = agency_table.select("tr")
       for index, result in enumerate(results):
@@ -102,6 +104,8 @@ def run(options):
   for report_type, url in OTHER_REPORTS_URL.items():
     doc = beautifulsoup_from_url(url)
     results = doc.select("div.contentText ul li")
+    if not results:
+      raise inspector.NoReportsFoundException("Department of Education (%s)" % report_type)
     for result in results:
       report = report_from(result, url, report_type, year_range)
       if report:

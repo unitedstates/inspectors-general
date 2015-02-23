@@ -42,6 +42,8 @@ def run(options):
     year_url = AUDIT_REPORTS_URL.format(year=year)
     doc = BeautifulSoup(utils.download(year_url))
     results = doc.select("tr")
+    if not results:
+      raise inspector.NoReportsFoundError("Pension Benefit Guaranty Corporation (audit reports)")
     for result in results:
       report = report_from(result, report_type='audit', year_range=year_range)
       if report:
@@ -50,6 +52,8 @@ def run(options):
   # Pull the congressional requests
   doc = BeautifulSoup(utils.download(CONGRESSIONAL_REQUESTS_URL))
   results = doc.select("tr")
+  if not results:
+    raise inspector.NoReportsFoundError("Pension Benefit Guaranty Corporation (congressional requests)")
   for result in results:
     report = report_from(result, report_type='congress', year_range=year_range)
     if report:
@@ -58,6 +62,8 @@ def run(options):
   # Pull the semiannual reports
   doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results =  doc.select("div.holder a")
+  if not results:
+    raise inspector.NoReportsFoundError("Pension Benefit Guaranty Corporation (semiannual reports)")
   for result in results:
     report = semiannual_report_from(result, year_range)
     if report:
@@ -66,6 +72,8 @@ def run(options):
   # Pull the congressional testimony
   doc = BeautifulSoup(utils.download(CONGRESSIONAL_TESTIMONY_URL))
   results =  doc.select("div.holder a")
+  if not results:
+    raise inspector.NoReportsFoundError("Pension Benefit Guaranty Corporation (congressional testimony)")
   for result in results:
     report = testimony_report_from(result, year_range)
     if report:

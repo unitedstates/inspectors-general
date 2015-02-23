@@ -54,7 +54,8 @@ def run(options):
   # They have two separate uls for these reports. See note to the IG web team.
   audit_list2 = audit_header.find_next("ul").find_next("ul").select("li")
   results = audit_list1 + audit_list2
-
+  if not results:
+    raise inspector.NoReportsFoundError("FEC (audit reports)")
   for result in results:
     report = report_from(result, year_range, report_type='audit')
     if report:
@@ -63,7 +64,8 @@ def run(options):
   # Pull the inspection reports
   inspections_header = doc.find("a", attrs={"name": 'Inspection Reports'})
   results = inspections_header.find_next("ul").select("li")
-
+  if not results:
+    raise inspector.NoReportsFoundError("FEC (inspection reports)")
   for result in results:
     report = report_from(result, year_range, report_type='inspection')
     if report:
@@ -72,7 +74,8 @@ def run(options):
   # Pull the semiannual reports
   semiannual_header = doc.find("a", attrs={"name": 'Semiannual Reports'})
   results = semiannual_header.find_next("ul").select("li")
-
+  if not results:
+    raise inspector.NoReportsFoundError("FEC (semiannual reports)")
   for result in results:
     report = report_from(result, year_range, report_type='semiannual_report', title_prefix="Semiannual Report - ")
     if report:

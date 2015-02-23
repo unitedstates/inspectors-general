@@ -53,6 +53,8 @@ def run(options):
   # Pull the reports
   doc = BeautifulSoup(utils.download(REPORTS_URL))
   results = doc.select("li div li")
+  if not results:
+    raise inspector.NoReportsFoundError("Peace Corps")
   for result in results:
     report = report_from(result, year_range)
     if report:

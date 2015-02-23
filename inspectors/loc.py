@@ -99,13 +99,19 @@ class LibraryOfCongressScraper(object):
   def get_listed_reports(self, url):
     doc = BeautifulSoup(utils.download(url))
     article = doc.select('.article')[0]
-    for ul in article.find_all('ul'):
+    results = article.find_all('ul')
+    if not results:
+      raise inspector.NoReportsFoundError("Library of Congress (%s)" % url)
+    for ul in results:
       self.get_bare_reports(ul)
 
   def get_semiannual_reports_to_congress(self, doc):
     header = doc.find_all(text=re.compile('Semiannual Reports'))
     ul = header[0].parent.find_next_sibling()
-    for li in ul.find_all('li'):
+    results = ul.find_all('li')
+    if not results:
+      raise inspector.NoReportsFoundError("Library of Congress (semiannual reports)")
+    for li in results:
       link = li.find('a')
       report_url = urljoin(REPORTS_BY_YEAR_URL, link['href'])
       report_id = report_url.split('/')[-1].split('.')[0]

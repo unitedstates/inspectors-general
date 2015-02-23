@@ -49,7 +49,7 @@ def run(options):
     if not results:
       results = doc.select("div.field-item tr")
     if not results:
-      raise AssertionError("No report links found for %s" % url)
+      raise inspector.NoReportsFoundError("National Endowment for the Arts (%s)" % report_type)
     for result in results:
       report = report_from(result, url, report_type, year_range)
 
@@ -86,6 +86,7 @@ def report_from(result, landing_url, report_type, year_range):
         published_on_year = int(re.search('(\d+)', title).group())
       published_on = datetime.datetime(published_on_year, 11, 1)
       estimated_date = True
+
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
