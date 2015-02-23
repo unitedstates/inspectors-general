@@ -43,6 +43,10 @@ def crawl_index(base_url, options, is_meta_index=False):
       done = True
 
     results = doc.select("div#svPortal dl")
+    if not results and page == 1:
+      temp_text = doc.select("div#svPortal")[0].text.strip()
+      if temp_text != "There is currently no content available.":
+        raise inspector.NoReportsFoundError("Government Services Administration (%s)" % url)
     for result in results:
       if "moreResults" in result.get("class"):
         continue

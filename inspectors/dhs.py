@@ -42,6 +42,8 @@ def run(options):
     # accept only trs that look like body tr's (no 'align' attribute)
     #   note: HTML is very inconsistent. cannot rely on thead or tbody
     results = [x for x in results if x.get('align') is None]
+    if not results:
+      raise inspector.NoReportsFoundError("DHS (%s)" % component)
 
     count = 0
     for result in results:

@@ -39,7 +39,10 @@ def run(options):
       doc = BeautifulSoup(utils.download(url))
       results = doc.select("li.views-row")
       if not results:
-        break
+        if page == 0:
+          raise inspector.NoReportsFoundError("USAID (%s)" % report_type)
+        else:
+          break
 
       for result in results:
         report = report_from(result, url, report_type, year_range)
@@ -49,6 +52,8 @@ def run(options):
   # Pull the semiannual reports (no pagination)
   doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.select("li.views-row")
+  if not results:
+    raise inspector.NoReportsFoundError("USAID (semiannual reports)")
   for result in results:
     report = semiannual_report_from(result, year_range)
     if report:

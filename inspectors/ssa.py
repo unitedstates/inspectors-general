@@ -46,14 +46,20 @@ def run(options):
     for page in range(0, ALL_PAGES):
       reports_found = reports_from_page(AUDIT_REPORTS_URL, page, report_type, year_range, year)
       if not reports_found:
-        break
+        if page == 0:
+          raise inspector.NoReportsFoundError("Social Security Administration (%d)" % year)
+        else:
+          break
 
   # Pull the other reports
   for report_type, report_format in OTHER_REPORT_URLS.items():
     for page in range(0, ALL_PAGES):
       reports_found = reports_from_page(report_format, page, report_type, year_range)
       if not reports_found:
-        break
+        if page == 0:
+          raise inspector.NoReportsFoundError("Social Security Administration (%s)" % report_type)
+        else:
+          break
 
 def reports_from_page(url_format, page, report_type, year_range, year=''):
   url = url_format.format(page=page, year=year)

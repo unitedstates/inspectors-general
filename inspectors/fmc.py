@@ -46,6 +46,8 @@ def run(options):
   # Pull the audit reports
   doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
   results = doc.select("table tr")
+  if not results:
+    raise inspector.NoReportsFoundError("Federal Maritime Commission (audits)")
   for index, result in enumerate(results):
     if not index:
       # Skip the header row
@@ -64,7 +66,7 @@ def run(options):
       # Grab results other than first and last (header and extra links)
       results = doc.select("div.col-2-2 ul")[1:-1]
     if not results:
-      raise AssertionError("No report links found for %s" % audit_year_url)
+      raise inspector.NoReportsFoundError("Federal Maritime Commission (%s)" % audit_year_url)
     for index, result in enumerate(results):
       if not index:
         # Skip the header row
@@ -76,6 +78,8 @@ def run(options):
   # Pull the semiannual reports
   doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.select("div.col-2-2 p a") + doc.select("div.col-2-2 li a")
+  if not results:
+    raise inspector.NoReportsFoundError("Federal Maritime Commission (semiannual reports)")
   for result in results:
     report = report_from(result.parent, AUDIT_REPORTS_URL, report_type='semiannual_report', year_range=year_range)
     if report:

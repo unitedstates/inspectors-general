@@ -43,6 +43,8 @@ def run(options):
   # # Pull the RSS feed
   doc = BeautifulSoup(utils.download(RSS_URL))
   results = doc.select("item")
+  if not results:
+    raise inspector.NoReportsFoundError("Smithsonian (RSS)")
   for result in results:
     report = rss_report_from(result, year_range)
     if report:
@@ -51,6 +53,8 @@ def run(options):
   # # Pull the recent audit reports.
   doc = BeautifulSoup(utils.download(RECENT_AUDITS_URL))
   results = doc.select("div.block > a")
+  if not results:
+    raise inspector.NoReportsFoundError("Smithsonian (recent audit reports)")
   for result in results:
     report = report_from(result, year_range)
     if report:
@@ -59,6 +63,8 @@ def run(options):
   # Pull the archive audit reports
   doc = BeautifulSoup(utils.download(AUDIT_ARCHIVE_URL))
   results = doc.select("div.block a")
+  if not results:
+    raise inspector.NoReportsFoundError("Smithsonian (audit archive)")
   for result in results:
     report = report_from(result, year_range)
     if report:
@@ -67,6 +73,8 @@ def run(options):
   # Pull the other reports
   doc = BeautifulSoup(utils.download(OTHER_REPORTS_URl))
   results = doc.select("div.block > a")
+  if not results:
+    raise inspector.NoReportsFoundError("Smithsonian (other)")
   for result in results:
     report = report_from(result, year_range)
     if report:

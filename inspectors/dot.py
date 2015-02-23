@@ -80,8 +80,11 @@ def run(options):
       body = utils.download(year_url)
 
       doc = BeautifulSoup(body)
-      results = doc.select(".view-business-areas .views-row")
 
+      if not doc.select(".view-business-areas"):
+        raise inspector.NoReportsFoundError("DOT (%s)" % topic)
+
+      results = doc.select(".view-business-areas .views-row")
       for result in results:
         report = report_from(result, year_range, topic, options)
         if report:

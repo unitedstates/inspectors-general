@@ -42,6 +42,8 @@ def run(options):
   for report_type, report_url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(report_url))
     results = doc.select("item")
+    if not results:
+      raise inspector.NoReportsFoundError("SIGAR (%s)" % report_type)
     for result in results:
       report = report_from(result, report_url, report_type, year_range)
       if report:

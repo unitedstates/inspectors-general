@@ -47,7 +47,10 @@ def run(options):
       doc = beautifulsoup_from_url(year_url)
       results = doc.select("ol li")
       if not results:
-        break
+        if page_number == 0:
+          raise inspector.NoReportsFoundError("Department of Labor (%s)" % year_url)
+        else:
+          break
       for result in results:
         report = report_from(result, year_url)
         if report:
@@ -56,6 +59,8 @@ def run(options):
   # Pull the semiannual reports
   doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("p > a:nth-of-type(1)")
+  if not results:
+    raise inspector.NoReportsFoundError("Department of Labor (semiannal reports)")
   for result in results:
     report = semiannual_report_from(result, year_range)
     if report:

@@ -175,6 +175,8 @@ def run(options):
         results = [x for x in all_results.select("ul li")]
       except IndexError:
         results = doc.select("table ul li")
+    if not results:
+      raise inspector.NoReportsFoundError("SEC (%s)" % topic)
 
     # Sometimes multiple reports are listed under the same datetime element.
     # We store which published datetime we saw last so that the next report

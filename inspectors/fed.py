@@ -51,6 +51,8 @@ def run(options):
   # Pull the audit reports
   doc = beautifulsoup_from_url(REPORTS_URL)
   results = doc.select("#rounded-corner > tr")
+  if not results:
+    raise inspector.NoReportsFoundError("Federal Reserve (audit reports)")
   for result in results:
     report = report_from(result, year_range)
     if report:
@@ -59,6 +61,8 @@ def run(options):
   # Pull the semiannual reports
   doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("div.style-aside ul > li > a")
+  if not results:
+    raise inspector.NoReportsFoundError("Federal Reserve (semiannual reports)")
   for result in results:
     report_url = urljoin(BASE_PAGE_URL, result.get('href'))
     report = semiannual_report_from(report_url, year_range)

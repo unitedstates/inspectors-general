@@ -53,6 +53,8 @@ def run(options):
     url = AUDITS_REPORTS_URL.format(year)
     doc = BeautifulSoup(utils.download(url))
     results = doc.find("table", border="1").select("tr")
+    if not results:
+      raise inspector.NoReportsFoundError("Nuclear Regulatory Commission (%d)" % year)
     for index, result in enumerate(results):
       if not index:
         # Skip the header row
@@ -64,7 +66,10 @@ def run(options):
   # Pull the congressional testimony
   doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   semiannual_reports_table = doc.find("table", border="1")
-  for index, result in enumerate(semiannual_reports_table.select("tr")):
+  results = semiannual_reports_table.select("tr")
+  if not results:
+    raise inspector.NoReportsFoundError("Nuclear Regulatory Commission (congressional testimony)")
+  for index, result in enumerate(results):
     if index < 2:
       # Skip the first two header rows
       continue
@@ -76,6 +81,8 @@ def run(options):
   for reports_url, id_prefix in OTHER_REPORT_URLS:
     doc = BeautifulSoup(utils.download(reports_url))
     results = doc.find("table", border="1").select("tr")
+    if not results:
+      raise inspector.NoReportsFoundError("Nuclear Regulatory Commission (other)")
     for index, result in enumerate(results):
       if not index:
         # Skip the header row

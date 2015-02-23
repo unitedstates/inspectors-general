@@ -42,7 +42,7 @@ def run(options):
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.mainRegion p a")
     if not results:
-      raise AssertionError("No report links found for %s" % url)
+      raise inspector.NoReportsFoundError("EAC (%s)" % url)
     for result in results:
       report = report_from(result, url, report_type, year_range)
       if report:

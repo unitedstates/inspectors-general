@@ -29,7 +29,10 @@ def run(options):
     doc = BeautifulSoup(response)
     results = doc.select(".reports")
     if not results:
-      break
+      if page == 0:
+        raise inspector.NoReportsFoundError("Postal Regulatory Commission")
+      else:
+        break
     for index, result in enumerate(results):
       report = report_from(result, year_range)
       if report:

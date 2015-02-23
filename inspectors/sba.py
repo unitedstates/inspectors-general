@@ -63,7 +63,10 @@ def run(options):
     doc = BeautifulSoup(page_html)
     results = doc.select("tr")
     if not results:
-      break
+      if page == 1:
+        raise inspector.NoReportsFoundError("Small Business Admininstration")
+      else:
+        break
 
     for index, result in enumerate(results):
       if not index:

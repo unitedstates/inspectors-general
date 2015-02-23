@@ -134,9 +134,12 @@ def run(options):
 
     rows = index.select('div.views-row')
 
-    # If no more reports found, quit
     if not rows:
-      break
+      if page == 1:
+        raise inspector.NoReportsFoundError("HUD (url)")
+      else:
+        # If no more reports found, quit
+        break
 
     for row in rows:
       report = report_from(row, year_range)

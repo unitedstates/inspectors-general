@@ -31,6 +31,8 @@ def run(options):
     url = AUDITS_REPORTS_URL.format(str(year)[2:4])
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("tr")
+    if not results:
+      raise inspector.NoReportsFoundError("NASA (%d)" % year)
     for index, result in enumerate(results):
       if not index or not result.text.strip():
         # Skip the header row and any empty rows
@@ -42,6 +44,8 @@ def run(options):
   # Pull the other reports
   doc = BeautifulSoup(utils.download(OTHER_REPORT_URL))
   results = doc.select("#subContainer ul li")
+  if not results:
+    raise inspector.NoReportsFoundError("NASA (other)")
   for result in results:
     report = other_report_from(result, year_range)
     if report:

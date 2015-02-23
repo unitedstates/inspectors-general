@@ -33,6 +33,8 @@ def run(options):
   for report_type, url in REPORT_URLS.items():
     doc = BeautifulSoup(utils.download(url))
     results = doc.select("li.views-row")
+    if not results:
+      raise inspector.NoReportsFoundError("FTC (%s)" % report_type)
     for result in results:
       report = report_from(result, url, report_type, year_range)
       if report:

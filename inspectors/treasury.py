@@ -95,6 +95,8 @@ def run(options):
     results = []
     results.extend(doc.select("tr.ms-rteTableOddRow-default"))
     results.extend(doc.select("tr.ms-rteTableEvenRow-default"))
+    if not results:
+      raise inspector.NoReportsFoundError("Treasury (%d)" % year)
     for result in results:
       report = audit_report_from(result, url, year_range)
       if report:
@@ -103,6 +105,8 @@ def run(options):
   for report_type, url in OTHER_URLS.items():
     doc = beautifulsoup_from_url(url)
     results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p a")
+    if not results:
+      raise inspector.NoReportsFoundError("Treasury (%s)" % report_type)
     for result in results:
       report = report_from(result, url, report_type, year_range)
       if report:
@@ -110,6 +114,8 @@ def run(options):
 
   doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p > a")
+  if not results:
+    raise inspector.NoReportsFoundError("Treasury (semiannual reports)")
   for result in results:
     report = semiannual_report_from(result, SEMIANNUAL_REPORTS_URL, year_range)
     if report:

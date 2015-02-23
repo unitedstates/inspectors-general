@@ -27,6 +27,8 @@ def run(options):
   for reports_url in [REPORTS_URL, SEMIANNUAL_REPORTS_URL]:
     doc = beautifulsoup_from_url(reports_url)
     results = doc.select("div.listing")
+    if not results:
+      raise inspector.NoReportsFoundError("GAO (%s)" % reports_url)
     for result in results:
       report = report_from(result, year_range)
       if report:

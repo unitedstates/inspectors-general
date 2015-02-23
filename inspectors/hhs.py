@@ -226,6 +226,8 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
     results = doc.select("#leftContentInterior ul li")
   if not results:
     results = doc.select("#leftContentInterior > p > a")
+  if not results:
+    raise inspector.NoReportsFoundError("HHS (%s)" % subtopic_name)
   for result in results:
     if 'crossref' in result.parent.parent.attrs.get('class', []):
       continue
@@ -247,6 +249,9 @@ def extract_reports_for_oei(year_range):
     absolute_url = strip_url_fragment(absolute_url)
     letter_urls.add(absolute_url)
 
+  if not letter_urls:
+    raise inspector.NoReportsFoundError("HHS (OEI first pass)")
+
   all_results_links = {}
   all_results_unreleased = []
   for letter_url in letter_urls:
@@ -254,6 +259,8 @@ def extract_reports_for_oei(year_range):
     letter_doc = BeautifulSoup(letter_body)
 
     results = letter_doc.select("#leftContentInterior ul li")
+    if not results:
+      raise inspector.NoReportsFoundError("HHS (OEI %s)" % letter_url)
     for result in results:
       if 'crossref' in result.parent.parent.attrs.get('class', []):
         continue
@@ -515,6 +522,9 @@ def get_subtopic_map(topic_url):
     # Only add new URLs
     if absolute_url not in subtopic_map.values():
       subtopic_map[link.text] = absolute_url
+
+  if not subtopic_map:
+    raise inspector.NoReportsFoundError("OEI (subtopics)")
 
   return subtopic_map
 

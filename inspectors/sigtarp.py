@@ -32,7 +32,7 @@ def run(options):
     results =  doc.select("td.mainInner div.ms-WPBody li")
 
     if not results:
-      raise AssertionError("No results found for {}".format(report_url))
+      raise inspector.NoReportsFoundError("SIGTARP (%s)" % report_url)
 
     for result in results:
       report = report_from(result, report_type, year_range)
