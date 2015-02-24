@@ -45,6 +45,7 @@ AGENCY_SLUG_MAP = {
   "Office of Non-Governmental Organization Gateway Initiative": "ONOGI",
   "Office of Survivors Assistance": "OSA",
   "Office of Veterans Service Organizations Liaison": "OVSOL",
+  "Office of the Secretary": "OSVA",
 }
 
 MAX_ATTEMPTS = 5
