@@ -3,9 +3,10 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from utils import utils, inspector
 
 # http://www.oig.denali.gov/
@@ -17,61 +18,28 @@ archive = 2006
 # Notes for IG's web team:
 #   - many reports could use some OCRing, or re-upload in their original form.
 
-REPORTS_URL = "http://www.oig.denali.gov"
+REPORTS_URL = "http://oig.denali.gov"
 
-# a bunch of hardcoded dates for published dateless reports
 REPORT_PUBLISHED_MAPPING = {
-  "Buckland": datetime.datetime(2006, 9, 1), # img
-  "Chitina": datetime.datetime(2008, 10, 1), # img
-  "Gustavus": datetime.datetime(2013, 4, 5), # OCR
-  "Ketchikan": datetime.datetime(2010, 7, 1), # OCR
-  "Manokotak": datetime.datetime(2006, 9, 1), # img
-  "McGrath": datetime.datetime(2009, 9, 1), # img
-  "Nikiski": datetime.datetime(2008, 9, 1), # img
-  "Port Graham": datetime.datetime(2009, 9, 1), # img
-  "Red Devil": datetime.datetime(2007, 1, 1),# img
-  "Sterling Landing": datetime.datetime(2007, 1, 1), # img
-  "Stony River": datetime.datetime(2007, 1, 1), # img
-  "Takotna": datetime.datetime(2007, 1, 1), # img
-  "Tanacross": datetime.datetime(2009, 10, 1), # OCR
-  "Tenakee Springs": datetime.datetime(2006, 9, 1), # img
-  "Togiak": datetime.datetime(2009, 9, 1), # img
-  "Unalakleet": datetime.datetime(2007, 1, 1), # img
-  "Village Resume Project": datetime.datetime(2012, 2, 9), # OCR
-  "Selected Contracting Authority Issues": datetime.datetime(2012, 3, 19), # OCR
-  "Training event in 2009": datetime.datetime(2012, 6, 10), # OCR
-  "Emerging energy technology fund": datetime.datetime(2013, 4, 11), # OCR
-
-  "FY 2013, Second Half": datetime.datetime(2013, 10, 1), # OCR
-  "FY 2013, First Half": datetime.datetime(2013, 5, 1), # img
-  "FY 2012, Second Half": datetime.datetime(2012, 11, 1), # img
-  "FY 2012, First Half": datetime.datetime(2012, 5, 1), # OCR
-  "FY 2011, Second Half": datetime.datetime(2011, 11, 1), # img
-  "FY 2011, First Half": datetime.datetime(2011, 5, 1), # OCR
-  "FY 2010, Second Half": datetime.datetime(2010, 12, 1), # img
-  "FY 2009, Second Half & FY 2010, First Half": datetime.datetime(2010, 6, 1), # img
-  "FY 2009, First Half": datetime.datetime(2009, 5, 1), # img
-  "FY 2008, Second Half": datetime.datetime(2008, 11, 1), # img
-  "FY 2008, First Half": datetime.datetime(2008, 5, 1), # img
-  "FY 2007, Second Half": datetime.datetime(2007, 11, 1), # img
-  "FY 2007, First Half": datetime.datetime(2007, 5, 1), # img
-
-  "IG-PAR-2012": datetime.datetime(2012, 11, 1), # OCR
-  "IG-PAR-2011": datetime.datetime(2012, 1, 11), # OCR
-  "IG-PAR-2010": datetime.datetime(2011, 1, 11), # img
-  "IG-PAR-2007": datetime.datetime(2007, 11, 15), # img
-
-  # Other report types are not tracked -
-  #  The GAO comptroller decisions requested by IG are done by GAO
-  #  The Audits of agency's financial statements have excerpts by the IG,
-  #    that appear to already be present in the reports above.
+  "FY-14-Denali-Commission-Financial-Performance-Report": datetime.datetime(2014, 11, 26),
+  "FY-12-Denali-Commission-Financial-Report": datetime.datetime(2012, 11, 15),
+  "FY-11-Denali-Commission-Financial-Report": datetime.datetime(2011, 11, 22),
+  "FY-10-Denali-Commission-Financial-Performance-Report": datetime.datetime(2010, 11, 22),
 }
+
+DATE_RE = re.compile("(20[0-9][0-9]\\.[01][0-9])(?: *- *(.*))?")
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
   doc = BeautifulSoup(utils.download(REPORTS_URL))
-  results = doc.select("#mainContent blockquote a")
+
+  results = None
+  for section in doc.find_all("section"):
+    if section.h4 and section.h4.text.strip() == "Publications":
+      results = section.find_all("a")
+      break
+
   if not results:
     raise inspector.NoReportsFoundError("Denali Commission")
   for result in results:
@@ -80,15 +48,17 @@ def run(options):
       inspector.save_report(report)
 
 def report_from(result, year_range):
-
-  # ignore GAO decisions requested by IG, and other annual audits
-  header = result.parent.parent.find_previous_sibling("h4").text.strip().lower()
-  if header.startswith("gao comptroller"):
-    logging.debug("Skipping GAO comptroller report.");
-    return
-  elif header.startswith("annual audits of"):
-    logging.debug("Skipping annual audits, redundant content.")
-    return
+  # walk backwards through the doc to find the header title
+  for element in result.previous_elements:
+    if element and \
+        isinstance(element, Tag) and \
+        element.name == "span" and \
+        element.has_attr("class") and \
+        "collapseomatic" in element["class"]:
+      header = element.text.strip().lower()
+      break
+  else:
+    raise Exception("Couldn't find the header for %s" % result)
 
   if header.startswith("inspection"):
     category = "inspection"
@@ -101,13 +71,38 @@ def report_from(result, year_range):
   report_url = urljoin(REPORTS_URL, result['href'])
   title = result.text.strip()
 
-  if REPORT_PUBLISHED_MAPPING.get(title):
-    published_on = REPORT_PUBLISHED_MAPPING.get(title)
-  else:
+  # Normalize en-dashes to hyphens
+  title = title.replace('\u2013', '-')
+  # Normalize single quotes to straight single quotes
+  title = title.replace('\u2018', '\'').replace('\u2019', '\'')
+
+  # Each financial/performance report is linked twice, once for the IG's
+  # transmittal letter and independent auditor's report, and once for
+  # the IG's "Perspective on Management and Performance Challenges."
+  # Skip the first one and save the second
+  if "IG's Transmittal Letter and Independent Auditor's Report" in title \
+      and "(pages" in title:
+    return None
+  elif title == "Hotline Poster":
+    return None
+
+  published_on = REPORT_PUBLISHED_MAPPING.get(title)
+  if not published_on:
     published_on = REPORT_PUBLISHED_MAPPING.get(report_id)
 
   if not published_on:
-    raise Exception("Couldn't look up hardcoded report: %s, %s" % (title, report_id))
+    date_match = DATE_RE.match(title)
+    if date_match:
+      published_on = datetime.datetime.strptime(date_match.group(1), "%Y.%m")
+      if date_match.lastindex == 2:
+        title = date_match.group(2)
+      elif header.startswith("semiannual"):
+        title = published_on.strftime("Semiannual Report to Congress, %B %Y")
+      else:
+        raise Exception("No good title for %s" % report_id)
+
+  if not published_on:
+    raise Exception("Couldn't find date: %s, %s" % (title, report_id))
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
