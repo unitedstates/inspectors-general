@@ -94,6 +94,13 @@ def preprocess_report(report):
     if len(split) > 1:
       report['file_type'] = split[-1]
 
+ORD_A_LC = ord('a')
+ORD_Z_LC = ord('z')
+ORD_A_UC = ord('A')
+ORD_Z_UC = ord('Z')
+ORD_0 = ord('0')
+ORD_9 = ord('9')
+
 # Ensure required fields are present
 def validate_report(report):
   required = (
@@ -104,6 +111,18 @@ def validate_report(report):
     value = report.get(field)
     if (value is None) or value.strip() == "":
       return "Missing a required field: %s" % field
+
+    for character in report.get(field):
+      c = ord(character)
+      if ORD_A_LC <= c and c <= ORD_Z_LC:
+        break
+      if ORD_A_UC <= c and c <= ORD_Z_UC:
+        break
+      if ORD_0 <= c and c <= ORD_9:
+        break
+    else:
+      return "A required field doesn't contain any alphanumeric characters: " \
+        "%s, %s" % (field, repr(report.get(field)))
 
   # A URL is required, unless 'unreleased' is set to True.
   url = report.get("url")

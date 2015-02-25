@@ -82,8 +82,9 @@ def run(options):
 saved_report_urls = set()
 
 def report_from(result, report_type, year_range):
-  if len(result.select("td")) > 0:
-    title = inspector.sanitize(result.select("td")[0].text)
+  tds = result.select("td")
+  if len(tds) > 0:
+    title = inspector.sanitize(tds[0].text)
   else:
     return
 
@@ -91,11 +92,7 @@ def report_from(result, report_type, year_range):
     # Skip the header rows
     return
 
-  report_id = result.select("td")[1].text.replace("/", "-").replace(" ", "-")
-  if report_id == "N-A":
-    report_id = result.select("td")[0].text.replace("/", "-").replace(" ", "-")
-
-  published_on_text = result.select("td")[2].text
+  published_on_text = tds[2].text
   try:
     published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
   except ValueError:
@@ -122,6 +119,12 @@ def report_from(result, report_type, year_range):
     else:
       unreleased = True
       report_url = None
+
+  report_id = tds[1].text.strip().replace("/", "-").replace(" ", "-")
+  if report_id == "N-A":
+    report_id = tds[0].text.strip().replace("/", "-").replace(" ", "-")
+  if report_id == "":
+    report_id = os.path.splitext(os.path.basename(report_url))[0]
 
   if report_url:
     # OIG MAR-2012-10/PA-12-87 is posted under both Audits/Evaluations/MARs and
