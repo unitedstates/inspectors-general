@@ -106,6 +106,8 @@ LANDING_PAGE_BLACKLIST = [
   'http://www.dodig.mil/pubs/report_summary.cfm?id=%d' % n for n in (
     3936,
     3757,
+    3681,
+    3491,
     3461,
     3290,
     3148,
@@ -116,7 +118,9 @@ LANDING_PAGE_BLACKLIST = [
     2768,
     2756,
     2467,
+    2381,
     2215,
+    2189,
     1973,
     1899,
     1750,
