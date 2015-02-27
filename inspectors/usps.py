@@ -150,13 +150,16 @@ def last_page_for(doc):
 def url_for(options, page=1):
   year_range = inspector.year_range(options, archive)
 
-  url = "https://uspsoig.gov/document-library?"
+  url = "https://uspsoig.gov/document-library"
+
+  # hidden input, always the same
+  url += "?type=All"
 
   # there's always a first year, and it defaults to current year
   datetime_since = datetime(year=year_range[0], month=1, day=1)
 
-  # Expected date format: Monday, September 1, 2014
-  usps_formatted_datetime = datetime_since.strftime("%A, %B %d, %Y")
+  # Expected date format: 2015-02-26
+  usps_formatted_datetime = datetime_since.strftime("%Y-%m-%d")
   url += "&field_doc_date_value[value][date]=%s" % usps_formatted_datetime
 
   only = options.get('types')
