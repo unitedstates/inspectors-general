@@ -36,6 +36,7 @@ def run(options):
   # default to starting at page 1
   begin = int(options.get('begin', 1))
 
+  reports_seen = set()
   max_page = None
   for page in range(begin, (int(pages) + 1)):
     if max_page and (page > max_page):
@@ -63,7 +64,16 @@ def run(options):
         logging.warn("[%s] Skipping report, not in requested range." % report['report_id'])
         continue
 
+      # Check if we've seen the exact same report twice. This happens because
+      # the document library's sort algorithm is not stable. If two reports
+      # have the same date, they switch places randomly, so each page doesn't
+      # necessarily have the same reports each time you load it.
+      dedup_key = (report['title'], report['url'], report['published_on'])
+      if dedup_key in reports_seen:
+        continue
+
       inspector.save_report(report)
+      reports_seen.add(dedup_key)
 
 
 # extract fields from HTML, return dict
