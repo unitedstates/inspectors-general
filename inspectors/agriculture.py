@@ -167,7 +167,14 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
     # (no text) that we want to ignore.
     link = result.find_all("a", text=True)[0]
   except IndexError:
-    link = result.find_all("a")[0]
+    # If none of the links have text, try the first one with an image
+    for temp in result.find_all("a"):
+      if temp.img:
+        link = temp
+        break
+    # Fallback: pick the first link
+    else:
+      link = result.find_all("a")[0]
   report_url = urljoin(page_url, link.get('href').strip())
 
   if result.name == 'li':
