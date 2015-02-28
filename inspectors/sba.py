@@ -31,6 +31,22 @@ REPORT_PUBLISHED_MAPPING = {
   "ROM-11-03": datetime.datetime(2011, 3, 2),
 }
 
+# These landing pages have duplicated reports, so skip these and save the other
+DUPLICATE_LANDING_URLS = (
+  "https://www.sba.gov/content/rom10-13-memorandum-adequacy-procurement-staffing-and-oversight-contractors-supporting-procurement-function",
+  "https://www.sba.gov/content/advisory-memorandum-7-32",
+  "https://www.sba.gov/content/advisory-memorandum-4-11-sba%E2%80%99s-federal-agencies%E2%80%99-centralized-trail-balance-system-facts-da-0",
+  "https://www.sba.gov/content/advisory-memorandum-3-11-sba%E2%80%99s-federal-agencies%E2%80%99-centralized-trial-balance-systems-facts-d-1",
+  "https://www.sba.gov/content/advisory-memorandum-3-11-sba%E2%80%99s-federal-agencies%E2%80%99-centralized-trial-balance-systems-facts-d-2",
+  "https://www.sba.gov/oig/audit-report-2-33-audit-7j-management-and-technical-assistance-program-agreement-administration",
+  "https://www.sba.gov/content/advisory-memorandum-2-28-independent-evaluation-sba%E2%80%99s-information-security-program-0",
+  "https://www.sba.gov/content/advisory-memorandum-a1-05-sba%E2%80%99s-use-government-cars-and-hired-car-services-0",
+  "https://www.sba.gov/content/audit-report-1-18-independent-accountant%E2%80%99s-report-performance-audit-farmington-casualty-co-0",
+  "https://www.sba.gov/content/advisory-memorandum-01-04-01-results-management-challenges-working-group-discussions-0",
+  "https://www.sba.gov/content/audit-report-0-15-audit-sba%E2%80%99s-proposed-systems-development-methodology-0",
+  "https://www.sba.gov/content/audit-report-0-02-audit-sba%E2%80%99s-fy-1998-financial-statements-management-letter-0",
+)
+
 # This will actually get adjusted downwards on the fly, so pick a huge number.
 # There are 49 pages total as of 2014-08-12, so 1000 should be okay.
 ALL_PAGES = 1000
@@ -122,6 +138,9 @@ def report_from(result, year_range):
 
   landing_url = urljoin(BASE_REPORT_URL, result.find("a").get('href'))
 
+  if landing_url in DUPLICATE_LANDING_URLS:
+    return
+
   landing_body = utils.download(landing_url)
 
   if landing_body is None:
@@ -153,6 +172,11 @@ def report_from(result, year_range):
     report_filename_without_extension, extension = os.path.splitext(report_filename)
     report_filename_slug = "-".join(report_filename_without_extension.split())[:43]
     report_id = "{}-{}".format(published_on_text, report_filename_slug)
+
+  # This report is mislabeled on the landing page and in the PDF filename.
+  # If you open the PDF, the cover page says "Report No. 5-01."
+  if landing_url == "https://www.sba.gov/content/fiscal-year-2005-report-most-serious-management-and-performance-challenges-facing-small-business-administration":
+    report_id = "5-01"
 
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
