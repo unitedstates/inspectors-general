@@ -418,8 +418,12 @@ def report_from_landing_url(report_url):
     except IndexError:
       relative_url = None
 
+  if relative_url in BLACKLIST_REPORT_URLS:
+    raise Exception("Could not find report URL on %s" % report_url)
+
   if relative_url is not None:
     report_url = urljoin(report_url, relative_url)
+
   return report_url, published_on
 
 def clean_published_text(published_text):
