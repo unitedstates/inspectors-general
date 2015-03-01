@@ -191,8 +191,13 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
     # Remove the date and parenthetical metadata from the result, and save
     # the date for later. What's left will be the title.
     published_on_element = result.strong.extract()
-    result.em.extract()
-    title = result.text.strip()
+    if result.em:
+      while result.em:
+        result.em.extract()
+      title = result.text.strip()
+    else:
+      title = result.text
+      title = title[:title.find('(')].strip()
 
     published_on_text = published_on_element.text.strip().rstrip(":")
     for date_format in DATE_FORMATS:
