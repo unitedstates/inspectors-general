@@ -280,7 +280,13 @@ def extract_reports_for_oei(year_range):
         result.extract()
         all_results_unreleased.append([result, subtopic_name])
       else:
-        url = links[0].get("href")
+        url = urljoin(letter_url, links[0].get("href"))
+
+        # There are links to both the landing page and the PDF file of this
+        # report. Fix these to all use the landing page.
+        if url == "http://oig.hhs.gov/oei/reports/oei-01-08-00590.pdf":
+          url = url.replace(".pdf", ".asp")
+
         if url not in all_results_links:
           result.extract()
           all_results_links[url] = [result, subtopic_name]
