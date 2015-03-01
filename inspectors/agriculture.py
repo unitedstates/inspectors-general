@@ -188,15 +188,18 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
     title = title.replace("  ", " ")
     title = title.replace("REcovery", "Recovery")
   elif result.name == 'tr':
+    # Remove the date and parenthetical metadata from the result, and save
+    # the date for later. What's left will be the title.
     published_on_element = result.strong.extract()
+    result.em.extract()
+    title = result.text.strip()
+
     published_on_text = published_on_element.text.strip().rstrip(":")
     for date_format in DATE_FORMATS:
       try:
         published_on = datetime.datetime.strptime(published_on_text, date_format)
       except ValueError:
         pass
-    title = result.text
-    title = title[:title.find('(')].strip()
 
   # These entries on the IG page have the wrong URLs associated with them. The
   # correct URLs were retrieved from an earlier version of the page, via the
