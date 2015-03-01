@@ -179,14 +179,6 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
 
   if result.name == 'li':
     title = link.text.strip()
-    if title.endswith("(PDF)"):
-      title = title[:-5]
-    if title.endswith("(PDF), (Report No: 30601-01-HY, Size: 847,872 bytes)"):
-      title = title[:-52]
-    title = title.rstrip(" ")
-    title = title.replace("..", ".")
-    title = title.replace("  ", " ")
-    title = title.replace("REcovery", "Recovery")
   elif result.name == 'tr':
     # Remove the date and parenthetical metadata from the result, and save
     # the date for later. What's left will be the title.
@@ -205,6 +197,20 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
         published_on = datetime.datetime.strptime(published_on_text, date_format)
       except ValueError:
         pass
+
+  # Normalize titles
+  title = title.rstrip(",")
+  if title.endswith("(PDF)"):
+    title = title[:-5]
+  if title.endswith("(PDF), (Report No: 30601-01-HY, Size: 847,872 bytes)"):
+    title = title[:-52]
+  title = title.rstrip(" ")
+  title = title.replace("..", ".")
+  title = title.replace("  ", " ")
+  title = title.replace("REcovery", "Recovery")
+  title = title.replace("Directy ", "Direct ")
+  if title == title.upper():
+    title = title.title()
 
   # These entries on the IG page have the wrong URLs associated with them. The
   # correct URLs were retrieved from an earlier version of the page, via the
