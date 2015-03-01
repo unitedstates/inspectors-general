@@ -398,10 +398,21 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
     result['subtopic'] = subtopic
   return result
 
+def filter_links(link_list):
+  href_list = [element.get('href') for element in link_list]
+  return [href for href in href_list \
+      if href and href not in BLACKLIST_REPORT_URLS and \
+      not href.startswith("mailto:")]
+
 def report_from_landing_url(report_url):
   doc = beautifulsoup_from_url(report_url)
   if not doc:
     raise Exception("Failure fetching report landing URL: %s" % report_url)
+
+  # Throw away the "Related Content" box, if there is one
+  related = doc.find(id="related")
+  if related:
+    related.extract()
 
   possible_tags = (
     doc.select("h1") +
@@ -416,16 +427,16 @@ def report_from_landing_url(report_url):
     if published_on:
       break
 
-  try:
-    relative_url = doc.select("#leftContentInterior p.download a")[0]['href']
-  except IndexError:
-    try:
-      relative_url = doc.select("#leftContentInterior p a")[-1]['href']
-    except IndexError:
-      relative_url = None
+  url_list = filter_links(doc.select("#leftContentInterior p.download a"))
+  if not url_list:
+    url_list = filter_links(doc.select("#leftContentInterior p a"))
+  if len(url_list) > 1:
+    raise Exception("Found multiple links on %s:\n%s" % (report_url, url_list))
 
-  if relative_url in BLACKLIST_REPORT_URLS:
-    raise Exception("Could not find report URL on %s" % report_url)
+  if url_list:
+    relative_url = url_list[0]
+  else:
+    relative_url = None
 
   if relative_url is not None:
     report_url = urljoin(report_url, relative_url)
