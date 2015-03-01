@@ -352,6 +352,11 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
+  # This report is listed twice, once with the wrong date
+  if published_on and published_on.year == 2012 and published_on.month == 1 \
+      and published_on.date == 12 and report_id == "20901002":
+    return
+
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
   else:
