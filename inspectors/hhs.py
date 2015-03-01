@@ -155,6 +155,27 @@ REPORT_PUBLISHED_MAPPING = {
 
   # This has an incorrect datetime (04-23-3012)
   '91102005': datetime.datetime(2012, 4, 23),
+
+  # See OEI_COMBINED_LANDING_PAGES below, we are skipping parsing the landing
+  # pages for these reports for now
+  'oei-09-08-00580': datetime.datetime(2011, 9, 30),
+  'oei-09-08-00581': datetime.datetime(2011, 9, 30),
+  'oei-05-09-00560': datetime.datetime(2011, 8, 29),
+  'oei-05-09-00561': datetime.datetime(2011, 8, 29),
+}
+
+# This manually entered data is used to skip landing pages that hold more than
+# one report. We use the correct PDF link for each, which makes deduplication
+# easier.
+OEI_COMBINED_LANDING_PAGES = {
+  "http://oig.hhs.gov/oei/reports/oei-09-08-00580-00581.asp": {
+    "Access to Mental Health Services at Indian Health Service and Tribal Facilities": "http://oig.hhs.gov/oei/reports/oei-09-08-00580.pdf",
+    "Access to Kidney Dialysis Services at Indian Health Service and Tribal Facilities": "http://oig.hhs.gov/oei/reports/oei-09-08-00581.pdf"
+  },
+  "http://oig.hhs.gov/oei/reports/oei-05-09-00560-00561.asp": {
+    "Miami Independent Diagnostic Testing Facilities' Compliance with Medicare Standards": "http://oig.hhs.gov/oei/reports/oei-05-09-00560.pdf",
+    "Los Angeles Independent Diagnostic Testing Facilities' Compliance with Medicare Standards": "http://oig.hhs.gov/oei/reports/oei-05-09-00561.pdf"
+  },
 }
 
 BLACKLIST_TITLES = [
@@ -281,11 +302,17 @@ def extract_reports_for_oei(year_range):
         all_results_unreleased.append([result, subtopic_name])
       else:
         url = urljoin(letter_url, links[0].get("href"))
+        link_text = links[0].text
 
         # There are links to both the landing page and the PDF file of this
         # report. Fix these to all use the landing page.
         if url == "http://oig.hhs.gov/oei/reports/oei-01-08-00590.pdf":
           url = url.replace(".pdf", ".asp")
+
+        # These landing pages are actually for two different reports, use the
+        # PDF URLs here so they don't get merged together
+        if url in OEI_COMBINED_LANDING_PAGES:
+          url = OEI_COMBINED_LANDING_PAGES[url][link_text]
 
         if url not in all_results_links:
           result.extract()
@@ -322,8 +349,11 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   if not strip_url_fragment(result_link['href']):
     return
 
-  report_url = urljoin(subtopic_url, result_link['href']).strip()
+  title = result_link.text.strip()
+  if title in BLACKLIST_TITLES:
+    return
 
+  report_url = urljoin(subtopic_url, result_link['href']).strip()
 
   if report_url in REPORT_URL_MAPPING:
     report_url = REPORT_URL_MAPPING[report_url]
@@ -336,15 +366,15 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   if report_url in BLACKLIST_REPORT_URLS:
     return
 
+  if report_url in OEI_COMBINED_LANDING_PAGES:
+    report_url = OEI_COMBINED_LANDING_PAGES[report_url][title]
+
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
 
   if report_filename == "11302505.pdf":
     report_id = report_id + "_early_alert"
 
-  title = result_link.text.strip()
-  if title in BLACKLIST_TITLES:
-    return
 
   # Try a quick check from the listing page to see if we can bail out based on
   # the year
