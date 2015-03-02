@@ -585,7 +585,10 @@ def get_subtopic_map(topic_url):
 
     # Only add new URLs
     if absolute_url not in subtopic_map.values():
-      subtopic_map[link.text] = absolute_url
+      while link.br:
+        link.br.replace_with(" ")
+      subtopic_name = link.text.replace("  ", " ").strip()
+      subtopic_map[subtopic_name] = absolute_url
 
   if not subtopic_map:
     raise inspector.NoReportsFoundError("OEI (subtopics)")
