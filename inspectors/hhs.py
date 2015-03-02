@@ -162,6 +162,9 @@ REPORT_PUBLISHED_MAPPING = {
   'oei-09-08-00581': datetime.datetime(2011, 9, 30),
   'oei-05-09-00560': datetime.datetime(2011, 8, 29),
   'oei-05-09-00561': datetime.datetime(2011, 8, 29),
+
+  # This has the right date in one place and the wrong date in another
+  'oei-07-91-01470': datetime.datetime(1992, 4, 1),
 }
 
 # This manually entered data is used to skip landing pages that hold more than
@@ -308,6 +311,11 @@ def extract_reports_for_oei(year_range):
         # report. Fix these to all use the landing page.
         if url == "http://oig.hhs.gov/oei/reports/oei-01-08-00590.pdf":
           url = url.replace(".pdf", ".asp")
+
+        # See the notes at the top of this file, this is the wrong link
+        if link_text == "Personnel Suitability and Security" and \
+            url == "http://oig.hhs.gov/oei/reports/oai-07-86-00079.pdf":
+          continue
 
         # These landing pages are actually for two different reports, use the
         # PDF URLs here so they don't get merged together
