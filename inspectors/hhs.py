@@ -217,6 +217,8 @@ def run(options):
     if topic in TOPIC_TO_ARCHIVE_URL:
       extract_reports_for_topic(topic, year_range, archives=True)
 
+  deduplicate_finalize()
+
 def extract_reports_for_topic(topic, year_range, archives=False):
   if topic == "OE":
     extract_reports_for_oei(year_range)
@@ -259,7 +261,7 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
       continue
     report = report_from(result, year_range, topic_name, subtopic_url, subtopic_name)
     if report:
-      inspector.save_report(report)
+      deduplicate_save_report(report)
 
 def extract_reports_for_oei(year_range):
   topic_name = TOPIC_NAMES["OE"]
@@ -336,7 +338,7 @@ def extract_reports_for_oei(year_range):
   for result, subtopic_name in itertools.chain(all_results_links.values(), all_results_unreleased):
     report = report_from(result, year_range, topic_name, subtopic_url, subtopic_name)
     if report:
-      inspector.save_report(report)
+      deduplicate_save_report(report)
 
 def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   # Ignore links to other subsections
@@ -611,5 +613,25 @@ def beautifulsoup_from_url(url):
 def strip_url_fragment(url):
   scheme, netloc, path, params, query, fragment = urlparse(url)
   return urlunparse((scheme, netloc, path, params, query, ""))
+
+_report_storage = {}
+def deduplicate_save_report(report):
+  global _report_storage
+  key = (report['title'], report['url'], report['published_on'])
+  if key in _report_storage:
+    if report['topic'] not in _report_storage[key]['topic']:
+      _report_storage[key]['topic'] = _report_storage[key]['topic'] + ", " + \
+          report['topic']
+    if report['subtopic'] not in _report_storage[key]['subtopic']:
+      _report_storage[key]['subtopic'] = _report_storage[key]['subtopic'] + \
+          ", " + report['subtopic']
+  else:
+    _report_storage[key] = report
+
+def deduplicate_finalize():
+  global _report_storage
+  for report in _report_storage.values():
+    inspector.save_report(report)
+  _report_storage = {}
 
 utils.run(run) if (__name__ == "__main__") else None
