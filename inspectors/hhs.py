@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 import datetime
+import itertools
 import logging
 import os
+import re
 from urllib.parse import urljoin, urlparse, urlunparse
-import itertools
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -197,8 +198,48 @@ BLACKLIST_REPORT_URLS = [
   'http://oig.hhs.gov/oas/reports/region5/50800067.asp',
 
   #press release, format is completely inconsistent with everything else
-  'http://oig.hhs.gov/newsroom/news-releases/2014/sar14fall.asp'
+  'http://oig.hhs.gov/newsroom/news-releases/2014/sar14fall.asp',
+
+  # Duplicate report, uploaded in two regions
+  'http://oig.hhs.gov/oas/reports/region1/100300001.htm',
 ]
+
+TITLE_NORMALIZATION = {
+  "ReportingAbuses of Persons with Disabilities":
+    "Reporting Abuses of Persons with Disabilities",
+  "Officeof Inspector General's Partnership Plan - New York StateComptroller Report on Controlling Medicaid Paymentsfor School and Preschool Supportive Health Services":
+    "Office of Inspector General's Partnership Plan - New York State Comptroller Report on Controlling Medicaid Payments for School and Preschool Supportive Health Services",
+  "OIG Partnership Plan: Drug Delivery System for Montana's Medicaid Program":
+    "Office of Inspector General's Partnership Plan: Drug Delivery System for Montana's Medicaid Program",
+  "Partnership Audit of Medicaid Paymentsfor Oxygen Related Durable Medical Equipment and Supplies - January 1, 1998 through December 31, 2000 Kentucky Department for Medicaid Services, Frankfort, Kentucky":
+    "Partnership Audit of Medicaid Payments for Oxygen Related Durable Medical Equipment and Supplies - January 1, 1998 through December 31, 2000 Kentucky Department for Medicaid Services, Frankfort, Kentucky",
+  "Partnership Audit of Medicaid Paymentsfor Oxygen Related Durable Medical Equipment and Supplies - January 1, 1998 through December31, 2000 Kentucky Department for Medicaid Services, Frankfort, Kentucky":
+    "Partnership Audit of Medicaid Payments for Oxygen Related Durable Medical Equipment and Supplies - January 1, 1998 through December 31, 2000 Kentucky Department for Medicaid Services, Frankfort, Kentucky",
+  "OIG Partnership Plan: Medicaid Payments for Clinical Laboratory Tests in Eight States":
+    "Office of Inspector General's Partnership Plan: Medicaid Payments for Clinical Laboratory Tests in Eight States",
+  "OIG Partnership Plan: Montana Legislative Auditor's Office Report on Medicaid Expenditures for Durable Medical Equipment":
+    "Office of Inspector General's Partnership Plan: Montana Legislative Auditor's Office Report on Medicaid Expenditures for Durable Medical Equipment",
+  "OIG Partnership Plan: Transportation Services for Montana's Medicaid Program":
+    "Office of Inspector General's Partnership Plan: Transportation Services for Montana's Medicaid Program",
+  "Office of Inspector General's Partnership Plan-State of Montana's Medicaid Third Party Liability Program":
+    "Office of Inspector General's Partnership Plan - State of Montana's Medicaid Third Party Liability Program",
+  "Review of the Food and Drug Administration's Processing of a new Drug Application for Therafectin":
+    "Review of the Food and Drug Administration's Processing of a New Drug Application for Therafectin",
+  "OIG Partnership Plan: Medicaid Payments for Clinical Laboratory Tests in 14 States":
+    "Office of Inspector General's Partnership Plan: Medicaid Payments for Clinical Laboratory Tests in 14 States",
+  "OIG Partnership Plan: Review of the North Carolina Division of Medical Assistance's Reimbursement for Clinical Laboratory Services Under the Medicaid Program":
+    "Office of Inspector General's Partnership Plan - Review of the North Carolina Division of Medical Assistance's Reimbursement for Clinical Laboratory Services Under the Medicaid Program",
+  "Officeof Inspector General's Partnership Efforts - Texas StateAuditor's Office Report on the Department of Protectiveand Regulatory Services' Administration of Foster CareContracts":
+    "Office of Inspector General's Partnership Efforts - Texas State Auditor's Office Report on the Department of Protective and Regulatory Services' Administration of Foster Care Contracts",
+  "Officeof Inspector General Partnership with the State of Ohio,Office of the Auditor's Report on Review of MedicaidProvider Reimbursement Made to Crest TransportationService":
+    "Office of Inspector General Partnership with the State of Ohio, Office of the Auditor's Report on Review of Medicaid Provider Reimbursement Made to Crest Transportation Service",
+  "OIG Partnership Plan: Utah State Auditor's Report on Clinical Laboratory Services":
+    "Office of Inspector General's Partnership Plan: Utah State Auditor's Report on Clinical Laboratory Services",
+  "Auditof National Association of Families and Addiction ResearchEducation":
+    "Audit of National Association of Families and Addiction Research Education (NAFARE) Chicago, Illinois - Contract No. 277-94-3009 and Grant No. UHSP08041,",
+  "OIG Partnership Plan - Outpatient Claims for California's Medicaid Program":
+    "Office of Inspector General's Partnership Plan: Outpatient Claims for California's Medicaid Program",
+}
 
 BASE_URL = "http://oig.hhs.gov"
 
@@ -359,7 +400,10 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   if not strip_url_fragment(result_link['href']):
     return
 
-  title = result_link.text.strip()
+  title = re.sub('\s+', ' ', result_link.text).strip()
+  if title in TITLE_NORMALIZATION:
+    title = TITLE_NORMALIZATION[title]
+
   if title in BLACKLIST_TITLES:
     return
 
@@ -622,9 +666,13 @@ def deduplicate_save_report(report):
     if report['topic'] not in _report_storage[key]['topic']:
       _report_storage[key]['topic'] = _report_storage[key]['topic'] + ", " + \
           report['topic']
-    if report['subtopic'] not in _report_storage[key]['subtopic']:
-      _report_storage[key]['subtopic'] = _report_storage[key]['subtopic'] + \
-          ", " + report['subtopic']
+    if report.get('subtopic'):
+      if _report_storage[key].get('subtopic'):
+        if report['subtopic'] not in _report_storage[key]['subtopic']:
+          _report_storage[key]['subtopic'] = _report_storage[key]['subtopic'] \
+              + ", " + report['subtopic']
+      else:
+        _report_storage[key]['subtopic'] = report['subtopic']
   else:
     _report_storage[key] = report
 
