@@ -4,7 +4,7 @@ import datetime
 import logging
 import os
 import re
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse, parse_qs
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -47,50 +47,88 @@ DUPLICATE_LANDING_URLS = (
   "https://www.sba.gov/content/audit-report-0-02-audit-sba%E2%80%99s-fy-1998-financial-statements-management-letter-0",
 )
 
-# This will actually get adjusted downwards on the fly, so pick a huge number.
-# There are 49 pages total as of 2014-08-12, so 1000 should be okay.
-ALL_PAGES = 1000
+# The report list is not stable, so sometimes we need to fetch the same page of
+# results multiple times to get everything. This constant is the maximum
+# number of times we will do so.
+# For simplicity's sake, we will always retry the last page the maximum number
+# of times. There will probably be less than ten reports on the last page, which
+# fools our heuristic of counting how many unique reports we have seen.
+MAX_RETRIES = 10
+REPORTS_PER_PAGE = 10
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  # Suggested flow, for an IG which paginates results.
-  pages = options.get('pages', ALL_PAGES)
-  for page in range(1, (int(pages) + 1)):
-    data = {
-      'view_name': 'oig_nodes',
-      'view_display_id': 'block_search_oig_reports',
-    }
-    if page:
-      # Only add page= if page > 0
-      data['page'] = page
+  last_page_index = get_last_page_index()
+  pages = last_page_index + 1
+  if 'pages' in options:
+    pages = min(pages, int(options['pages']))
 
+  rows_seen = set()
+  last_row_count = 0
 
-    response = utils.post(REPORTS_AJAX_URL,
-        data=data,
-        headers={
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-    )
-    if not response:
-      raise Exception("Failed to fetch data from sba.gov.")
+  for page in reversed(range(pages)):
+    for retry in range(MAX_RETRIES):
+      logging.warning('Fetching page %d, attempt %d' % (page, retry))
+      doc = beautifulsoup_from_page_index(page)
 
-    page_html = response.json()[1]['data']
-    doc = BeautifulSoup(page_html)
-    results = doc.select("tr")
-    if not results:
-      if page == 1:
+      results = doc.select("tr")
+      if not results:
         raise inspector.NoReportsFoundError("Small Business Admininstration")
-      else:
-        break
 
-    for index, result in enumerate(results):
-      if not index:
-        # Skip the header row
+      for index, result in enumerate(results):
+        if not index:
+          # Skip the header row
+          continue
+
+        row_key = (str(result.text), result.a['href'])
+        if row_key not in rows_seen:
+          report = report_from(result, year_range)
+          if report:
+            inspector.save_report(report)
+          rows_seen.add(row_key)
+
+      if page == last_page_index:
+        # Since we're scraping the last page first, always fetch it only once.
+        # If we lose a report between the last page and the second to last page,
+        # we will see nine new reports on the second to last page, and then
+        # retry that one until we get the tenth.
+        break
+      elif len(rows_seen) == last_row_count + REPORTS_PER_PAGE:
+        # We saw as many new reports as we expected to, so we haven't missed
+        # any, and it's safe to move on to the next page
+        break
+      elif len(rows_seen) < last_row_count + REPORTS_PER_PAGE:
+        # We were expecting more new reports on this page, try again
         continue
-      report = report_from(result, year_range)
-      if report:
-        inspector.save_report(report)
+      else:
+        raise AssertionError("Found %d new reports on page %d, too many!" % \
+            (len(rows_seen) - last_row_count, page))
+    last_row_count = len(rows_seen)
+
+def beautifulsoup_from_page_index(page):
+  data = {
+    'view_name': 'oig_nodes',
+    'view_display_id': 'block_search_oig_reports',
+    'page': page,
+  }
+
+  headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+  response = utils.post(REPORTS_AJAX_URL, data=data, headers=headers)
+  if not response:
+    raise Exception("Failed to fetch data from sba.gov.")
+
+  page_html = response.json()[1]['data']
+  return BeautifulSoup(page_html)
+
+def get_last_page_index():
+  doc = beautifulsoup_from_page_index(0)
+  last_page_link = doc.find("a", title="Go to last page")
+  href = last_page_link['href']
+  query = urlparse(href).query
+  page = parse_qs(query)['page'][0]
+  return int(page)
 
 def report_type_from_text(text):
   if text == 'Press Releases':
