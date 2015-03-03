@@ -5,7 +5,7 @@ import itertools
 import logging
 import os
 import re
-from urllib.parse import urljoin, urlparse, urlunparse
+from urllib.parse import urljoin, urlparse, urlunparse, urldefrag
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -484,9 +484,13 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
 
 def filter_links(link_list):
   href_list = [element.get('href') for element in link_list]
-  return [href for href in href_list \
+  href_list = [urldefrag(url)[0] for url in href_list]
+  filtered_list = [href for href in href_list \
       if href and href not in BLACKLIST_REPORT_URLS and \
       not href.startswith("mailto:")]
+  if len(filtered_list) == 2 and filtered_list[0] == filtered_list[1]:
+    filtered_list = filtered_list[:1]
+  return filtered_list
 
 def report_from_landing_url(report_url):
   doc = beautifulsoup_from_url(report_url)
