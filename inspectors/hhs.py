@@ -357,15 +357,18 @@ def extract_reports_for_oei(year_range):
         result.extract()
         all_results_unreleased.append([result, subtopic_name])
       else:
-        url = urljoin(letter_url, links[0].get("href"))
-        link_text = links[0].text
+        link = links[0]
+        url = urljoin(letter_url, link.get("href"))
+        link_text = link.text
 
         # There are links to both the landing pages and PDF files of these
         # reports. Fix them to all use the landing pages.
         if url == "http://oig.hhs.gov/oei/reports/oei-01-08-00590.pdf":
           url = url.replace(".pdf", ".asp")
+          link["href"] = url
         elif url == "http://oig.hhs.gov/oas/reports/region6/69300008.pdf":
           url = url.replace(".pdf", ".htm")
+          link["href"] = url
 
         # See the notes at the top of this file, this is the wrong link
         if link_text == "Personnel Suitability and Security" and \
