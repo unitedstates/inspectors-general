@@ -244,11 +244,11 @@ TITLE_NORMALIZATION = {
   "Medicaid Program Savings Through the Use of Therapeutically Equivalent Drugs":
     "Medicaid Program Savings Through the Use of Therapeutically Equivalent Generic Drugs",
   "Results of Limited Scope Review at Instituto Socio-Economico Comunitario, Inc.":
-    "Results of Limited Scope Review at Instituto Socio-Econ\xf3mico Comunitario, Inc.",
+    "Results of Limited Scope Review at Instituto Socio-Econ\xc3\xb3mico Comunitario, Inc.",
   "Results of Limited Scope Review at Accion Social de Puerto Rico, Inc.":
-    "Results of Limited Scope Review at Acci\xf3n Social de Puerto Rico, Inc.",
+    "Results of Limited Scope Review at Acci\xc3\xb3n Social de Puerto Rico, Inc.",
   "Results of Limited Scope Review at the Municipality of Bayamon (Puerto Rico) Audit":
-    "Results of Limited Scope Review at the Municipality of Bayam\xf3n (Puerto Rico) Audit",
+    "Results of Limited Scope Review at the Municipality of Bayam\xc3\xb3n (Puerto Rico) Audit",
   "Agriculture and Labor Program, Inc., Did Not Always Charge Allowable Costs":
     "Agriculture and Labor Program, Inc., Did Not Always Charge Allowable Costs to the Community Services Block Grant - Recovery Act Program",
 }
@@ -412,7 +412,10 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   if not strip_url_fragment(result_link['href']):
     return
 
-  title = re.sub('\s+', ' ', inspector.sanitize(result_link.text))
+  title = result_link.text
+  title = title.replace("\xe2\x80\x93", "-")
+  title = inspector.sanitize(title)
+  title = re.sub('\s+', ' ', title)
   if title in TITLE_NORMALIZATION:
     title = TITLE_NORMALIZATION[title]
 
