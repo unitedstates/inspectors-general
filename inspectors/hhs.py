@@ -239,6 +239,18 @@ TITLE_NORMALIZATION = {
     "Audit of National Association of Families and Addiction Research Education (NAFARE) Chicago, Illinois - Contract No. 277-94-3009 and Grant No. UHSP08041,",
   "OIG Partnership Plan - Outpatient Claims for California's Medicaid Program":
     "Office of Inspector General's Partnership Plan: Outpatient Claims for California's Medicaid Program",
+  "New York State Claimed Unallowable Community Services Block Grant Recovery Act Costs for Action for a Better Community, Inc.":
+    "New York State Claimed Unallowable Community Services Block Grant Recovery Act Costs for Action for a Better Community, Inc. Audit",
+  "Medicaid Program Savings Through the Use of Therapeutically Equivalent Drugs":
+    "Medicaid Program Savings Through the Use of Therapeutically Equivalent Generic Drugs",
+  "Results of Limited Scope Review at Instituto Socio-Economico Comunitario, Inc.":
+    "Results of Limited Scope Review at Instituto Socio-Econ\xf3mico Comunitario, Inc.",
+  "Results of Limited Scope Review at Accion Social de Puerto Rico, Inc.":
+    "Results of Limited Scope Review at Acci\xf3n Social de Puerto Rico, Inc.",
+  "Results of Limited Scope Review at the Municipality of Bayamon (Puerto Rico) Audit":
+    "Results of Limited Scope Review at the Municipality of Bayam\xf3n (Puerto Rico) Audit",
+  "Agriculture and Labor Program, Inc., Did Not Always Charge Allowable Costs":
+    "Agriculture and Labor Program, Inc., Did Not Always Charge Allowable Costs to the Community Services Block Grant - Recovery Act Program",
 }
 
 BASE_URL = "http://oig.hhs.gov"
@@ -307,8 +319,7 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
 def extract_reports_for_oei(year_range):
   topic_name = TOPIC_NAMES["OE"]
   topic_url = TOPIC_TO_URL["OE"]
-  root_body = utils.download(topic_url)
-  root_doc = BeautifulSoup(root_body)
+  root_doc = beautifulsoup_from_url(topic_url)
 
   letter_urls = set()
   for link in root_doc.select("#leftContentInterior li a"):
@@ -322,8 +333,7 @@ def extract_reports_for_oei(year_range):
   all_results_links = {}
   all_results_unreleased = []
   for letter_url in letter_urls:
-    letter_body = utils.download(letter_url)
-    letter_doc = BeautifulSoup(letter_body)
+    letter_doc = beautifulsoup_from_url(letter_url)
 
     results = letter_doc.select("#leftContentInterior ul li")
     if not results:
@@ -350,10 +360,12 @@ def extract_reports_for_oei(year_range):
         url = urljoin(letter_url, links[0].get("href"))
         link_text = links[0].text
 
-        # There are links to both the landing page and the PDF file of this
-        # report. Fix these to all use the landing page.
+        # There are links to both the landing pages and PDF files of these
+        # reports. Fix them to all use the landing pages.
         if url == "http://oig.hhs.gov/oei/reports/oei-01-08-00590.pdf":
           url = url.replace(".pdf", ".asp")
+        elif url == "http://oig.hhs.gov/oas/reports/region6/69300008.pdf":
+          url = url.replace(".pdf", ".htm")
 
         # See the notes at the top of this file, this is the wrong link
         if link_text == "Personnel Suitability and Security" and \
@@ -400,7 +412,7 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   if not strip_url_fragment(result_link['href']):
     return
 
-  title = re.sub('\s+', ' ', result_link.text).strip()
+  title = re.sub('\s+', ' ', inspector.sanitize(result_link.text))
   if title in TITLE_NORMALIZATION:
     title = TITLE_NORMALIZATION[title]
 
@@ -625,8 +637,7 @@ def published_on_from_inline_link(result, report_filename, title, report_id, rep
   return published_on
 
 def get_subtopic_map(topic_url):
-  body = utils.download(topic_url)
-  doc = BeautifulSoup(body)
+  doc = beautifulsoup_from_url(topic_url)
 
   subtopic_map = {}
   for link in doc.select("#leftContentInterior li a"):
