@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 import datetime
+import itertools
 import logging
 import os
-from urllib.parse import urljoin, urlparse, urlunparse
-import itertools
+import re
+from urllib.parse import urljoin, urlparse, urlunparse, urldefrag
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -155,6 +156,30 @@ REPORT_PUBLISHED_MAPPING = {
 
   # This has an incorrect datetime (04-23-3012)
   '91102005': datetime.datetime(2012, 4, 23),
+
+  # See OEI_COMBINED_LANDING_PAGES below, we are skipping parsing the landing
+  # pages for these reports for now
+  'oei-09-08-00580': datetime.datetime(2011, 9, 30),
+  'oei-09-08-00581': datetime.datetime(2011, 9, 30),
+  'oei-05-09-00560': datetime.datetime(2011, 8, 29),
+  'oei-05-09-00561': datetime.datetime(2011, 8, 29),
+
+  # This has the right date in one place and the wrong date in another
+  'oei-07-91-01470': datetime.datetime(1992, 4, 1),
+}
+
+# This manually entered data is used to skip landing pages that hold more than
+# one report. We use the correct PDF link for each, which makes deduplication
+# easier.
+OEI_COMBINED_LANDING_PAGES = {
+  "http://oig.hhs.gov/oei/reports/oei-09-08-00580-00581.asp": {
+    "Access to Mental Health Services at Indian Health Service and Tribal Facilities": "http://oig.hhs.gov/oei/reports/oei-09-08-00580.pdf",
+    "Access to Kidney Dialysis Services at Indian Health Service and Tribal Facilities": "http://oig.hhs.gov/oei/reports/oei-09-08-00581.pdf"
+  },
+  "http://oig.hhs.gov/oei/reports/oei-05-09-00560-00561.asp": {
+    "Miami Independent Diagnostic Testing Facilities' Compliance with Medicare Standards": "http://oig.hhs.gov/oei/reports/oei-05-09-00560.pdf",
+    "Los Angeles Independent Diagnostic Testing Facilities' Compliance with Medicare Standards": "http://oig.hhs.gov/oei/reports/oei-05-09-00561.pdf"
+  },
 }
 
 BLACKLIST_TITLES = [
@@ -173,8 +198,60 @@ BLACKLIST_REPORT_URLS = [
   'http://oig.hhs.gov/oas/reports/region5/50800067.asp',
 
   #press release, format is completely inconsistent with everything else
-  'http://oig.hhs.gov/newsroom/news-releases/2014/sar14fall.asp'
+  'http://oig.hhs.gov/newsroom/news-releases/2014/sar14fall.asp',
+
+  # Duplicate report, uploaded in two regions
+  'http://oig.hhs.gov/oas/reports/region1/100300001.htm',
 ]
+
+TITLE_NORMALIZATION = {
+  "ReportingAbuses of Persons with Disabilities":
+    "Reporting Abuses of Persons with Disabilities",
+  "Officeof Inspector General's Partnership Plan - New York StateComptroller Report on Controlling Medicaid Paymentsfor School and Preschool Supportive Health Services":
+    "Office of Inspector General's Partnership Plan - New York State Comptroller Report on Controlling Medicaid Payments for School and Preschool Supportive Health Services",
+  "OIG Partnership Plan: Drug Delivery System for Montana's Medicaid Program":
+    "Office of Inspector General's Partnership Plan: Drug Delivery System for Montana's Medicaid Program",
+  "Partnership Audit of Medicaid Paymentsfor Oxygen Related Durable Medical Equipment and Supplies - January 1, 1998 through December 31, 2000 Kentucky Department for Medicaid Services, Frankfort, Kentucky":
+    "Partnership Audit of Medicaid Payments for Oxygen Related Durable Medical Equipment and Supplies - January 1, 1998 through December 31, 2000 Kentucky Department for Medicaid Services, Frankfort, Kentucky",
+  "Partnership Audit of Medicaid Paymentsfor Oxygen Related Durable Medical Equipment and Supplies - January 1, 1998 through December31, 2000 Kentucky Department for Medicaid Services, Frankfort, Kentucky":
+    "Partnership Audit of Medicaid Payments for Oxygen Related Durable Medical Equipment and Supplies - January 1, 1998 through December 31, 2000 Kentucky Department for Medicaid Services, Frankfort, Kentucky",
+  "OIG Partnership Plan: Medicaid Payments for Clinical Laboratory Tests in Eight States":
+    "Office of Inspector General's Partnership Plan: Medicaid Payments for Clinical Laboratory Tests in Eight States",
+  "OIG Partnership Plan: Montana Legislative Auditor's Office Report on Medicaid Expenditures for Durable Medical Equipment":
+    "Office of Inspector General's Partnership Plan: Montana Legislative Auditor's Office Report on Medicaid Expenditures for Durable Medical Equipment",
+  "OIG Partnership Plan: Transportation Services for Montana's Medicaid Program":
+    "Office of Inspector General's Partnership Plan: Transportation Services for Montana's Medicaid Program",
+  "Office of Inspector General's Partnership Plan-State of Montana's Medicaid Third Party Liability Program":
+    "Office of Inspector General's Partnership Plan - State of Montana's Medicaid Third Party Liability Program",
+  "Review of the Food and Drug Administration's Processing of a new Drug Application for Therafectin":
+    "Review of the Food and Drug Administration's Processing of a New Drug Application for Therafectin",
+  "OIG Partnership Plan: Medicaid Payments for Clinical Laboratory Tests in 14 States":
+    "Office of Inspector General's Partnership Plan: Medicaid Payments for Clinical Laboratory Tests in 14 States",
+  "OIG Partnership Plan: Review of the North Carolina Division of Medical Assistance's Reimbursement for Clinical Laboratory Services Under the Medicaid Program":
+    "Office of Inspector General's Partnership Plan - Review of the North Carolina Division of Medical Assistance's Reimbursement for Clinical Laboratory Services Under the Medicaid Program",
+  "Officeof Inspector General's Partnership Efforts - Texas StateAuditor's Office Report on the Department of Protectiveand Regulatory Services' Administration of Foster CareContracts":
+    "Office of Inspector General's Partnership Efforts - Texas State Auditor's Office Report on the Department of Protective and Regulatory Services' Administration of Foster Care Contracts",
+  "Officeof Inspector General Partnership with the State of Ohio,Office of the Auditor's Report on Review of MedicaidProvider Reimbursement Made to Crest TransportationService":
+    "Office of Inspector General Partnership with the State of Ohio, Office of the Auditor's Report on Review of Medicaid Provider Reimbursement Made to Crest Transportation Service",
+  "OIG Partnership Plan: Utah State Auditor's Report on Clinical Laboratory Services":
+    "Office of Inspector General's Partnership Plan: Utah State Auditor's Report on Clinical Laboratory Services",
+  "Auditof National Association of Families and Addiction ResearchEducation":
+    "Audit of National Association of Families and Addiction Research Education (NAFARE) Chicago, Illinois - Contract No. 277-94-3009 and Grant No. UHSP08041,",
+  "OIG Partnership Plan - Outpatient Claims for California's Medicaid Program":
+    "Office of Inspector General's Partnership Plan: Outpatient Claims for California's Medicaid Program",
+  "New York State Claimed Unallowable Community Services Block Grant Recovery Act Costs for Action for a Better Community, Inc.":
+    "New York State Claimed Unallowable Community Services Block Grant Recovery Act Costs for Action for a Better Community, Inc. Audit",
+  "Medicaid Program Savings Through the Use of Therapeutically Equivalent Drugs":
+    "Medicaid Program Savings Through the Use of Therapeutically Equivalent Generic Drugs",
+  "Results of Limited Scope Review at Instituto Socio-Economico Comunitario, Inc.":
+    "Results of Limited Scope Review at Instituto Socio-Econ\xc3\xb3mico Comunitario, Inc.",
+  "Results of Limited Scope Review at Accion Social de Puerto Rico, Inc.":
+    "Results of Limited Scope Review at Acci\xc3\xb3n Social de Puerto Rico, Inc.",
+  "Results of Limited Scope Review at the Municipality of Bayamon (Puerto Rico) Audit":
+    "Results of Limited Scope Review at the Municipality of Bayam\xc3\xb3n (Puerto Rico) Audit",
+  "Agriculture and Labor Program, Inc., Did Not Always Charge Allowable Costs":
+    "Agriculture and Labor Program, Inc., Did Not Always Charge Allowable Costs to the Community Services Block Grant - Recovery Act Program",
+}
 
 BASE_URL = "http://oig.hhs.gov"
 
@@ -192,6 +269,8 @@ def run(options):
     extract_reports_for_topic(topic, year_range)
     if topic in TOPIC_TO_ARCHIVE_URL:
       extract_reports_for_topic(topic, year_range, archives=True)
+
+  deduplicate_finalize()
 
 def extract_reports_for_topic(topic, year_range, archives=False):
   if topic == "OE":
@@ -235,13 +314,12 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
       continue
     report = report_from(result, year_range, topic_name, subtopic_url, subtopic_name)
     if report:
-      inspector.save_report(report)
+      deduplicate_save_report(report)
 
 def extract_reports_for_oei(year_range):
   topic_name = TOPIC_NAMES["OE"]
   topic_url = TOPIC_TO_URL["OE"]
-  root_body = utils.download(topic_url)
-  root_doc = BeautifulSoup(root_body)
+  root_doc = beautifulsoup_from_url(topic_url)
 
   letter_urls = set()
   for link in root_doc.select("#leftContentInterior li a"):
@@ -255,8 +333,7 @@ def extract_reports_for_oei(year_range):
   all_results_links = {}
   all_results_unreleased = []
   for letter_url in letter_urls:
-    letter_body = utils.download(letter_url)
-    letter_doc = BeautifulSoup(letter_body)
+    letter_doc = beautifulsoup_from_url(letter_url)
 
     results = letter_doc.select("#leftContentInterior ul li")
     if not results:
@@ -280,7 +357,29 @@ def extract_reports_for_oei(year_range):
         result.extract()
         all_results_unreleased.append([result, subtopic_name])
       else:
-        url = links[0].get("href")
+        link = links[0]
+        url = urljoin(letter_url, link.get("href"))
+        link_text = link.text
+
+        # There are links to both the landing pages and PDF files of these
+        # reports. Fix them to all use the landing pages.
+        if url == "http://oig.hhs.gov/oei/reports/oei-01-08-00590.pdf":
+          url = url.replace(".pdf", ".asp")
+          link["href"] = url
+        elif url == "http://oig.hhs.gov/oas/reports/region6/69300008.pdf":
+          url = url.replace(".pdf", ".htm")
+          link["href"] = url
+
+        # See the notes at the top of this file, this is the wrong link
+        if link_text == "Personnel Suitability and Security" and \
+            url == "http://oig.hhs.gov/oei/reports/oai-07-86-00079.pdf":
+          continue
+
+        # These landing pages are actually for two different reports, use the
+        # PDF URLs here so they don't get merged together
+        if url in OEI_COMBINED_LANDING_PAGES:
+          url = OEI_COMBINED_LANDING_PAGES[url][link_text]
+
         if url not in all_results_links:
           result.extract()
           all_results_links[url] = [result, subtopic_name]
@@ -295,7 +394,7 @@ def extract_reports_for_oei(year_range):
   for result, subtopic_name in itertools.chain(all_results_links.values(), all_results_unreleased):
     report = report_from(result, year_range, topic_name, subtopic_url, subtopic_name)
     if report:
-      inspector.save_report(report)
+      deduplicate_save_report(report)
 
 def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   # Ignore links to other subsections
@@ -316,8 +415,17 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   if not strip_url_fragment(result_link['href']):
     return
 
-  report_url = urljoin(subtopic_url, result_link['href']).strip()
+  title = result_link.text
+  title = title.replace("\xe2\x80\x93", "-")
+  title = inspector.sanitize(title)
+  title = re.sub('\s+', ' ', title)
+  if title in TITLE_NORMALIZATION:
+    title = TITLE_NORMALIZATION[title]
 
+  if title in BLACKLIST_TITLES:
+    return
+
+  report_url = urljoin(subtopic_url, result_link['href']).strip()
 
   if report_url in REPORT_URL_MAPPING:
     report_url = REPORT_URL_MAPPING[report_url]
@@ -330,15 +438,15 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   if report_url in BLACKLIST_REPORT_URLS:
     return
 
+  if report_url in OEI_COMBINED_LANDING_PAGES:
+    report_url = OEI_COMBINED_LANDING_PAGES[report_url][title]
+
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
 
   if report_filename == "11302505.pdf":
     report_id = report_id + "_early_alert"
 
-  title = result_link.text.strip()
-  if title in BLACKLIST_TITLES:
-    return
 
   # Try a quick check from the listing page to see if we can bail out based on
   # the year
@@ -350,6 +458,11 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
 
   if published_on and published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  # This report is listed twice, once with the wrong date
+  if published_on and published_on.year == 2012 and published_on.month == 1 \
+      and published_on.date == 12 and report_id == "20901002":
     return
 
   if report_id in REPORT_PUBLISHED_MAPPING:
@@ -387,10 +500,25 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
     result['subtopic'] = subtopic
   return result
 
+def filter_links(link_list):
+  href_list = [element.get('href') for element in link_list]
+  href_list = [urldefrag(url)[0] for url in href_list]
+  filtered_list = [href for href in href_list \
+      if href and href not in BLACKLIST_REPORT_URLS and \
+      not href.startswith("mailto:")]
+  if len(filtered_list) == 2 and filtered_list[0] == filtered_list[1]:
+    filtered_list = filtered_list[:1]
+  return filtered_list
+
 def report_from_landing_url(report_url):
   doc = beautifulsoup_from_url(report_url)
   if not doc:
     raise Exception("Failure fetching report landing URL: %s" % report_url)
+
+  # Throw away the "Related Content" box, if there is one
+  related = doc.find(id="related")
+  if related:
+    related.extract()
 
   possible_tags = (
     doc.select("h1") +
@@ -405,16 +533,20 @@ def report_from_landing_url(report_url):
     if published_on:
       break
 
-  try:
-    relative_url = doc.select("#leftContentInterior p.download a")[0]['href']
-  except IndexError:
-    try:
-      relative_url = doc.select("#leftContentInterior p a")[-1]['href']
-    except IndexError:
-      relative_url = None
+  url_list = filter_links(doc.select("#leftContentInterior p.download a"))
+  if not url_list:
+    url_list = filter_links(doc.select("#leftContentInterior p a"))
+  if len(url_list) > 1:
+    raise Exception("Found multiple links on %s:\n%s" % (report_url, url_list))
+
+  if url_list:
+    relative_url = url_list[0]
+  else:
+    relative_url = None
 
   if relative_url is not None:
     report_url = urljoin(report_url, relative_url)
+
   return report_url, published_on
 
 def clean_published_text(published_text):
@@ -511,8 +643,7 @@ def published_on_from_inline_link(result, report_filename, title, report_id, rep
   return published_on
 
 def get_subtopic_map(topic_url):
-  body = utils.download(topic_url)
-  doc = BeautifulSoup(body)
+  doc = beautifulsoup_from_url(topic_url)
 
   subtopic_map = {}
   for link in doc.select("#leftContentInterior li a"):
@@ -521,7 +652,10 @@ def get_subtopic_map(topic_url):
 
     # Only add new URLs
     if absolute_url not in subtopic_map.values():
-      subtopic_map[link.text] = absolute_url
+      while link.br:
+        link.br.replace_with(" ")
+      subtopic_name = link.text.replace("  ", " ").strip()
+      subtopic_map[subtopic_name] = absolute_url
 
   if not subtopic_map:
     raise inspector.NoReportsFoundError("OEI (subtopics)")
@@ -544,5 +678,29 @@ def beautifulsoup_from_url(url):
 def strip_url_fragment(url):
   scheme, netloc, path, params, query, fragment = urlparse(url)
   return urlunparse((scheme, netloc, path, params, query, ""))
+
+_report_storage = {}
+def deduplicate_save_report(report):
+  global _report_storage
+  key = (report['title'], report['url'], report['published_on'])
+  if key in _report_storage:
+    if report['topic'] not in _report_storage[key]['topic']:
+      _report_storage[key]['topic'] = _report_storage[key]['topic'] + ", " + \
+          report['topic']
+    if report.get('subtopic'):
+      if _report_storage[key].get('subtopic'):
+        if report['subtopic'] not in _report_storage[key]['subtopic']:
+          _report_storage[key]['subtopic'] = _report_storage[key]['subtopic'] \
+              + ", " + report['subtopic']
+      else:
+        _report_storage[key]['subtopic'] = report['subtopic']
+  else:
+    _report_storage[key] = report
+
+def deduplicate_finalize():
+  global _report_storage
+  for report in _report_storage.values():
+    inspector.save_report(report)
+  _report_storage = {}
 
 utils.run(run) if (__name__ == "__main__") else None

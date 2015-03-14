@@ -167,33 +167,54 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
     # (no text) that we want to ignore.
     link = result.find_all("a", text=True)[0]
   except IndexError:
-    link = result.find_all("a")[0]
+    # If none of the links have text, try the first one with an image
+    for temp in result.find_all("a"):
+      if temp.img:
+        link = temp
+        break
+    # Fallback: pick the first link
+    else:
+      link = result.find_all("a")[0]
   report_url = urljoin(page_url, link.get('href').strip())
 
   if result.name == 'li':
     title = link.text.strip()
-    if title.endswith("(PDF)"):
-      title = title[:-5]
-    if title.endswith("(PDF), (Report No: 30601-01-HY, Size: 847,872 bytes)"):
-      title = title[:-52]
-    title = title.rstrip(" ")
-    title = title.replace("..", ".")
-    title = title.replace("  ", " ")
-    title = title.replace("REcovery", "Recovery")
   elif result.name == 'tr':
+    # Remove the date and parenthetical metadata from the result, and save
+    # the date for later. What's left will be the title.
     published_on_element = result.strong.extract()
+    if result.em:
+      while result.em:
+        result.em.extract()
+      title = result.text.strip()
+    else:
+      title = result.text
+      title = title[:title.find('(')].strip()
+
     published_on_text = published_on_element.text.strip().rstrip(":")
     for date_format in DATE_FORMATS:
       try:
         published_on = datetime.datetime.strptime(published_on_text, date_format)
       except ValueError:
         pass
-    title = result.text
-    title = title[:title.find('(')].strip()
+
+  # Normalize titles
+  title = title.rstrip(",")
+  if title.endswith("(PDF)"):
+    title = title[:-5]
+  if title.endswith("(PDF), (Report No: 30601-01-HY, Size: 847,872 bytes)"):
+    title = title[:-52]
+  title = title.rstrip(" ")
+  title = title.replace("..", ".")
+  title = title.replace("  ", " ")
+  title = title.replace("REcovery", "Recovery")
+  title = title.replace("Directy ", "Direct ")
+  if title == title.upper():
+    title = title.title()
 
   # These entries on the IG page have the wrong URLs associated with them. The
-  # correct URLs were retrieved from an earlier version of the page, via the
-  # Internet Archive Wayback Machine.
+  # correct URLs were guessed or retrieved from an earlier version of the page,
+  # via the Internet Archive Wayback Machine.
   if report_url == "http://www.usda.gov/oig/webdocs/IGtestimony110302.pdf" and \
       title == "Statement Of Phyllis K. Fong Inspector General: Before The " \
       "House Appropriations Subcommittee On Agriculture, Rural Development, " \
@@ -210,6 +231,13 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
       "Senate Committee On Agriculture, Nutrition, And Forestry On The " \
       "Department's Processing Of Civil Rights Complaints":
     report_url = "http://www.usda.gov/oig/webdocs/IGstestimony.PDF"
+  elif report_url == "http://www.usda.gov/oig/webdocs/34601-10-TE.pdf" and \
+      title == "Rural Housing Service Single Family Housing Program - Maine":
+    report_url = "http://www.usda.gov/oig/webdocs/04004-05-Hy.pdf"
+  elif report_url == "http://www.usda.gov/oig/webdocs/04004-05-Hy.pdf" and \
+      title == "Rural Development\u2019s Processing of Loan Guarantees to " \
+      "Member of the Western Sugar Cooperative":
+    report_url = "http://www.usda.gov/oig/webdocs/34601-03-Ch.pdf"
 
   # This report is listed twice on the same page with slightly different titles
   if title == "Animal and Plant Health Inspection Service Transition and " \
@@ -218,6 +246,16 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
 
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]
+
+  # Differentiate between two letters on the same report
+  if report_url == "http://www.usda.gov/oig/webdocs/34099-12-TE.pdf":
+    report_id = "34099-12-Te_1"
+  elif report_url == "http://www.usda.gov/oig/webdocs/34099-12-Te.pdf":
+    report_id = "34099-12-Te_2"
+
+  if title == "American Recovery and Reinvestment Act - Emergency Watershed " \
+      "Protection Program Floodplain Easements" and report_id == "10703-1-KC":
+    return
 
   # These are just summary versions of other reports. Skip for now.
   if '508 Compliant Version' in title:

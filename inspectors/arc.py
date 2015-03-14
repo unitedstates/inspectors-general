@@ -61,7 +61,7 @@ def report_from(result, landing_url, report_type, year_range):
 
   estimated_date = False
   try:
-    published_on_text = title.split("–")[-1].strip()
+    published_on_text = title.split("\u2013")[-1].strip()
     published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
   except ValueError:
     # For reports where we can only find the year, set them to Nov 1st of that year

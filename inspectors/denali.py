@@ -69,12 +69,7 @@ def report_from(result, year_range):
 
   report_id = os.path.splitext(os.path.basename(result['href']))[0]
   report_url = urljoin(REPORTS_URL, result['href'])
-  title = result.text.strip()
-
-  # Normalize en-dashes to hyphens
-  title = title.replace('\u2013', '-')
-  # Normalize single quotes to straight single quotes
-  title = title.replace('\u2018', '\'').replace('\u2019', '\'')
+  title = inspector.sanitize(result.text)
 
   # Each financial/performance report is linked twice, once for the IG's
   # transmittal letter and independent auditor's report, and once for

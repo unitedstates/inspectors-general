@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin, unquote
 
 from bs4 import BeautifulSoup
@@ -125,6 +126,9 @@ def clean_text(text):
   # A lot of text on this page has extra characters
   return text.replace('\u200b', '').replace('\ufffd', ' ').replace('\xa0', ' ').strip()
 
+SUMMARY_RE = re.compile("(OIG|OIG-CA|EVAL) *-? *([0-9]+) *- *([0-9R]+) *:? +([^ ].*)")
+SUMMARY_FALLBACK_RE = re.compile("([0-9]+)-(OIG)-([0-9]+) *:? *(.*)")
+
 def audit_report_from(result, page_url, year_range):
   if not clean_text(result.text):
     # Empty row
@@ -154,16 +158,37 @@ def audit_report_from(result, page_url, year_range):
     # There is an extra row that we want to skip
     return
 
-  report_id, title = report_summary.split(maxsplit=1)
-  report_id = report_id.rstrip(":")
+  summary_match = SUMMARY_RE.match(report_summary)
+  summary_match_2 = SUMMARY_FALLBACK_RE.match(report_summary)
+  if summary_match:
+    report_id = summary_match.expand(r"\1-\2-\3")
+    title = summary_match.group(4)
+  elif summary_match_2:
+    report_id = summary_match_2.expand(r"(\2-\1-\3")
+    title = summary_match_2.group(4)
+  elif report_summary.startswith("IGATI"):
+    # There are two such annual reports from different years, append the year
+    report_id = "IGATI %d" % published_on.year
+    title = report_summary
+  elif report_summary == "Report on the Bureau of the Fiscal Service Federal " \
+      "Investments Branch\u2019s Description of its Investment/" \
+      "Redemption Services and the Suitability of the Design and Operating " \
+      "Effectiveness of its Controls for the Period August 1, 2013 to " \
+      "July 31, 2014":
+    # This one is missing its ID on the index
+    report_id = "OIG-14-049"
+    title = report_summary
+  else:
+    raise Exception("Couldn't parse report ID: %s" % repr(report_summary))
+
+  if report_id == 'OIG-15-015' and \
+      'Financial Statements for hte Fiscal Years 2014 and 2013' in title:
+    # This report is listed twice, once with a typo
+    return
 
   if report_id == 'OIG-07-003' and published_on_text == '11/23/2006':
     # This report is listed twice, once with the wrong date
     return
-
-  if report_id == 'IGATI':
-    # There are two such annual reports from different years, append the year
-    report_id = '%s %d' % (report_id, published_on.year)
 
   agency_slug_text = children[0].text
 

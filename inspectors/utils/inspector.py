@@ -94,6 +94,13 @@ def preprocess_report(report):
     if len(split) > 1:
       report['file_type'] = split[-1]
 
+ORD_A_LC = ord('a')
+ORD_Z_LC = ord('z')
+ORD_A_UC = ord('A')
+ORD_Z_UC = ord('Z')
+ORD_0 = ord('0')
+ORD_9 = ord('9')
+
 # Ensure required fields are present
 def validate_report(report):
   required = (
@@ -104,6 +111,18 @@ def validate_report(report):
     value = report.get(field)
     if (value is None) or value.strip() == "":
       return "Missing a required field: %s" % field
+
+    for character in report.get(field):
+      c = ord(character)
+      if ORD_A_LC <= c and c <= ORD_Z_LC:
+        break
+      if ORD_A_UC <= c and c <= ORD_Z_UC:
+        break
+      if ORD_0 <= c and c <= ORD_9:
+        break
+    else:
+      return "A required field doesn't contain any alphanumeric characters: " \
+        "%s, %s" % (field, repr(report.get(field)))
 
   # A URL is required, unless 'unreleased' is set to True.
   url = report.get("url")
@@ -209,8 +228,17 @@ def verify_uniqueness_finalize_summary():
     admin.notify('\n'.join(_uniqueness_messages))
 
 # run over common string fields automatically
+sanitize_table = str.maketrans({
+  "\xa0": " ",          # no-break space
+  "\u2013": "-",        # en dash
+  "\u2014": "-",        # em dash
+  "\u2018": "'",        # left single quotation mark
+  "\u2019": "'",        # right single quotation mark
+  "\u201c": "\"",       # left double quotation mark
+  "\u201d": "\"",       # right double quotation mark
+})
 def sanitize(string):
-  return string.replace("\xa0", " ").strip()
+  return string.translate(sanitize_table).strip()
 
 # invalid to use in a report ID
 def invalid_chars():
