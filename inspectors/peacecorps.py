@@ -35,7 +35,8 @@ REPORT_PUBLISHED_MAPPING = {
   "PC_Gambia_SR_Grant_Activities": datetime.datetime(2010, 5, 14),
   "PC_Ecuador_Special_Review_IG1005SR": datetime.datetime(2010, 9, 1),
   "PCIG_Agency_Policies_Related_to_Volunteer_Sexual_Assault_Allegations": datetime.datetime(2014, 11, 21),
-  "PCIG_Investigative_Review_of_a_Volunteer_Death_in_Peace_Corps_China": datetime.datetime(2014, 11, 1)
+  "PCIG_Investigative_Review_of_a_Volunteer_Death_in_Peace_Corps_China": datetime.datetime(2014, 11, 1),
+  "PCIG_Agency_Response_to_the_China_Investigative_Review_Nov_2014": datetime.datetime(2015, 1, 23),
 }
 
 REPORT_TYPE_MAP = {
