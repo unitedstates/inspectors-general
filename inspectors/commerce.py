@@ -150,6 +150,10 @@ def report_from(result, topic, topic_url, year_range):
   # Ex: http://www.oig.doc.gov/Pages/NIST-Grant-Recipient-Sentenced-for-Grant-Fraud;-Civil-Suit-Filed.aspx
   if report_url and report_url.endswith(".aspx"):
     file_type = "aspx"
+  # Some off-site links (i.e. to the FBI) don't have obvious file extensions
+  elif report_url and report_url.startswith("http://www.fbi.gov/") and \
+      not os.path.splitext(os.path.basename(report_url))[1]:
+    file_type = "html"
 
   result = {
     'inspector': 'commerce',
