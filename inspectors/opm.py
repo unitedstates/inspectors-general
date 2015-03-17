@@ -7,8 +7,11 @@ import os
 import logging
 import time
 import calendar
+import urllib.parse
 
 archive = 1998
+
+REPORTS_URL = "https://www.opm.gov/our-inspector-general/reports/"
 
 #  Note: reports are only scraped from /our-inspector-general/reports/
 #  I think this is mostly just audit reports (other reports are scattered
@@ -67,7 +70,7 @@ def run(options):
 
 def url_for():
   cache_buster = str(int(time.time()))
-  return "https://www.opm.gov/our-inspector-general/reports/?t=%s" % cache_buster
+  return "%s?t=%s" % (REPORTS_URL, cache_buster)
 
 #  generates the report item from a table item
 def report_from(item):
@@ -92,7 +95,7 @@ def report_from(item):
   report['published_on'] = "%04d-%02d-%02d" % (int(year), int(month), int(day))
 
   raw_link = item.find_all('td')[0].a
-  report['url'] = 'https://www.opm.gov' + raw_link.get('href')
+  report['url'] = urllib.parse.urljoin(REPORTS_URL, raw_link.get('href'))
   report['title'] = raw_link.text.strip()
 
   if 'audit' not in report['title'].lower():
