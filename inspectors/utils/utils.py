@@ -5,21 +5,38 @@ import logging
 import yaml
 from bs4 import BeautifulSoup
 from datetime import datetime
-
+import ssl
 import requests
+import requests.adapters
+import requests.packages.urllib3.poolmanager
+
+from . import admin
 
 # scraper should be instantiated at class-load time, so that it can rate limit appropriately
 import scrapelib
 scraper = scrapelib.Scraper(requests_per_minute=120, retry_attempts=3)
 scraper.user_agent = "unitedstates/inspectors-general (https://github.com/unitedstates/inspectors-general)"
 
-from . import admin
+class Tls1HttpAdapter(requests.adapters.HTTPAdapter):
+  """Transport adapter that forces use of TLS 1.0. The SBA server is behind a
+  broken F5 middlebox that can't handle TLS handshakes longer than 256 bytes
+  and shorter than 512 bytes. OpenSSL 1.0.1g includes a workaround, (the TLS
+  padding extension) but earlier versions will trigger the bug when using
+  TLS 1.2."""
+
+  def init_poolmanager(self, connections, maxsize, block=False):
+    self.poolmanager = requests.packages.urllib3.poolmanager.PoolManager\
+      (num_pools=connections,
+       maxsize=maxsize,
+       block=block,
+       ssl_version=ssl.PROTOCOL_TLSv1)
+
+scraper.mount("https://www.sba.gov/", Tls1HttpAdapter())
 
 # ugh
 WHITELIST_INSECURE_DOMAINS = (
   "https://www.ignet.gov",
 )
-
 
 # will pass correct options on to individual scrapers whether
 # run through ./igs or individually, because argv[1:] is the same
