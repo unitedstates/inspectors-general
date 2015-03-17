@@ -20,7 +20,7 @@ archive = 1999
 
 AUDIT_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/AuditRpt{year}.aspx"
 SEMIANNUAL_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/SemiAnnRpts.aspx"
-FOIA_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/FOIA2012.aspx"
+OTHER_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/OtherRpts.aspx"
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -46,16 +46,13 @@ def run(options):
       if report:
         inspector.save_report(report)
 
-  # Pull the FOIA reports
-  doc = BeautifulSoup(utils.download(FOIA_REPORTS_URL))
-  results = doc.select("div.content table tr")
+  # Pull the other reports
+  doc = BeautifulSoup(utils.download(OTHER_REPORTS_URL))
+  results = doc.select("div.content li")
   if not results:
-    raise inspector.NoReportsFoundError("NCUA (FOIA)")
-  for index, result in enumerate(results):
-    if not index:
-      # Skip the header row
-      continue
-    report = report_from(result, report_type='other', year_range=year_range)
+    raise inspector.NoReportsFoundError("NCUA (other)")
+  for result in results:
+    report = other_report_from(result, year_range=year_range)
     if report:
       inspector.save_report(report)
 
@@ -99,6 +96,37 @@ def report_from(result, report_type, year_range):
     'agency': "ncua",
     'agency_name': "National Credit Union Administration",
     'type': report_type,
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  return report
+
+OTHER_REPORT_RE = re.compile("^[^-]* - (.*), ((?:January|February|March|April|May|June|July|August|September|October|November|December) [0-3]?[0-9], 20[0-9][0-9])$")
+
+def other_report_from(result, year_range):
+  link = result.find("a")
+  report_id = inspector.sanitize(clean_text("-".join(link.text.replace("/", "-").replace("'", "").replace(":", "").split())))
+  report_id = re.sub('--*', '-', report_id)
+  print(repr(report_id))
+  report_url = urljoin(OTHER_REPORTS_URL, link.get('href'))
+
+  match = OTHER_REPORT_RE.match(inspector.sanitize(clean_text(link.text)))
+  title = match.group(1)
+  published_on_text = match.group(2)
+  published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  report = {
+    'inspector': "ncua",
+    'inspector_url': "http://www.ncua.gov/about/Leadership/Pages/page_oig.aspx",
+    'agency': "ncua",
+    'agency_name': "National Credit Union Administration",
+    'type': "other",
     'report_id': report_id,
     'url': report_url,
     'title': title,
