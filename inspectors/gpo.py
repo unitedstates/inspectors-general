@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import re
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -52,6 +53,10 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+IT_CONTROLS_RE = re.compile("Review of Information Technology Controls "
+  "in Support of the +(?:CFS|Consolidated Financial Statement) Audit for the "
+  "Year Ended September 30, (20[0-9][0-9])")
+
 def report_from(result, landing_url, report_type, year_range):
   title = result.select("td")[-1].text
 
@@ -59,6 +64,9 @@ def report_from(result, landing_url, report_type, year_range):
     unreleased = True
     report_url = None
     report_id = inspector.slugify("-".join(title.split())[:50])
+    it_controls_match = IT_CONTROLS_RE.match(title)
+    if it_controls_match:
+      report_id = "%s-%s" % (report_id, it_controls_match.group(1))
   else:
     unreleased = False
     link = result.find("a")
