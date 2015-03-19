@@ -201,12 +201,6 @@ def run(options):
     relative_url = state_link.get('href')
     state_name = state_link.text.strip()
     state_url = urljoin(ARCHIVES_URL, relative_url)
-    if state_url in [
-      "http://archives.hud.gov/offices/oig/reports/pr-vi.cfm",
-      "http://archives.hud.gov/offices/oig/reports/vt.cfm",
-      ]:
-      # Puerto Rico/U.S. Virgin Islands is currently broken
-      continue
     state_body = utils.download(state_url)
     state_page = BeautifulSoup(state_body)
     reports = state_page.select("font > h3")
