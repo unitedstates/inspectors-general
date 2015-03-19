@@ -411,7 +411,7 @@ def do_canned_reports(year_range):
     'program_area': 'Public and Indian Housing',
     'state': 'Georgia'
   }
-  if '2009' in year_range:
+  if 2009 in year_range:
     inspector.save_report(report)
 
 utils.run(run) if (__name__ == "__main__") else None
