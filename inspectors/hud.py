@@ -5,7 +5,7 @@ import logging
 import os
 import re
 from urllib.parse import urljoin
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from utils import utils, inspector
 
 archive = 2001
@@ -203,15 +203,45 @@ def run(options):
     state_url = urljoin(ARCHIVES_URL, relative_url)
     state_body = utils.download(state_url)
     state_page = BeautifulSoup(state_body)
-    reports = state_page.select("font > h3")
-    if not reports:
-      raise AssertionError("No report links found for %s" % state_url)
+    state_container = state_page.h2.parent
 
-    for report in reports:
-      report = report_from_archive(report, state_name, state_url, year_range)
+    # N.B. split_dom is guaranteed to yield at least one element. If the
+    # element doesn't have a number, title, and date, then report_from_archive()
+    # will raise an exception. Thus, we don't need to explicitly check whether
+    # at least one report was found.
+    for result in split_dom(state_page, state_container, "hr"):
+      assert len(result.find_all("a")) <= 1
+      report = report_from_archive(result, state_name, state_url, year_range)
       inspector.save_report(report)
 
   do_canned_reports(year_range)
+
+def split_dom(doc, tree, split_tag_name):
+  '''This function takes a BeautifulSoup document, a subtree of that document,
+  and the name of a tag. It returns a generator that rearranges the contents of
+  the subtree, splitting the subtree at tags with the given name, and yielding
+  a series of <div>s containing all tags between them. If the tag to split on
+  occurs at multiple depths in the subtree, it will be flattened as needed to
+  divide it up properly.'''
+  accumulator = doc.new_tag("div")
+  while len(tree):
+    element = tree.contents[0].extract()
+    if element.name == split_tag_name:
+      yield accumulator
+      accumulator = doc.new_tag("div")
+    elif isinstance(element, Tag) and element.find(split_tag_name):
+      # Recurse through this element and split its contents up
+      first = True
+      for temp in split_dom(doc, element, split_tag_name):
+        if not first:
+          yield accumulator
+          accumulator = doc.new_tag("div")
+        first = False
+        while len(temp):
+          accumulator.append(temp.contents[0].extract())
+    else:
+      accumulator.append(element)
+  yield accumulator
 
 def type_from_report_type_text(report_type_text):
   if report_type_text in ["Audit Reports", 'Audit Guides']:
@@ -332,32 +362,40 @@ def report_from(report_row, year_range):
 
   return report
 
-def report_from_archive(report, state_name, landing_url, year_range):
-  report_link = report.find_previous("a")
-  relative_url = report_link.get('href')
-  report_url = urljoin(landing_url, relative_url)
-  report_filename = relative_url.split("/")[-1]
-  report_id = os.path.splitext(report_filename)[0]  # Strip off the extension
-  title = report.text.strip()
-  summary = report.find_next("p").text.strip()
+ARCHIVE_ID_RE = re.compile("^(?:Audit|Audit\s+Report|Audit\s+Memorandum|Audit-Related\s+Memorandum|Audit\s+Related\s+Memorandum|Audit\s+Report\s+Memorandum|Memorandum|Audit\s+Case|Audit\s+Memorandum\s+Report)\s*(?:No.:|No.|Number:|Number|:|\s)\s*([-A-Z0-9]*)$")
+ARCHIVE_DATE_RE = re.compile("^(?:Issue\s+Date|Date\s+Issued|Issue|ssue\s+Date)\s*:?\s+((?:[A-Z][a-z]*) [0-3]?[0-9], [0-9]{4})$")
+ARCHIVE_TITLE_RE = re.compile("^ ?Title: (.*[^ ]) ?$")
 
-  DATE_REGEX = "(\w+) (\d+)\s?,\s?(\d+)"
-  try:
-    published_on_text_header = report_link.find_parent("p").text
-    published_on_text = "/".join(re.search(DATE_REGEX, published_on_text_header).groups())
-  except AttributeError:
-    try:
-      published_on_text_header = report_link.find_previous("br").previous_sibling
-      published_on_text = "/".join(re.search(DATE_REGEX, published_on_text_header).groups())
-    except (AttributeError, TypeError):
-      try:
-        published_on_text_header = report_link.find_previous("p").text
-        published_on_text = "/".join(re.search(DATE_REGEX, published_on_text_header).groups())
-      except AttributeError:
-        published_on_text_header = report_link.find_previous("p").find_previous("p").find_previous("p").text
-        published_on_text = "/".join(re.search(DATE_REGEX, published_on_text_header).groups())
+def report_from_archive(result, state_name, landing_url, year_range):
+  report_link = result.a
+  if report_link:
+    relative_url = report_link.get('href')
+    report_url = urljoin(landing_url, relative_url)
+  else:
+    report_url = None
 
-  published_on = datetime.datetime.strptime(published_on_text, '%B/%d/%Y')
+  metadata = result.p
+  report_id = None
+  published_on = None
+  for text in metadata.stripped_strings:
+    id_match = ARCHIVE_ID_RE.match(text)
+    if id_match:
+      report_id = id_match.group(1)
+    date_match = ARCHIVE_DATE_RE.match(text)
+    if date_match:
+      published_on_text = date_match.group(1)
+      published_on = datetime.datetime.strptime(published_on_text, "%B %d, %Y")
+  if not report_id:
+    raise Exception("Could not find audit report number on %s\n%s" % \
+        (landing_url, '\n'.join(metadata.stripped_strings)))
+  if not published_on:
+    raise Exception("Could not find audit report date on %s\n%s" % \
+        (landing_url, '\n'.join(metadata.stripped_strings)))
+
+  title_raw = re.sub("\s+", " ", result.h3.text)
+  title = ARCHIVE_TITLE_RE.match(title_raw).group(1)
+  summary = '\n'.join([re.sub("\s+", " ", p.text).strip()
+                       for p in result.find_all("p")])
 
   report = {
     'inspector': 'hud',
@@ -365,7 +403,6 @@ def report_from_archive(report, state_name, landing_url, year_range):
     'agency': 'hud',
     'agency_name': 'Housing and Urban Development',
     'report_id': report_id,
-    'url': report_url,
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
     'landing_url': landing_url,
@@ -373,12 +410,15 @@ def report_from_archive(report, state_name, landing_url, year_range):
     'state': state_name,
     'summary': summary,
   }
+  if report_url:
+    report['url'] = report_url
+  else:
+    report['unreleased'] = True
   if report_id in BAD_LINKS:
     report['unreleased'] = True
     report['missing'] = True
     report['url'] = None
   return report
-
 
 def url_for(year_range, page=1):
   start_year = year_range[0]
