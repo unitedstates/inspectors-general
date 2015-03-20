@@ -210,7 +210,13 @@ def run(options):
     # will raise an exception. Thus, we don't need to explicitly check whether
     # at least one report was found.
     for result in split_dom(state_page, state_container, "hr"):
-      assert len(result.find_all("a")) <= 1
+      link_list = result.find_all("a")
+      if len(link_list) > 1:
+        link_list = [link for link in link_list
+                     if " ".join(link.text.split()) != "Auditee Reponse"]
+        if len(link_list) > 1:
+          raise Exception("Found multiple links on %s, scraper may be broken" \
+              % state_url)
       report = report_from_archive(result, state_name, state_url, year_range)
       inspector.save_report(report)
 
@@ -364,9 +370,9 @@ def report_from(report_row, year_range):
 
   return report
 
-ARCHIVE_ID_RE = re.compile("^(?:Audit|Audit\s+Report|Audit\s+Memorandum|AUDIT\s+MEMORANDUM|Audit-Related\s+Memorandum|Audit\s+Related\s+Memorandum|AUDIT\s+RELATED\s+MEMORANDUM|Audit\s+Report\s+Memorandum|Memorandum|Audit\s+Case|Audit\s+Memorandum\s+Report|Memorandum\s+Report)\s*(?:No\\.:|No:|No\\.|No\\. No\\.|Number:|Number|:|#|\s)\s*([A-Z0-9][-A-Z0-9/ ]*[A-Z0-9])$")
-ARCHIVE_DATE_RE = re.compile("^(?:Issue\s+Date|Date\s+Issued|Date\s+Issue|Issue|ssue\s+Date|\\.Issue\s+Date)\s*:?\s+((?:[A-Z][a-z]*) [0-3]?[0-9], [0-9]{4})$")
-ARCHIVE_TITLE_RE = re.compile("^ ?(Title|Subject|Subjec t): (.*[^ ]) ?$")
+ARCHIVE_ID_RE = re.compile("^(?:Audit|Audit\s+Report|Audit\s+Report:|Audit\s+Memorandum|Audit\s+Memoranda|AUDIT\s+MEMORANDUM|Audit-Related\s+Memorandum|Audit\s+Related\s+Memorandum|AUDIT\s+RELATED\s+MEMORANDUM|Audit\s+Report\s+Memorandum|Memorandum|Audit\s+Case|Audit\s+Memorandum\s+Report|Memorandum\s+Report)\s*(?:No\\.:|No:|No|No\\.|No\\. No\\.|Number:|Number|:|#|\s)\s*([A-Z0-9][-A-Z0-9/ ]*[A-Z0-9])$")
+ARCHIVE_DATE_RE = re.compile("^(?:Issue\s+Date|Issued\s+Date|Date\s+Issued|Date\s+issued|Date\s+Issue|Issue|ssue\s+Date|\\.Issue\s+Date)\s*:?\s+([A-Z][a-z]*) ([0-3]?[0-9]) ?, ([0-9]{4})$")
+ARCHIVE_TITLE_RE = re.compile("^ ?(?:Title|Tite|Subject|Subjec t): (.*[^ ]) ?$")
 
 def report_from_archive(result, state_name, landing_url, year_range):
   report_link = result.a
@@ -387,8 +393,8 @@ def report_from_archive(result, state_name, landing_url, year_range):
         report_id = id_match.group(1).replace('/', '-')
       date_match = ARCHIVE_DATE_RE.match(text)
       if date_match:
-        published_on_text = date_match.group(1)
-        published_on = datetime.datetime.strptime(published_on_text, "%B %d, %Y")
+        published_on_text = " ".join(date_match.groups())
+        published_on = datetime.datetime.strptime(published_on_text, "%B %d %Y")
       if report_id and published_on:
         break
     metadata_candidate = metadata_candidate.next_element
