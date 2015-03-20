@@ -194,7 +194,8 @@ def run(options):
 
   archives_body = utils.download(ARCHIVES_URL)
   archives_page = BeautifulSoup(archives_body)
-  state_links = archives_page.find("table", {"bgcolor": "CCCCCC"}).find_all("a")
+  state_links = archives_page.find("table", {"bgcolor": "CCCCCC"}). \
+      table.find_all("a")
   if not state_links:
     raise AssertionError("No state links found for %s" % ARCHIVES_URL)
   for state_link in state_links:
