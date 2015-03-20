@@ -5,7 +5,7 @@ import logging
 import os
 import re
 from urllib.parse import urljoin
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, Tag, NavigableString
 from utils import utils, inspector
 
 archive = 2001
@@ -233,12 +233,14 @@ def split_dom(doc, tree, split_tag_name):
       # Recurse through this element and split its contents up
       first = True
       for temp in split_dom(doc, element, split_tag_name):
-        if not first:
+        if first:
+          while len(temp):
+            x = temp.contents[0].extract()
+            accumulator.append(x)
+        else:
           yield accumulator
-          accumulator = doc.new_tag("div")
+          accumulator = temp
         first = False
-        while len(temp):
-          accumulator.append(temp.contents[0].extract())
     else:
       accumulator.append(element)
   yield accumulator
@@ -362,9 +364,9 @@ def report_from(report_row, year_range):
 
   return report
 
-ARCHIVE_ID_RE = re.compile("^(?:Audit|Audit\s+Report|Audit\s+Memorandum|Audit-Related\s+Memorandum|Audit\s+Related\s+Memorandum|Audit\s+Report\s+Memorandum|Memorandum|Audit\s+Case|Audit\s+Memorandum\s+Report)\s*(?:No.:|No.|Number:|Number|:|\s)\s*([-A-Z0-9]*)$")
-ARCHIVE_DATE_RE = re.compile("^(?:Issue\s+Date|Date\s+Issued|Issue|ssue\s+Date)\s*:?\s+((?:[A-Z][a-z]*) [0-3]?[0-9], [0-9]{4})$")
-ARCHIVE_TITLE_RE = re.compile("^ ?Title: (.*[^ ]) ?$")
+ARCHIVE_ID_RE = re.compile("^(?:Audit|Audit\s+Report|Audit\s+Memorandum|AUDIT\s+MEMORANDUM|Audit-Related\s+Memorandum|Audit\s+Related\s+Memorandum|AUDIT\s+RELATED\s+MEMORANDUM|Audit\s+Report\s+Memorandum|Memorandum|Audit\s+Case|Audit\s+Memorandum\s+Report|Memorandum\s+Report)\s*(?:No\\.:|No:|No\\.|No\\. No\\.|Number:|Number|:|#|\s)\s*([A-Z0-9][-A-Z0-9/ ]*[A-Z0-9])$")
+ARCHIVE_DATE_RE = re.compile("^(?:Issue\s+Date|Date\s+Issued|Date\s+Issue|Issue|ssue\s+Date|\\.Issue\s+Date)\s*:?\s+((?:[A-Z][a-z]*) [0-3]?[0-9], [0-9]{4})$")
+ARCHIVE_TITLE_RE = re.compile("^ ?(Title|Subject|Subjec t): (.*[^ ]) ?$")
 
 def report_from_archive(result, state_name, landing_url, year_range):
   report_link = result.a
@@ -374,23 +376,26 @@ def report_from_archive(result, state_name, landing_url, year_range):
   else:
     report_url = None
 
-  metadata = result.p
   report_id = None
   published_on = None
-  for text in metadata.stripped_strings:
-    id_match = ARCHIVE_ID_RE.match(text)
-    if id_match:
-      report_id = id_match.group(1)
-    date_match = ARCHIVE_DATE_RE.match(text)
-    if date_match:
-      published_on_text = date_match.group(1)
-      published_on = datetime.datetime.strptime(published_on_text, "%B %d, %Y")
+  metadata_candidate = result.contents[0]
+  while metadata_candidate.name != 'h3':
+    if isinstance(metadata_candidate, NavigableString):
+      text = metadata_candidate.strip()
+      id_match = ARCHIVE_ID_RE.match(text)
+      if id_match:
+        report_id = id_match.group(1).replace('/', '-')
+      date_match = ARCHIVE_DATE_RE.match(text)
+      if date_match:
+        published_on_text = date_match.group(1)
+        published_on = datetime.datetime.strptime(published_on_text, "%B %d, %Y")
+      if report_id and published_on:
+        break
+    metadata_candidate = metadata_candidate.next_element
   if not report_id:
-    raise Exception("Could not find audit report number on %s\n%s" % \
-        (landing_url, '\n'.join(metadata.stripped_strings)))
+    raise Exception("Could not find audit report number on %s\n%s" % (landing_url, result.contents[:5]))
   if not published_on:
-    raise Exception("Could not find audit report date on %s\n%s" % \
-        (landing_url, '\n'.join(metadata.stripped_strings)))
+    raise Exception("Could not find audit report date on %s\n%s" % (landing_url, result.contents[:5]))
 
   title_raw = re.sub("\s+", " ", result.h3.text)
   title = ARCHIVE_TITLE_RE.match(title_raw).group(1)
