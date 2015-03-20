@@ -219,7 +219,8 @@ def run(options):
           raise Exception("Found multiple links on %s, scraper may be broken" \
               % state_url)
       report = report_from_archive(result, state_name, state_url, year_range)
-      inspector.save_report(report)
+      if report:
+        inspector.save_report(report)
 
   do_canned_reports(year_range)
 
@@ -375,6 +376,8 @@ ARCHIVE_ID_RE = re.compile("^(?:Audit|Audit\s+Report:?|Audit\s+Memorand(?:um|a)|
 ARCHIVE_DATE_RE = re.compile("^(?:\\.?I?ssued?\s+Date|Date\s+[Ii]ssued?|Issue)\s*:?\s+([A-Z][a-z]*) ([0-3]?[0-9]) ?, ([0-9]{4})$")
 ARCHIVE_TITLE_RE = re.compile("^ ?(?:Titl?e|Subjec ?t): (.*[^ ]) ?$")
 
+_seen_report_ids = set()
+
 def report_from_archive(result, state_name, landing_url, year_range):
   report_link = result.a
   if report_link:
@@ -408,6 +411,28 @@ def report_from_archive(result, state_name, landing_url, year_range):
   title = ARCHIVE_TITLE_RE.match(title_raw).group(1)
   summary = '\n'.join([re.sub("\s+", " ", p.text).strip()
                        for p in result.find_all("p")])
+
+  if report_url == "http://archives.hud.gov/offices/oig/reports/files/ig531001.pdf":
+    # Fix typo
+    report_id = "2005-PH-1001"
+  elif report_url == "http://archives.hud.gov/offices/oig/reports/files/ig341801.pdf":
+    # Fix typo
+    report_id = "2003-AT-1801"
+  elif report_url == "http://archives.hud.gov/offices/oig/reports/files/ig231801.pdf":
+    # Fix typo
+    report_id = "2002-PH-1801"
+  elif report_url == "http://archives.hud.gov/offices/oig/reports/files/ig251802.pdf" and title == "Partners for Community Development, Inc., Home Buyers-Lease Purchase HOME Rehabilitation and Accessibility Programs, Sheboygan, Wisconsin":
+    # This report has the wrong number and link
+    report_url = None
+    report_id = report_id + "-WI"
+  elif report_id in _seen_report_ids and report_id in (
+      "97-FW-222-1802",
+      "98-SE-202-1002",
+      "97-AT-203-1805",
+  ):
+    # These reports show up on two pages
+    return
+  _seen_report_ids.add(report_id)
 
   report = {
     'inspector': 'hud',
