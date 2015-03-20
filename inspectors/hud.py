@@ -371,9 +371,9 @@ def report_from(report_row, year_range):
 
   return report
 
-ARCHIVE_ID_RE = re.compile("^(?:Audit|Audit\s+Report|Audit\s+Report:|Audit\s+Memorandum|Audit\s+Memoranda|AUDIT\s+MEMORANDUM|Audit-Related\s+Memorandum|Audit\s+Related\s+Memorandum|AUDIT\s+RELATED\s+MEMORANDUM|Audit\s+Report\s+Memorandum|Memorandum|Audit\s+Case|Audit\s+Memorandum\s+Report|Memorandum\s+Report)\s*(?:No\\.:|No:|No|No\\.|No\\. No\\.|Number:|Number|:|#|\s)\s*([A-Z0-9][-A-Z0-9/ ]*[A-Z0-9])$")
-ARCHIVE_DATE_RE = re.compile("^(?:Issue\s+Date|Issued\s+Date|Date\s+Issued|Date\s+issued|Date\s+Issue|Issue|ssue\s+Date|\\.Issue\s+Date)\s*:?\s+([A-Z][a-z]*) ([0-3]?[0-9]) ?, ([0-9]{4})$")
-ARCHIVE_TITLE_RE = re.compile("^ ?(?:Title|Tite|Subject|Subjec t): (.*[^ ]) ?$")
+ARCHIVE_ID_RE = re.compile("^(?:Audit|Audit\s+Report:?|Audit\s+Memorand(?:um|a)|AUDIT\s+MEMORANDUM|Audit-?\s*Related\s+Memorandum|AUDIT\s+RELATED\s+MEMORANDUM|Audit\s+Report\s+Memorandum|Memorandum|Audit\s+Case|Audit\s+Memorandum\s+Report|Memorandum\s+Report)\s*(?:No\\.?:?|No\\. No\\.|Number:?|:|#|\s)\s*([A-Z0-9][-A-Z0-9/ ]*[A-Z0-9])$")
+ARCHIVE_DATE_RE = re.compile("^(?:\\.?I?ssued?\s+Date|Date\s+[Ii]ssued?|Issue)\s*:?\s+([A-Z][a-z]*) ([0-3]?[0-9]) ?, ([0-9]{4})$")
+ARCHIVE_TITLE_RE = re.compile("^ ?(?:Titl?e|Subjec ?t): (.*[^ ]) ?$")
 
 def report_from_archive(result, state_name, landing_url, year_range):
   report_link = result.a
