@@ -37,6 +37,7 @@ REPORT_PUBLISHED_MAPPING = {
   "PCIG_Agency_Policies_Related_to_Volunteer_Sexual_Assault_Allegations": datetime.datetime(2014, 11, 21),
   "PCIG_Investigative_Review_of_a_Volunteer_Death_in_Peace_Corps_China": datetime.datetime(2014, 11, 1),
   "PCIG_Agency_Response_to_the_China_Investigative_Review_Nov_2014": datetime.datetime(2015, 1, 23),
+  "PCIG_MAR_Peace_Corps_Cloud_Computing_Pilot_Program": datetime.datetime(2015, 3, 17),
 }
 
 REPORT_TYPE_MAP = {
