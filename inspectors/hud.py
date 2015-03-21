@@ -347,6 +347,8 @@ def report_from(report_row, year_range):
     else:
       raise AssertionError("Report: %s did not have a report url and is not unreleased" % landing_url)
 
+  _seen_report_ids.add(report_id)
+
   report = {
     'inspector': 'hud',
     'inspector_url': 'http://www.hudoig.gov/',
@@ -425,12 +427,9 @@ def report_from_archive(result, state_name, landing_url, year_range):
     # This report has the wrong number and link
     report_url = None
     report_id = report_id + "-WI"
-  elif report_id in _seen_report_ids and report_id in (
-      "97-FW-222-1802",
-      "98-SE-202-1002",
-      "97-AT-203-1805",
-  ):
-    # These reports show up on two pages
+  elif report_id in _seen_report_ids:
+    # Some archive reports appear on more than one state page
+    # Many archive reports also appear on the main report site
     return
   _seen_report_ids.add(report_id)
 
@@ -482,7 +481,8 @@ def do_canned_reports(year_range):
     'program_area': 'Public and Indian Housing',
     'state': 'Georgia'
   }
-  if 2009 in year_range:
+  if 2009 in year_range and report['report_id'] not in _seen_report_ids:
     inspector.save_report(report)
+    _seen_report_ids.add(report['report_id'])
 
 utils.run(run) if (__name__ == "__main__") else None
