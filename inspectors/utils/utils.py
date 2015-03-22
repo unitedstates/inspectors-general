@@ -36,6 +36,7 @@ scraper.mount("https://www.sba.gov/", Tls1HttpAdapter())
 # ugh
 WHITELIST_INSECURE_DOMAINS = (
   "https://www.ignet.gov",
+  "https://www.fca.gov",
 )
 
 # will pass correct options on to individual scrapers whether
