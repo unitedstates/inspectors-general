@@ -152,14 +152,14 @@ def report_from(result, reports_page, report_type, year_range):
     id_text = None
     summary = ""
     for p in result.select("p"):
-      text = p.text.strip()
+      text = inspector.sanitize(p.text.strip())
       summary += text + "\n\n"
       if text.lower().strip("-").strip().startswith("case id"):
         id_text = text
     summary = summary.strip()
     if not id_text:
       for div in result.select("div"):
-        text = div.text.strip()
+        text = inspector.sanitize(div.text.strip())
         if text.lower().strip("-").strip().startswith("case id"):
           id_text = text
     if not id_text:

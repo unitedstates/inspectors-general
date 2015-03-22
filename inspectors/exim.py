@@ -4,6 +4,7 @@ from utils import utils, inspector
 from bs4 import BeautifulSoup
 from bs4.element import Tag, NavigableString
 from datetime import datetime
+import os.path
 import re
 
 archive = 2007
@@ -148,7 +149,7 @@ def report_from(all_text, link_text, link_url, page_url, published_on):
   elif text_match:
     report_id = text_match.group(1)
   elif link_url.rfind("loader.cfm") == -1:
-    report_id = link_url[link_url.rfind('/') + 1 : link_url.rfind('.')]
+    report_id = os.path.splitext(os.path.basename(link_url))[0]
   else:
     # we could get the server's filename from the Content-Disposition header
     # but that would require hitting the network and lots of parsing
@@ -161,6 +162,9 @@ def report_from(all_text, link_text, link_url, page_url, published_on):
   elif link_url.find("loader.cfm") != -1:
     file_type = "pdf"
   elif link_url.endswith(".cfm") or link_url.endswith(".htm") or link_url.endswith(".html"):
+    file_type = "htm"
+  elif link_url.startswith("http://www.justice.gov/") and \
+      not os.path.splitext(os.path.basename(link_url))[1]:
     file_type = "htm"
   else:
     raise Exception("Unable to guess file type\n%s" % link_url)

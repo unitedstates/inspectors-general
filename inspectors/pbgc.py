@@ -29,6 +29,7 @@ HEADER_ROW_TEXT = [
   'Audits',
   'Evaluations',
   'Report Title',
+  'Management Advisory Reports',
 ]
 PDF_REGEX = re.compile("\.pdf")
 
