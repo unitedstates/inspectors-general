@@ -290,14 +290,25 @@ def extract_metadata(report):
 # relies on putting text next to report_path
 def extract_report(report):
   report_path = path_for(report, report['file_type'])
+  real_report_path = os.path.abspath(os.path.expandvars(os.path.join(utils.data_dir(), report_path)))
+
+  text_path = "%s.txt" % os.path.splitext(report_path)[0]
+  real_text_path = os.path.abspath(os.path.expandvars(os.path.join(utils.data_dir(), text_path)))
+
+  if os.path.exists(real_text_path):
+    # This report has already had its text extracted
+    return text_path
 
   file_type_lower = report['file_type'].lower()
   if file_type_lower == "pdf":
-    return utils.text_from_pdf(report_path)
+    utils.text_from_pdf(real_report_path, real_text_path)
+    return text_path
   elif file_type_lower == "doc":
-    return utils.text_from_doc(report_path)
+    utils.text_from_doc(real_report_path, real_text_path)
+    return text_path
   elif file_type_lower in FILE_EXTENSIONS_HTML:
-    return utils.text_from_html(report_path)
+    utils.text_from_html(real_report_path, real_text_path)
+    return text_path
   else:
     logging.warn("Unknown file type, don't know how to extract text!")
     return None
@@ -314,9 +325,6 @@ def write_report(report):
 
 def path_for(report, ext):
   return os.path.join(report['inspector'], str(report['year']), report['report_id'], "report.%s" % ext)
-
-def cache(inspector, path):
-  return os.path.join(utils.cache_dir(), inspector, path)
 
 # get year for a report from its publish date
 def year_from(report):

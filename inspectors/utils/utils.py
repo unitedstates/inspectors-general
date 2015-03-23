@@ -188,11 +188,7 @@ def log_http_error(e, url):
 
 # uses BeautifulSoup to do a naive extraction of text from HTML,
 # then writes it and returns the /data-relative path.
-def text_from_html(html_path):
-  real_html_path = os.path.join(data_dir(), html_path)
-  text_path = "%s.txt" % os.path.splitext(html_path)[0]
-  real_text_path = os.path.join(data_dir(), text_path)
-
+def text_from_html(real_html_path, real_text_path):
   html = open(real_html_path, encoding='utf-8').read()
   doc = BeautifulSoup(html)
 
@@ -207,7 +203,6 @@ def text_from_html(html_path):
   text = "\n".join(lines)
 
   write(text, real_text_path, binary=False)
-  return text_path
 
 def dont_verify(url):
   if url.startswith("https:"):
@@ -218,51 +213,37 @@ def dont_verify(url):
 
 # uses pdftotext to get text out of PDFs,
 # then writes it and returns the /data-relative path.
-def text_from_pdf(pdf_path):
+def text_from_pdf(real_pdf_path, real_text_path):
   try:
     subprocess.Popen(["pdftotext", "-v"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
   except FileNotFoundError:
     logging.warn("Install pdftotext to extract text! The pdftotext executable must be in a directory that is in your PATH environment variable.")
-    return None
-
-  real_pdf_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), pdf_path)))
-  text_path = "%s.txt" % os.path.splitext(pdf_path)[0]
-  real_text_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), text_path)))
+    return
 
   try:
     subprocess.check_call(["pdftotext", "-layout", real_pdf_path, real_text_path], shell=False)
   except subprocess.CalledProcessError as exc:
-    logging.warn("Error extracting text to %s:\n\n%s" % (text_path, format_exception(exc)))
-    return None
+    logging.warn("Error extracting text to %s:\n\n%s" % (real_text_path, format_exception(exc)))
+    return
 
-  if os.path.exists(real_text_path):
-    return text_path
-  else:
-    logging.warn("Text not extracted to %s" % text_path)
-    return None
+  if not os.path.exists(real_text_path):
+    logging.warn("Text not extracted to %s" % real_text_path)
 
-def text_from_doc(doc_path):
+def text_from_doc(real_doc_path, real_text_path):
   try:
     subprocess.Popen(["abiword", "-?"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
   except FileNotFoundError:
     logging.warn("Install AbiWord to extract text! The abiword executable must be in a directory that is in your PATH environment variable.")
-    return None
-
-  real_doc_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), doc_path)))
-  text_path = "%s.txt" % os.path.splitext(doc_path)[0]
-  real_text_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), text_path)))
+    return
 
   try:
     subprocess.check_call(["abiword", real_doc_path, "--to", "txt"], shell=False)
   except subprocess.CalledProcessError as exc:
-    logging.warn("Error extracting text to %s:\n\n%s" % (text_path, format_exception(exc)))
-    return None
+    logging.warn("Error extracting text to %s:\n\n%s" % (real_text_path, format_exception(exc)))
+    return
 
-  if os.path.exists(real_text_path):
-    return text_path
-  else:
-    logging.warn("Text not extracted to %s" % text_path)
-    return None
+  if not os.path.exists(real_text_path):
+    logging.warn("Text not extracted to %s" % real_text_path)
 
 PDF_PAGE_RE = re.compile("Pages: +([0-9]+)\r?\n")
 PDF_CREATION_DATE_RE = re.compile("CreationDate: +([^\r\n]*)\r?\n")
@@ -419,8 +400,6 @@ def data_dir():
   if admin.config and admin.config.get('data_directory'):
     return admin.config.get('data_directory')
   return "data"
-def cache_dir():
-  return "cache"
 
 def write(content, destination, binary=False):
   mkdir_p(os.path.dirname(destination))
