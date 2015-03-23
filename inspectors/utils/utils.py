@@ -419,8 +419,6 @@ def data_dir():
   if admin.config and admin.config.get('data_directory'):
     return admin.config.get('data_directory')
   return "data"
-def cache_dir():
-  return "cache"
 
 def write(content, destination, binary=False):
   mkdir_p(os.path.dirname(destination))

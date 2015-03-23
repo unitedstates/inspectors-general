@@ -315,9 +315,6 @@ def write_report(report):
 def path_for(report, ext):
   return os.path.join(report['inspector'], str(report['year']), report['report_id'], "report.%s" % ext)
 
-def cache(inspector, path):
-  return os.path.join(utils.cache_dir(), inspector, path)
-
 # get year for a report from its publish date
 def year_from(report):
   return int(report['published_on'].split("-")[0])
