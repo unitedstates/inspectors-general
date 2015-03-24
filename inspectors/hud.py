@@ -447,13 +447,13 @@ def report_from_archive(result, state_name, landing_url, year_range):
     'summary': summary,
   }
   if report_url:
-    report['url'] = report_url
+    if os.path.splitext(os.path.basename(report_url))[0] in BAD_LINKS:
+      report['unreleased'] = True
+      report['missing'] = True
+    else:
+      report['url'] = report_url
   else:
     report['unreleased'] = True
-  if report_id in BAD_LINKS:
-    report['unreleased'] = True
-    report['missing'] = True
-    report['url'] = None
   return report
 
 def url_for(year_range, page=1):
