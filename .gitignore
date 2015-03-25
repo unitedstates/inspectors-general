@@ -1,7 +1,6 @@
 *.pyc
 .DS_Store
 /data
-/cache
 /todo.txt
 /admin.yml
 *.out
