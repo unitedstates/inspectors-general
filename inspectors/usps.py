@@ -4,6 +4,7 @@ from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
 import logging
+import os.path
 
 archive = 1998
 #
@@ -112,9 +113,8 @@ def report_from(result):
   report['url'] = link
 
   # get filename, use name as report ID, extension for type
-  filename = link.split("/")[-1]
-  extension = filename.split(".")[-1]
-  report['report_id'] = filename.replace("." + extension, "")
+  filename = os.path.basename(link)
+  report['report_id'] = os.path.splitext(filename)[0]
 
   report['title'] = result.select("h3")[0].text.strip()
 
