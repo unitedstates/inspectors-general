@@ -50,9 +50,6 @@ DUPLICATE_LANDING_URLS = (
 # The report list is not stable, so sometimes we need to fetch the same page of
 # results multiple times to get everything. This constant is the maximum
 # number of times we will do so.
-# For simplicity's sake, we will always retry the last page the maximum number
-# of times. There will probably be less than ten reports on the last page, which
-# fools our heuristic of counting how many unique reports we have seen.
 MAX_RETRIES = 10
 REPORTS_PER_PAGE = 10
 
