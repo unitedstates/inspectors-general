@@ -92,7 +92,7 @@ def preprocess_report(report):
     parsed = urllib.parse.urlparse(report['url'])
     split = parsed.path.split(".")
     if len(split) > 1:
-      report['file_type'] = split[-1]
+      report['file_type'] = split[-1].lower()
 
 ORD_A_LC = ord('a')
 ORD_Z_LC = ord('z')
