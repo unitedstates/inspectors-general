@@ -32,23 +32,35 @@ REPORTS_PER_PAGE = 10
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  if True:
-
-    pages = get_last_page(options)
+  report_types = options.get('types')
+  if not report_types:
+    report_types = "audit,congress,research"
+  report_types = report_types.split(",")
+  categories = [tup for tup in CATEGORIES if (tup[0] in report_types)]
+  for category_name, category_id in categories:
+    pages = get_last_page(options, category_id)
 
     rows_seen = set()
     last_row_count = 0
 
     for page in reversed(range(1, pages + 1)):
       for retry in range(MAX_RETRIES):
-        logging.debug("## Downloading page %i, attempt %i" % (page, retry))
-        url = url_for(options, page)
+        logging.debug("## Downloading %s, page %i, attempt %i" % \
+                             (category_name, page, retry))
+        url = url_for(options, page, category_id)
         body = utils.download(url)
         doc = BeautifulSoup(body)
 
         results = doc.select(".views-row")
         if not results:
-          raise inspector.NoReportsFoundError("USPS")
+          if len(doc.select(".view")[0].contents) == 3 and \
+              len(doc.select(".view > .view-filters")) == 1:
+            # If we only have the filter box, and no content box or "pagerer,"
+            # then that just means this search returned 0 results.
+            pass
+          else:
+            # Otherwise, there's probably something wrong with the scraper.
+            raise inspector.NoReportsFoundError("USPS %s" % category_name)
         for result in results:
           row_key = (str(result.text), result.a['href'])
           if row_key not in rows_seen:
@@ -80,8 +92,8 @@ def run(options):
               (len(rows_seen) - last_row_count, page))
       last_row_count = len(rows_seen)
 
-def get_last_page(options):
-  url = url_for(options, 1)
+def get_last_page(options, category_id):
+  url = url_for(options, 1, category_id)
   body = utils.download(url)
   doc = BeautifulSoup(body)
   return last_page_for(doc)
@@ -166,7 +178,7 @@ def last_page_for(doc):
 # So, if we get a --year, we'll use it as "since", and then
 # ignore reports after parsing their data (before saving them).
 # Inefficient, but more efficient than not supporting --year at all.
-def url_for(options, page=1):
+def url_for(options, page, category_id):
   year_range = inspector.year_range(options, archive)
 
   url = "https://uspsoig.gov/document-library"
@@ -181,13 +193,7 @@ def url_for(options, page=1):
   usps_formatted_datetime = datetime_since.strftime("%Y-%m-%d")
   url += "&field_doc_date_value[value][date]=%s" % usps_formatted_datetime
 
-  only = options.get('types')
-  if not only:
-    only = "audit,congress,research"
-  only = only.split(",")
-  params = ["field_doc_cat_tid[]=%s" % id for (name, id) in CATEGORIES \
-                                                        if (name in only)]
-  url += "&%s" % str.join("&", params)
+  url += "&field_doc_cat_tid[]=%s" % category_id
 
   # they added this crazy thing
   annoying_prefix = "0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C"
