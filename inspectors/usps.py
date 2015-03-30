@@ -35,41 +35,41 @@ def run(options):
   reports_seen = set()
   max_page = None
   for page in range(1, pages + 1):
-    if max_page and (page > max_page):
-      logging.debug("End of pages!")
-      break
+      if max_page and (page > max_page):
+        logging.debug("End of pages!")
+        break
 
-    logging.debug("## Downloading page %i" % page)
-    url = url_for(options, page)
-    body = utils.download(url)
-    doc = BeautifulSoup(body)
+      logging.debug("## Downloading page %i" % page)
+      url = url_for(options, page)
+      body = utils.download(url)
+      doc = BeautifulSoup(body)
 
-    # When the USPS restores their page controls, we can use this again,
-    # which saves one network call each time.
-    max_page = last_page_for(doc)
+      # When the USPS restores their page controls, we can use this again,
+      # which saves one network call each time.
+      max_page = last_page_for(doc)
 
-    results = doc.select(".views-row")
-    if not results:
-      raise inspector.NoReportsFoundError("USPS")
-    for result in results:
-      report = report_from(result)
+      results = doc.select(".views-row")
+      if not results:
+        raise inspector.NoReportsFoundError("USPS")
+      for result in results:
+          report = report_from(result)
 
-      # inefficient enforcement of --year arg, USPS doesn't support it server-side
-      # TODO: change to published_on.year once it's a datetime
-      if inspector.year_from(report) not in year_range:
-        logging.warn("[%s] Skipping report, not in requested range." % report['report_id'])
-        continue
+          # inefficient enforcement of --year arg, USPS doesn't support it server-side
+          # TODO: change to published_on.year once it's a datetime
+          if inspector.year_from(report) not in year_range:
+            logging.warn("[%s] Skipping report, not in requested range." % report['report_id'])
+            continue
 
-      # Check if we've seen the exact same report twice. This happens because
-      # the document library's sort algorithm is not stable. If two reports
-      # have the same date, they switch places randomly, so each page doesn't
-      # necessarily have the same reports each time you load it.
-      dedup_key = (report['title'], report['url'], report['published_on'])
-      if dedup_key in reports_seen:
-        continue
+          # Check if we've seen the exact same report twice. This happens because
+          # the document library's sort algorithm is not stable. If two reports
+          # have the same date, they switch places randomly, so each page doesn't
+          # necessarily have the same reports each time you load it.
+          dedup_key = (report['title'], report['url'], report['published_on'])
+          if dedup_key in reports_seen:
+            continue
 
-      inspector.save_report(report)
-      reports_seen.add(dedup_key)
+          inspector.save_report(report)
+          reports_seen.add(dedup_key)
 
 
 # extract fields from HTML, return dict
