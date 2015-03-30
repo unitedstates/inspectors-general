@@ -23,35 +23,33 @@ archive = 1998
 #             including audits, reports to Congress, and research
 #             excluding press releases, SARC, and testimony to Congress
 
-# This will actually get adjusted downwards on the fly, so pick a huge number.
-# There are 164 pages total (page=163) as of 2014-07-27, so let's try, er, 1000.
-ALL_PAGES = 1000
-
+# The report list is not stable, so sometimes we need to fetch the same page of
+# results multiple times to get everything. This constant is the maximum number
+# of times we will do so.
+MAX_RETRIES = 10
+REPORTS_PER_PAGE = 10
 
 def run(options):
   year_range = inspector.year_range(options, archive)
-  pages = ALL_PAGES
+  pages = get_last_page(options)
 
-  reports_seen = set()
-  max_page = None
-  for page in range(1, pages + 1):
-      if max_page and (page > max_page):
-        logging.debug("End of pages!")
-        break
+  rows_seen = set()
+  last_row_count = 0
 
-      logging.debug("## Downloading page %i" % page)
+  for page in reversed(range(1, pages + 1)):
+    for retry in range(MAX_RETRIES):
+      logging.debug("## Downloading page %i, attempt %i" % (page, retry))
       url = url_for(options, page)
       body = utils.download(url)
       doc = BeautifulSoup(body)
-
-      # When the USPS restores their page controls, we can use this again,
-      # which saves one network call each time.
-      max_page = last_page_for(doc)
 
       results = doc.select(".views-row")
       if not results:
         raise inspector.NoReportsFoundError("USPS")
       for result in results:
+        row_key = (str(result.text), result.a['href'])
+        if row_key not in rows_seen:
+          rows_seen.add(row_key)
           report = report_from(result)
 
           # inefficient enforcement of --year arg, USPS doesn't support it server-side
@@ -60,17 +58,31 @@ def run(options):
             logging.warn("[%s] Skipping report, not in requested range." % report['report_id'])
             continue
 
-          # Check if we've seen the exact same report twice. This happens because
-          # the document library's sort algorithm is not stable. If two reports
-          # have the same date, they switch places randomly, so each page doesn't
-          # necessarily have the same reports each time you load it.
-          dedup_key = (report['title'], report['url'], report['published_on'])
-          if dedup_key in reports_seen:
-            continue
-
           inspector.save_report(report)
-          reports_seen.add(dedup_key)
 
+      if page == pages:
+        # Since we're scraping the last page first, always fetch it only once.
+        # If we lose a report between the last page and the second to last page,
+        # we will see nine new reports on the second to last page, and then
+        # retry that one until we get the tenth.
+        break
+      elif len(rows_seen) == last_row_count + REPORTS_PER_PAGE:
+        # We saw as many new reports as we expected to, so we haven't missed
+        # any, and it's safe to move on to the next page.
+        break
+      elif len(rows_seen) < last_row_count + REPORTS_PER_PAGE:
+        # We were expecting more new reports on this page, try again
+        continue
+      else:
+        raise AssertionError("Found %d new reports on page %d, too many!" % \
+            (len(rows_seen) - last_row_count, page))
+    last_row_count = len(rows_seen)
+
+def get_last_page(options):
+  url = url_for(options, 1)
+  body = utils.download(url)
+  doc = BeautifulSoup(body)
+  return last_page_for(doc)
 
 # extract fields from HTML, return dict
 def report_from(result):
