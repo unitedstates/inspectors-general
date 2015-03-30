@@ -31,52 +31,54 @@ REPORTS_PER_PAGE = 10
 
 def run(options):
   year_range = inspector.year_range(options, archive)
-  pages = get_last_page(options)
 
-  rows_seen = set()
-  last_row_count = 0
+  if True:
 
-  for page in reversed(range(1, pages + 1)):
-    for retry in range(MAX_RETRIES):
-      logging.debug("## Downloading page %i, attempt %i" % (page, retry))
-      url = url_for(options, page)
-      body = utils.download(url)
-      doc = BeautifulSoup(body)
+    pages = get_last_page(options)
 
-      results = doc.select(".views-row")
-      if not results:
-        raise inspector.NoReportsFoundError("USPS")
-      for result in results:
-        row_key = (str(result.text), result.a['href'])
-        if row_key not in rows_seen:
-          rows_seen.add(row_key)
-          report = report_from(result)
+    rows_seen = set()
+    last_row_count = 0
 
-          # inefficient enforcement of --year arg, USPS doesn't support it server-side
-          # TODO: change to published_on.year once it's a datetime
-          if inspector.year_from(report) not in year_range:
-            logging.warn("[%s] Skipping report, not in requested range." % report['report_id'])
-            continue
+    for page in reversed(range(1, pages + 1)):
+      for retry in range(MAX_RETRIES):
+        logging.debug("## Downloading page %i, attempt %i" % (page, retry))
+        url = url_for(options, page)
+        body = utils.download(url)
+        doc = BeautifulSoup(body)
 
-          inspector.save_report(report)
+        results = doc.select(".views-row")
+        if not results:
+          raise inspector.NoReportsFoundError("USPS")
+        for result in results:
+          row_key = (str(result.text), result.a['href'])
+          if row_key not in rows_seen:
+            rows_seen.add(row_key)
+            report = report_from(result)
+            # inefficient enforcement of --year arg, USPS doesn't support it server-side
+            # TODO: change to published_on.year once it's a datetime
+            if inspector.year_from(report) not in year_range:
+              logging.warn("[%s] Skipping report, not in requested range." % report['report_id'])
+              continue
 
-      if page == pages:
-        # Since we're scraping the last page first, always fetch it only once.
-        # If we lose a report between the last page and the second to last page,
-        # we will see nine new reports on the second to last page, and then
-        # retry that one until we get the tenth.
-        break
-      elif len(rows_seen) == last_row_count + REPORTS_PER_PAGE:
-        # We saw as many new reports as we expected to, so we haven't missed
-        # any, and it's safe to move on to the next page.
-        break
-      elif len(rows_seen) < last_row_count + REPORTS_PER_PAGE:
-        # We were expecting more new reports on this page, try again
-        continue
-      else:
-        raise AssertionError("Found %d new reports on page %d, too many!" % \
-            (len(rows_seen) - last_row_count, page))
-    last_row_count = len(rows_seen)
+            inspector.save_report(report)
+
+        if page == pages:
+          # Since we're scraping the last page first, always fetch it only once.
+          # If we lose a report between the last page and the second to last page,
+          # we will see nine new reports on the second to last page, and then
+          # retry that one until we get the tenth.
+          break
+        elif len(rows_seen) == last_row_count + REPORTS_PER_PAGE:
+          # We saw as many new reports as we expected to, so we haven't missed
+          # any, and it's safe to move on to the next page.
+          break
+        elif len(rows_seen) < last_row_count + REPORTS_PER_PAGE:
+          # We were expecting more new reports on this page, try again
+          continue
+        else:
+          raise AssertionError("Found %d new reports on page %d, too many!" % \
+              (len(rows_seen) - last_row_count, page))
+      last_row_count = len(rows_seen)
 
 def get_last_page(options):
   url = url_for(options, 1)
