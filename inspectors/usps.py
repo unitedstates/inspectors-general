@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import logging
 import os.path
+import time
 
 archive = 1998
 #
@@ -231,6 +232,9 @@ def url_for(options, page, category_id):
   # page is 0-indexed
   if page > 1:
     url += "&page=%s%i" % (annoying_prefix, (page - 1))
+
+  # Add a cache buster, this helps once we start retrying pages
+  url += "&t=%i" % int(time.time())
 
   return url
 
