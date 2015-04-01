@@ -41,10 +41,25 @@ def run(options):
     pages = get_last_page(options, category_id)
 
     rows_seen = set()
-    last_row_count = 0
+    pages_to_fetch = range(1, pages + 1)
 
-    for page in reversed(range(1, pages + 1)):
-      for retry in range(MAX_RETRIES):
+    # While the reports themselves may shuffle around, the order of the dates
+    # of the reports and how many of each date we see on each page will stay
+    # constant. This dictionary will hold how many times we see each date.
+    # We can stop retrying pages once we have as many unique reports for each
+    # date as there are slots for that date.
+    date_slot_counts = {}
+
+    # This keeps track of how many unique reports we have found on each date,
+    # for comparison with the numbers above.
+    date_unique_report_counts = {}
+
+    # This dict maps from a report date to a list of pages on which that date
+    # was seen.
+    date_to_pages = {}
+
+    for retry in range(MAX_RETRIES):
+      for page in pages_to_fetch:
         logging.debug("## Downloading %s, page %i, attempt %i" % \
                              (category_name, page, retry))
         url = url_for(options, page, category_id)
@@ -62,9 +77,27 @@ def run(options):
             # Otherwise, there's probably something wrong with the scraper.
             raise inspector.NoReportsFoundError("USPS %s" % category_name)
         for result in results:
+          if retry == 0:
+            timestamp = get_timestamp(result)
+            if timestamp in date_slot_counts:
+              date_slot_counts[timestamp] = date_slot_counts[timestamp] + 1
+            else:
+              date_slot_counts[timestamp] = 1
+              date_unique_report_counts[timestamp] = 0
+
+            if timestamp in date_to_pages:
+              if page not in date_to_pages[timestamp]:
+                date_to_pages[timestamp].append(page)
+            else:
+              date_to_pages[timestamp] = [page]
+
           row_key = (str(result.text), result.a['href'])
-          if row_key not in rows_seen:
+          if not row_key in rows_seen:
             rows_seen.add(row_key)
+            timestamp = get_timestamp(result)
+            date_unique_report_counts[timestamp] = \
+                date_unique_report_counts[timestamp] + 1
+
             report = report_from(result)
             # inefficient enforcement of --year arg, USPS doesn't support it server-side
             # TODO: change to published_on.year once it's a datetime
@@ -74,29 +107,29 @@ def run(options):
 
             inspector.save_report(report)
 
-        if page == pages:
-          # Since we're scraping the last page first, always fetch it only once.
-          # If we lose a report between the last page and the second to last page,
-          # we will see nine new reports on the second to last page, and then
-          # retry that one until we get the tenth.
-          break
-        elif len(rows_seen) == last_row_count + REPORTS_PER_PAGE:
-          # We saw as many new reports as we expected to, so we haven't missed
-          # any, and it's safe to move on to the next page.
-          break
-        elif len(rows_seen) < last_row_count + REPORTS_PER_PAGE:
-          # We were expecting more new reports on this page, try again
-          continue
-        else:
-          raise AssertionError("Found %d new reports on page %d, too many!" % \
-              (len(rows_seen) - last_row_count, page))
-      last_row_count = len(rows_seen)
+      pages_to_fetch = set()
+      for date, report_count in date_unique_report_counts.items():
+        if report_count < date_slot_counts[date]:
+          for page in date_to_pages[date]:
+            pages_to_fetch.add(page)
+      if len(pages_to_fetch) == 0:
+        break
+      pages_to_fetch = list(pages_to_fetch)
+      pages_to_fetch.sort()
 
 def get_last_page(options, category_id):
   url = url_for(options, 1, category_id)
   body = utils.download(url)
   doc = BeautifulSoup(body)
   return last_page_for(doc)
+
+def get_timestamp(result):
+  pieces = result.select("span span")
+  if len(pieces) == 3:
+    timestamp = pieces[2].text.strip()
+  elif len(pieces) == 2:
+    timestamp = pieces[1].text.strip()
+  return timestamp
 
 # extract fields from HTML, return dict
 def report_from(result):
@@ -111,12 +144,9 @@ def report_from(result):
   report_type = type_for(pieces[0].text.strip())
 
   if len(pieces) == 3:
-    timestamp = pieces[2].text.strip()
     report['%s_id' % report_type] = pieces[1].text.strip()
-  elif len(pieces) == 2:
-    timestamp = pieces[1].text.strip()
 
-  published_on = datetime.strptime(timestamp, "%m/%d/%Y")
+  published_on = datetime.strptime(get_timestamp(result), "%m/%d/%Y")
 
   report['type'] = report_type
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
