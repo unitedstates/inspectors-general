@@ -500,10 +500,13 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
     result['subtopic'] = subtopic
   return result
 
-def filter_links(link_list):
+def filter_links(link_list, base_url):
   href_list = [element.get('href') for element in link_list]
+  for i in range(len(href_list)):
+    if href_list[i].startswith("http://go.usa.gov/"):
+      href_list[i] = utils.resolve_redirect(href_list[i])
   href_list = [urldefrag(url)[0] for url in href_list]
-  filtered_list = [href for href in href_list \
+  filtered_list = [urljoin(base_url, href) for href in href_list \
       if href and href not in BLACKLIST_REPORT_URLS and \
       not href.startswith("mailto:")]
   if len(filtered_list) == 2 and filtered_list[0] == filtered_list[1]:
@@ -533,19 +536,14 @@ def report_from_landing_url(report_url):
     if published_on:
       break
 
-  url_list = filter_links(doc.select("#leftContentInterior p.download a"))
+  url_list = filter_links(doc.select("#leftContentInterior p.download a"),
+                          report_url)
   if not url_list:
-    url_list = filter_links(doc.select("#leftContentInterior p a"))
+    url_list = filter_links(doc.select("#leftContentInterior p a"), report_url)
   if len(url_list) > 1:
     raise Exception("Found multiple links on %s:\n%s" % (report_url, url_list))
-
-  if url_list:
-    relative_url = url_list[0]
-  else:
-    relative_url = None
-
-  if relative_url is not None:
-    report_url = urljoin(report_url, relative_url)
+  elif len(url_list) == 1:
+    report_url = url_list[0]
 
   return report_url, published_on
 

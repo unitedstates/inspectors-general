@@ -175,6 +175,13 @@ def post(url, data=None, headers=None, **kwargs):
 
   return response
 
+def resolve_redirect(url):
+  res = scraper.request(method='HEAD', url=url, allow_redirects=False)
+  if "Location" in res.headers:
+    return res.headers["Location"]
+  else:
+    return url
+
 def connection_errors():
   return (scrapelib.HTTPError, requests.exceptions.ConnectionError, requests.packages.urllib3.exceptions.MaxRetryError)
 
