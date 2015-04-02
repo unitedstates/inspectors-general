@@ -4,14 +4,14 @@ from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
 import logging
+import os.path
+import time
 
 archive = 1998
 #
 # options:
 #   standard since/year options for a year range to fetch from.
 #
-#   pages - number of pages to fetch. defaults to all of them (using a very high number)
-#   begin - what page number to begin at. defaults to 1.
 #   types - limit reports fetched to one or more types, comma-separated. e.g. "audit,testimony"
 #          can include:
 #             audit - Audit Reports
@@ -24,57 +24,113 @@ archive = 1998
 #             including audits, reports to Congress, and research
 #             excluding press releases, SARC, and testimony to Congress
 
-# This will actually get adjusted downwards on the fly, so pick a huge number.
-# There are 164 pages total (page=163) as of 2014-07-27, so let's try, er, 1000.
-ALL_PAGES = 1000
-
+# The report list is not stable, so sometimes we need to fetch the same page of
+# results multiple times to get everything. This constant is the maximum number
+# of times we will do so.
+MAX_RETRIES = 10
+REPORTS_PER_PAGE = 10
 
 def run(options):
   year_range = inspector.year_range(options, archive)
-  pages = options.get('pages', ALL_PAGES)
 
-  # default to starting at page 1
-  begin = int(options.get('begin', 1))
+  report_types = options.get('types')
+  if not report_types:
+    report_types = "audit,congress,research"
+  report_types = report_types.split(",")
+  categories = [tup for tup in CATEGORIES if (tup[0] in report_types)]
+  for category_name, category_id in categories:
+    pages = get_last_page(options, category_id)
 
-  reports_seen = set()
-  max_page = None
-  for page in range(begin, (int(pages) + 1)):
-    if max_page and (page > max_page):
-      logging.debug("End of pages!")
-      break
+    rows_seen = set()
+    pages_to_fetch = range(1, pages + 1)
 
-    logging.debug("## Downloading page %i" % page)
-    url = url_for(options, page)
-    body = utils.download(url)
-    doc = BeautifulSoup(body)
+    # While the reports themselves may shuffle around, the order of the dates
+    # of the reports and how many of each date we see on each page will stay
+    # constant. This dictionary will hold how many times we see each date.
+    # We can stop retrying pages once we have as many unique reports for each
+    # date as there are slots for that date.
+    date_slot_counts = {}
 
-    # When the USPS restores their page controls, we can use this again,
-    # which saves one network call each time.
-    max_page = last_page_for(doc)
+    # This keeps track of how many unique reports we have found on each date,
+    # for comparison with the numbers above.
+    date_unique_report_counts = {}
 
-    results = doc.select(".views-row")
-    if not results:
-      raise inspector.NoReportsFoundError("USPS")
-    for result in results:
-      report = report_from(result)
+    # This dict maps from a report date to a list of pages on which that date
+    # was seen.
+    date_to_pages = {}
 
-      # inefficient enforcement of --year arg, USPS doesn't support it server-side
-      # TODO: change to published_on.year once it's a datetime
-      if inspector.year_from(report) not in year_range:
-        logging.warn("[%s] Skipping report, not in requested range." % report['report_id'])
-        continue
+    for retry in range(MAX_RETRIES):
+      for page in pages_to_fetch:
+        logging.debug("## Downloading %s, page %i, attempt %i" % \
+                             (category_name, page, retry))
+        url = url_for(options, page, category_id)
+        body = utils.download(url)
+        doc = BeautifulSoup(body)
 
-      # Check if we've seen the exact same report twice. This happens because
-      # the document library's sort algorithm is not stable. If two reports
-      # have the same date, they switch places randomly, so each page doesn't
-      # necessarily have the same reports each time you load it.
-      dedup_key = (report['title'], report['url'], report['published_on'])
-      if dedup_key in reports_seen:
-        continue
+        results = doc.select(".views-row")
+        if not results:
+          if len(doc.select(".view")[0].contents) == 3 and \
+              len(doc.select(".view > .view-filters")) == 1:
+            # If we only have the filter box, and no content box or "pagerer,"
+            # then that just means this search returned 0 results.
+            pass
+          else:
+            # Otherwise, there's probably something wrong with the scraper.
+            raise inspector.NoReportsFoundError("USPS %s" % category_name)
+        for result in results:
+          if retry == 0:
+            timestamp = get_timestamp(result)
+            if timestamp in date_slot_counts:
+              date_slot_counts[timestamp] = date_slot_counts[timestamp] + 1
+            else:
+              date_slot_counts[timestamp] = 1
+              date_unique_report_counts[timestamp] = 0
 
-      inspector.save_report(report)
-      reports_seen.add(dedup_key)
+            if timestamp in date_to_pages:
+              if page not in date_to_pages[timestamp]:
+                date_to_pages[timestamp].append(page)
+            else:
+              date_to_pages[timestamp] = [page]
 
+          row_key = (str(result.text), result.a['href'])
+          if not row_key in rows_seen:
+            rows_seen.add(row_key)
+            timestamp = get_timestamp(result)
+            date_unique_report_counts[timestamp] = \
+                date_unique_report_counts[timestamp] + 1
+
+            report = report_from(result)
+            # inefficient enforcement of --year arg, USPS doesn't support it server-side
+            # TODO: change to published_on.year once it's a datetime
+            if inspector.year_from(report) not in year_range:
+              logging.warn("[%s] Skipping report, not in requested range." % report['report_id'])
+              continue
+
+            inspector.save_report(report)
+
+      pages_to_fetch = set()
+      for date, report_count in date_unique_report_counts.items():
+        if report_count < date_slot_counts[date]:
+          for page in date_to_pages[date]:
+            pages_to_fetch.add(page)
+      if len(pages_to_fetch) == 0:
+        break
+      pages_to_fetch = list(pages_to_fetch)
+      pages_to_fetch.sort()
+
+def get_last_page(options, category_id):
+  url = url_for(options, 1, category_id)
+  body = utils.download(url)
+  doc = BeautifulSoup(body)
+  return last_page_for(doc)
+
+def get_timestamp(result):
+  pieces = result.select("span span")
+  if len(pieces) == 3:
+    timestamp = pieces[2].text.strip()
+  elif len(pieces) == 2:
+    timestamp = pieces[1].text.strip()
+  return timestamp
 
 # extract fields from HTML, return dict
 def report_from(result):
@@ -89,12 +145,9 @@ def report_from(result):
   report_type = type_for(pieces[0].text.strip())
 
   if len(pieces) == 3:
-    timestamp = pieces[2].text.strip()
     report['%s_id' % report_type] = pieces[1].text.strip()
-  elif len(pieces) == 2:
-    timestamp = pieces[1].text.strip()
 
-  published_on = datetime.strptime(timestamp, "%m/%d/%Y")
+  published_on = datetime.strptime(get_timestamp(result), "%m/%d/%Y")
 
   report['type'] = report_type
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
@@ -112,9 +165,8 @@ def report_from(result):
   report['url'] = link
 
   # get filename, use name as report ID, extension for type
-  filename = link.split("/")[-1]
-  extension = filename.split(".")[-1]
-  report['report_id'] = filename.replace("." + extension, "")
+  filename = os.path.basename(link)
+  report['report_id'] = os.path.splitext(filename)[0]
 
   report['title'] = result.select("h3")[0].text.strip()
 
@@ -157,7 +209,7 @@ def last_page_for(doc):
 # So, if we get a --year, we'll use it as "since", and then
 # ignore reports after parsing their data (before saving them).
 # Inefficient, but more efficient than not supporting --year at all.
-def url_for(options, page=1):
+def url_for(options, page, category_id):
   year_range = inspector.year_range(options, archive)
 
   url = "https://uspsoig.gov/document-library"
@@ -172,13 +224,7 @@ def url_for(options, page=1):
   usps_formatted_datetime = datetime_since.strftime("%Y-%m-%d")
   url += "&field_doc_date_value[value][date]=%s" % usps_formatted_datetime
 
-  only = options.get('types')
-  if not only:
-    only = "audit,congress,research"
-  only = only.split(",")
-  params = ["field_doc_cat_tid[]=%s" % id for (name, id) in CATEGORIES \
-                                                        if (name in only)]
-  url += "&%s" % str.join("&", params)
+  url += "&field_doc_cat_tid[]=%s" % category_id
 
   # they added this crazy thing
   annoying_prefix = "0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C"
@@ -186,6 +232,9 @@ def url_for(options, page=1):
   # page is 0-indexed
   if page > 1:
     url += "&page=%s%i" % (annoying_prefix, (page - 1))
+
+  # Add a cache buster, this helps once we start retrying pages
+  url += "&t=%i" % int(time.time())
 
   return url
 
