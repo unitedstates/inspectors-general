@@ -296,6 +296,10 @@ def deduplicate_url(url):
   if url.startswith('/'):
     url = "http://www.exim.gov" + url
 
+  # This report has been uploaded twice under different file names.
+  if url == "http://www.exim.gov/oig/reports/upload/OIG-AR-15-02-FY2014-Financial-Statement-Audit-Management-Letter.pdf":
+    url = "http://www.exim.gov/oig/reports/upload/Fiscal-Year-2014-Financial-Statement-Audit-Management-Letter.pdf"
+
   # At least two files are uploaded twice, once in /oig/uploads/ and once in
   # /oig/uploads/reports/, with the same name in each. Check both locations
   # for duplicates.
