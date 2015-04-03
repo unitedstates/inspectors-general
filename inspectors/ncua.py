@@ -74,7 +74,11 @@ def clean_text(text):
   return text.replace("\u200b", " ").strip()
 
 def report_from(result, report_type, year_range):
-  link = result.find("a")
+  links = result.select("a[href]")
+  if len(links) == 1:
+    link = links[0]
+  else:
+    raise Exception("Found multiple links in one row\n%s" % links)
   report_id = clean_text("-".join(link.text.replace("/", "-").replace("'", "").replace(":", "").split()))
   report_url = urljoin(AUDIT_REPORTS_URL, link.get('href'))
   try:
