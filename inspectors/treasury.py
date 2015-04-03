@@ -255,11 +255,9 @@ def report_from(result, page_url, report_type, year_range):
     # If the first word of the text doesn't contain a hyphen,
     # then it's probably part of the title, and not a tracking number.
     # In this case, fall back to the URL.
-    print("before", report_id)
     report_filename = report_url.split("/")[-1]
     report_id, extension = os.path.splitext(report_filename)
     report_id = unquote(report_id)
-    print("after", report_id)
 
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
