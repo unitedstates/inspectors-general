@@ -7,7 +7,7 @@ import os
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# http://oig.state.gov/reports
+# https://oig.state.gov/reports
 archive = 2004
 
 #
@@ -27,8 +27,8 @@ REPORT_TYPE_MAP = {
   "Strategic and Work Plans": "other",
 }
 
-BASE_URL = "http://oig.state.gov/reports?page={page}"
-TESTIMONY_BASE_URL = "http://oig.state.gov/testimony-news?page={page}"
+BASE_URL = "https://oig.state.gov/reports?page={page}"
+TESTIMONY_BASE_URL = "https://oig.state.gov/testimony-news?page={page}"
 ALL_PAGES = 1000
 
 def run(options):
@@ -110,7 +110,7 @@ def report_from(result, year_range):
 
   result = {
     'inspector': 'state',
-    'inspector_url': 'http://oig.state.gov/',
+    'inspector_url': 'https://oig.state.gov/',
     'agency': agency,
     'agency_name': agency_name,
     'report_id': report_id,
