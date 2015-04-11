@@ -70,11 +70,21 @@ def preprocess_report(report):
 
   # strip trailing spaces from common string fields,
   # but leave the presence check for the validate function
-  common_strings = (
-    "published_on", "report_id", "title", "inspector", "inspector_url",
-    "agency", "agency_name", "url", "landing_url", "summary", "file_type"
+  common_strings_strip = (
+    "inspector_url", "url", "landing_url", "file_type"
   )
-  for field in common_strings:
+  for field in common_strings_strip:
+    value = report.get(field)
+    if (value is not None):
+      report[field] = value.strip()
+
+  # sanitize common string fields (strip extra spaces, normalize magic quotes,
+  # normalize dashes to hyphens, etc.)
+  common_strings_sanitize = (
+    "published_on", "report_id", "title", "inspector", "agency", "agency_name",
+    "summary"
+  )
+  for field in common_strings_sanitize:
     value = report.get(field)
     if (value is not None):
       report[field] = sanitize(value)
