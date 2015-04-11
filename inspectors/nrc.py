@@ -22,10 +22,11 @@ archive = 1995
 AUDITS_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/{}/"
 SEMIANNUAL_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr1415/index.html"
 OTHER_REPORT_URLS = [
-  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0304/",
-   "NUREG-BR-0304-"),
-  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0272/",
-   "NUREG-BR-0272-")
+# These brochures have been taken off of the website as of April 7, 2015
+#  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0304/",
+#   "NUREG-BR-0304-"),
+#  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0272/",
+#   "NUREG-BR-0272-")
 ]
 
 BASE_REPORT_URL = "http://www.nrc.gov"
