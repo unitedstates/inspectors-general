@@ -82,6 +82,7 @@ REPORT_PUBLISHED_MAP = {
   "Treasury Freedom of Information Act (FOIA) Request Review": datetime.datetime(2010, 11, 19),
   "OIG-CA-14-017": datetime.datetime(2014, 9, 30),
   "OIG-CA-14-015": datetime.datetime(2014, 9, 4),
+  "OIG15CA012": datetime.datetime(2015, 5, 7),
 }
 
 def run(options):
