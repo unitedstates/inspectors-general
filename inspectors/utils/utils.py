@@ -330,11 +330,10 @@ def check_report_url(report_url):
   if dont_verify(report_url):
     return
 
-  res = scraper.request(method='HEAD', url=report_url)
-  if not res.ok:
-    raise Exception("Received bad status code %s for %s" %
-      (res.status_code, report_url)
-    )
+  try:
+    scraper.request(method='HEAD', url=report_url)
+  except connection_errors() as e:
+    log_http_error(e, report_url)
 
 DOC_PAGE_RE = re.compile("Number of Pages: ([0-9]*),")
 DOC_CREATION_DATE_RE = re.compile("Create Time/Date: ([A-Za-z 0-9:]*),")
