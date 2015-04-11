@@ -58,10 +58,12 @@ def run(options):
 
   # Pull the semiannual reports
   doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
-  results = doc.select("p > a:nth-of-type(1)")
+  results = doc.select("#content + div p a")
   if not results:
     raise inspector.NoReportsFoundError("Department of Labor (semiannal reports)")
   for result in results:
+    if result.text == 'Highlights':
+      continue
     report = semiannual_report_from(result, year_range)
     if report:
       inspector.save_report(report)
