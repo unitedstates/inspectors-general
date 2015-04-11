@@ -94,6 +94,14 @@ def report_from(result, year_url):
     elif 'Response' in link.text:
       response_url = urljoin(BASE_URL, link.get('href'))
 
+  # Fix incomplete URLs and report numbers
+  if report_url == "http://www.oig.dol.gov/public/reports/oa/pre_1998/05-97-107-.pdf":
+    report_url = "http://www.oig.dol.gov/public/reports/oa/pre_1998/05-97-107-10-105.pdf"
+    report_id = "05-97-107-10-105"
+  elif report_url == "http://www.oig.dol.gov/public/reports/oa/2001/2E--0002.pdf":
+    report_url = "http://www.oig.dol.gov/public/reports/oa/2001/2E-10-105-0002.pdf"
+    report_id = "2E-10-105-0002"
+
   UNRELEASED_TEXTS = [
     "This report will not be posted.",
     "This report contains Sensitive Information and will not be posted",
