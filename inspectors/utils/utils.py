@@ -35,8 +35,13 @@ scraper.mount("https://www.sba.gov/", Tls1HttpAdapter())
 
 # ugh
 WHITELIST_INSECURE_DOMAINS = (
-  "https://www.ignet.gov",
-  "https://www.fca.gov",
+  "https://www.ignet.gov/",
+  "https://www.fca.gov/",
+
+  # The following domains will 301 redirect to https://www.ignet.gov/, so
+  # validate=False is needed for these cases as well
+  "http://www.ignet.gov/",
+  "http://ignet.gov/",
 )
 
 # will pass correct options on to individual scrapers whether
@@ -212,10 +217,9 @@ def text_from_html(real_html_path, real_text_path):
   write(text, real_text_path, binary=False)
 
 def dont_verify(url):
-  if url.startswith("https:"):
-    for domain in WHITELIST_INSECURE_DOMAINS:
-      if url.startswith(domain):
-        return True
+  for domain in WHITELIST_INSECURE_DOMAINS:
+    if url.startswith(domain):
+      return True
   return False
 
 # uses pdftotext to get text out of PDFs,
