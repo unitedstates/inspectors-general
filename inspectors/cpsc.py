@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# https://www.cpsc.gov/en/about-cpsc/inspector-general/
+# http://www.cpsc.gov/en/about-cpsc/inspector-general/
 archive = 2003
 
 # options:
@@ -18,10 +18,10 @@ archive = 2003
 # Notes for IG's web team:
 # - Fix the links for BLACKLIST_REPORT_URLS
 
-REPORTS_URL = "https://www.cpsc.gov/en/about-cpsc/inspector-general/"
+REPORTS_URL = "http://www.cpsc.gov/en/about-cpsc/inspector-general/"
 
 BLACKLIST_REPORT_URLS = [
-  'https://www.cpsc.gov/Media/Documents/About/OIG/Audits/CPSC-Fiscal-Year-2009-Financial-Statements-released-November-13-2009/',
+  'http://www.cpsc.gov/Media/Documents/About/OIG/Audits/CPSC-Fiscal-Year-2009-Financial-Statements-released-November-13-2009/',
 ]
 
 def run(options):
@@ -78,7 +78,7 @@ def report_from(result, year_range):
 
   report = {
     'inspector': 'cpsc',
-    'inspector_url': 'https://www.cpsc.gov/en/about-cpsc/inspector-general/',
+    'inspector_url': 'http://www.cpsc.gov/en/about-cpsc/inspector-general/',
     'agency': 'cpsc',
     'agency_name': 'Consumer Product Safety Commission',
     'type': report_type,
