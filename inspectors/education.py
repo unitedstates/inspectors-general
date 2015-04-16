@@ -224,6 +224,10 @@ def semiannual_report_from(result, page_url, year_range):
   published_on_text = date_range_text.split("-")[-1].strip()
   published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
   if "thestartingline.ed.gov" in report_url:
     return None
 
@@ -268,6 +272,10 @@ def report_from(result, url, report_type, year_range):
         except AttributeError:
           published_on_text = "/".join(re.search("(\w+) (\d+)", result_text).groups())
           published_on = datetime.datetime.strptime(published_on_text, '%B/%Y')
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
 
   if "thestartingline.ed.gov" in report_url:
     return None

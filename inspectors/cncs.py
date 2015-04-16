@@ -28,7 +28,7 @@ REPORTS_URLS = [
 PEER_REVIEW_2012 = {
   "report_id": "fbrinvestpeer2012_1",
   "landing_url": "http://www.cncsoig.gov/2012-investigations-peer-review",
-  "url": "http://www.cncsoig.gov/sites/default/files/fbrinvestpeer2012_1.pdf",
+  "url": "http://www.cncsoig.gov/sites/default/files/peer_review.pdf",
   "published_on": datetime.datetime(2012, 9, 19),
   "title": "Quality Assessment Review of the Investigative Operations of the Office of Inspector General for the Corporation for National and Community Service Investigative Operations",
   "summary": "Review of the system of internal safeguards and management procedures for the investigative functions of the Office of Inspector General (OIG) for the Corporation for National and Community Service (CNCS) in effect during the period May 1, 2011, through May 18, 2012. Our review was conducted in conformity with the Quality Standards for Investigations and the Quality Assessment Review Guidelines for Investigative Operations of Federal Offices of Inspector General established by the Council of the Inspectors General on Integrity and Efficiency (CIGIE) and the Attorney General's Guidelines for Office of Inspectors General with Statutory Law Enforcement Authority, as applicable."

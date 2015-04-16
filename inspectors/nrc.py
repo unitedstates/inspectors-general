@@ -22,10 +22,11 @@ archive = 1995
 AUDITS_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/{}/"
 SEMIANNUAL_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr1415/index.html"
 OTHER_REPORT_URLS = [
-  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0304/",
-   "NUREG-BR-0304-"),
-  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0272/",
-   "NUREG-BR-0272-")
+# These brochures have been taken off of the website as of April 7, 2015
+#  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0304/",
+#   "NUREG-BR-0304-"),
+#  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0272/",
+#   "NUREG-BR-0272-")
 ]
 
 BASE_REPORT_URL = "http://www.nrc.gov"
@@ -87,7 +88,7 @@ def run(options):
       if not index:
         # Skip the header row
         continue
-      report = other_report_from(result, year_range, id_prefix)
+      report = other_report_from(result, year_range, id_prefix, reports_url)
       if report:
         inspector.save_report(report)
 
@@ -98,7 +99,7 @@ def audit_report_from(result, landing_url, year_range):
   file_type = None
   report_link = result.find("a")
   try:
-    report_url = urljoin(BASE_REPORT_URL, report_link.get('href'))
+    report_url = urljoin(landing_url, report_link.get('href'))
   except AttributeError as exc:
     for unreleased_text in UNRELEASED_TEXTS:
       if unreleased_text in title.lower():
@@ -153,7 +154,7 @@ def audit_report_from(result, landing_url, year_range):
 
 def semiannual_report_from(result, year_range):
   report_link = result.find("a")
-  landing_url = urljoin(BASE_REPORT_URL, report_link.get('href'))
+  landing_url = urljoin(SEMIANNUAL_REPORTS_URL, report_link.get('href'))
 
   landing_page = BeautifulSoup(utils.download(landing_url))
   title = " ".join(landing_page.select("#mainSubFull h1")[0].text.split())
@@ -166,7 +167,7 @@ def semiannual_report_from(result, year_range):
     relative_report_url = landing_url
 
   file_type = None
-  report_url = urljoin(BASE_REPORT_URL, relative_report_url)
+  report_url = urljoin(landing_url, relative_report_url)
   report_filename = report_url.split("/")[-1]
   if report_filename:
     report_id, extension = os.path.splitext(report_filename)
@@ -205,9 +206,9 @@ def semiannual_report_from(result, year_range):
     report['file_type'] = file_type
   return report
 
-def other_report_from(result, year_range, id_prefix):
+def other_report_from(result, year_range, id_prefix, index_url):
   report_link = result.find("a")
-  report_url = urljoin(BASE_REPORT_URL, report_link.get('href'))
+  report_url = urljoin(index_url, report_link.get('href'))
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
   report_id = id_prefix + report_id

@@ -56,6 +56,8 @@ def report_from(result, landing_url, report_type, year_range):
   else:
     unreleased = False
     link = result.find("a")
+    if not link:
+      return None
     # Some reports have incorrect relative paths
     relative_report_url = link.get('href').replace("../", "")
     report_url = urljoin(landing_url, relative_report_url)

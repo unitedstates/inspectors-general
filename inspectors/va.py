@@ -140,6 +140,11 @@ def report_from(result, year_range):
   if not agency_name:
     agency_name = 'Department of Veterans Affairs'
 
+  # Fix a typo
+  if report_id == "11-04130-192" and \
+      report_url == "http://www.va.gov/oig/pubs/VAOIG-11-04130-192.pdf":
+    report_url = "http://www.va.gov/oig/pubs/VAOIG-12-04130-192.pdf"
+
   agency_slug = None
   for name in AGENCY_SLUG_MAP:
     if name in agency_name:
