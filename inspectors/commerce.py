@@ -91,7 +91,12 @@ def report_from(result, topic, topic_url, year_range):
   published_on = datetime.datetime.strptime(published_on_text, '%m.%d.%Y')
   report_type = TYPE_MAP[topic]
 
-  title = result.select("div.row-title")[0].text
+  title = result.select("div.row-title")[0].text.strip()
+
+  if title == "OIG-15-026-A-Abstract":
+    # This row is a duplicate of "USPTO Needs to Strengthen Patent Quality
+    # Assurance Practices," and there isn't a link.
+    return
 
   unreleased = False
   if "not publically released" in title:
