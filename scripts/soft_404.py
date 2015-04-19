@@ -19,7 +19,6 @@ URLS = {
   'gsa': 'http://gsaig.gov/doesyour404work',
   'ncua': 'http://www.ncua.gov/about/Leadership/Pages/doesyour404work',
   'smithsonian': 'http://www.si.edu/OIG/doesyour404work',
-  'state': 'http://oig.state.gov/doesyour404work'
 }
 
 IGS_WITH_BAD_404 = tuple(URLS.keys())
