@@ -5,7 +5,7 @@ import re
 from inspectors.utils import utils
 import logging
 
-PAGE_NOT_FOUND_PATTERN = b"(<title>(404 Page Not Found - CFTC|CPB: Page Not Found|DoD IG - Error Message|404: NOT FOUND|Page Not Found|Maintenance|Page Not Found Smithsonian|404)</title>|That page was not found\\.&#160; If possible we will redirect you to that content now\\.|The Office of Inspector General [(]OIG[)] is an independent unit established by law which is responsible for promoting economy, efficiency, and effectiveness and detecting and preventing fraud, waste, and mismanagement in the General Services Administration's [(]GSA[)] programs and operations\\.)"
+PAGE_NOT_FOUND_PATTERN = b"(<title>(404 Page Not Found - CFTC|CPB: Page Not Found|DoD IG - Error Message|404: NOT FOUND|Page Not Found|Maintenance|Page Not Found Smithsonian|404)</title>|That page was not found\\.&#160; If possible we will redirect you to that content now\\.)"
 PAGE_NOT_FOUND_BYTES_RE = re.compile(PAGE_NOT_FOUND_PATTERN)
 PAGE_NOT_FOUND_STRING_RE = re.compile(PAGE_NOT_FOUND_PATTERN.decode('ascii'))
 
@@ -16,7 +16,6 @@ URLS = {
   'exim': 'http://www.exim.gov/oig/doesyour404work',
   'fec': 'http://www.fec.gov/fecig/doesyour404work',
   'gpo': 'http://www.gpo.gov/oig/doesyour404work',
-  'gsa': 'http://gsaig.gov/doesyour404work',
   'ncua': 'http://www.ncua.gov/about/Leadership/Pages/doesyour404work',
   'smithsonian': 'http://www.si.edu/OIG/doesyour404work',
 }
