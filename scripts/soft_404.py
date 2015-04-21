@@ -31,7 +31,7 @@ def run(options):
   for inspector, url in URLS.items():
     if (not ig_list) or (inspector in ig_list):
       logging.debug("[%s] Checking..." % inspector)
-      result = utils.scraper.urlopen(url)
+      result = utils.scraper.get(url).text
       match = PAGE_NOT_FOUND_STRING_RE.search(result)
       if not match:
         print("False negative for %s" % inspector)

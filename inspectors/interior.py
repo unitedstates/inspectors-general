@@ -36,8 +36,8 @@ POST_DATA = {
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  response = utils.scraper.urlopen(REPORT_SEARCH_URL, method='POST', body=POST_DATA)
-  doc = BeautifulSoup(response)
+  response = utils.scraper.post(REPORT_SEARCH_URL, data=POST_DATA)
+  doc = BeautifulSoup(response.text)
 
   results = doc.select("div.report")
   if not results:
