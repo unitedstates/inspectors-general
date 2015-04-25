@@ -293,7 +293,10 @@ def fetch_from_landing_page(landing_url):
 
   href = link['href'].strip() if link else None
   if href and add_pdf:
-    href = href + ".pdf"
+    if href.endswith(".pd"):
+      href = href + "f"
+    else:
+      href = href + ".pdf"
 
   # some URLs have "/../" in the middle, and the redirects are trouble
   if href:
