@@ -49,12 +49,13 @@ class Soft404HttpAdapter(requests.adapters.HTTPAdapter):
         )
         if data.find(self.SOFT_404_BODY_SIGNATURES[base_domain], 0, 10240) != -1:
           result = super(Soft404HttpAdapter, self).build_response(req, resp)
-          raise scrapelib.HTTPError(result)
+          result.status_code = 404 # tells scrapelib to not retry
+          return result
 
     redirect = resp.get_redirect_location()
     result = super(Soft404HttpAdapter, self).build_response(req, resp)
     if redirect and self.SOFT_404_URLS_RE.match(redirect):
-      raise scrapelib.HTTPError(result)
+      result.status_code = 404 # tells scrapelib to not retry
 
     return result
 
