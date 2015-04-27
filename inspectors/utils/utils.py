@@ -9,6 +9,9 @@ import ssl
 import requests
 import requests.adapters
 import requests.packages.urllib3.poolmanager
+import requests.packages.urllib3.response
+import urllib.parse
+import io
 
 from . import admin
 
@@ -16,6 +19,61 @@ from . import admin
 import scrapelib
 scraper = scrapelib.Scraper(requests_per_minute=120, retry_attempts=3)
 scraper.user_agent = "unitedstates/inspectors-general (https://github.com/unitedstates/inspectors-general)"
+
+class Soft404HttpAdapter(requests.adapters.HTTPAdapter):
+  """Transport adapter that checks all responses against a blacklist of "file
+  not found" pages that are served with 200 status codes."""
+
+  SOFT_404_URLS_RE = re.compile(r"^(http://www\.cftc\.gov/cgi-bin/missing\.pl\?.*|http://www\.dodig\.mil/errorpages/index\.html|/404-error-content\.cfm|http://www\.fec\.gov/404error\.shtml|http://www\.gpo\.gov/maintenance/error\.htm)$")
+  SOFT_404_BODY_SIGNATURES = {
+    "cpb.org": b"<title>CPB: Page Not Found</title>",
+    "ncua.gov": b"Redirect.aspx?404",
+    "si.edu": b"<title>Page Not Found Smithsonian</title>",
+  }
+
+  def build_response(self, req, resp):
+    domain = urllib.parse.urlparse(req.url)[1].split(':')[0]
+    base_domain = ".".join(domain.split(".")[-2:])
+    if base_domain in self.SOFT_404_BODY_SIGNATURES:
+      if resp.getheader("Content-Type") == "text/html; charset=utf-8":
+        data = resp.data
+        body = io.BytesIO(data)
+        resp = requests.packages.urllib3.response.HTTPResponse(
+                body=body,
+                headers=resp.headers,
+                status=resp.status,
+                version=resp.version,
+                reason=resp.reason,
+                strict=resp.strict,
+                preload_content=False,
+        )
+        if data.find(self.SOFT_404_BODY_SIGNATURES[base_domain], 0, 10240) != -1:
+          result = super(Soft404HttpAdapter, self).build_response(req, resp)
+          raise scrapelib.HTTPError(result)
+
+    redirect = resp.get_redirect_location()
+    result = super(Soft404HttpAdapter, self).build_response(req, resp)
+    if redirect and self.SOFT_404_URLS_RE.match(redirect):
+      raise scrapelib.HTTPError(result)
+
+    return result
+
+scraper.mount("http://www.cftc.gov/", Soft404HttpAdapter())
+scraper.mount("http://cftc.gov/", Soft404HttpAdapter())
+scraper.mount("http://www.dodig.mil/", Soft404HttpAdapter())
+scraper.mount("http://dodig.mil/", Soft404HttpAdapter())
+scraper.mount("http://www.exim.gov/", Soft404HttpAdapter())
+scraper.mount("http://exim.gov/", Soft404HttpAdapter())
+scraper.mount("http://www.fec.gov/", Soft404HttpAdapter())
+scraper.mount("http://fec.gov/", Soft404HttpAdapter())
+scraper.mount("http://www.gpo.gov/", Soft404HttpAdapter())
+scraper.mount("http://gpo.gov/", Soft404HttpAdapter())
+scraper.mount("http://www.cpb.org/", Soft404HttpAdapter())
+scraper.mount("http://cpb.org/", Soft404HttpAdapter())
+scraper.mount("http://www.ncua.gov/", Soft404HttpAdapter())
+scraper.mount("http://ncua.gov/", Soft404HttpAdapter())
+scraper.mount("http://www.si.edu/", Soft404HttpAdapter())
+scraper.mount("http://si.edu/", Soft404HttpAdapter())
 
 class Tls1HttpAdapter(requests.adapters.HTTPAdapter):
   """Transport adapter that forces use of TLS 1.0. The SBA server is behind a
