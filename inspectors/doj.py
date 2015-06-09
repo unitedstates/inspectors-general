@@ -4,9 +4,10 @@
 # - Some forms, marked index are one html document spread across several links,
 # I go through all the links so that we get the most descriptive agency name
 # - I added language information since there were English and Spanish docs
-# - There are html and pdfs for the same docs so all the urls are tracked in urls
+# - There are html and pdfs for the same docs so all the urls are tracked in
+# urls
 
-archive = 1996
+archive = 1994
 
 #
 # options:
@@ -18,11 +19,13 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from utils import utils, inspector
 import logging
+from urllib.parse import urljoin, urlparse
+import os
 
 # accumulates information on reports as they're seen
 report = {}
 
-base_url = "http://www.justice.gov"
+base_url = "https://oig.justice.gov/reports/"
 
 # just here for developer reference, valid component URL slugs to filter on
 components = {
@@ -62,7 +65,7 @@ agency_decoder = {
     "Office on Violence Against Women (OVW)": ["Office on Violence Against Women", "OVW"],
     "Immigration and Naturalization Service (INS) – 1994 to 2003": ["Immigration and Naturalization Service", "INS"],
     "United States Marshals Service (USMS)": ["United States Marshals Service", "USMS"],
-  }
+}
 
 not_agency = (
   "Office of Justice Programs (OJP)", "Contracts", "Special Reports",
@@ -70,6 +73,9 @@ not_agency = (
   "Equitable Sharing", "Offices, Boards and Divisions (OBDs)",
   "Other DOJ Components", "Reports Encompassing More Than One DOJ Component"
 )
+
+YEAR_RE = re.compile("^(?:19|20)[0-9][0-9]/(.*)$")
+AG_RE = re.compile("http://www[.]justice[.]gov/archive/ag/annualreports/([^/]+)/(?:TableofContents|index)[.]html?")
 
 def extract_info(content, directory, year_range):
   # goes through each agency or content bucket
@@ -223,12 +229,9 @@ def extract_info(content, directory, year_range):
           title = b.string
 
         # formating links consistently
-        if not link.startswith("/") and not link.startswith("http://") and not link.startswith("https://"):
-          link = "/" + link
+        link = urljoin(base_url, link)
         # id
-        doc_id = str(link)[1:-4]
-        if link[:11] == "oig/reports":
-          doc_id = doc_id[16:]
+        doc_id = os.path.splitext(urlparse(link).path)[0]
 
         #these docs are one report where the page has a table of contents with links to content
         if "/index" in link:
@@ -243,38 +246,30 @@ def extract_info(content, directory, year_range):
           if n in doc_id:
             doc_id = doc_id.replace(n, "")
 
-        if doc_id[:1] == "/":
+        while doc_id[:1] == "/":
           doc_id = doc_id[1:]
 
-        if "/" in doc_id:
-          if doc_id[4:5] == "/":
-            if doc_id[:2] == "19" or doc_id[:2] == "20":
-              doc_id = doc_id[5:]
+        year_match = YEAR_RE.match(doc_id)
+        if year_match:
+          doc_id = year_match.group(1)
 
-        ag_match = re.match("http://www[.]justice[.]gov/archive/ag/annualreports/([^/]+)/(?:TableofContents|index)[.]html?", link)
+        ag_match = AG_RE.match(link)
         if ag_match:
           doc_id = ag_match.group(1)
 
         # if it's still got slashes, just turn them into dashes
         # the ol' slash and dash
-        if "/" in doc_id:
-          doc_id = doc_id.replace("/", "-")
+        doc_id = doc_id.replace("/", "-")
 
         # some weird issues I hard coded
-        special_cases = {"a0118/au0118":"a0118", "a0207/0207":"a0207",  }
-        if doc_id in list(special_cases.keys()):
+        special_cases = {"a0118/au0118":"a0118", "a0207/0207":"a0207"}
+        if doc_id in special_cases:
           doc_id = special_cases[doc_id]
 
         if "spanish" in link:
           language = "Spanish"
         else:
           language = "English"
-
-        # url
-        if link[:5] == "/oig/":
-          url = base_url + link
-        else:
-          url = base_url + "/oig/reports" + link
 
         if doc_id in report:
           if file_type == "pdf":
@@ -284,7 +279,7 @@ def extract_info(content, directory, year_range):
             # current file a pdf, old file html
             else:
               report[doc_id]["file_type"] = "pdf"
-              report[doc_id]["url"] = url
+              report[doc_id]["url"] = link
               report[doc_id]["categories"].append(directory)
           else:
             # current file html old file pdf OR both files html
@@ -292,14 +287,14 @@ def extract_info(content, directory, year_range):
 
           # add url if new
           for n in report[doc_id]["urls"]:
-            if url in n:
+            if link in n:
               old_url = True
           if not "old_url" in locals():
             report[doc_id]["urls"].append({
-              "url":url,
+              "url": link,
               "file_type": file_type,
               "indexed": indexed,
-              })
+            })
 
           # finding the most descriptive name for cross-listed docs
           if report[doc_id]["agency"] == "doj" and agency != "doj":
@@ -311,31 +306,32 @@ def extract_info(content, directory, year_range):
           report[doc_id] = {
             "report_id": doc_id,
             "inspector": "doj",
-            "inspector_url": "http://www.justice.gov/oig/reports/",
+            "inspector_url": "https://oig.justice.gov/reports/",
             "agency": agency,
             "agency_name": agency_name,
-            "url": url,
+            "url": link,
             "title": title,
             "file_type": file_type,
             "categories": [directory,],
             "urls": [{
-                "url":url,
+                "url": link,
                 "file_type": file_type,
                 "indexed": indexed,
-              }],
+            }],
             "published_on": published_on,
             # perhaps elaborate on this later
             "type": type_for(title),
             "language": language,
-            }
+          }
 
 
 def find_file_type(url):
-  if url[-3:] == "pdf":
+  ext = os.path.splitext(url)[1]
+  if ext == ".pdf":
     return "pdf"
-  elif url[-3:] == "htm":
+  elif ext == ".htm":
     return "html"
-  elif url[-4:] == "html":
+  elif ext == ".html":
     return "html"
   else:
     # these include a few navigation links
@@ -363,7 +359,7 @@ def odd_link(b, date, l, directory):
   if "link" in locals():
     if link[-4:] == ".gov":
       return {"date_string":False, "real_title":False}
-    elif link[-5:] == ".gov/" or link == "/usao/eousa/index.html":
+    elif link[-5:] == ".gov/" or link == "http://www.justice.gov/usao/eousa/":
       return {"date_string":False, "real_title":False}
   text = b.get_text()
 
@@ -402,7 +398,7 @@ def odd_link(b, date, l, directory):
     if "," not in date:
       date = date.strip()
       date = date.replace(" ", " 1, ")
-    return{"date_string": date, "real_title": text}
+    return {"date_string": date, "real_title": text}
 
   if "Revised" in text:
     date = text
@@ -417,7 +413,7 @@ def odd_link(b, date, l, directory):
     if "," not in date:
       date = date.strip()
       date = date.replace(" ", " 1, ")
-    return{"date_string": date, "real_title": text}
+    return {"date_string": date, "real_title": text}
 
   if date != None:
     date = date.strip
@@ -472,7 +468,7 @@ def odd_link(b, date, l, directory):
   #   print("directory", directory)
   #   exit()
 
-  info = {"real_title":title, "date_string": date_string, }
+  info = {"real_title": title, "date_string": date_string}
   return(info)
 
 # adding types based on the USPS
@@ -507,19 +503,19 @@ def run(options):
   component = options.get('component')
   if component and component in components:
     source_links = {}
-    link = "%s/oig/reports/%s.htm" % (base_url, component)
+    link = urljoin(base_url, "%s.htm" % component)
     source_links[link] = components[component]
 
   # Otherwise, get links to each component's landing page from main page.
   else:
-    starting_point = "http://www.justice.gov/oig/reports/components.htm"
+    starting_point = "https://oig.justice.gov/reports/components.htm"
     content = get_content(starting_point)
     source_links = {}
     for c in content:
       links = c.find_all("a")
       for l in links:
         name = l.string
-        link = base_url + l.get("href")
+        link = urljoin(base_url, l.get("href"))
         source_links[link] = name
 
   # For each component's landing page, run the processor over it
