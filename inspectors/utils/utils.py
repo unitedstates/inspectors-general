@@ -7,8 +7,6 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import ssl
 import requests
-import requests.adapters
-import requests.packages.urllib3.poolmanager
 
 from . import admin
 
@@ -16,6 +14,10 @@ from . import admin
 import scrapelib
 scraper = scrapelib.Scraper(requests_per_minute=120, retry_attempts=3)
 scraper.user_agent = "unitedstates/inspectors-general (https://github.com/unitedstates/inspectors-general)"
+
+# Temporary workaround for versions of requests that don't support RC4 by
+# default, but have no API to change it.
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = ssl._DEFAULT_CIPHERS
 
 class Tls1HttpAdapter(requests.adapters.HTTPAdapter):
   """Transport adapter that forces use of TLS 1.0. The SBA server is behind a
