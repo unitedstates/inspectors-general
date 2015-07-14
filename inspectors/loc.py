@@ -106,8 +106,8 @@ class LibraryOfCongressScraper(object):
       self.get_bare_reports(ul)
 
   def get_semiannual_reports_to_congress(self, doc):
-    header = doc.find_all(text=re.compile('Semiannual Reports'))
-    ul = header[0].parent.find_next_sibling()
+    header = doc.find_all('h2', text=re.compile('Semiannual Reports'))
+    ul = header[0].find_next_sibling()
     results = ul.find_all('li')
     if not results:
       raise inspector.NoReportsFoundError("Library of Congress (semiannual reports)")
