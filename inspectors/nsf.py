@@ -25,7 +25,7 @@ archive = 1989
 CASE_REPORTS_URL = "http://www.nsf.gov/oig/search/results.cfm"
 
 AUDIT_REPORTS_URL = "https://www.nsf.gov/oig/auditpubs.jsp"
-SEMIANNUAL_REPORTS_URL = "https://www.nsf.gov/oig/semiannuals.jsp"
+SEMIANNUAL_REPORTS_URL = "https://www.nsf.gov/oig/reports/semiannual.jsp"
 TESTIMONY_REPORTS_URL = "https://www.nsf.gov/oig/testimony.jsp"
 
 CASE_REPORTS_DATA = {
@@ -38,6 +38,7 @@ REPORT_PUBLISHED_MAP = {
 }
 
 REPORT_LINK_TEXT = re.compile("Entire.+Document", re.DOTALL)
+REPORT_LEADIN_TEXT = re.compile("Available\s+Formats:")
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -175,7 +176,7 @@ def case_report_from(result, landing_url, year_range):
 
 def semiannual_report_from(result, year_range):
   link = result.find("a")
-  report_url = link['href']
+  report_url = urljoin(SEMIANNUAL_REPORTS_URL, link['href'])
 
   if link.text == "September 1992":
     # One of the links on the semiannual report page points to the wrong year's
@@ -191,8 +192,18 @@ def semiannual_report_from(result, year_range):
     landing_url = landing_page_response.url
 
     landing_page = BeautifulSoup(landing_page_response.content)
+    report_leadin_text = landing_page.find(text=REPORT_LEADIN_TEXT)
     report_link_text = landing_page.find(text=REPORT_LINK_TEXT)
-    report_link = report_link_text.parent
+    report_link = None
+    if report_leadin_text:
+      report_link = report_leadin_text.parent.find('a', text='PDF')
+      if not report_link:
+        report_link = report_leadin_text.parent.find('a', text='TXT')
+    elif report_link_text:
+      report_link = report_link_text.parent
+    if report_link is None:
+      raise Exception("No report link found on %s" % landing_url)
+
     if report_link.get('href'):
       relative_report_url = report_link['href']
     elif report_link.findChild("a"):
