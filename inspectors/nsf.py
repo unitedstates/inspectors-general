@@ -22,7 +22,7 @@ archive = 1989
 # http://www.nsf.gov/pubs/2002/oldsemiannuals/oigseptember1992.pdf
 
 # This needs to be HTTP, see note to IG Web team
-CASE_REPORTS_URL = "http://www.nsf.gov/oig/search/results.cfm"
+CASE_REPORTS_URL = "http://www.nsf.gov/oig/case-closeout/results.cfm"
 
 AUDIT_REPORTS_URL = "https://www.nsf.gov/oig/auditpubs.jsp"
 SEMIANNUAL_REPORTS_URL = "https://www.nsf.gov/oig/reports/semiannual.jsp"
