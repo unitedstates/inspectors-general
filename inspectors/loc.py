@@ -8,7 +8,7 @@ import re
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# http://www.loc.gov/about/office-of-the-inspector-general/
+# https://www.loc.gov/about/office-of-the-inspector-general/
 archive = 2001
 
 # options:
@@ -17,9 +17,9 @@ archive = 2001
 # Notes for IG's web team:
 #
 
-REPORTS_BY_YEAR_URL = 'http://www.loc.gov/about/office-of-the-inspector-general/annual-reports/'
-REPORTS_TESTIMONY_URL = 'http://www.loc.gov/about/office-of-the-inspector-general/congressional-testimony/'
-REPORTS_PEER_REVIEWS_URL = 'http://www.loc.gov/about/office-of-the-inspector-general/peer-reviews/'
+REPORTS_BY_YEAR_URL = 'https://www.loc.gov/about/office-of-the-inspector-general/annual-reports/'
+REPORTS_TESTIMONY_URL = 'https://www.loc.gov/about/office-of-the-inspector-general/congressional-testimony/'
+REPORTS_PEER_REVIEWS_URL = 'https://www.loc.gov/about/office-of-the-inspector-general/peer-reviews/'
 
 OTHER_REPORTS = {
   'http://lcweb2.loc.gov/master/libn/about/office-of-the-inspector-general/documents/LCR211-6-oct2010.pdf': '2010-10-01'
@@ -225,7 +225,7 @@ class LibraryOfCongressScraper(object):
 
     report = {
       'inspector': 'loc',
-      'inspector_url': 'http://www.loc.gov/about/office-of-the-inspector-general/',
+      'inspector_url': 'https://www.loc.gov/about/office-of-the-inspector-general/',
       'agency': agency,
       'agency_name': agency_name,
       'report_id': report_id,
