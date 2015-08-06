@@ -144,6 +144,9 @@ def report_from(result, year_range):
   if report_id == "11-04130-192" and \
       report_url == "http://www.va.gov/oig/pubs/VAOIG-11-04130-192.pdf":
     report_url = "http://www.va.gov/oig/pubs/VAOIG-12-04130-192.pdf"
+  elif report_id == "15-00138-392" and \
+      report_url == "http://www.va.gov/oig/pubs/VAOIG-15-000138-392.pdf":
+    report_url = "http://www.va.gov/oig/pubs/VAOIG-15-00138-392.pdf"
 
   agency_slug = None
   for name in AGENCY_SLUG_MAP:

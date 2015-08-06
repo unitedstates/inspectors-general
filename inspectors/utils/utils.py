@@ -76,6 +76,10 @@ scraper.mount("http://ncua.gov/", Soft404HttpAdapter())
 scraper.mount("http://www.si.edu/", Soft404HttpAdapter())
 scraper.mount("http://si.edu/", Soft404HttpAdapter())
 
+# Temporary workaround for versions of requests that don't support RC4 by
+# default, but have no API to change it.
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = ssl._DEFAULT_CIPHERS
+
 class Tls1HttpAdapter(requests.adapters.HTTPAdapter):
   """Transport adapter that forces use of TLS 1.0. The SBA server is behind a
   broken F5 middlebox that can't handle TLS handshakes longer than 256 bytes
