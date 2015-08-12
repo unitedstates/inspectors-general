@@ -76,7 +76,8 @@
 - epa
 
 # Export-Import Bank
-- exim
+# - exim
+# Temporarily disabled until scraper is updated for new website
 
 # Farm Credit Administration
 - fca
