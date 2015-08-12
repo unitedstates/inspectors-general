@@ -149,7 +149,10 @@ def rss_report_from(result, year_range):
   title = result.find("title").text
   report_type = report_type_from_url(report_url)
   published_on_text = result.find("pubdate").text
-  published_on = datetime.datetime.strptime(published_on_text, '%a, %d %b %Y %H:%M:%S %z').date()
+  try:
+    published_on = datetime.datetime.strptime(published_on_text, '%a, %d %b %Y %H:%M:%S %z').date()
+  except ValueError:
+    published_on = datetime.datetime.strptime(published_on_text, '%a, %d %B %Y %H:%M:%S %z').date()
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
