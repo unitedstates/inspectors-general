@@ -7,9 +7,6 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import ssl
 import requests
-import requests.adapters
-import requests.packages.urllib3.poolmanager
-import requests.packages.urllib3.response
 import urllib.parse
 import io
 import gzip
