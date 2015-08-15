@@ -24,7 +24,7 @@ class Soft404HttpAdapter(requests.adapters.HTTPAdapter):
   """Transport adapter that checks all responses against a blacklist of "file
   not found" pages that are served with 200 status codes."""
 
-  SOFT_404_URLS_RE = re.compile(r"^(http://www\.cftc\.gov/cgi-bin/missing\.pl\?.*|http://www\.dodig\.mil/errorpages/index\.html|/404-error-content\.cfm|http://www\.fec\.gov/404error\.shtml|http://www\.gpo\.gov/maintenance/error\.htm)$")
+  SOFT_404_URLS_RE = re.compile(r"^(http://www\.cftc\.gov/cgi-bin/missing\.pl\?.*|http://www\.dodig\.mil/errorpages/index\.html|http://www\.fec\.gov/404error\.shtml|http://www\.gpo\.gov/maintenance/error\.htm)$")
   SOFT_404_BODY_SIGNATURES = {
     "cpb.org": b"<title>CPB: Page Not Found</title>",
     "ncua.gov": b"Redirect.aspx?404",
@@ -63,8 +63,6 @@ scraper.mount("http://www.cftc.gov/", Soft404HttpAdapter())
 scraper.mount("http://cftc.gov/", Soft404HttpAdapter())
 scraper.mount("http://www.dodig.mil/", Soft404HttpAdapter())
 scraper.mount("http://dodig.mil/", Soft404HttpAdapter())
-scraper.mount("http://www.exim.gov/", Soft404HttpAdapter())
-scraper.mount("http://exim.gov/", Soft404HttpAdapter())
 scraper.mount("http://www.fec.gov/", Soft404HttpAdapter())
 scraper.mount("http://fec.gov/", Soft404HttpAdapter())
 scraper.mount("http://www.gpo.gov/", Soft404HttpAdapter())

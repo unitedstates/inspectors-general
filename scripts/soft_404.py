@@ -13,7 +13,6 @@ URLS = {
   'cftc': 'http://www.cftc.gov/About/OfficeoftheInspectorGeneral/doesyour404work',
   'cpb': 'http://www.cpb.org/oig/doesyour404work',
   'dod': 'http://www.dodig.mil/doesyour404work',
-  'exim': 'http://www.exim.gov/oig/doesyour404work',
   'fec': 'http://www.fec.gov/fecig/doesyour404work',
   'gpo': 'http://www.gpo.gov/oig/doesyour404work',
   'ncua': 'http://www.ncua.gov/about/Leadership/Pages/doesyour404work',
