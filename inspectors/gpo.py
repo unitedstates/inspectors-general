@@ -63,7 +63,7 @@ def report_from(result, landing_url, report_type, year_range):
   if "contains sensitive information" in title:
     unreleased = True
     report_url = None
-    report_id = inspector.slugify("-".join(title.split())[:50])
+    report_id = inspector.slugify("-".join(title.split())[:100])
     it_controls_match = IT_CONTROLS_RE.match(title)
     if it_controls_match:
       report_id = "%s-%s" % (report_id, it_controls_match.group(1))
