@@ -52,7 +52,7 @@ def run(options):
       match = PAGE_NOT_FOUND_STRING_RE.search(result)
       if not match:
         print("False negative for %s (regular expression did not match error "
-              "page contents" % inspector)
+              "page contents)" % inspector)
 
   data_dir = utils.data_dir()
   for inspector in os.listdir(data_dir):
