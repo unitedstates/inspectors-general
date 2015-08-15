@@ -12,6 +12,7 @@ import requests.packages.urllib3.poolmanager
 import requests.packages.urllib3.response
 import urllib.parse
 import io
+import gzip
 
 from . import admin
 
@@ -24,8 +25,9 @@ class Soft404HttpAdapter(requests.adapters.HTTPAdapter):
   """Transport adapter that checks all responses against a blacklist of "file
   not found" pages that are served with 200 status codes."""
 
-  SOFT_404_URLS_RE = re.compile(r"^(http://www\.cftc\.gov/cgi-bin/missing\.pl\?.*|http://www\.dodig\.mil/errorpages/index\.html|http://www\.fec\.gov/404error\.shtml|http://www\.gpo\.gov/maintenance/error\.htm)$")
+  SOFT_404_URLS_RE = re.compile(r"^(http://www\.dodig\.mil/errorpages/index\.html|http://www\.fec\.gov/404error\.shtml|http://www\.gpo\.gov/maintenance/error\.htm)$")
   SOFT_404_BODY_SIGNATURES = {
+    "cftc.gov": b"<title>404 Page Not Found - CFTC</title>",
     "cpb.org": b"<title>CPB: Page Not Found</title>",
     "ncua.gov": b"Redirect.aspx?404",
     "si.edu": b"<title>Page Not Found Smithsonian</title>",
@@ -35,8 +37,13 @@ class Soft404HttpAdapter(requests.adapters.HTTPAdapter):
     domain = urllib.parse.urlparse(req.url)[1].split(':')[0]
     base_domain = ".".join(domain.split(".")[-2:])
     if base_domain in self.SOFT_404_BODY_SIGNATURES:
-      if resp.getheader("Content-Type") == "text/html; charset=utf-8":
+      if resp.getheader("Content-Type") in ["text/html; charset=utf-8",
+                                            "text/html"]:
         data = resp.data
+        if resp.getheader("Content-Encoding") == "gzip":
+          decompressed_data = gzip.decompress(data)
+        else:
+          decompressed_data = data
         body = io.BytesIO(data)
         resp = requests.packages.urllib3.response.HTTPResponse(
                 body=body,
@@ -47,7 +54,7 @@ class Soft404HttpAdapter(requests.adapters.HTTPAdapter):
                 strict=resp.strict,
                 preload_content=False,
         )
-        if data.find(self.SOFT_404_BODY_SIGNATURES[base_domain], 0, 10240) != -1:
+        if decompressed_data.find(self.SOFT_404_BODY_SIGNATURES[base_domain], 0, 10240) != -1:
           result = super(Soft404HttpAdapter, self).build_response(req, resp)
           result.status_code = 404 # tells scrapelib to not retry
           return result
