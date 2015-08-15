@@ -4,6 +4,7 @@ import os, os.path
 import re
 from inspectors.utils import utils
 import logging
+import scrapelib
 
 PAGE_NOT_FOUND_PATTERN = b"(<title>(404 Page Not Found - CFTC|CPB: Page Not Found|DoD IG - Error Message|404: NOT FOUND|Page Not Found|Maintenance|Page Not Found Smithsonian|404)</title>|That page was not found\\.&#160; If possible we will redirect you to that content now\\.)"
 PAGE_NOT_FOUND_BYTES_RE = re.compile(PAGE_NOT_FOUND_PATTERN)
@@ -28,10 +29,30 @@ def run(options):
   for inspector, url in URLS.items():
     if (not ig_list) or (inspector in ig_list):
       logging.debug("[%s] Checking..." % inspector)
-      result = utils.scraper.get(url).text
+      result = None
+      status_code_rewritten = False
+      while True:
+        try:
+          response = utils.scraper.get(url)
+          result = response.text
+          break
+        except scrapelib.HTTPError as e:
+          if e.response.status_code == 404:
+            status_code_rewritten = True
+            if 'location' in e.response.headers:
+              url = e.response.headers['location']
+              continue
+          result = e.body
+          break
+
+      if not status_code_rewritten:
+        print("False negative for %s (handler did not rewrite error code)" %
+              inspector)
+
       match = PAGE_NOT_FOUND_STRING_RE.search(result)
       if not match:
-        print("False negative for %s" % inspector)
+        print("False negative for %s (regular expression did not match error "
+              "page contents" % inspector)
 
   data_dir = utils.data_dir()
   for inspector in os.listdir(data_dir):
