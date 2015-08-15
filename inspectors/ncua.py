@@ -113,7 +113,6 @@ def other_report_from(result, year_range):
   link = result.find("a")
   report_id = inspector.sanitize(clean_text("-".join(link.text.replace("/", "-").replace("'", "").replace(":", "").split())))
   report_id = re.sub('--*', '-', report_id)
-  print(repr(report_id))
   report_url = urljoin(OTHER_REPORTS_URL, link.get('href'))
 
   match = OTHER_REPORT_RE.match(inspector.sanitize(clean_text(link.text)))
