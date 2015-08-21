@@ -74,17 +74,26 @@ def report_from(result, year_range):
 
   section_title = result.find_previous("h3").text.strip()
   estimated_date = False
+  published_on = None
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
-  else:
+  if not published_on:
     try:
       published_on_text = title.split("–")[-1].strip()
       published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
     except ValueError:
+      pass
+  if not published_on:
+    try:
       # For reports where we can only find the year, set them to Nov 1st of that year
-      published_on_year =int(section_title.lstrip("FY "))
+      published_on_year = int(section_title.lstrip("FY "))
       published_on = datetime.datetime(published_on_year, 11, 1)
       estimated_date = True
+    except ValueError:
+      pass
+  if not published_on:
+    raise Exception("Could not find date for %s (%s)" %
+                    (repr(title), report_id))
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
