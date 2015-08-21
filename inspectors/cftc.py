@@ -23,6 +23,7 @@ REPORT_PUBLISHED_MAPPING = {
   "oig_auditreportp05": datetime.datetime(2014, 7, 17),
   "oigocoaudit2014": datetime.datetime(2014, 5, 1),
   "oigcommentletter042214": datetime.datetime(2014, 4, 22),
+  "oig_auditruleenforcementreview": datetime.datetime(2015, 8, 5),
 }
 
 REPORTS_URL = "http://www.cftc.gov/About/OfficeoftheInspectorGeneral/index.htm"
