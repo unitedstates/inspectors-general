@@ -513,8 +513,7 @@ def filter_links(link_list, base_url):
   filtered_list = [href for href in href_list \
       if href and href not in BLACKLIST_REPORT_URLS and \
       not href.startswith("mailto:")]
-  if len(filtered_list) == 2 and filtered_list[0] == filtered_list[1]:
-    filtered_list = filtered_list[:1]
+  filtered_list = list(set(filtered_list))
   return filtered_list
 
 def report_from_landing_url(report_url):
