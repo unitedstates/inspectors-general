@@ -337,6 +337,8 @@ def get_pagination_urls(page):
   than 10.
   """
   for link in page.select('a'):
+    if 'href' not in link:
+      continue
     if link['href'].startswith('?') and RE_DIGITS.match(link.text):
       yield BASE_URL + link['href']
     elif link['href'].startswith('/pubs') and RE_NEXT_10.search(link.text):
