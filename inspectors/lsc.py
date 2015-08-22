@@ -31,6 +31,7 @@ MAPPING_PROJECT_ARCHIVE_GRANTEE_URL = "https://www.oig.lsc.gov/grantee-evaluatio
 REPORT_PUBLISHED_MAP = {
   "14-06": datetime.datetime(2014, 6, 30),
   "fraud-alert-15-02": datetime.datetime(2015, 4, 22),
+  "fraud_alert_12-01-JS": datetime.datetime(2012, 1, 18),
   "check_fraud_attachment": datetime.datetime(2012, 1, 18),
   "lscoighotline": datetime.datetime(2008, 12, 17),
   "Dec_2006_Fraud_Alert": datetime.datetime(2006, 12, 11),
