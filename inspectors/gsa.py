@@ -75,7 +75,7 @@ def url_for(base_url, page = 1):
 def report_from(result, base_url):
   report = {
     'inspector': 'gsa',
-    'inspector_url': 'http://gsaig.gov/',
+    'inspector_url': 'http://www.gsaig.gov/',
     'agency': 'gsa',
     'agency_name': 'General Services Administration'
   }

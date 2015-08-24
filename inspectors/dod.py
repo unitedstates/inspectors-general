@@ -211,6 +211,13 @@ def report_from(tds, options):
   if (report_url is None) and maybe_unreleased:
     report['unreleased'] = True
 
+  # Fix typo, alternate source for missing report
+  if report_url == "http://www.dodig.mil/fo/Foia/ERR/Lincoln%20Group_swa.pdf":
+    report_url = "http://www.dodig.mil/FOIA/ERR/Lincoln%20Group_swa.pdf"
+  elif report_url == "http://www.dodig.mil/Audit/Audit2/92-032.pdf":
+    report_url = "http://www.dtic.mil/get-tr-doc/pdf?Location=U2&doc=GetTRDoc.pdf&AD=ADA378668"
+    report['file_type'] = "pdf"
+
   # broken reports: mark as unreleased, but also mark as broken
   # blacklisted reports, or, from now on, anything in 2001 and before
   # I'll investigate the batch of 'missing' later.
@@ -293,7 +300,10 @@ def fetch_from_landing_page(landing_url):
 
   href = link['href'].strip() if link else None
   if href and add_pdf:
-    href = href + ".pdf"
+    if href.endswith(".pd"):
+      href = href + "f"
+    else:
+      href = href + ".pdf"
 
   # some URLs have "/../" in the middle, and the redirects are trouble
   if href:

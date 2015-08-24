@@ -7,6 +7,9 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import ssl
 import requests
+import urllib.parse
+import io
+import gzip
 
 from . import admin
 
@@ -14,6 +17,66 @@ from . import admin
 import scrapelib
 scraper = scrapelib.Scraper(requests_per_minute=120, retry_attempts=3)
 scraper.user_agent = "unitedstates/inspectors-general (https://github.com/unitedstates/inspectors-general)"
+
+class Soft404HttpAdapter(requests.adapters.HTTPAdapter):
+  """Transport adapter that checks all responses against a blacklist of "file
+  not found" pages that are served with 200 status codes."""
+
+  SOFT_404_URLS_RE = re.compile(r"^(http://www\.dodig\.mil/errorpages/index\.html|http://www\.fec\.gov/404error\.shtml|http://www\.gpo\.gov/maintenance/error\.htm)$")
+  SOFT_404_BODY_SIGNATURES = {
+    "cftc.gov": b"<title>404 Page Not Found - CFTC</title>",
+    "cpb.org": b"<title>CPB: Page Not Found</title>",
+    "ncua.gov": b"Redirect.aspx?404",
+    "si.edu": b"<title>Page Not Found Smithsonian</title>",
+  }
+
+  def build_response(self, req, resp):
+    domain = urllib.parse.urlparse(req.url)[1].split(':')[0]
+    base_domain = ".".join(domain.split(".")[-2:])
+    if base_domain in self.SOFT_404_BODY_SIGNATURES:
+      if resp.getheader("Content-Type") in ["text/html; charset=utf-8",
+                                            "text/html"]:
+        data = resp.data
+        if resp.getheader("Content-Encoding") == "gzip":
+          decompressed_data = gzip.decompress(data)
+        else:
+          decompressed_data = data
+        body = io.BytesIO(data)
+        resp = requests.packages.urllib3.response.HTTPResponse(
+                body=body,
+                headers=resp.headers,
+                status=resp.status,
+                version=resp.version,
+                reason=resp.reason,
+                strict=resp.strict,
+                preload_content=False,
+        )
+        if decompressed_data.find(self.SOFT_404_BODY_SIGNATURES[base_domain], 0, 10240) != -1:
+          result = super(Soft404HttpAdapter, self).build_response(req, resp)
+          result.status_code = 404 # tells scrapelib to not retry
+          return result
+
+    redirect = resp.get_redirect_location()
+    result = super(Soft404HttpAdapter, self).build_response(req, resp)
+    if redirect and self.SOFT_404_URLS_RE.match(redirect):
+      result.status_code = 404 # tells scrapelib to not retry
+
+    return result
+
+scraper.mount("http://www.cftc.gov/", Soft404HttpAdapter())
+scraper.mount("http://cftc.gov/", Soft404HttpAdapter())
+scraper.mount("http://www.dodig.mil/", Soft404HttpAdapter())
+scraper.mount("http://dodig.mil/", Soft404HttpAdapter())
+scraper.mount("http://www.fec.gov/", Soft404HttpAdapter())
+scraper.mount("http://fec.gov/", Soft404HttpAdapter())
+scraper.mount("http://www.gpo.gov/", Soft404HttpAdapter())
+scraper.mount("http://gpo.gov/", Soft404HttpAdapter())
+scraper.mount("http://www.cpb.org/", Soft404HttpAdapter())
+scraper.mount("http://cpb.org/", Soft404HttpAdapter())
+scraper.mount("http://www.ncua.gov/", Soft404HttpAdapter())
+scraper.mount("http://ncua.gov/", Soft404HttpAdapter())
+scraper.mount("http://www.si.edu/", Soft404HttpAdapter())
+scraper.mount("http://si.edu/", Soft404HttpAdapter())
 
 # Temporary workaround for versions of requests that don't support RC4 by
 # default, but have no API to change it.

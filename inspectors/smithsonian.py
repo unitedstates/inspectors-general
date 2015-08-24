@@ -35,6 +35,27 @@ RECENT_AUDITS_URL = "http://www.si.edu/OIG/Audits"
 AUDIT_ARCHIVE_URL = "http://www.si.edu/oig/Archive"
 OTHER_REPORTS_URl = "http://www.si.edu/OIG/ReportsToCongress"
 
+RSS_BROKEN_LINKS = {
+  "http://www.si.edu/Content/OIG/Misc/Peer_Review_09-21-2011.pdf":
+    "http://www.si.edu/Content/OIG/Misc/Peer_Review_09-21-11.pdf",
+  "http://www.si.edu/oig/RecoveryAct.htm":
+    "http://www.si.edu/OIG/Recovery",
+  "http://www.si.edu/oig/AuditReports/UnderstandingAudits.pdf":
+    "http://www.si.edu/Content/OIG/Misc/UnderstandingAudits.pdf",
+  "http://www.si.edu/oig/AuditReports/A-0907-FSA-Oversight.pdf":
+    "http://www.si.edu/Content/OIG/Audits/2010/A-09-07.pdf",
+  "http://www.si.edu/oig/ARRA_Reports/M-10--04-1.pdf":
+    "http://www.si.edu/Content/OIG/Audits/M-10-04-1.pdf",
+  "http://www.si.edu/oig/AuditReports/SIIG_Testimony_121009.pdf":
+    "http://www.si.edu/Content/OIG/Testimony/SIIG_Testimony_121009.pdf",
+  "http://www.si.edu/oig/AuditReports/IBA-0902.pdf":
+    "http://www.si.edu/Content/OIG/Audits/2009/IBA-09-02.pdf",
+  "http://www.si.edu/oig/AuditReports/IBA-0808.pdf":
+    "http://www.si.edu/Content/OIG/Audits/2009/IBA-08-08.pdf",
+  "http://www.si.edu/oig/AuditReports/A-08-05-FSA-Oversight-Letter.pdf":
+    "http://www.si.edu/Content/OIG/Audits/2009/A-08-05.pdf",
+}
+
 report_ids_seen = set()
 
 def run(options):
@@ -100,6 +121,19 @@ def rss_report_from(result, year_range):
     # This is the default url the IG uses for announcements of things like
     # a website redesign or changes to the RSS feed.
     return
+
+  if report_url == "http://www.si.edu/oig/OIGStratPlan.pdf":
+    # This strategic plan is no longer on the website, but it is reproduced in
+    # multiple semiannual reports, so we skip it here.
+    return
+
+  if report_url in RSS_BROKEN_LINKS:
+    report_url = RSS_BROKEN_LINKS[report_url]
+  else:
+    report_url = report_url.replace("/OIG/SAR/Semiannual_Reports/", "/OIG/SAR/")
+    report_url = report_url.replace("/oig/Semiannual_Reports/", "/Content/OIG/SAR/")
+    report_url = report_url.replace("/oig/AuditReports/", "/Content/OIG/Audits/")
+    report_url = report_url.replace("/oig/ARRA_Reports/", "/Content/OIG/Audits/")
 
   file_type = None
   if not report_url.endswith(".pdf"):
