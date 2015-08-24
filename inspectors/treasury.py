@@ -82,7 +82,9 @@ REPORT_PUBLISHED_MAP = {
   "Treasury Freedom of Information Act (FOIA) Request Review": datetime.datetime(2010, 11, 19),
   "OIG-CA-14-017": datetime.datetime(2014, 9, 30),
   "OIG-CA-14-015": datetime.datetime(2014, 9, 4),
-  "OIG15CA012": datetime.datetime(2015, 5, 7),
+  "OIG-CA-15-023": datetime.datetime(2015, 7, 29),
+  "OIG-15-CA-020": datetime.datetime(2015, 6, 22),
+  "OIG-15-CA-012": datetime.datetime(2015, 4, 7),
 }
 
 def run(options):
@@ -110,6 +112,8 @@ def run(options):
     if not results:
       raise inspector.NoReportsFoundError("Treasury (%s)" % report_type)
     for result in results:
+      if len(result.parent.find_all("a")) == 1:
+        result = result.parent
       report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
@@ -127,7 +131,7 @@ def clean_text(text):
   # A lot of text on this page has extra characters
   return text.replace('\u200b', '').replace('\ufffd', ' ').replace('\xa0', ' ').strip()
 
-SUMMARY_RE = re.compile("(OIG|OIG-CA|EVAL) *-? *([0-9]+) *- *([0-9R]+) *:? +([^ ].*)")
+SUMMARY_RE = re.compile("(OIG|OIG-CA|EVAL) *-? *([0-9]+) *- *([0-9R]+) *[:,]? +([^ ].*)")
 SUMMARY_FALLBACK_RE = re.compile("([0-9]+)-(OIG)-([0-9]+) *:? *(.*)")
 
 def audit_report_from(result, page_url, year_range):
@@ -159,6 +163,8 @@ def audit_report_from(result, page_url, year_range):
     # There is an extra row that we want to skip
     return
 
+  report_summary = report_summary.replace("OIG-15-38Administrative",
+                                          "OIG-15-38 Administrative")
   summary_match = SUMMARY_RE.match(report_summary)
   summary_match_2 = SUMMARY_FALLBACK_RE.match(report_summary)
   if summary_match:
@@ -191,6 +197,13 @@ def audit_report_from(result, page_url, year_range):
     # This report is listed twice, once with the wrong date
     return
 
+  # There are copy-paste errors with several retracted reports
+  if report_id == 'OIG-14-037':
+    if published_on.year == 2011 or published_on.year == 2010:
+      return
+  if report_id == 'OIG-13-021' and published_on_text == '12/12/2012':
+    return
+
   agency_slug_text = children[0].text
 
   if report_id in REPORT_AGENCY_MAP:
@@ -199,17 +212,25 @@ def audit_report_from(result, page_url, year_range):
     agency_slug = clean_text(agency_slug_text.split("&")[0]).lower()
 
   if (report_id in UNRELEASED_REPORTS
-    or "If you would like a copy of this report" in title
-    or "If you would like to see a copy of this report" in title
+    or "If you would like a copy of this report" in report_summary
+    or "If you would like to see a copy of this report" in report_summary
+    or "have been removed from the OIG website" in report_summary
+    or "removed the auditors\u2019 reports from the" in report_summary
+    or "Classified Report" in report_summary
     ):
     unreleased = True
     report_url = None
     landing_url = page_url
   else:
     link = result.select("a")[0]
-    report_url = urljoin(AUDIT_REPORTS_BASE_URL, link.get('href'))
+    report_url = urljoin(AUDIT_REPORTS_BASE_URL, link['href'])
+    if report_url == AUDIT_REPORTS_BASE_URL:
+      raise Exception("Invalid link found: %s" % link)
     unreleased = False
     landing_url = None
+
+  if report_url == "http://www.treasury.gov/about/organizational-structure/ig/Documents/OIG-11-071.pdf":
+    report_url = "http://www.treasury.gov/about/organizational-structure/ig/Documents/OIG11071.pdf"
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -248,9 +269,14 @@ def report_from(result, page_url, report_type, year_range):
       published_on = None
 
   title = clean_text(title)
+  original_title = title
   report_id, title = title.split(maxsplit=1)
   report_id = report_id.rstrip(":")
-  report_url = urljoin(page_url, result.get('href'))
+  if result.name == "a":
+    link = result
+  else:
+    link = result.a
+  report_url = urljoin(page_url, link['href'])
 
   if report_id.find('-') == -1:
     # If the first word of the text doesn't contain a hyphen,
@@ -259,6 +285,10 @@ def report_from(result, page_url, report_type, year_range):
     report_filename = report_url.split("/")[-1]
     report_id, extension = os.path.splitext(report_filename)
     report_id = unquote(report_id)
+
+    # Reset the title, since we previously stripped off the first word
+    # as a candidate report_id.
+    title = original_title
 
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
@@ -288,7 +318,7 @@ def semiannual_report_from(result, page_url, year_range):
   published_on = datetime.datetime.strptime(published_on_text.strip(), '%B %d, %Y')
   title = "Semiannual Report - {}".format(published_on_text)
 
-  report_url = urljoin(page_url, result.get('href'))
+  report_url = urljoin(page_url, result['href'])
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
   report_id = unquote(report_id)

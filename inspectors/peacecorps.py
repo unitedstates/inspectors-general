@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import urllib
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -31,13 +32,19 @@ REPORT_PUBLISHED_MAPPING = {
   "PC_Morocco_Assessment_of_Medical_Care": datetime.datetime(2010, 2, 1),
   "PCIG_New_Country_Entries_Lessons_Learned_Final_Report": datetime.datetime(2014, 9, 30),
   "PC_Recurring_Issues_OIG_Post_Audits_Evaluations_FYs_2009-2011": datetime.datetime(2012, 4, 1),
-  "PC_Vanuatu_SR_Advice_and_Assistance": datetime.datetime(2010, 5, 1),
+  "PC_Vanuatu_SR_Advice_and_Assistance": datetime.datetime(2010, 5, 12),
   "PC_Gambia_SR_Grant_Activities": datetime.datetime(2010, 5, 14),
   "PC_Ecuador_Special_Review_IG1005SR": datetime.datetime(2010, 9, 1),
   "PCIG_Agency_Policies_Related_to_Volunteer_Sexual_Assault_Allegations": datetime.datetime(2014, 11, 21),
   "PCIG_Investigative_Review_of_a_Volunteer_Death_in_Peace_Corps_China": datetime.datetime(2014, 11, 1),
   "PCIG_Agency_Response_to_the_China_Investigative_Review_Nov_2014": datetime.datetime(2015, 1, 23),
   "PCIG_MAR_Peace_Corps_Cloud_Computing_Pilot_Program": datetime.datetime(2015, 3, 17),
+  "MAR_Peace_Corps_Volunteer_Health_Care_Administration_Contract": datetime.datetime(2015, 3, 31),
+  "Management_Implication_Report_Peace_Corps_Paraguays_Inappropriate_Use_of_Cooperative_Agreements_to_Obligate_the_Government": datetime.datetime(2010, 3, 15),
+  "MAR_Mitigating_a_Potential_Electrica_Safety_Hazard_Redacted_2": datetime.datetime(2011, 5, 17),
+  "Safety_and_security_weaknesses_in PC_Cameroon": datetime.datetime(2012, 7, 31),
+  "Peace_Corps_Gambia_Grant_Activities": datetime.datetime(2010, 5, 14),
+  "OIG_Investigations_have_Disclosed_Improper_Vehicle_Disposal_Practices_and_Vehicle_Sales_that_do_not_generate_Fair_Market_Returns": datetime.datetime(2010, 3, 30),
 }
 
 REPORT_TYPE_MAP = {
@@ -67,24 +74,38 @@ def report_from(result, year_range):
   report_url = link.get('href')
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
+  report_id = urllib.parse.unquote(report_id)
   title = link.text
 
   topic_text = result.find_previous("h2").text.strip()
   report_type = REPORT_TYPE_MAP.get(topic_text, 'other')
 
+  # This report has been uploaded twice, skip it
+  if report_id == "Advice_and_Assistance_PC_Vanuatu(SRF)":
+    return
+
   section_title = result.find_previous("h3").text.strip()
   estimated_date = False
+  published_on = None
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
-  else:
+  if not published_on:
     try:
       published_on_text = title.split("–")[-1].strip()
       published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
     except ValueError:
+      pass
+  if not published_on:
+    try:
       # For reports where we can only find the year, set them to Nov 1st of that year
-      published_on_year =int(section_title.lstrip("FY "))
+      published_on_year = int(section_title.lstrip("FY "))
       published_on = datetime.datetime(published_on_year, 11, 1)
       estimated_date = True
+    except ValueError:
+      pass
+  if not published_on:
+    raise Exception("Could not find date for %s (%s)" %
+                    (repr(title), report_id))
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)

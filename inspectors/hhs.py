@@ -202,6 +202,10 @@ BLACKLIST_REPORT_URLS = [
 
   # Duplicate report, uploaded in two regions
   'http://oig.hhs.gov/oas/reports/region1/100300001.htm',
+
+  # Summary maps for report series
+  'http://oig.hhs.gov/oas/jurisdiction-map/',
+  'http://oig.hhs.gov/oas/map/',
 ]
 
 TITLE_NORMALIZATION = {
@@ -505,12 +509,11 @@ def filter_links(link_list, base_url):
   for i in range(len(href_list)):
     if href_list[i].startswith("http://go.usa.gov/"):
       href_list[i] = utils.resolve_redirect(href_list[i])
-  href_list = [urldefrag(url)[0] for url in href_list]
-  filtered_list = [urljoin(base_url, href) for href in href_list \
+  href_list = [urldefrag(urljoin(base_url, href))[0] for href in href_list]
+  filtered_list = [href for href in href_list \
       if href and href not in BLACKLIST_REPORT_URLS and \
       not href.startswith("mailto:")]
-  if len(filtered_list) == 2 and filtered_list[0] == filtered_list[1]:
-    filtered_list = filtered_list[:1]
+  filtered_list = list(set(filtered_list))
   return filtered_list
 
 def report_from_landing_url(report_url):
