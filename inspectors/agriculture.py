@@ -238,6 +238,12 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
       title == "Rural Development\u2019s Processing of Loan Guarantees to " \
       "Member of the Western Sugar Cooperative":
     report_url = "http://www.usda.gov/oig/webdocs/34601-03-Ch.pdf"
+  elif report_url == "http://www.usda.gov/oig/webdocs/60801-%7E1.pdf" and \
+      title == "Evaluation of the Office of Civil Rights\u2019 Efforts to " \
+      "Reduce the Backlog of Program Complaints":
+    report_url = "http://www.usda.gov/oig/webdocs/60801-1-HQ.pdf"
+  elif report_url == "http://www.usda.gwebdocs/34703-0001-31.pdf":
+    report_url = "http://www.usda.gov/oig/webdocs/34703-0001-31.pdf"
 
   # This report is listed twice on the same page with slightly different titles
   if title == "Animal and Plant Health Inspection Service Transition and " \

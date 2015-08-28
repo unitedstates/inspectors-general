@@ -86,7 +86,10 @@ def report_from(result, component, url):
   }
 
   link = result.select("td")[2].select("a")[0]
-  report_url = urllib.parse.urljoin(url, link['href'])
+  href = link['href'].replace("http://srvhq11c03-webs/", "/")
+  href = href.replace("/assets/mgmt/", "/assets/Mgmt/")
+  href = href.replace("/assets/mGMT/", "/assets/Mgmt/")
+  report_url = urllib.parse.urljoin(url, href)
   title = link.text.strip()
   title = title.replace("\xa0", " ")
   title = title.replace("  ", " ")
