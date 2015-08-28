@@ -121,7 +121,8 @@ def report_from(result, year_range):
   field_mapping = {}
   for field in landing_page.select("div.report-summary tr"):
     field_name = field.select("th")[0].text.rstrip(":")
-    field_value = field.select("td")[0].text
+    br_to_newline(field.select("td")[0])
+    field_value = field.select("td")[0].text.strip()
     field_mapping[field_name] = field_value
 
   button_results = landing_page.select("div.big-green-button a")
@@ -210,6 +211,12 @@ def semiannual_report_from(result, year_range):
 def beautifulsoup_from_url(url):
   body = utils.download(url)
   return BeautifulSoup(body)
+
+def br_to_newline(subtree):
+  br = subtree.find("br")
+  while br:
+    br.replace_with("\n")
+    br = subtree.find("br")
 
 
 utils.run(run) if (__name__ == "__main__") else None
