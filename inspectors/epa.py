@@ -109,7 +109,7 @@ def report_from(tds, published_on_dt, year):
     report_url = urljoin(BASE_URL, report_url)
 
   if report_url == "http://www.nsf.gov/oig/USMFS05.pdf":
-    report_url = "http://www.nsf.gov/oig/_pdf/USMFS05.pdf"
+    report_url = "https://www.nsf.gov/oig/_pdf/USMFS05.pdf"
 
   glance_url = extract_url(tds[2])
   if glance_url:
