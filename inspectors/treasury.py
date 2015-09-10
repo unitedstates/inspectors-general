@@ -216,6 +216,7 @@ def audit_report_from(result, page_url, year_range):
     or "have been removed from the OIG website" in report_summary
     or "removed the auditors\u2019 reports from the" in report_summary
     or "Classified Report" in report_summary
+    or "Sensitive But Unclassified" in report_summary
     ):
     unreleased = True
     report_url = None
