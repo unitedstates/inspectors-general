@@ -96,9 +96,8 @@ def run(options):
       continue
     url = AUDIT_REPORTS_BASE_URL.format(year)
     doc = beautifulsoup_from_url(url)
-    results = []
-    results.extend(doc.select("tr.ms-rteTableOddRow-default"))
-    results.extend(doc.select("tr.ms-rteTableEvenRow-default"))
+    results = doc.find_all("tr", class_=["ms-rteTableOddRow-default",
+                                         "ms-rteTableEvenRow-default"])
     if not results:
       raise inspector.NoReportsFoundError("Treasury (%d)" % year)
     for result in results:
