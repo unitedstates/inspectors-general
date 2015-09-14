@@ -96,9 +96,8 @@ def run(options):
       continue
     url = AUDIT_REPORTS_BASE_URL.format(year)
     doc = beautifulsoup_from_url(url)
-    results = []
-    results.extend(doc.select("tr.ms-rteTableOddRow-default"))
-    results.extend(doc.select("tr.ms-rteTableEvenRow-default"))
+    results = doc.find_all("tr", class_=["ms-rteTableOddRow-default",
+                                         "ms-rteTableEvenRow-default"])
     if not results:
       raise inspector.NoReportsFoundError("Treasury (%d)" % year)
     for result in results:
@@ -217,6 +216,7 @@ def audit_report_from(result, page_url, year_range):
     or "have been removed from the OIG website" in report_summary
     or "removed the auditors\u2019 reports from the" in report_summary
     or "Classified Report" in report_summary
+    or "Sensitive But Unclassified" in report_summary
     ):
     unreleased = True
     report_url = None
