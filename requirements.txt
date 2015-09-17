@@ -4,6 +4,7 @@ BeautifulSoup4
 pyyaml
 lxml
 requests>=2.5.3
+certifi>=2015.04.28
 
 # for backing up reports. can't use [speedups] while it depends on gevent.
 -e git+git://github.com/konklone/ia-wrapper.git@py3-hack#egg=internetarchive
