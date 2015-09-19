@@ -40,7 +40,7 @@ def run(options):
     if not results:
       results = doc.select("td.three-col-layout-middle div.ltext > table tr")
     if not results:
-      raise inspector.NoReportsFoundError("Government Printing Office (%s)" % url)
+      raise inspector.NoReportsFoundError("Government Publishing Office (%s)" % url)
     for result in results:
       if (not result.text.strip() or
           result.find("th") or
@@ -94,7 +94,7 @@ def report_from(result, landing_url, report_type, year_range):
     'inspector': 'gpo',
     'inspector_url': 'http://www.gpo.gov/oig/',
     'agency': 'gpo',
-    'agency_name': 'Government Printing Office',
+    'agency_name': 'Government Publishing Office',
     'file_type': 'pdf',
     'type': report_type,
     'report_id': report_id,
