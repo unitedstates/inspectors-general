@@ -102,9 +102,7 @@ scraper.mount("https://www.sba.gov/", Tls1HttpAdapter())
 # ugh
 WHITELIST_INSECURE_DOMAINS = (
   "https://www.ignet.gov/",
-  "https://www.fca.gov/",
   "https://origin.www.fhfaoig.gov/",
-  "https://www.sigar.mil/",
 
   # The following domains will 301/302 redirect to the above domains, so
   # validate=False is needed for these cases as well
@@ -112,12 +110,13 @@ WHITELIST_INSECURE_DOMAINS = (
   "http://ignet.gov/",
   "http://www.fhfaoig.gov/",
   "http://fhfaoig.gov/",
-  "http://www.sigar.mil/",
 )
 WHITELIST_SHA1_DOMAINS = (
   "https://www.sba.gov/",
   "http://www.sba.gov/",
   "http://sba.gov/",
+  "https://www.sigar.mil/",
+  "http://www.sigar.mil/",
 )
 
 # will pass correct options on to individual scrapers whether
