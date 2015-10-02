@@ -99,7 +99,8 @@ class Tls1HttpAdapter(requests.adapters.HTTPAdapter):
 
 scraper.mount("https://www.sba.gov/", Tls1HttpAdapter())
 
-# ugh
+# The IGnet and FHFA OIG websites require extra certificate downloads, as of
+# 10/2/2015
 WHITELIST_INSECURE_DOMAINS = (
   "https://www.ignet.gov/",
   "https://origin.www.fhfaoig.gov/",
