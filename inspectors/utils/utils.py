@@ -10,6 +10,7 @@ import requests
 import urllib.parse
 import io
 import gzip
+import certifi
 
 from . import admin
 
@@ -98,12 +99,11 @@ class Tls1HttpAdapter(requests.adapters.HTTPAdapter):
 
 scraper.mount("https://www.sba.gov/", Tls1HttpAdapter())
 
-# ugh
+# The IGnet and FHFA OIG websites require extra certificate downloads, as of
+# 10/2/2015
 WHITELIST_INSECURE_DOMAINS = (
   "https://www.ignet.gov/",
-  "https://www.fca.gov/",
   "https://origin.www.fhfaoig.gov/",
-  "https://www.sigar.mil/",
 
   # The following domains will 301/302 redirect to the above domains, so
   # validate=False is needed for these cases as well
@@ -111,6 +111,12 @@ WHITELIST_INSECURE_DOMAINS = (
   "http://ignet.gov/",
   "http://www.fhfaoig.gov/",
   "http://fhfaoig.gov/",
+)
+WHITELIST_SHA1_DOMAINS = (
+  "https://www.sba.gov/",
+  "http://www.sba.gov/",
+  "http://sba.gov/",
+  "https://www.sigar.mil/",
   "http://www.sigar.mil/",
 )
 
@@ -193,11 +199,8 @@ def download(url, destination=None, options=None):
       try:
         mkdir_p(os.path.dirname(destination))
 
-        if dont_verify(url):
-          logging.warn("SKIPPING RATE LIMITING AND HTTPS VERIFICATION.")
-          scraper.urlretrieve(url, destination, verify=False)
-        else:
-          scraper.urlretrieve(url, destination)
+        verify_options = domain_verify_options(url)
+        scraper.urlretrieve(url, destination, verify=verify_options)
       except connection_errors() as e:
         log_http_error(e, url)
         return None
@@ -212,11 +215,8 @@ def download(url, destination=None, options=None):
         # verification options, so this disables the rate limiting
         # provided by scrapelib.
 
-        if dont_verify(url):
-          logging.warn("SKIPPING RATE LIMITING AND HTTPS VERIFICATION.")
-          response = requests.get(url, verify=False)
-        else:
-          response = scraper.get(url)
+        verify_options = domain_verify_options(url)
+        response = scraper.get(url, verify=verify_options)
 
       except connection_errors() as e:
         log_http_error(e, url)
@@ -243,7 +243,8 @@ def download(url, destination=None, options=None):
 def post(url, data=None, headers=None, **kwargs):
   response = None
   try:
-    response = scraper.post(url, data=data, headers=headers)
+    verify_options = domain_verify_options(url)
+    response = scraper.post(url, data=data, headers=headers, verify=verify_options)
   except connection_errors() as e:
     log_http_error(e, url)
     return None
@@ -286,11 +287,15 @@ def text_from_html(real_html_path, real_text_path):
 
   write(text, real_text_path, binary=False)
 
-def dont_verify(url):
+def domain_verify_options(url):
+  for domain in WHITELIST_SHA1_DOMAINS:
+    if url.startswith(domain):
+      return certifi.old_where()
   for domain in WHITELIST_INSECURE_DOMAINS:
     if url.startswith(domain):
-      return True
-  return False
+      logging.warn("SKIPPING HTTPS VERIFICATION.")
+      return False
+  return True
 
 # uses pdftotext to get text out of PDFs,
 # then writes it and returns the /data-relative path.
@@ -400,12 +405,9 @@ def metadata_from_pdf(pdf_path):
   return None
 
 def check_report_url(report_url):
-  # skip this for non-verifiable urls
-  if dont_verify(report_url):
-    return
-
   try:
-    scraper.request(method='HEAD', url=report_url)
+    verify_options = domain_verify_options(report_url)
+    scraper.request(method='HEAD', url=report_url, verify=verify_options)
   except connection_errors() as e:
     log_http_error(e, report_url)
 
