@@ -3,12 +3,8 @@
 from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
-import logging
 
 archive = 2006
-
-# options:
-#   --pages: limit the scraper to a certain number of pages
 
 INDEX_URLS = [
   "https://www.amtrakoig.gov/reports/all-audits",
@@ -19,52 +15,29 @@ INDEX_URLS = [
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  max_pages = options.get('pages', None)
-  if max_pages:
-    max_pages = int(max_pages)
-
   for index in INDEX_URLS:
     report_count = 0
     for year in year_range:
-      page = 1
-      done = False
-      while not done:
-        url = url_for(options, index, page, year)
-        body = utils.download(url)
+      url = url_for(options, index, year)
+      body = utils.download(url)
 
-        doc = BeautifulSoup(body)
+      doc = BeautifulSoup(body)
 
-        next_page = page + 1
-        found_next_page = False
-        page_links = doc.select("li.pager-item a")
-        for page_link in page_links:
-          if page_link.text == str(next_page):
-            found_next_page = True
-            break
-        if not found_next_page:
-          done = True
-        if max_pages and (next_page > max_pages):
-          done = True
-
-        results = doc.select("div.view-content div.views-row")
-        for result in results:
-          report = report_from(result)
-          inspector.save_report(report)
-          report_count = report_count + 1
-
-        page = next_page
-        if not done:
-          logging.info('Moving to next page (%d)' % page)
+      results = doc.select("div.view-content div.views-row")
+      for result in results:
+        report = report_from(result)
+        inspector.save_report(report)
+        report_count = report_count + 1
 
     if report_count == 0:
       raise inspector.NoReportsFoundError("Amtrak (%s)" % index.split("/")[-1])
 
-def url_for(options, index, page = 1, year=None):
+def url_for(options, index, year=None):
   if year:
     year = str(year)
   else:
     year = ''
-  return "%s?sort_by=field_issue_date_value&field_issue_date_value[value][year]=%s&page=%d" % (index, year, page - 1)
+  return "%s?sort_by=field_issue_date_value&field_issue_date_value[value][year]=%s&items_per_page=All" % (index, year)
 
 def report_from(result):
   report = {
