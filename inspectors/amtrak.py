@@ -3,58 +3,41 @@
 from utils import utils, inspector
 from bs4 import BeautifulSoup
 from datetime import datetime
-import logging
 
 archive = 2006
 
-# options:
-#   --pages: limit the scraper to a certain number of pages
+INDEX_URLS = [
+  "https://www.amtrakoig.gov/reports/all-audits",
+  "https://www.amtrakoig.gov/reports/all-investigations",
+  "https://www.amtrakoig.gov/reading-room/all-documents",
+]
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  max_pages = options.get('pages', None)
-  if max_pages:
-    max_pages = int(max_pages)
-
-  for year in year_range:
-    page = 1
-    done = False
-    while not done:
-      url = url_for(options, page, year)
+  for index in INDEX_URLS:
+    report_count = 0
+    for year in year_range:
+      url = url_for(options, index, year)
       body = utils.download(url)
 
       doc = BeautifulSoup(body)
 
-      next_page = page + 1
-      found_next_page = False
-      page_links = doc.select("li.pager-item a.active")
-      for page_link in page_links:
-        if page_link.text == str(next_page):
-          found_next_page = True
-          break
-      if not found_next_page:
-        done = True
-      if max_pages and (next_page > max_pages):
-        done = True
-
-      results = doc.select("table.views-table > tbody > tr")
-      if not results:
-        raise inspector.NoReportsFoundError("Amtrak")
+      results = doc.select("div.view-content div.views-row")
       for result in results:
         report = report_from(result)
         inspector.save_report(report)
+        report_count = report_count + 1
 
-      page = next_page
-      if not done:
-        logging.info('Moving to next page (%d)' % page)
+    if report_count == 0:
+      raise inspector.NoReportsFoundError("Amtrak (%s)" % index.split("/")[-1])
 
-def url_for(options, page = 1, year=None):
+def url_for(options, index, year=None):
   if year:
     year = str(year)
   else:
     year = ''
-  return "http://www.amtrakoig.gov/reading-room?date_filter[value][year]=%s&term_node_tid_depth=%s&page=%d" % (year, 'All', page - 1)
+  return "%s?sort_by=field_issue_date_value&field_issue_date_value[value][year]=%s&items_per_page=All" % (index, year)
 
 def report_from(result):
   report = {
@@ -63,18 +46,25 @@ def report_from(result):
     'agency': 'amtrak',
     'agency_name': 'Amtrak'
   }
-  link = result.find_all("td", class_="views-field-phpcode-2")[0].a
-  title = link.text
-  url = link.get('href')
-  category = result.find_all("td", class_="views-field-name")[0].text
-  issued = result.find_all("td", class_="views-field-field-issue-date-value")[0].text
-  tracking = result.find_all("td", class_="views-field-field-tracking-value")[0].text
+  title = result.select("div.details h3")[0].text.strip()
+  url = result.select("div.access div.link a")[0].get("href")
+  issued, category = result.select("div.details div.date")[0].text.split("|", maxsplit=2)
+  category = category.strip()
+  tracking = result.select("div.access div.track-num")[0].text.strip()
 
-  published_on = datetime.strptime(issued.strip(), '%m/%d/%Y')
+  published_on = datetime.strptime(issued.strip(), '%B %d, %Y')
   report_type = type_for(category)
   report_id = tracking.strip()
+
   if report_id and title.lower().startswith('closeout'):
     report_id = report_id + "_closeout"
+  if report_id == "008-2015":
+    # This tracking number appears to be used for two different projects
+    if "management_challenges" in url:
+      report_id = "008-2015-challenges"
+    else:
+      report_id = "008-2015-msa"
+
   if not report_id:
     report_id = url[url.rfind('/') + 1 : url.rfind('.')]
 
@@ -82,7 +72,7 @@ def report_from(result):
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
   report['url'] = url
   report['report_id'] = report_id
-  report['title'] = title.strip()
+  report['title'] = title
 
   return report
 
