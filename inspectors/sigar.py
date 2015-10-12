@@ -40,7 +40,7 @@ def run(options):
 
   # Pull the reports
   for report_type, report_url in REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(report_url), "lxml")
+    doc = BeautifulSoup(utils.download(report_url))
     results = doc.select("item")
     if not results:
       raise inspector.NoReportsFoundError("SIGAR (%s)" % report_type)

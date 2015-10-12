@@ -32,7 +32,7 @@ def run(options):
 
   # Pull the audit reports
   for report_type, url in REPORT_TYPES.items():
-    doc = BeautifulSoup(utils.download(url), "lxml")
+    doc = BeautifulSoup(utils.download(url))
     results = doc.select("table p > a[href]")
     if not results:
       raise inspector.NoReportsFoundError("ARC (%s)" % report_type)

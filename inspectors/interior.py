@@ -37,7 +37,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   response = utils.scraper.post(REPORT_SEARCH_URL, data=POST_DATA)
-  doc = BeautifulSoup(response.text, "lxml")
+  doc = BeautifulSoup(response.text)
 
   results = doc.select("div.report")
   if not results:

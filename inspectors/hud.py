@@ -161,7 +161,7 @@ def run(options):
 
     url = url_for(year_range, page=page)
     index_body = utils.download(url)
-    index = BeautifulSoup(index_body, "lxml")
+    index = BeautifulSoup(index_body)
 
     rows = index.select('div.views-row')
 
@@ -193,7 +193,7 @@ def run(options):
     inspector.save_report(report)
 
   archives_body = utils.download(ARCHIVES_URL)
-  archives_page = BeautifulSoup(archives_body, "lxml")
+  archives_page = BeautifulSoup(archives_body)
   state_links = archives_page.find("table", {"bgcolor": "CCCCCC"}). \
       table.find_all("a")
   if not state_links:
@@ -203,7 +203,7 @@ def run(options):
     state_name = state_link.text.strip()
     state_url = urljoin(ARCHIVES_URL, relative_url)
     state_body = utils.download(state_url)
-    state_page = BeautifulSoup(state_body, "lxml")
+    state_page = BeautifulSoup(state_body)
     state_container = state_page.h2.parent
 
     # N.B. split_dom is guaranteed to yield at least one element. If the
@@ -288,7 +288,7 @@ def report_from(report_row, year_range):
   logging.debug("### Processing report %s" % landing_url)
 
   report_page_body = utils.download(landing_url)
-  report_page = BeautifulSoup(report_page_body, "lxml")
+  report_page = BeautifulSoup(report_page_body)
 
   article = report_page.select('article')[0]
 

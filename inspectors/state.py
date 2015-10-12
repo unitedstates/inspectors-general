@@ -53,7 +53,7 @@ def run(options):
 
 def extract_reports_for_page(url, page_number, year_range, listing_xpath):
   body = utils.download(url)
-  doc = BeautifulSoup(body, "lxml")
+  doc = BeautifulSoup(body)
   results = doc.select(listing_xpath)
 
   if not results and not page_number:

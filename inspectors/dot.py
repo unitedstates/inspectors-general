@@ -79,7 +79,7 @@ def run(options):
       logging.debug("Scraping %s" % year_url)
       body = utils.download(year_url)
 
-      doc = BeautifulSoup(body, "lxml")
+      doc = BeautifulSoup(body)
 
       if not doc.select(".view-business-areas"):
         raise inspector.NoReportsFoundError("DOT (%s)" % topic)
@@ -128,7 +128,7 @@ def report_from(result, year_range, topic, options):
   logging.debug("### Processing report %s" % landing_url)
 
   report_page_body = utils.download(landing_url)
-  report_page = BeautifulSoup(report_page_body, "lxml")
+  report_page = BeautifulSoup(report_page_body)
 
   # take an expansive view of the 'summary' -
   #   landing page title, and any paragraphs with summary text

@@ -31,7 +31,7 @@ def run(options):
 
   # Pull the audit reports
   for report_type, url in REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(url), "lxml")
+    doc = BeautifulSoup(utils.download(url))
     results = doc.select("li.views-row")
     if not results:
       raise inspector.NoReportsFoundError("FTC (%s)" % report_type)

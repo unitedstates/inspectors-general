@@ -166,7 +166,7 @@ def url_for(year, page_number):
 
 def beautifulsoup_from_url(url):
   body = utils.download(url)
-  return BeautifulSoup(body, "lxml")
+  return BeautifulSoup(body)
 
 
 utils.run(run) if (__name__ == "__main__") else None

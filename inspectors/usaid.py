@@ -36,7 +36,7 @@ def run(options):
   for report_type, report_url_format in PAGINATED_REPORT_FORMATS.items():
     for page in range(0, 999):
       url = report_url_format.format(page=page)
-      doc = BeautifulSoup(utils.download(url), "lxml")
+      doc = BeautifulSoup(utils.download(url))
       results = doc.select("li.views-row")
       if not results:
         if page == 0:
@@ -50,7 +50,7 @@ def run(options):
           inspector.save_report(report)
 
   # Pull the semiannual reports (no pagination)
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL), "lxml")
+  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.select("li.views-row")
   if not results:
     raise inspector.NoReportsFoundError("USAID (semiannual reports)")
@@ -156,7 +156,7 @@ def semiannual_report_from(result, year_range):
     return
 
   landing_url = urljoin(SEMIANNUAL_REPORTS_URL, link.get('href'))
-  landing_page = BeautifulSoup(utils.download(landing_url), "lxml")
+  landing_page = BeautifulSoup(utils.download(landing_url))
 
   report_url = landing_page.select("div.filefield-file a")[0].get('href')
   report_filename = report_url.split("/")[-1]

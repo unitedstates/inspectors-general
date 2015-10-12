@@ -39,7 +39,7 @@ def run(options):
 
   # Pull the audit reports. Pages are 0-indexed.
   for page in range(0, int(pages) - 1):
-    doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL.format(page=page)), "lxml")
+    doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL.format(page=page)))
     results = doc.select("span.field-content")
     if not results:
       if page == 0:
@@ -55,7 +55,7 @@ def run(options):
 
   # Grab the other reports
   for report_type, url in OTHER_REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(url), "lxml")
+    doc = BeautifulSoup(utils.download(url))
     results = doc.select(".views-field")
     if not results:
       results = doc.select(".views-row")

@@ -29,7 +29,7 @@ def run(options):
   for year in year_range:
     if year < 2002:  # The oldest page for audit reports
       continue
-    doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL.format(year=year)), "lxml")
+    doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL.format(year=year)))
 
     # if it's a 404 page (200 response code), move on
     if not_found(doc):
@@ -47,7 +47,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the other reports
-  doc = BeautifulSoup(utils.download(OTHER_REPORTS_URL), "lxml")
+  doc = BeautifulSoup(utils.download(OTHER_REPORTS_URL))
   results = doc.select("div.content li")
   if not results:
     raise inspector.NoReportsFoundError("NCUA (other)")
@@ -57,7 +57,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL), "lxml")
+  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
   results = doc.select("div.content a")
   if not results:
     raise inspector.NoReportsFoundError("NCUA (semiannual reports)")

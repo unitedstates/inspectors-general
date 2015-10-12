@@ -65,7 +65,7 @@ def run(options):
                              (category_name, page, retry))
         url = url_for(options, page, category_id)
         body = utils.download(url)
-        doc = BeautifulSoup(body, "lxml")
+        doc = BeautifulSoup(body)
 
         results = doc.select(".views-row")
         if not results:
@@ -121,7 +121,7 @@ def run(options):
 def get_last_page(options, category_id):
   url = url_for(options, 1, category_id)
   body = utils.download(url)
-  doc = BeautifulSoup(body, "lxml")
+  doc = BeautifulSoup(body)
   return last_page_for(doc)
 
 def get_timestamp(result):

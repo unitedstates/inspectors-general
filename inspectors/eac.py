@@ -39,7 +39,7 @@ def run(options):
 
   # Pull the reports
   for report_type, url in REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(url), "lxml")
+    doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.mainRegion p a")
     if not results:
       raise inspector.NoReportsFoundError("EAC (%s)" % url)

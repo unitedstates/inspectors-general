@@ -117,7 +117,7 @@ def beautifulsoup_from_page_index(page):
     raise Exception("Failed to fetch data from sba.gov.")
 
   page_html = response.json()[1]['data']
-  return BeautifulSoup(page_html, "lxml")
+  return BeautifulSoup(page_html)
 
 def get_last_page_index():
   doc = beautifulsoup_from_page_index(0)
@@ -182,7 +182,7 @@ def report_from(result, year_range):
     logging.warn("Bad landing URL, downloaded None: %s" % landing_url)
     raise Exception("Couldn't download landing URL.")
 
-  landing_page = BeautifulSoup(landing_body, "lxml")
+  landing_page = BeautifulSoup(landing_body)
 
   try:
     report_url = urljoin(BASE_REPORT_URL, landing_page.select("#attachments a")[0].get('href'))

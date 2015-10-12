@@ -35,7 +35,7 @@ def run(options):
 
   # Pull the reports
   for report_type, url in REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(url), "lxml")
+    doc = BeautifulSoup(utils.download(url))
     results = doc.select("div.section1 div.ltext > table tr")
     if not results:
       results = doc.select("td.three-col-layout-middle div.ltext > table tr")

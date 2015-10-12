@@ -74,7 +74,7 @@ def report_from(result, year_range):
 
 def beautifulsoup_from_url(url):
   body = utils.download(url)
-  return BeautifulSoup(body, "lxml")
+  return BeautifulSoup(body)
 
 
 utils.run(run) if (__name__ == "__main__") else None

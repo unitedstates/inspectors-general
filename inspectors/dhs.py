@@ -36,7 +36,7 @@ def run(options):
     url = url_for(options, component)
     body = utils.download(url)
 
-    doc = BeautifulSoup(body, "lxml")
+    doc = BeautifulSoup(body)
 
     results = doc.select("table.contentpaneopen table[border=1] tr")
     # accept only trs that look like body tr's (no 'align' attribute)

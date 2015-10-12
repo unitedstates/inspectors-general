@@ -306,7 +306,7 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
 
 def beautifulsoup_from_url(url):
   body = utils.download(url)
-  return BeautifulSoup(body, "lxml")
+  return BeautifulSoup(body)
 
 def ancestor_tag_by_name(element, name):
   for parent in element.parents:
