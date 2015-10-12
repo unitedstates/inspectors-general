@@ -210,7 +210,7 @@ def semiannual_report_from(result, year_range):
 
 def beautifulsoup_from_url(url):
   body = utils.download(url)
-  return BeautifulSoup(body)
+  return BeautifulSoup(body, "lxml")
 
 def br_to_newline(subtree):
   br = subtree.find("br")

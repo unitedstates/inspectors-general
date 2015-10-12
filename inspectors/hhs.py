@@ -667,7 +667,7 @@ def beautifulsoup_from_url(url):
   body = utils.download(url)
   if body is None: return None
 
-  doc = BeautifulSoup(body)
+  doc = BeautifulSoup(body, "lxml")
 
   # Some of the pages will return meta refreshes
   if doc.find("meta") and doc.find("meta").attrs.get('http-equiv') == 'REFRESH':

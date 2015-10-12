@@ -30,7 +30,7 @@ def run(options):
     if year < 2005:  # This is the earliest audits go back
       continue
     url = AUDIT_REPORTS_URL.format(year=year)
-    doc = BeautifulSoup(utils.download(url))
+    doc = BeautifulSoup(utils.download(url), "lxml")
     results = doc.select("div.content")
     if not results:
       raise inspector.NoReportsFoundError("Tennessee Valley Authority (%d)" % year)
@@ -40,7 +40,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL), "lxml")
   results = doc.select("report")
   if not results:
     raise inspector.NoReportsFoundError("Tennessee Valley Authority (semiannual reports)")

@@ -146,7 +146,7 @@ def run(options):
 
   for url in urls_for(options, only):
     body = utils.download(url)
-    page = BeautifulSoup(body)
+    page = BeautifulSoup(body, "lxml")
 
     report_table = page.select('table[summary~="reports"]')[0]
     for tr in report_table.select('tr')[1:]:
@@ -251,7 +251,7 @@ def fetch_from_landing_page(landing_url):
   skip = False
 
   body = utils.download(landing_url)
-  page = BeautifulSoup(body)
+  page = BeautifulSoup(body, "lxml")
 
   report_tables = page.select('table[summary~="reports"]')
   # in the rare case that doesn't work, have faith
@@ -335,7 +335,7 @@ def urls_for(options, only):
     yield url
 
     body = utils.download(url)
-    page = BeautifulSoup(body)
+    page = BeautifulSoup(body, "lxml")
 
     for url in get_pagination_urls(page):
       yield url
@@ -353,7 +353,7 @@ def get_pagination_urls(page):
       yield BASE_URL + link['href']
     elif link['href'].startswith('/pubs') and RE_NEXT_10.search(link.text):
       new_url = urljoin(BASE_URL, link['href'])
-      page = BeautifulSoup(utils.download(new_url))
+      page = BeautifulSoup(utils.download(new_url), "lxml")
       for link in get_pagination_urls(page):
         yield link
 

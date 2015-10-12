@@ -23,7 +23,7 @@ AUDIT_REPORTS_URL = "http://www.rrb.gov/oig/reports/FY{year}reports.asp"
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = BeautifulSoup(utils.download(REPORTS_URL), "lxml")
 
   # Pull the semiannual reports
   semiannul_results = doc.select("#AnnualManagementReports select")[0]
@@ -47,7 +47,7 @@ def run(options):
     if year < 2001:  # The oldest fiscal year page available
       continue
     year_url = AUDIT_REPORTS_URL.format(year=year)
-    doc = BeautifulSoup(utils.download(year_url))
+    doc = BeautifulSoup(utils.download(year_url), "lxml")
     results = doc.select("#main table tr")
     if not results:
       raise inspector.NoReportsFoundError("Railroad Retirement Board (%d)" % year)

@@ -24,7 +24,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
+  doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL), "lxml")
   results = doc.select("table.views-table tr")
   if not results:
     raise inspector.NoReportsFoundError("National Endowment for the Humanities (audit reports)")
@@ -34,7 +34,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL), "lxml")
   results = doc.select("table.views-table tr")
   if not results:
     raise inspector.NoReportsFoundError("National Endowment for the Humanities (semiannual reports)")

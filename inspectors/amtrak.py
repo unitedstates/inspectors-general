@@ -21,7 +21,7 @@ def run(options):
       url = url_for(options, index, year)
       body = utils.download(url)
 
-      doc = BeautifulSoup(body)
+      doc = BeautifulSoup(body, "lxml")
 
       results = doc.select("div.view-content div.views-row")
       for result in results:

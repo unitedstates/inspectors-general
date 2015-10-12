@@ -76,7 +76,7 @@ class LibraryOfCongressScraper(object):
     # This page contains semianual reports as well as a few Audit reports for
     # Fiscal Year 2014 and links to sub-pages that contain links for other
     # fiscal years.
-    doc = BeautifulSoup(utils.download(REPORTS_BY_YEAR_URL))
+    doc = BeautifulSoup(utils.download(REPORTS_BY_YEAR_URL), "lxml")
 
     # Get the semiannual reports to Congress.
     self.get_semiannual_reports_to_congress(doc)
@@ -90,14 +90,14 @@ class LibraryOfCongressScraper(object):
       link = li.find('a')
       if link:
         next_url = urljoin(REPORTS_BY_YEAR_URL, link['href'])
-        doc = BeautifulSoup(utils.download(next_url))
+        doc = BeautifulSoup(utils.download(next_url), "lxml")
         uls = self.get_uls_past_audit_header(doc)
         assert len(uls) == 1, ('Mysterious additional ul data on page: %s' %
                                next_url)
         self.get_bare_reports(uls[0])
 
   def get_listed_reports(self, url):
-    doc = BeautifulSoup(utils.download(url))
+    doc = BeautifulSoup(utils.download(url), "lxml")
     article = doc.select('.article')[0]
     results = article.find_all('ul')
     if not results:

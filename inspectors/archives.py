@@ -30,7 +30,7 @@ def run(options):
     if year < 2006:  # The oldest year for audit reports
       continue
     url = AUDIT_REPORTS_URL.format(year=year)
-    doc = BeautifulSoup(utils.download(url))
+    doc = BeautifulSoup(utils.download(url), "lxml")
     results = doc.select("div#content li")
     if not results:
       raise inspector.NoReportsFoundError("National Archives and Records Administration audit reports")
@@ -40,7 +40,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL), "lxml")
   results = doc.select("div#content li")
   if not results:
     raise inspector.NoReportsFoundError("National Archives and Records Administration semiannual reports")
@@ -50,7 +50,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the Peer Review
-  doc = BeautifulSoup(utils.download(PEER_REVIEWS_URL))
+  doc = BeautifulSoup(utils.download(PEER_REVIEWS_URL), "lxml")
   result = doc.find("div", id='content').find("a", text=True)
   report = peer_review_from(result, year_range)
   if report:

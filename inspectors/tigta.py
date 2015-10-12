@@ -46,7 +46,7 @@ def run(options):
       parse_result_from_js_url(url, "iereports", year, year_range, report_type='inspection')
 
   # Pull the congressional testimony
-  doc = BeautifulSoup(utils.download(CONGRESSIONAL_TESTIMONY_REPORTS_URL))
+  doc = BeautifulSoup(utils.download(CONGRESSIONAL_TESTIMONY_REPORTS_URL), "lxml")
   results = doc.findAll("ul", type='disc')[0].select("li")
   for result in results:
     report = congressional_testimony_report_from(result, year_range)
@@ -54,7 +54,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL), "lxml")
   results = doc.findAll("ul", type='disc')[0].select("li")
   for result in results:
     report = semiannual_report_from(result, year_range)

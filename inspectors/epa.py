@@ -62,7 +62,7 @@ def run(options):
   index_body = utils.download(BASE_URL)
 
   current_year = None
-  index = BeautifulSoup(index_body)
+  index = BeautifulSoup(index_body, "lxml")
   tables = index.select('table.style1')
   if not tables:
     raise inspector.NoReportsFoundException("EPA")

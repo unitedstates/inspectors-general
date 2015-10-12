@@ -32,7 +32,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
+  doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL), "lxml")
 
   headers = doc.select("p.Ptitle1")
   if not headers:

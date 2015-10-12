@@ -62,7 +62,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # # Pull the RSS feed
-  doc = BeautifulSoup(utils.download(RSS_URL))
+  doc = BeautifulSoup(utils.download(RSS_URL), "lxml")
   results = doc.select("item")
   if not results:
     raise inspector.NoReportsFoundError("Smithsonian (RSS)")
@@ -72,7 +72,7 @@ def run(options):
       inspector.save_report(report)
 
   # # Pull the recent audit reports.
-  doc = BeautifulSoup(utils.download(RECENT_AUDITS_URL))
+  doc = BeautifulSoup(utils.download(RECENT_AUDITS_URL), "lxml")
   results = doc.select("div.block > a")
   if not results:
     raise inspector.NoReportsFoundError("Smithsonian (recent audit reports)")
@@ -82,7 +82,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the archive audit reports
-  doc = BeautifulSoup(utils.download(AUDIT_ARCHIVE_URL))
+  doc = BeautifulSoup(utils.download(AUDIT_ARCHIVE_URL), "lxml")
   results = doc.select("div.block a")
   if not results:
     raise inspector.NoReportsFoundError("Smithsonian (audit archive)")
@@ -92,7 +92,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the other reports
-  doc = BeautifulSoup(utils.download(OTHER_REPORTS_URl))
+  doc = BeautifulSoup(utils.download(OTHER_REPORTS_URl), "lxml")
   results = doc.select("div.block > a")
   if not results:
     raise inspector.NoReportsFoundError("Smithsonian (other)")
@@ -181,7 +181,7 @@ def report_from(result, year_range):
   summary = None
   if not report_url.endswith(".pdf"):
     # Some reports link to other page which link to the full report
-    report_page = BeautifulSoup(utils.download(report_url))
+    report_page = BeautifulSoup(utils.download(report_url), "lxml")
     relative_report_url = report_page.select("div.block a")[0].get('href')
     report_url = urljoin(report_url, relative_report_url)
     # Strip extra path adjustments

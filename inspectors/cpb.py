@@ -44,7 +44,7 @@ def run(options):
 
   # Pull the reports
   for report_type, url in REPORT_TYPE_MAP.items():
-    doc = BeautifulSoup(utils.download(url))
+    doc = BeautifulSoup(utils.download(url), "lxml")
     results = doc.select("div#content div#contentMain ul li.pdf")
     if not results:
       raise inspector.NoReportsFoundError("CPB (%s)" % url)

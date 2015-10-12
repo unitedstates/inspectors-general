@@ -44,7 +44,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
+  doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL), "lxml")
   results = doc.select("td.text table tr")
   if not results:
     raise inspector.NoReportsFoundError("National Science Foundation (audit reports")
@@ -57,7 +57,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL), "lxml")
   results = doc.select("td.text table tr")
   if not results:
     raise inspector.NoReportsFoundError("National Science Foundation (semiannual reports)")
@@ -73,7 +73,7 @@ def run(options):
     url=CASE_REPORTS_URL,
     data=CASE_REPORTS_DATA,
   )
-  doc = BeautifulSoup(response.content)
+  doc = BeautifulSoup(response.content, "lxml")
   results = doc.select("td.text table tr")
   if not results:
     raise inspector.NoReportsFoundError("National Science Foundation (case reports)")
@@ -85,7 +85,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the testimony
-  doc = BeautifulSoup(utils.download(TESTIMONY_REPORTS_URL))
+  doc = BeautifulSoup(utils.download(TESTIMONY_REPORTS_URL), "lxml")
   results = doc.select("td.text table tr")
   if not results:
     raise inspector.NoReportsFoundError("National Science Foundation (testimony)")
@@ -191,7 +191,7 @@ def semiannual_report_from(result, year_range):
     landing_page_response = utils.scraper.get(landing_url)
     landing_url = landing_page_response.url
 
-    landing_page = BeautifulSoup(landing_page_response.content)
+    landing_page = BeautifulSoup(landing_page_response.content, "lxml")
     report_leadin_text = landing_page.find(text=REPORT_LEADIN_TEXT)
     report_link_text = landing_page.find(text=REPORT_LINK_TEXT)
     report_link = None

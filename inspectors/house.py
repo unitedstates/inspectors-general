@@ -40,7 +40,7 @@ def run(options):
 
   # Pull the reports
   for url in [IG_URL]:
-    doc = BeautifulSoup(utils.download(url))
+    doc = BeautifulSoup(utils.download(url), "lxml")
     results = doc.select("div.relatedContent ul.links li a")
     if not results:
       raise inspector.NoReportsFoundError("House of Representatives (%s)" % url)

@@ -32,7 +32,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = BeautifulSoup(utils.download(REPORTS_URL), "lxml")
   results = doc.select("ul.text > ul > li")
   if not results:
     raise inspector.NoReportsFoundError("CFTC audit reports")

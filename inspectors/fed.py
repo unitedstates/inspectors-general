@@ -177,7 +177,7 @@ def semiannual_report_from(report_url, year_range):
 
 def beautifulsoup_from_url(url):
   body = utils.download(url)
-  return BeautifulSoup(body)
+  return BeautifulSoup(body, "lxml")
 
 
 utils.run(run) if (__name__ == "__main__") else None

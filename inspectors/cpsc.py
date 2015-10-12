@@ -27,7 +27,7 @@ BLACKLIST_REPORT_URLS = [
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = BeautifulSoup(utils.download(REPORTS_URL), "lxml")
   results = doc.select("ul.summary-list li")
   if not results:
     raise inspector.NoReportsFoundError("CPSC")

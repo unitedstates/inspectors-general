@@ -20,13 +20,13 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Find the number of pages to iterate
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = BeautifulSoup(utils.download(REPORTS_URL), "lxml")
   page_count = int(doc.select("li.pager-last a")[0]['href'][-1:])
 
   # Iterate over those pages
   for page in range(0, page_count + 1):
     response = utils.download(REPORTS_URL + str(page))
-    doc = BeautifulSoup(response)
+    doc = BeautifulSoup(response, "lxml")
     results = doc.select(".reports")
     if not results:
       if page == 0:

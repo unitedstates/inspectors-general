@@ -37,7 +37,7 @@ def run(options):
   url = url_for()
   body = utils.download(url)
 
-  doc = BeautifulSoup(body)
+  doc = BeautifulSoup(body, "lxml")
   results = doc.select("section")
   if not results:
     raise inspector.NoReportsFoundError("OPM")

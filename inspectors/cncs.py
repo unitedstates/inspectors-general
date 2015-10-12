@@ -47,7 +47,7 @@ def run(options):
     last_page = options.get("end") # reset for each area
     while True:
       url = url_for(reports_page, page)
-      doc = BeautifulSoup(utils.download(url))
+      doc = BeautifulSoup(utils.download(url), "lxml")
 
       if last_page is None:
         last_page = last_page_from(doc)
@@ -224,7 +224,7 @@ def do_peer_review():
 
 # gets URL and summary from a report's landing page
 def extract_from_release_page(landing_url):
-  doc = BeautifulSoup(utils.download(landing_url))
+  doc = BeautifulSoup(utils.download(landing_url), "lxml")
   main = doc.select("#main #lefSide")[0]
 
   url_elem = main.select("div")[2].select("a")

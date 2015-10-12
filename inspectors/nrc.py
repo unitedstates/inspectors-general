@@ -52,7 +52,7 @@ def run(options):
   # Pull the audit reports
   for year in year_range:
     url = AUDITS_REPORTS_URL.format(year)
-    doc = BeautifulSoup(utils.download(url))
+    doc = BeautifulSoup(utils.download(url), "lxml")
     results = doc.find("table", border="1").select("tr")
     if not results:
       raise inspector.NoReportsFoundError("Nuclear Regulatory Commission (%d)" % year)
@@ -65,7 +65,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the congressional testimony
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL), "lxml")
   semiannual_reports_table = doc.find("table", border="1")
   results = semiannual_reports_table.select("tr")
   if not results:
@@ -80,7 +80,7 @@ def run(options):
 
   # Pull the other reports
   for reports_url, id_prefix in OTHER_REPORT_URLS:
-    doc = BeautifulSoup(utils.download(reports_url))
+    doc = BeautifulSoup(utils.download(reports_url), "lxml")
     results = doc.find("table", border="1").select("tr")
     if not results:
       raise inspector.NoReportsFoundError("Nuclear Regulatory Commission (other)")
@@ -156,7 +156,7 @@ def semiannual_report_from(result, year_range):
   report_link = result.find("a")
   landing_url = urljoin(SEMIANNUAL_REPORTS_URL, report_link.get('href'))
 
-  landing_page = BeautifulSoup(utils.download(landing_url))
+  landing_page = BeautifulSoup(utils.download(landing_url), "lxml")
   title = " ".join(landing_page.select("#mainSubFull h1")[0].text.split())
 
   try:

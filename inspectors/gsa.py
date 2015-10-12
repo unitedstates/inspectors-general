@@ -28,7 +28,7 @@ def crawl_index(base_url, options, is_meta_index=False):
     url = url_for(base_url, page)
     body = utils.download(url)
 
-    doc = BeautifulSoup(body)
+    doc = BeautifulSoup(body, "lxml")
 
     next_page = page + 1
     found_next_page = False

@@ -60,7 +60,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = BeautifulSoup(utils.download(REPORTS_URL), "lxml")
   results = doc.select("li div li")
   if not results:
     raise inspector.NoReportsFoundError("Peace Corps")

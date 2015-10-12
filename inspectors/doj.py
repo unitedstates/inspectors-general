@@ -489,7 +489,7 @@ def type_for(original_type):
 
 def get_content(url):
   page = utils.download(url)
-  page = BeautifulSoup(page)
+  page = BeautifulSoup(page, "lxml")
   content = page.select(".content-left")
   if not content:
     raise inspector.NoReportsFoundError("DOJ (%s)" % url)
