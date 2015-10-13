@@ -7,7 +7,6 @@ import os
 import re
 from urllib.parse import urljoin, urlparse, urlunparse, urldefrag
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://oig.hhs.gov/reports-and-publications/index.asp
@@ -294,7 +293,7 @@ def extract_reports_for_topic(topic, year_range, archives=False):
     extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_name)
 
 def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_name):
-  doc = beautifulsoup_from_url(subtopic_url)
+  doc = utils.beautifulsoup_from_url(subtopic_url)
   if not doc:
     raise Exception("Failure fetching subtopic URL: %s" % subtopic_url)
 
@@ -323,7 +322,7 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
 def extract_reports_for_oei(year_range):
   topic_name = TOPIC_NAMES["OE"]
   topic_url = TOPIC_TO_URL["OE"]
-  root_doc = beautifulsoup_from_url(topic_url)
+  root_doc = utils.beautifulsoup_from_url(topic_url)
 
   letter_urls = set()
   for link in root_doc.select("#leftContentInterior li a"):
@@ -337,7 +336,7 @@ def extract_reports_for_oei(year_range):
   all_results_links = {}
   all_results_unreleased = []
   for letter_url in letter_urls:
-    letter_doc = beautifulsoup_from_url(letter_url)
+    letter_doc = utils.beautifulsoup_from_url(letter_url)
 
     results = letter_doc.select("#leftContentInterior ul li")
     if not results:
@@ -517,7 +516,7 @@ def filter_links(link_list, base_url):
   return filtered_list
 
 def report_from_landing_url(report_url):
-  doc = beautifulsoup_from_url(report_url)
+  doc = utils.beautifulsoup_from_url(report_url)
   if not doc:
     raise Exception("Failure fetching report landing URL: %s" % report_url)
 
@@ -644,7 +643,7 @@ def published_on_from_inline_link(result, report_filename, title, report_id, rep
   return published_on
 
 def get_subtopic_map(topic_url):
-  doc = beautifulsoup_from_url(topic_url)
+  doc = utils.beautifulsoup_from_url(topic_url)
 
   subtopic_map = {}
   for link in doc.select("#leftContentInterior li a"):
@@ -662,19 +661,6 @@ def get_subtopic_map(topic_url):
     raise inspector.NoReportsFoundError("OEI (subtopics)")
 
   return subtopic_map
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  if body is None: return None
-
-  doc = BeautifulSoup(body, "lxml")
-
-  # Some of the pages will return meta refreshes
-  if doc.find("meta") and doc.find("meta").attrs.get('http-equiv') == 'REFRESH':
-    redirect_url = urljoin(url, doc.find("meta").attrs['content'].split("url=")[1])
-    return beautifulsoup_from_url(redirect_url)
-  else:
-    return doc
 
 def strip_url_fragment(url):
   scheme, netloc, path, params, query, fragment = urlparse(url)
