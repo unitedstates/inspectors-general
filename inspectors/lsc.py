@@ -6,7 +6,7 @@ import os
 import re
 from urllib.parse import urljoin, unquote
 
-from bs4 import BeautifulSoup, Tag, NavigableString, Comment
+from bs4 import Tag, NavigableString, Comment
 from utils import utils, inspector
 
 # https://www.oig.lsc.gov

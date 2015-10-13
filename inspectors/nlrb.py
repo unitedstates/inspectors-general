@@ -6,7 +6,6 @@ import os
 import re
 import urllib
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://www.nlrb.gov/who-we-are/inspector-general

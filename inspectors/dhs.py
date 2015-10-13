@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from utils import utils, inspector
-from bs4 import BeautifulSoup
 from datetime import datetime
 import urllib.parse
 import logging

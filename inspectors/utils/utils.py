@@ -11,6 +11,7 @@ import urllib.parse
 import io
 import gzip
 import certifi
+from urllib.parse import urljoin
 
 from . import admin
 
@@ -244,7 +245,14 @@ def beautifulsoup_from_url(url):
   body = download(url)
   if body is None: return None
 
-  return BeautifulSoup(body, "lxml")
+  doc = BeautifulSoup(body, "lxml")
+
+  # Some of the pages will return meta refreshes
+  if doc.find("meta") and doc.find("meta").attrs.get('http-equiv') == 'REFRESH':
+    redirect_url = urljoin(url, doc.find("meta").attrs['content'].split("url=")[1])
+    return beautifulsoup_from_url(redirect_url)
+  else:
+    return doc
 
 def post(url, data=None, headers=None, **kwargs):
   response = None

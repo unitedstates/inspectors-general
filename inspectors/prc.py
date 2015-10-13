@@ -3,7 +3,6 @@
 import datetime
 import logging
 import os
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 archive = 2007

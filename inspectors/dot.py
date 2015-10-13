@@ -4,7 +4,6 @@ import datetime
 from urllib.parse import urljoin
 import os
 import logging
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://www.oig.dot.gov/

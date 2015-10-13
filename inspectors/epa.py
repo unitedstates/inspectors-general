@@ -4,7 +4,6 @@ import datetime
 from urllib.parse import urljoin
 import re
 import os.path
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 archive = 1996

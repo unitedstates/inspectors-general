@@ -5,7 +5,6 @@ import logging
 import os
 import time
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.va.gov/oig/apps/info/OversightReports.aspx

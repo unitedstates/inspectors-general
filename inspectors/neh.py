@@ -5,7 +5,6 @@ import logging
 import os
 import re
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.neh.gov/about/oig

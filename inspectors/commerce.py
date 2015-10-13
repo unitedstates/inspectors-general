@@ -5,7 +5,6 @@ import logging
 import os
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.oig.doc.gov/Pages/Audits-Evaluations.aspx?YearStart=01/01/1996&YearEnd=12/31/2014

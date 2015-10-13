@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.sec.gov/about/offices/oig/inspector_general_reppubs_testimony.shtml

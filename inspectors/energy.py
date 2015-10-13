@@ -4,7 +4,6 @@ import datetime
 from urllib.parse import urljoin
 import re
 import logging
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # website: http://energy.gov/ig/

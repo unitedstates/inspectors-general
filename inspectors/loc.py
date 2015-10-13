@@ -5,7 +5,6 @@ import logging
 from urllib.parse import urljoin
 import re
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://www.loc.gov/about/office-of-the-inspector-general/

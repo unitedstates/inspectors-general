@@ -5,7 +5,6 @@ import logging
 import os
 import urllib
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.peacecorps.gov/about/inspgen/

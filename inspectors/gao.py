@@ -4,7 +4,6 @@ import datetime
 import logging
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.gao.gov/about/workforce/ig_reports.html

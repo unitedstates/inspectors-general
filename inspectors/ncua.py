@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.ncua.gov/about/Leadership/Pages/page_oig.aspx
@@ -32,7 +31,7 @@ def run(options):
     doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL.format(year=year))
 
     # if it's a 404 page (200 response code), move on
-    if not_found(doc):
+    if doc == None or not_found(doc):
       continue
 
     results = doc.select("div.content table tr")

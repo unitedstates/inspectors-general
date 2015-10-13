@@ -15,7 +15,6 @@ archive = 1994
 #               will be used to filter to a particular landing page.
 
 import re
-from bs4 import BeautifulSoup
 from datetime import datetime
 from utils import utils, inspector
 import logging

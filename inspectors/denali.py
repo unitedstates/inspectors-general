@@ -6,7 +6,7 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup, Tag
+from bs4 import Tag
 from utils import utils, inspector
 
 # http://www.oig.denali.gov/

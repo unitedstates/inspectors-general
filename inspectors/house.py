@@ -5,7 +5,6 @@ import re
 import logging
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://house.gov/content/learn/officers_and_organizations/inspector_general.php

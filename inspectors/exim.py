@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from utils import utils, inspector
-from bs4 import BeautifulSoup
 from bs4.element import Tag, NavigableString
 from datetime import datetime
 import os.path

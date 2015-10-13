@@ -5,7 +5,7 @@ import logging
 import os
 import re
 from urllib.parse import urljoin
-from bs4 import BeautifulSoup, Tag, NavigableString
+from bs4 import Tag, NavigableString
 from utils import utils, inspector
 
 archive = 2001

@@ -5,7 +5,6 @@ from urllib.parse import urljoin, urlencode
 import re
 import os
 import logging
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.dodig.mil/pubs/index.cfm

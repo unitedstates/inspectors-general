@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from utils import utils, inspector
-from bs4 import BeautifulSoup
 import bs4
 import os
 import logging
