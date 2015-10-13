@@ -146,7 +146,7 @@ DATE_RE = re.compile("(January|February|March|April|May|June|July|August|" +
 DATE_RE_MM_DD_YY = re.compile("[0-9]?[0-9]/[0-9]?[0-9]/[0-9][0-9]")
 
 HARDCODED_DATES = {
-   "Hats Off Program Investigative Report": "June 16, 2011",
+  "Hats Off Program Investigative Report": "June 16, 2011",
   "Major Issues from Fiscal Year 2010 Multiple Award Schedule Preaward Audits": "September 26, 2011",
   "Review of Center for Information Security Services FTS": "March 23, 2001",
   "Audit of Procurement of Profesional Services from the FSS Multiple Award Schedules": "July 31, 2003",
