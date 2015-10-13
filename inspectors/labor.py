@@ -44,7 +44,7 @@ def run(options):
         pre_1998_done = True
     for page_number in range(0, 10000):
       year_url = url_for(year, page_number)
-      doc = beautifulsoup_from_url(year_url)
+      doc = utils.beautifulsoup_from_url(year_url)
       results = doc.select("ol li")
       if not results:
         if page_number == 0:
@@ -57,7 +57,7 @@ def run(options):
           inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("#content + div p a")
   if not results:
     raise inspector.NoReportsFoundError("Department of Labor (semiannal reports)")
@@ -162,11 +162,5 @@ def url_for(year, page_number):
   if year < 1998:  # Everything before 1998 is clumped together
     year = "pre_1998"
   return AUDIT_REPORTS_URL.format("{}&next_i={}".format(year, offset))
-
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  return BeautifulSoup(body)
-
 
 utils.run(run) if (__name__ == "__main__") else None

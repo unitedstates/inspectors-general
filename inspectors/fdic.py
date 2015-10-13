@@ -32,7 +32,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(REPORTS_URL)
   results = doc.find("table", {"cellpadding": "5"}).select("tr")
   if not results:
     raise inspector.NoReportsFoundError("FDIC")

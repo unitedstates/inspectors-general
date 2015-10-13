@@ -19,9 +19,7 @@ def run(options):
     report_count = 0
     for year in year_range:
       url = url_for(options, index, year)
-      body = utils.download(url)
-
-      doc = BeautifulSoup(body)
+      doc = utils.beautifulsoup_from_url(url)
 
       results = doc.select("div.view-content div.views-row")
       for result in results:

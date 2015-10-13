@@ -54,7 +54,7 @@ def run(options):
 
   # Pull the audit and inspections reports
   for report_type, reports_url in REPORT_URLS:
-    doc = BeautifulSoup(utils.download(reports_url))
+    doc = utils.beautifulsoup_from_url(reports_url)
     results = doc.select("div.field-item")
     if not results:
       raise inspector.NoReportsFoundError("National Labor Relations Board (%s)" % report_type)
@@ -64,7 +64,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("div.field-item")
   if not results:
     raise inspector.NoReportsFoundError("National Labor Relations Board (semiannual reports)")

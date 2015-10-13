@@ -41,7 +41,7 @@ def run(options):
     if year < 1998:  # The earliest year for audit reports
       continue
     year_url = AUDIT_REPORTS_URL.format(year=year)
-    doc = BeautifulSoup(utils.download(year_url))
+    doc = utils.beautifulsoup_from_url(year_url)
     results = doc.select("tr")
     if not results:
       raise inspector.NoReportsFoundError("Pension Benefit Guaranty Corporation (audit reports)")
@@ -51,7 +51,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the congressional requests
-  doc = BeautifulSoup(utils.download(CONGRESSIONAL_REQUESTS_URL))
+  doc = utils.beautifulsoup_from_url(CONGRESSIONAL_REQUESTS_URL)
   results = doc.select("tr")
   if not results:
     raise inspector.NoReportsFoundError("Pension Benefit Guaranty Corporation (congressional requests)")
@@ -61,7 +61,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results =  doc.select("div.holder a")
   if not results:
     raise inspector.NoReportsFoundError("Pension Benefit Guaranty Corporation (semiannual reports)")
@@ -71,7 +71,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the congressional testimony
-  doc = BeautifulSoup(utils.download(CONGRESSIONAL_TESTIMONY_URL))
+  doc = utils.beautifulsoup_from_url(CONGRESSIONAL_TESTIMONY_URL)
   results =  doc.select("div.holder a")
   if not results:
     raise inspector.NoReportsFoundError("Pension Benefit Guaranty Corporation (congressional testimony)")
@@ -112,7 +112,7 @@ def report_from(result, report_type, year_range):
     landing_url = None
     summary = None
   else:
-    landing_page = BeautifulSoup(utils.download(landing_url))
+    landing_page = utils.beautifulsoup_from_url(landing_url)
     summary = " ".join(landing_page.select("div.holder")[0].text.split())
     report_link = landing_page.find("a", href=PDF_REGEX)
     if report_link:
@@ -159,7 +159,7 @@ def semiannual_report_from(result, year_range):
   report_id_javascript = result.get('onclick')
   report_id = re.search("'(.*)'", report_id_javascript).groups()[0]
   landing_url  = "http://oig.pbgc.gov/sarc/{report_id}.html".format(report_id=report_id)
-  landing_page = BeautifulSoup(utils.download(landing_url))
+  landing_page = utils.beautifulsoup_from_url(landing_url)
 
   title = " ".join(landing_page.select("h3")[0].text.split())
   relative_report_url = landing_page.find("a", text="Read Full Report").get('href')

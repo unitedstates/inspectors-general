@@ -26,9 +26,7 @@ def crawl_index(base_url, options, is_meta_index=False):
   done = False
   while not done:
     url = url_for(base_url, page)
-    body = utils.download(url)
-
-    doc = BeautifulSoup(body)
+    doc = utils.beautifulsoup_from_url(url)
 
     next_page = page + 1
     found_next_page = False
@@ -148,7 +146,7 @@ DATE_RE = re.compile("(January|February|March|April|May|June|July|August|" +
 DATE_RE_MM_DD_YY = re.compile("[0-9]?[0-9]/[0-9]?[0-9]/[0-9][0-9]")
 
 HARDCODED_DATES = {
-  "Hats Off Program Investigative Report": "June 16, 2011",
+   "Hats Off Program Investigative Report": "June 16, 2011",
   "Major Issues from Fiscal Year 2010 Multiple Award Schedule Preaward Audits": "September 26, 2011",
   "Review of Center for Information Security Services FTS": "March 23, 2001",
   "Audit of Procurement of Profesional Services from the FSS Multiple Award Schedules": "July 31, 2003",

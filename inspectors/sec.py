@@ -163,8 +163,7 @@ def run(options):
 
   for topic in topics:
     topic_url = TOPIC_TO_URL[topic]
-    body = utils.download(topic_url)
-    doc = BeautifulSoup(body)
+    doc = utils.beautifulsoup_from_url(topic_url)
 
     try:
       year_results = doc.select("#Listing")[0]

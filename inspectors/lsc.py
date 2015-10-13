@@ -174,8 +174,7 @@ def run(options):
 
   # Pull the audit reports
   for url, report_type, parse_func in REPORT_PAGES_INFO:
-    page_content = utils.download(url)
-    doc = BeautifulSoup(page_content)
+    doc = utils.beautifulsoup_from_url(url)
 
     content = doc.select("section.article-content")[0]
     parse_func(content, url, report_type, year_range)

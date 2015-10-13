@@ -95,7 +95,7 @@ def run(options):
     if year < 2006:  # This is the oldest year for these reports
       continue
     url = AUDIT_REPORTS_BASE_URL.format(year)
-    doc = beautifulsoup_from_url(url)
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.find_all("tr", class_=["ms-rteTableOddRow-default",
                                          "ms-rteTableEvenRow-default"])
     if not results:
@@ -106,7 +106,7 @@ def run(options):
         inspector.save_report(report)
 
   for report_type, url in OTHER_URLS.items():
-    doc = beautifulsoup_from_url(url)
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p a")
     if not results:
       raise inspector.NoReportsFoundError("Treasury (%s)" % report_type)
@@ -117,7 +117,7 @@ def run(options):
       if report:
         inspector.save_report(report)
 
-  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("#ctl00_PlaceHolderMain_ctl05_ctl01__ControlWrapper_RichHtmlField > p > a")
   if not results:
     raise inspector.NoReportsFoundError("Treasury (semiannual reports)")
@@ -339,10 +339,5 @@ def semiannual_report_from(result, page_url, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  return BeautifulSoup(body)
-
 
 utils.run(run) if (__name__ == "__main__") else None

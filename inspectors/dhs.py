@@ -34,9 +34,7 @@ def run(options):
   for component in components:
     logging.info("## Fetching reports for component %s" % component)
     url = url_for(options, component)
-    body = utils.download(url)
-
-    doc = BeautifulSoup(body)
+    doc = utils.beautifulsoup_from_url(url)
 
     results = doc.select("table.contentpaneopen table[border=1] tr")
     # accept only trs that look like body tr's (no 'align' attribute)

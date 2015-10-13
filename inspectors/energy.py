@@ -103,7 +103,7 @@ class EnergyScraper(object):
     self.last_date = datetime.datetime(self.year_range[-1], 12, 31)
 
     for url in self.urls_for():
-      page = BeautifulSoup(utils.download(url))
+      page = utils.beautifulsoup_from_url(url)
 
       nodes = page.select('.energy-listing__results .node')
       if not nodes:
@@ -195,7 +195,7 @@ class EnergyScraper(object):
   def fetch_from_landing_page(self, landing_url):
     """Returns a tuple of (pdf_link, summary_text, is_unreleased)."""
     unreleased = False
-    page = BeautifulSoup(utils.download(landing_url))
+    page = utils.beautifulsoup_from_url(landing_url)
 
     summary = None
     field_items = page.select('.field-items')
@@ -242,7 +242,7 @@ class EnergyScraper(object):
 
     # Not getting reports from specific topics, iterate over all Calendar Year
     # reports.
-    page = BeautifulSoup(utils.download(BASE_URL))
+    page = utils.beautifulsoup_from_url(BASE_URL)
 
     # Iterate over each "Calendar Year XXXX" link
     for li in page.select('.field-items li'):
@@ -258,7 +258,7 @@ class EnergyScraper(object):
           # Next, read all the pagination links for the page and yield those. So
           # far, I haven't seen a page that doesn't have all of the following
           # pages enumerated.
-          next_page = BeautifulSoup(utils.download(next_url))
+          next_page = utils.beautifulsoup_from_url(next_url)
           for link in next_page.select('li.pager-item a'):
             yield urljoin(BASE_URL, link['href'])
 
@@ -275,14 +275,14 @@ class EnergyScraper(object):
       last_page = False
 
       url = TOPIC_TO_URL[topic]
-      page = BeautifulSoup(utils.download(url))
+      page = utils.beautifulsoup_from_url(url)
       page_started = self.is_first_page(page)
       if page_started:
         yield url
 
       for link in page.select('li.pager-item a'):
         next_url = urljoin(url, link['href'])
-        next_page = BeautifulSoup(utils.download(next_url))
+        next_page = utils.beautifulsoup_from_url(next_url)
         if not page_started:
           page_started = self.is_first_page(next_page)
         if page_started:

@@ -63,7 +63,7 @@ def run(options):
 
 def reports_from_page(url_format, page, report_type, year_range, year=''):
   url = url_format.format(page=page, year=year)
-  doc = BeautifulSoup(utils.download(url))
+  doc = utils.beautifulsoup_from_url(url)
   results = doc.select("td.views-field")
   if not results:
     results = doc.select("div.views-row")
@@ -114,7 +114,7 @@ def report_from(result, report_type, year_range):
         "applications-0":
     report_id = "A-07-10-20166"
 
-  landing_page = BeautifulSoup(utils.download(landing_url))
+  landing_page = utils.beautifulsoup_from_url(landing_url)
 
   unreleased = False
   if "Limited Distribution" in title:

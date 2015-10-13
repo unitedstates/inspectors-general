@@ -25,7 +25,7 @@ def run(options):
 
   # Pull the audit and semiannual reports
   for reports_url in [REPORTS_URL, SEMIANNUAL_REPORTS_URL]:
-    doc = beautifulsoup_from_url(reports_url)
+    doc = utils.beautifulsoup_from_url(reports_url)
     results = doc.select("div.listing")
     if not results:
       raise inspector.NoReportsFoundError("GAO (%s)" % reports_url)
@@ -48,7 +48,7 @@ def report_from(result, year_range):
     return
 
   logging.debug("Scraping landing url: %s", landing_url)
-  landing_page = beautifulsoup_from_url(landing_url)
+  landing_page = utils.beautifulsoup_from_url(landing_url)
   summary = landing_page.select("div.left_col")[0].text.strip()
 
   pdf_link = landing_page.select("#link_bar > a")[0]
@@ -71,10 +71,6 @@ def report_from(result, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  return BeautifulSoup(body)
 
 
 utils.run(run) if (__name__ == "__main__") else None

@@ -14,8 +14,7 @@ def run(options):
 
   published_on = None
   for page_url in [WHATS_NEW_URL, WHATS_NEW_ARCHIVE_URL, SEMIANNUAL_REPORTS_AND_TESTIMONIES_URL]:
-    body = utils.download(page_url)
-    doc = BeautifulSoup(body)
+    doc = utils.beautifulsoup_from_url(page_url)
 
     maincontent = doc.select("div#CS_Element_eximpagemaincontent")[0]
     all_a = maincontent.find_all("a")
@@ -89,8 +88,7 @@ def run(options):
 
   for page_url in [PRESS_RELEASES_URL, PRESS_RELEASES_ARCHIVE_URL]:
     done = False
-    body = utils.download(page_url)
-    doc = BeautifulSoup(body)
+    doc = utils.beautifulsoup_from_url(page_url)
 
     maincontent = doc.select("div#CS_Element_eximpagemaincontent")[0]
     all_p = maincontent.find_all("p")

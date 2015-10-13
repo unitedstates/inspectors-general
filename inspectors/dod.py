@@ -145,8 +145,7 @@ def run(options):
     only = list(OFFICES.keys())
 
   for url in urls_for(options, only):
-    body = utils.download(url)
-    page = BeautifulSoup(body)
+    page = utils.beautifulsoup_from_url(url)
 
     report_table = page.select('table[summary~="reports"]')[0]
     for tr in report_table.select('tr')[1:]:
@@ -250,8 +249,7 @@ def fetch_from_landing_page(landing_url):
   add_pdf = False
   skip = False
 
-  body = utils.download(landing_url)
-  page = BeautifulSoup(body)
+  page = utils.beautifulsoup_from_url(landing_url)
 
   report_tables = page.select('table[summary~="reports"]')
   # in the rare case that doesn't work, have faith
@@ -334,8 +332,7 @@ def urls_for(options, only):
     url = '{0}?{1}'.format(BASE_URL, query_string)
     yield url
 
-    body = utils.download(url)
-    page = BeautifulSoup(body)
+    page = utils.beautifulsoup_from_url(url)
 
     for url in get_pagination_urls(page):
       yield url
@@ -353,7 +350,7 @@ def get_pagination_urls(page):
       yield BASE_URL + link['href']
     elif link['href'].startswith('/pubs') and RE_NEXT_10.search(link.text):
       new_url = urljoin(BASE_URL, link['href'])
-      page = BeautifulSoup(utils.download(new_url))
+      page = utils.beautifulsoup_from_url(new_url)
       for link in get_pagination_urls(page):
         yield link
 

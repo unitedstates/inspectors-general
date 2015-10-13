@@ -59,10 +59,8 @@ def run(options):
   else:
     only = ALL_TOPIC_AREAS
 
-  index_body = utils.download(BASE_URL)
-
   current_year = None
-  index = BeautifulSoup(index_body)
+  index = utils.beautifulsoup_from_url(BASE_URL)
   tables = index.select('table.style1')
   if not tables:
     raise inspector.NoReportsFoundException("EPA")

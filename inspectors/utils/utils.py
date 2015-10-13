@@ -240,6 +240,12 @@ def download(url, destination=None, options=None):
     # whether from disk or web, unescape HTML entities
     return unescape(body)
 
+def beautifulsoup_from_url(url):
+  body = download(url)
+  if body is None: return None
+
+  return BeautifulSoup(body, "lxml")
+
 def post(url, data=None, headers=None, **kwargs):
   response = None
   try:
@@ -273,7 +279,7 @@ def log_http_error(e, url):
 # then writes it and returns the /data-relative path.
 def text_from_html(real_html_path, real_text_path):
   html = open(real_html_path, encoding='utf-8').read()
-  doc = BeautifulSoup(html)
+  doc = BeautifulSoup(html, "lxml")
 
   for node in doc.findAll(['script', 'style']):
     node.extract()

@@ -36,7 +36,7 @@ def run(options):
 
   # Pull the reports
   for report_type, url in REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(url))
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.select("div.node ul li")
     if not results:
       raise inspector.NoReportsFoundError("Federal Labor Relations Authority (%s)" % report_type)

@@ -34,7 +34,7 @@ def run(options):
   year_range = inspector.year_range(options)
 
   # Pull the reports
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = utils.beautifulsoup_from_html(REPORTS_URL)
   results = doc.select("some-selector")
   for result in results:
     report = report_from(result, year_range)

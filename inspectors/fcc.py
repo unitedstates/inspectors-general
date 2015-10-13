@@ -30,7 +30,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   for report_type, url in REPORT_URLS.items():
-    doc = beautifulsoup_from_url(url)
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.find_all("table", {"border": 2})[0].select("tr")
     if not results:
       raise inspector.NoReportsFoundError("FCC (%s)" % report_type)
@@ -81,11 +81,5 @@ def report_from(result, page_url, report_type, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
-
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  return BeautifulSoup(body)
-
 
 utils.run(run) if (__name__ == "__main__") else None

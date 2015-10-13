@@ -35,9 +35,7 @@ def run(options):
   logging.info("## Downloading reports from %i to %i" % (year_range[0], year_range[-1]))
 
   url = url_for()
-  body = utils.download(url)
-
-  doc = BeautifulSoup(body)
+  doc = utils.beautifulsoup_from_url(url)
   results = doc.select("section")
   if not results:
     raise inspector.NoReportsFoundError("OPM")

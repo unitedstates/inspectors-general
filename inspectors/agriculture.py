@@ -124,7 +124,7 @@ def run(options):
   all_audit_reports = {}
   for agency_slug, agency_path in AGENCY_URLS.items():
     agency_url = urljoin(AGENCY_BASE_URL, agency_path)
-    doc = beautifulsoup_from_url(agency_url)
+    doc = utils.beautifulsoup_from_url(agency_url)
     results = doc.select("ul li")
     if not results:
       results = [ancestor_tag_by_name(x, 'tr') for x in \
@@ -148,7 +148,7 @@ def run(options):
     inspector.save_report(report)
 
   for report_type, url in OTHER_REPORT_TYPES.items():
-    doc = beautifulsoup_from_url(url)
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.select("ul li")
     if not results:
       raise inspector.NoReportsFoundError("Department of Agriculture (other reports)")
@@ -303,10 +303,6 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  return BeautifulSoup(body)
 
 def ancestor_tag_by_name(element, name):
   for parent in element.parents:
