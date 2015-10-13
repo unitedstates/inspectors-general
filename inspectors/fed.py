@@ -49,7 +49,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  doc = beautifulsoup_from_url(REPORTS_URL)
+  doc = utils.beautifulsoup_from_url(REPORTS_URL)
   results = doc.select("#rounded-corner > tr")
   if not results:
     raise inspector.NoReportsFoundError("Federal Reserve (audit reports)")
@@ -59,7 +59,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("div.style-aside ul > li > a")
   if not results:
     raise inspector.NoReportsFoundError("Federal Reserve (semiannual reports)")
@@ -88,7 +88,7 @@ def report_from(result, year_range):
     return
 
   logging.debug("Scraping landing url: %s", landing_url)
-  landing_page = beautifulsoup_from_url(landing_url)
+  landing_page = utils.beautifulsoup_from_url(landing_url)
 
   landing_page_text = landing_page.select("div.style-report-text")[0].text
 
