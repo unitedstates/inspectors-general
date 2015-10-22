@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.ncua.gov/about/Leadership/Pages/page_oig.aspx
@@ -29,10 +28,10 @@ def run(options):
   for year in year_range:
     if year < 2002:  # The oldest page for audit reports
       continue
-    doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL.format(year=year)))
+    doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL.format(year=year))
 
     # if it's a 404 page (200 response code), move on
-    if not_found(doc):
+    if doc == None or not_found(doc):
       continue
 
     results = doc.select("div.content table tr")
@@ -47,7 +46,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the other reports
-  doc = BeautifulSoup(utils.download(OTHER_REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(OTHER_REPORTS_URL)
   results = doc.select("div.content li")
   if not results:
     raise inspector.NoReportsFoundError("NCUA (other)")
@@ -57,7 +56,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("div.content a")
   if not results:
     raise inspector.NoReportsFoundError("NCUA (semiannual reports)")

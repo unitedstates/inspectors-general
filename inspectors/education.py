@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://www2.ed.gov/about/offices/list/oig/areports.html
@@ -68,7 +67,7 @@ def run(options):
       else:
         pre_1998_audit_flag = True
     url = audit_url_for(year)
-    doc = beautifulsoup_from_url(url)
+    doc = utils.beautifulsoup_from_url(url)
     agency_tables = doc.find_all("table", {"border": 1})
     if not agency_tables:
       raise inspector.NoReportsFoundException("Department of Education (%d audit reports)" % year)
@@ -87,7 +86,7 @@ def run(options):
           inspector.save_report(report)
 
   # Get semiannual reports
-  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   table = doc.find("table", {"border": 1})
   for index, result in enumerate(table.select("tr")):
     if index < 2:
@@ -102,7 +101,7 @@ def run(options):
 
   # Get other reports
   for report_type, url in OTHER_REPORTS_URL.items():
-    doc = beautifulsoup_from_url(url)
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.select("div.contentText ul li")
     if not results:
       raise inspector.NoReportsFoundException("Department of Education (%s)" % report_type)
@@ -297,10 +296,6 @@ def report_from(result, url, report_type, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  return BeautifulSoup(body)
 
 
 utils.run(run) if (__name__ == "__main__") else None

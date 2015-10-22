@@ -5,7 +5,6 @@ import logging
 import os
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://oig.federalreserve.gov/reports/allyearsboardcfpb.htm
@@ -49,7 +48,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  doc = beautifulsoup_from_url(REPORTS_URL)
+  doc = utils.beautifulsoup_from_url(REPORTS_URL)
   results = doc.select("#rounded-corner > tr")
   if not results:
     raise inspector.NoReportsFoundError("Federal Reserve (audit reports)")
@@ -59,7 +58,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("div.style-aside ul > li > a")
   if not results:
     raise inspector.NoReportsFoundError("Federal Reserve (semiannual reports)")
@@ -88,7 +87,7 @@ def report_from(result, year_range):
     return
 
   logging.debug("Scraping landing url: %s", landing_url)
-  landing_page = beautifulsoup_from_url(landing_url)
+  landing_page = utils.beautifulsoup_from_url(landing_url)
 
   landing_page_text = landing_page.select("div.style-report-text")[0].text
 
@@ -141,7 +140,7 @@ def semiannual_report_from(report_url, year_range):
     # If this is not a PDF, then it is actually a link to a landing page.
     # Grab the real report_url and the published date
     landing_url = report_url
-    landing_page = beautifulsoup_from_url(landing_url)
+    landing_page = utils.beautifulsoup_from_url(landing_url)
     report_url_relative = landing_page.select("div.report-header-container-aside a")[0].get('href')
     report_url = urljoin(BASE_PAGE_URL, report_url_relative)
 
@@ -174,10 +173,5 @@ def semiannual_report_from(report_url, year_range):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  return BeautifulSoup(body)
-
 
 utils.run(run) if (__name__ == "__main__") else None

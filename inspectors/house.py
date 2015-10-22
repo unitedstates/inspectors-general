@@ -5,7 +5,6 @@ import re
 import logging
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://house.gov/content/learn/officers_and_organizations/inspector_general.php
@@ -40,7 +39,7 @@ def run(options):
 
   # Pull the reports
   for url in [IG_URL]:
-    doc = BeautifulSoup(utils.download(url))
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.select("div.relatedContent ul.links li a")
     if not results:
       raise inspector.NoReportsFoundError("House of Representatives (%s)" % url)

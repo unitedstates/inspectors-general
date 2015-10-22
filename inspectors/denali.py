@@ -6,7 +6,7 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup, Tag
+from bs4 import Tag
 from utils import utils, inspector
 
 # http://www.oig.denali.gov/
@@ -32,7 +32,7 @@ DATE_RE = re.compile("(20[0-9][0-9]\\.[01][0-9])(?: *- *(.*))?")
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(REPORTS_URL)
 
   results = None
   for section in doc.find_all("section"):

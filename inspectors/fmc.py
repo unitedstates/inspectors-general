@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.fmc.gov/bureaus_offices/office_of_inspector_general.aspx
@@ -44,7 +43,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL)
   results = doc.select("table tr")
   if not results:
     raise inspector.NoReportsFoundError("Federal Maritime Commission (audits)")
@@ -60,7 +59,7 @@ def run(options):
   audit_year_links = doc.select("div.col-2-3 ul li a")
   for year_link in audit_year_links:
     audit_year_url = urljoin(AUDIT_REPORTS_URL, year_link.get('href'))
-    doc = BeautifulSoup(utils.download(audit_year_url))
+    doc = utils.beautifulsoup_from_url(audit_year_url)
     results = doc.select("table tr")
     if not results:
       # Grab results other than first and last (header and extra links)
@@ -76,7 +75,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("div.col-2-2 p a") + doc.select("div.col-2-2 li a")
   if not results:
     raise inspector.NoReportsFoundError("Federal Maritime Commission (semiannual reports)")

@@ -5,7 +5,6 @@ import logging
 import os
 import time
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.va.gov/oig/apps/info/OversightReports.aspx
@@ -56,7 +55,7 @@ def run(options):
 
   # Pull the audit reports
   for page in range(1, 1000):
-    doc = beautifulsoup_from_url("{}?RS={}".format(REPORTS_URL, page))
+    doc = utils.beautifulsoup_from_url("{}?RS={}".format(REPORTS_URL, page))
     results = doc.select("div.leadin")
     if not results:
       if page == 1:
@@ -69,7 +68,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("div.leadin")
   if not results:
     raise inspector.NoReportsFoundError("VA (semiannual reports)")
@@ -110,7 +109,7 @@ def report_from(result, year_range):
   # These pages occassionally return text indicating there was a temporary
   # error so we will retry if necessary.
   for attempt in range(MAX_ATTEMPTS):
-    landing_page = beautifulsoup_from_url(landing_url)
+    landing_page = utils.beautifulsoup_from_url(landing_url)
     page_text = landing_page.select("div.report-summary")[0].text.strip()
     if page_text != ERROR_PAGE_TEXT:
       break
@@ -207,10 +206,6 @@ def semiannual_report_from(result, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  return BeautifulSoup(body)
 
 def br_to_newline(subtree):
   br = subtree.find("br")

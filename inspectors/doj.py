@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#B!/usr/bin/env python
 
 # - Some documents don't have dates, in that case today's date is used
 # - Some forms, marked index are one html document spread across several links,
@@ -15,7 +15,6 @@ archive = 1994
 #               will be used to filter to a particular landing page.
 
 import re
-from bs4 import BeautifulSoup
 from datetime import datetime
 from utils import utils, inspector
 import logging
@@ -488,8 +487,7 @@ def type_for(original_type):
     return None
 
 def get_content(url):
-  page = utils.download(url)
-  page = BeautifulSoup(page)
+  page = utils.beautifulsoup_from_url(url)
   content = page.select(".content-left")
   if not content:
     raise inspector.NoReportsFoundError("DOJ (%s)" % url)

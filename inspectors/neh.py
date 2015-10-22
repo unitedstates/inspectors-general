@@ -5,7 +5,6 @@ import logging
 import os
 import re
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.neh.gov/about/oig
@@ -24,7 +23,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL)
   results = doc.select("table.views-table tr")
   if not results:
     raise inspector.NoReportsFoundError("National Endowment for the Humanities (audit reports)")
@@ -34,7 +33,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("table.views-table tr")
   if not results:
     raise inspector.NoReportsFoundError("National Endowment for the Humanities (semiannual reports)")

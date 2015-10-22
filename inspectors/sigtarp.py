@@ -4,7 +4,6 @@ import datetime
 import logging
 import os
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.sigtarp.gov
@@ -28,7 +27,7 @@ def run(options):
 
   # Pull the reports
   for report_type, report_url in REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(report_url))
+    doc = utils.beautifulsoup_from_url(report_url)
     results =  doc.select("td.mainInner div.ms-WPBody li")
 
     if not results:

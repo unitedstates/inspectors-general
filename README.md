@@ -52,6 +52,7 @@ We don't yet have a formal process for submitting reports &mdash; for now, eithe
 
 * To extract PDFs (the most common type of report), you'll need `pdftotext` and `pdfinfo`. On Ubuntu, `apt-get install poppler-utils`. On OS X, `brew install poppler`.
 * To extract DOCs, you'll need [`abiword`](http://www.abisource.com/), which you can install via `apt-get` or `brew`.
+* Install all the PIP dependencies by running `pip install -r requirements.txt`
 
 To run an individual IG scraper, just execute its file directly. For example:
 

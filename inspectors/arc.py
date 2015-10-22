@@ -5,7 +5,6 @@ import logging
 import os
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.arc.gov/oig
@@ -32,7 +31,7 @@ def run(options):
 
   # Pull the audit reports
   for report_type, url in REPORT_TYPES.items():
-    doc = BeautifulSoup(utils.download(url))
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.select("table p > a[href]")
     if not results:
       raise inspector.NoReportsFoundError("ARC (%s)" % report_type)

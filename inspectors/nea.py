@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://arts.gov/oig
@@ -44,7 +43,7 @@ def run(options):
 
   # Pull the reports
   for report_type, url in REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(url))
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.select("div.field-item li")
     if not results:
       results = doc.select("div.field-item tr")

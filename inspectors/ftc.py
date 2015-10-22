@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.ftc.gov/about-ftc/office-inspector-general
@@ -31,7 +30,7 @@ def run(options):
 
   # Pull the audit reports
   for report_type, url in REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(url))
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.select("li.views-row")
     if not results:
       raise inspector.NoReportsFoundError("FTC (%s)" % report_type)

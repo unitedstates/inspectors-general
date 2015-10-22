@@ -4,7 +4,6 @@ import datetime
 import logging
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.usitc.gov/oig/
@@ -32,7 +31,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  doc = BeautifulSoup(utils.download(AUDIT_REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL)
 
   headers = doc.select("p.Ptitle1")
   if not headers:

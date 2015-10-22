@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.cftc.gov/About/OfficeoftheInspectorGeneral/index.htm
@@ -32,7 +31,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(REPORTS_URL)
   results = doc.select("ul.text > ul > li")
   if not results:
     raise inspector.NoReportsFoundError("CFTC audit reports")

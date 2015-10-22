@@ -5,7 +5,6 @@ import logging
 import os
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.oig.doc.gov/Pages/Audits-Evaluations.aspx?YearStart=01/01/1996&YearEnd=12/31/2014
@@ -66,7 +65,7 @@ def extract_reports_for_topic(topic, year_range):
 
   topic_url = url_for(year_range).format(TOPIC_TO_URL_SLUG[topic])
 
-  topic_page = beautifulsoup_from_url(topic_url)
+  topic_page = utils.beautifulsoup_from_url(topic_url)
   results = topic_page.select("div.row")
   if not results:
     temp_text = topic_page.select("div.item")[0].text
@@ -118,7 +117,7 @@ def report_from(result, topic, topic_url, year_range):
       # Duplicate of http://www.oig.doc.gov/Pages/Letter-to-Sens-Snowe-Collins-Kennedy-Kerry-re-Investigation-Work-Scientific-Methods-of-NMFS-NFSC-2009.02.26.aspx
       return
 
-    landing_page = beautifulsoup_from_url(landing_url)
+    landing_page = utils.beautifulsoup_from_url(landing_url)
     try:
       if landing_url.endswith("/Top-Management-Challenges-FY-2011.aspx") or \
                 landing_url.endswith("/Observations-and-Address-Listers-" \
@@ -179,9 +178,5 @@ def report_from(result, topic, topic_url, year_range):
   if file_type:
     result['file_type'] = file_type
   return result
-
-def beautifulsoup_from_url(url):
-  body = utils.download(url)
-  return BeautifulSoup(body)
 
 utils.run(run) if (__name__ == "__main__") else None

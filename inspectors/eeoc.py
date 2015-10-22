@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.eeoc.gov/eeoc/oig/index.cfm
@@ -31,7 +30,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(REPORTS_URL)
   semiannual_report_results, other_results = doc.select("table tr")[1].select("td")
 
   if not semiannual_report_results:

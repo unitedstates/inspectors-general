@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.fec.gov/fecig/fecig.shtml
@@ -46,7 +45,7 @@ REPORT_PUBLISHED_MAPPING = {
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(REPORTS_URL)
 
   # Pull the audit reports
   audit_header = doc.find("a", attrs={"name": 'Audit Reports'})
@@ -102,7 +101,7 @@ def report_from(result, year_range, report_type, title_prefix=None):
     title = result.contents[0].strip().rstrip("-").strip()
   else:
     # Some pages have separate landing pages.
-    doc = BeautifulSoup(utils.download(report_url))
+    doc = utils.beautifulsoup_from_url(report_url)
     title = doc.select("h3")[1].text.strip()
     try:
       published_on_text = doc.select("h3")[2].text.strip()

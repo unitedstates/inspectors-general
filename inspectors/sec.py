@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.sec.gov/about/offices/oig/inspector_general_reppubs_testimony.shtml
@@ -163,8 +162,7 @@ def run(options):
 
   for topic in topics:
     topic_url = TOPIC_TO_URL[topic]
-    body = utils.download(topic_url)
-    doc = BeautifulSoup(body)
+    doc = utils.beautifulsoup_from_url(topic_url)
 
     try:
       year_results = doc.select("#Listing")[0]

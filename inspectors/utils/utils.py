@@ -11,6 +11,7 @@ import urllib.parse
 import io
 import gzip
 import certifi
+from urllib.parse import urljoin
 
 from . import admin
 
@@ -240,6 +241,19 @@ def download(url, destination=None, options=None):
     # whether from disk or web, unescape HTML entities
     return unescape(body)
 
+def beautifulsoup_from_url(url):
+  body = download(url)
+  if body is None: return None
+
+  doc = BeautifulSoup(body, "lxml")
+
+  # Some of the pages will return meta refreshes
+  if doc.find("meta") and doc.find("meta").attrs.get('http-equiv') == 'REFRESH':
+    redirect_url = urljoin(url, doc.find("meta").attrs['content'].split("url=")[1])
+    return beautifulsoup_from_url(redirect_url)
+  else:
+    return doc
+
 def post(url, data=None, headers=None, **kwargs):
   response = None
   try:
@@ -273,7 +287,7 @@ def log_http_error(e, url):
 # then writes it and returns the /data-relative path.
 def text_from_html(real_html_path, real_text_path):
   html = open(real_html_path, encoding='utf-8').read()
-  doc = BeautifulSoup(html)
+  doc = BeautifulSoup(html, "lxml")
 
   for node in doc.findAll(['script', 'style']):
     node.extract()

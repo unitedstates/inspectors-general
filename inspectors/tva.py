@@ -5,7 +5,6 @@ import logging
 import os
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://oig.tva.gov
@@ -30,7 +29,7 @@ def run(options):
     if year < 2005:  # This is the earliest audits go back
       continue
     url = AUDIT_REPORTS_URL.format(year=year)
-    doc = BeautifulSoup(utils.download(url))
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.select("div.content")
     if not results:
       raise inspector.NoReportsFoundError("Tennessee Valley Authority (%d)" % year)
@@ -40,7 +39,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("report")
   if not results:
     raise inspector.NoReportsFoundError("Tennessee Valley Authority (semiannual reports)")

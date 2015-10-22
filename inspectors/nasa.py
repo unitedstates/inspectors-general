@@ -5,7 +5,6 @@ import logging
 import os
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://oig.nasa.gov/
@@ -29,7 +28,7 @@ def run(options):
   # Pull the audit reports
   for year in year_range:
     url = AUDITS_REPORTS_URL.format(str(year)[2:4])
-    doc = BeautifulSoup(utils.download(url))
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.select("tr")
     if not results:
       raise inspector.NoReportsFoundError("NASA (%d)" % year)
@@ -42,7 +41,7 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the other reports
-  doc = BeautifulSoup(utils.download(OTHER_REPORT_URL))
+  doc = utils.beautifulsoup_from_url(OTHER_REPORT_URL)
   results = doc.select("#subContainer ul li")
   if not results:
     raise inspector.NoReportsFoundError("NASA (other)")

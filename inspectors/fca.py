@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # https://www.fca.gov/home/inspector.html
@@ -30,7 +29,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the general reports
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(REPORTS_URL)
   results = doc.select("div#mainContent li.mainContenttext a")
   if not results:
     raise inspector.NoReportsFoundError("Farm Credit Administration (reports)")
@@ -40,7 +39,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the archive reports
-  doc = BeautifulSoup(utils.download(REPORT_ARCHIVE_URL))
+  doc = utils.beautifulsoup_from_url(REPORT_ARCHIVE_URL)
   results = doc.select("div#mainContent li.mainContenttext a") + doc.select("div#mainContent span.mainContenttext a")
   if not results:
     raise inspector.NoReportsFoundError("Farm Credit Administration (archive)")
@@ -52,7 +51,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = BeautifulSoup(utils.download(SEMIANNUAL_REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
   results = doc.select("div#mainContent li.mainContenttext a")
   if not results:
     raise inspector.NoReportsFoundError("Farm Credit Administration (semiannual reports)")

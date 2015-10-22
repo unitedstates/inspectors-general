@@ -5,7 +5,6 @@ import logging
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.gpo.gov/oig/
@@ -35,7 +34,7 @@ def run(options):
 
   # Pull the reports
   for report_type, url in REPORT_URLS.items():
-    doc = BeautifulSoup(utils.download(url))
+    doc = utils.beautifulsoup_from_url(url)
     results = doc.select("div.section1 div.ltext > table tr")
     if not results:
       results = doc.select("td.three-col-layout-middle div.ltext > table tr")

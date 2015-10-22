@@ -6,7 +6,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # http://www.cpsc.gov/en/about-cpsc/inspector-general/
@@ -27,7 +26,7 @@ BLACKLIST_REPORT_URLS = [
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  doc = BeautifulSoup(utils.download(REPORTS_URL))
+  doc = utils.beautifulsoup_from_url(REPORTS_URL)
   results = doc.select("ul.summary-list li")
   if not results:
     raise inspector.NoReportsFoundError("CPSC")
