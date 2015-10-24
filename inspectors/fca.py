@@ -106,7 +106,10 @@ def report_from(result, landing_url, year_range):
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
   else:
     try:
-      published_on_text = result.parent.contents[1].lstrip(",").split("(")[0].strip()
+      li = result.parent
+      if li.name == "u":
+        li = li.parent
+      published_on_text = li.contents[1].lstrip(",").split("(")[0].strip()
     except (IndexError, TypeError):
       published_on_text = result.text.strip()
     published_on_text = clean_text(published_on_text)
