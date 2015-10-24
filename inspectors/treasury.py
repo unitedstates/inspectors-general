@@ -84,6 +84,7 @@ REPORT_PUBLISHED_MAP = {
   "OIG-CA-15-023": datetime.datetime(2015, 7, 29),
   "OIG-15-CA-020": datetime.datetime(2015, 6, 22),
   "OIG-15-CA-012": datetime.datetime(2015, 4, 7),
+  "OIG-CA-15-024": datetime.datetime(2015, 9, 15),
 }
 
 def run(options):
@@ -216,6 +217,7 @@ def audit_report_from(result, page_url, year_range):
     or "removed the auditors\u2019 reports from the" in report_summary
     or "Classified Report" in report_summary
     or "Sensitive But Unclassified" in report_summary
+    or "To obtain further information, please contact the OIG" in report_summary
     ):
     unreleased = True
     report_url = None
