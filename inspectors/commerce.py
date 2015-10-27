@@ -139,6 +139,11 @@ def report_from(result, topic, topic_url, year_range):
     else:
       report_url = urljoin(topic_url, report_url_relative)
 
+    missing = False
+    if report_url == "http://www.oig.doc.gov/OIGPublications/Announcement-DOC-IPERA.pdf":
+      missing = True
+      unreleased = True
+
     if report_url:
       report_filename = report_url.split("/")[-1]
       report_id, extension = os.path.splitext(report_filename)
@@ -175,6 +180,8 @@ def report_from(result, topic, topic_url, year_range):
     result['landing_url'] = landing_url
   if unreleased:
     result['unreleased'] = unreleased
+  if missing:
+    result['missing'] = missing
   if file_type:
     result['file_type'] = file_type
   return result
