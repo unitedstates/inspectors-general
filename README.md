@@ -34,7 +34,6 @@ There are 9 IGs who do not publish reports online, many from the US government's
 * [National Reconnaissance Office](http://www.nro.gov/offices/oig/cd.html)
 * [National Security Agency](http://www.nsa.gov/about/oig/index.shtml)
 * [Intelligence Community](http://www.dni.gov/index.php/about/organization/office-of-the-intelligence-community-inspector-general-who-we-are) (ODNI)
-* [Special Inspector General for Iraq Reconstruction](http://www.sigir.mil/)
 
 Generally, getting their reports means **filing [Freedom of Information Act](https://en.wikipedia.org/wiki/Freedom_of_Information_Act_(United_States)) requests**, or finding the results of FOIA requests others have already made.
 
