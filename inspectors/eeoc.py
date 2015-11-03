@@ -34,9 +34,9 @@ def run(options):
   semiannual_report_results, other_results = doc.select("table tr")[1].select("td")
 
   if not semiannual_report_results:
-    raise inspector.NoReportsFoundException("EEOC (semiannual reports)")
+    raise inspector.NoReportsFoundError("EEOC (semiannual reports)")
   if not other_results:
-    raise inspector.NoReportsFoundException("EEOC (other reports)")
+    raise inspector.NoReportsFoundError("EEOC (other reports)")
 
   merge_items(semiannual_report_results)
   merge_items(other_results)

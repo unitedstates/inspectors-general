@@ -3,11 +3,12 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.oig.doc.gov/Pages/Audits-Evaluations.aspx?YearStart=01/01/1996&YearEnd=12/31/2014
+# https://www.oig.doc.gov/Pages/Audits-Evaluations.aspx?YearStart=01/01/1996&YearEnd=12/31/2014
 archive = 1996
 
 # options:
@@ -41,7 +42,7 @@ TYPE_MAP = {
   "AI": "audit",
   "T": "testimony",
 }
-BASE_TOPIC_URL = "http://www.oig.doc.gov/Pages/{}.aspx"
+BASE_TOPIC_URL = "https://www.oig.doc.gov/Pages/{}.aspx"
 
 all_reports = {}
 
@@ -113,8 +114,11 @@ def report_from(result, topic, topic_url, year_range):
     link = result.select("a")[0]
     landing_url = link.get('href')
 
-    if landing_url == "http://www.oig.doc.gov/Pages/Letter-to-Sen-Snowe-re-Northeast-Fisheries-Science-Center-2009.02.09.aspx":
-      # Duplicate of http://www.oig.doc.gov/Pages/Letter-to-Sens-Snowe-Collins-Kennedy-Kerry-re-Investigation-Work-Scientific-Methods-of-NMFS-NFSC-2009.02.26.aspx
+    # HTTPS, even if they haven't updated their links yet
+    landing_url = re.sub("^http://www.oig.doc.gov", "https://www.oig.doc.gov", landing_url)
+
+    if landing_url == "https://www.oig.doc.gov/Pages/Letter-to-Sen-Snowe-re-Northeast-Fisheries-Science-Center-2009.02.09.aspx":
+      # Duplicate of https://www.oig.doc.gov/Pages/Letter-to-Sens-Snowe-Collins-Kennedy-Kerry-re-Investigation-Work-Scientific-Methods-of-NMFS-NFSC-2009.02.26.aspx
       return
 
     landing_page = utils.beautifulsoup_from_url(landing_url)
@@ -139,6 +143,15 @@ def report_from(result, topic, topic_url, year_range):
     else:
       report_url = urljoin(topic_url, report_url_relative)
 
+    if report_url is not None:
+      # HTTPS, even if they haven't updated their links yet
+      report_url = re.sub("^http://www.oig.doc.gov", "https://www.oig.doc.gov", report_url)
+
+    missing = False
+    if report_url == "https://www.oig.doc.gov/OIGPublications/Announcement-DOC-IPERA.pdf":
+      missing = True
+      unreleased = True
+
     if report_url:
       report_filename = report_url.split("/")[-1]
       report_id, extension = os.path.splitext(report_filename)
@@ -151,7 +164,7 @@ def report_from(result, topic, topic_url, year_range):
 
   file_type = None
   # urllib.parse has trouble parsing the extension for some urls.
-  # Ex: http://www.oig.doc.gov/Pages/NIST-Grant-Recipient-Sentenced-for-Grant-Fraud;-Civil-Suit-Filed.aspx
+  # Ex: https://www.oig.doc.gov/Pages/NIST-Grant-Recipient-Sentenced-for-Grant-Fraud;-Civil-Suit-Filed.aspx
   if report_url and report_url.endswith(".aspx"):
     file_type = "aspx"
   # Some off-site links (i.e. to the FBI) don't have obvious file extensions
@@ -162,7 +175,7 @@ def report_from(result, topic, topic_url, year_range):
 
   result = {
     'inspector': 'commerce',
-    'inspector_url': 'http://www.oig.doc.gov',
+    'inspector_url': 'https://www.oig.doc.gov',
     'agency': 'commerce',
     'agency_name': 'Department of Commerce',
     'report_id': report_id,
@@ -175,6 +188,8 @@ def report_from(result, topic, topic_url, year_range):
     result['landing_url'] = landing_url
   if unreleased:
     result['unreleased'] = unreleased
+  if missing:
+    result['missing'] = missing
   if file_type:
     result['file_type'] = file_type
   return result

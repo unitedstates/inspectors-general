@@ -11,6 +11,8 @@ import urllib.parse
 import io
 import gzip
 import certifi
+import docx
+import zipfile
 from urllib.parse import urljoin
 
 from . import admin
@@ -119,6 +121,7 @@ WHITELIST_SHA1_DOMAINS = (
   "http://sba.gov/",
   "https://www.sigar.mil/",
   "http://www.sigar.mil/",
+  "https://oig.nasa.gov/",
 )
 
 # will pass correct options on to individual scrapers whether
@@ -345,6 +348,35 @@ def text_from_doc(real_doc_path, real_text_path):
   if not os.path.exists(real_text_path):
     logging.warn("Text not extracted to %s" % real_text_path)
 
+def text_from_docx(real_docx_path, real_text_path):
+  def text_from_paragraphs(paragraphs):
+    return "\n\n".join([paragraph.text for paragraph in paragraphs])
+
+  def text_from_tables(tables):
+    return "\n\n".join([text_from_table(table) for table in tables])
+
+  def text_from_table(table):
+    return "\n\n".join([text_from_row(row) for row in table.rows])
+
+  def text_from_row(row):
+    return "\n\n".join([text_from_doc_or_cell(cell) for cell in row.cells])
+
+  def text_from_doc_or_cell(cell):
+    part1 = text_from_paragraphs(cell.paragraphs)
+    part2 = text_from_tables(cell.tables)
+    if part1 and part2:
+      return "%s\n\n%s" % (part1, part2)
+    else:
+      return part1 + part2
+
+  try:
+    document = docx.Document(real_docx_path)
+    text = text_from_doc_or_cell(document)
+    write(text, real_text_path, binary=False)
+  except zipfile.BadZipFile as exc:
+    logging.warn("Error extracting text to %s:\n\n%s" % (real_text_path, format_exception(exc)))
+    return None
+
 PDF_PAGE_RE = re.compile("Pages: +([0-9]+)\r?\n")
 PDF_CREATION_DATE_RE = re.compile("CreationDate: +([^\r\n]*)\r?\n")
 PDF_MOD_DATE_RE = re.compile("ModDate: +([^\r\n]*)\r?\n")
@@ -486,6 +518,36 @@ def metadata_from_doc(doc_path):
   if metadata:
     return metadata
   return None
+
+def metadata_from_docx(docx_path):
+  try:
+    real_docx_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), docx_path)))
+    document = docx.Document(real_docx_path)
+    core_props = document.core_properties
+
+    metadata = {}
+
+    if core_props.author:
+      metadata['author'] = core_props.author
+
+    if core_props.title:
+      metadata['title'] = core_props.title
+
+    if core_props.created:
+      metadata['creation_date'] = datetime.strftime(core_props.created, '%Y-%m-%d')
+
+    if core_props.modified:
+      metadata['mod_date'] = datetime.strftime(core_props.created, '%Y-%m-%d')
+
+    if core_props.keywords:
+      metadata['keywords'] = core_props.keywords
+
+    if metadata:
+      return metadata
+    return None
+  except zipfile.BadZipFile as exc:
+    logging.warn("Error extracting metadata for %s:\n\n%s" % (docx_path, format_exception(exc)))
+    return None
 
 def format_exception(exception):
   exc_type, exc_value, exc_traceback = sys.exc_info()

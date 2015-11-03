@@ -263,7 +263,7 @@ def slugify(report_id):
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])
-  binary = (report['file_type'].lower() in ('pdf', 'doc', 'ppt'))
+  binary = (report['file_type'].lower() in ('pdf', 'doc', 'ppt', 'docx'))
 
   result = utils.download(
     report['url'],
@@ -291,6 +291,11 @@ def extract_metadata(report):
     if metadata:
       report['doc'] = metadata
       return metadata
+  elif file_type_lower == "docx":
+    metadata = utils.metadata_from_docx(report_path)
+    if metadata:
+      report['docx'] = metadata
+      return metadata
   elif file_type_lower in FILE_EXTENSIONS_HTML:
     return None
   else:
@@ -315,6 +320,9 @@ def extract_report(report):
     return text_path
   elif file_type_lower == "doc":
     utils.text_from_doc(real_report_path, real_text_path)
+    return text_path
+  elif file_type_lower == "docx":
+    utils.text_from_docx(real_report_path, real_text_path)
     return text_path
   elif file_type_lower in FILE_EXTENSIONS_HTML:
     utils.text_from_html(real_report_path, real_text_path)

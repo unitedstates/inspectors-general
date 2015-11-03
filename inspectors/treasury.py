@@ -8,7 +8,7 @@ from urllib.parse import urljoin, unquote
 
 from utils import utils, inspector
 
-# http://www.treasury.gov/about/organizational-structure/ig/Pages/audit_reports_index.aspx
+# https://www.treasury.gov/about/organizational-structure/ig/Pages/audit_reports_index.aspx
 archive = 2005
 
 # options:
@@ -16,18 +16,18 @@ archive = 2005
 #
 # Notes for IG's web team:
 # - Add an agency for report 'OIG-09-015' listed on
-# http://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-2009.aspx
+# https://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-2009.aspx
 # - There is an extra tr.ms-rteTableEvenRow-default at the end of
-# http://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-2014.aspx
+# https://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-2014.aspx
 # - Add published dates for all reports at
-# http://www.treasury.gov/about/organizational-structure/ig/Pages/other-reports.aspx
+# https://www.treasury.gov/about/organizational-structure/ig/Pages/other-reports.aspx
 # - OIG-07-003 is posted twice, once with the wrong date
 
-AUDIT_REPORTS_BASE_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-{}.aspx"
-TESTIMONIES_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/testimony_index.aspx"
-PEER_AUDITS_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/peer_audit_reports_index.aspx"
-OTHER_REPORTS_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/other-reports.aspx"
-SEMIANNUAL_REPORTS_URL = "http://www.treasury.gov/about/organizational-structure/ig/Pages/semiannual_reports_index.aspx"
+AUDIT_REPORTS_BASE_URL = "https://www.treasury.gov/about/organizational-structure/ig/Pages/by-date-{}.aspx"
+TESTIMONIES_URL = "https://www.treasury.gov/about/organizational-structure/ig/Pages/testimony_index.aspx"
+PEER_AUDITS_URL = "https://www.treasury.gov/about/organizational-structure/ig/Pages/peer_audit_reports_index.aspx"
+OTHER_REPORTS_URL = "https://www.treasury.gov/about/organizational-structure/ig/Pages/other-reports.aspx"
+SEMIANNUAL_REPORTS_URL = "https://www.treasury.gov/about/organizational-structure/ig/Pages/semiannual_reports_index.aspx"
 
 AGENCY_NAMES = {
   "bep": "The Bureau of Engraving & Printing",
@@ -84,6 +84,7 @@ REPORT_PUBLISHED_MAP = {
   "OIG-CA-15-023": datetime.datetime(2015, 7, 29),
   "OIG-15-CA-020": datetime.datetime(2015, 6, 22),
   "OIG-15-CA-012": datetime.datetime(2015, 4, 7),
+  "OIG-CA-15-024": datetime.datetime(2015, 9, 15),
 }
 
 def run(options):
@@ -216,6 +217,7 @@ def audit_report_from(result, page_url, year_range):
     or "removed the auditors\u2019 reports from the" in report_summary
     or "Classified Report" in report_summary
     or "Sensitive But Unclassified" in report_summary
+    or "To obtain further information, please contact the OIG" in report_summary
     ):
     unreleased = True
     report_url = None
@@ -228,8 +230,12 @@ def audit_report_from(result, page_url, year_range):
     unreleased = False
     landing_url = None
 
-  if report_url == "http://www.treasury.gov/about/organizational-structure/ig/Documents/OIG-11-071.pdf":
-    report_url = "http://www.treasury.gov/about/organizational-structure/ig/Documents/OIG11071.pdf"
+  # HTTPS, even if they haven't updated their links yet
+  if report_url is not None:
+    report_url = re.sub("^http://www.treasury.gov", "https://www.treasury.gov", report_url)
+
+  if report_url == "https://www.treasury.gov/about/organizational-structure/ig/Documents/OIG-11-071.pdf":
+    report_url = "https://www.treasury.gov/about/organizational-structure/ig/Documents/OIG11071.pdf"
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -237,7 +243,7 @@ def audit_report_from(result, page_url, year_range):
 
   report = {
     'inspector': 'treasury',
-    'inspector_url': 'http://www.treasury.gov/about/organizational-structure/ig/',
+    'inspector_url': 'https://www.treasury.gov/about/organizational-structure/ig/',
     'agency': agency_slug,
     'agency_name': AGENCY_NAMES[agency_slug],
     'type': 'audit',
@@ -275,7 +281,11 @@ def report_from(result, page_url, report_type, year_range):
     link = result
   else:
     link = result.a
+
   report_url = urljoin(page_url, link['href'])
+
+  # HTTPS, even if they haven't updated their links yet
+  report_url = re.sub("^http://www.treasury.gov", "https://www.treasury.gov", report_url)
 
   if report_id.find('-') == -1:
     # If the first word of the text doesn't contain a hyphen,
@@ -301,7 +311,7 @@ def report_from(result, page_url, report_type, year_range):
 
   report = {
     'inspector': 'treasury',
-    'inspector_url': 'http://www.treasury.gov/about/organizational-structure/ig/',
+    'inspector_url': 'https://www.treasury.gov/about/organizational-structure/ig/',
     'agency': 'treasury',
     'agency_name': "Department of the Treasury",
     'type': report_type,
@@ -318,6 +328,10 @@ def semiannual_report_from(result, page_url, year_range):
   title = "Semiannual Report - {}".format(published_on_text)
 
   report_url = urljoin(page_url, result['href'])
+
+  # HTTPS, even if they haven't updated their links yet
+  report_url = re.sub("^http://www.treasury.gov", "https://www.treasury.gov", report_url)
+
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
   report_id = unquote(report_id)
@@ -328,7 +342,7 @@ def semiannual_report_from(result, page_url, year_range):
 
   report = {
     'inspector': 'treasury',
-    'inspector_url': 'http://www.treasury.gov/about/organizational-structure/ig/',
+    'inspector_url': 'https://www.treasury.gov/about/organizational-structure/ig/',
     'agency': 'treasury',
     'agency_name': "Department of the Treasury",
     'type': 'semiannual_report',

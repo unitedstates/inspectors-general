@@ -433,6 +433,12 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   if report_url in REPORT_URL_MAPPING:
     report_url = REPORT_URL_MAPPING[report_url]
 
+  # Fix copy-paste error in link
+  if (title == "Medicare Compliance Review of Altru Hospital for "
+      "2012 and 2013" and
+      report_url == "http://oig.hhs.gov/oas/reports/region4/41408036.asp"):
+    report_url = "http://oig.hhs.gov/oas/reports/region7/71505070.asp"
+
   # Ignore reports from other sites
   if BASE_URL not in report_url:
     return
