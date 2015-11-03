@@ -76,8 +76,7 @@
 - epa
 
 # Export-Import Bank
-# - exim
-# Temporarily disabled until scraper is updated for new website
+- exim
 
 # Farm Credit Administration
 - fca
@@ -125,9 +124,7 @@
 - hud
 
 # Department of the Interior
-# - interior
-# Temporarily disabled until the new website's report database is online
-# (around 8/10/2015)
+- interior
 
 # International Trade Commission
 - itc

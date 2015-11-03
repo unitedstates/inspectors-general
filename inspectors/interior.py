@@ -3,56 +3,52 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-# http://www.doi.gov/oig/reports/index.cfm
+# https://www.doioig.gov/
 archive = 1993
 
 # options:
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
-# - It would be nice to have topics for all reports
-# - Some reports have wrong links. For example,
-# http://www.doi.gov/oig/reports/upload/Report-of-Investigation---Pensus-Public.pdf
-# is linked to when it should actually be
-# http://www.doi.gov/oig/reports/upload/Report-of-Investigation-Pensus-Public.pdf
 
-REPORT_URL_BASE = "http://www.doi.gov"
-REPORT_SEARCH_URL = "http://www.doi.gov/oig/reports/index.cfm"
-POST_DATA = {
-  'reportKeyword': '',
-  'reportNumber': '',
-  'reportCategory': '',
-  'reportType': '',
-  'reportYear': '',
-  'reportFiscalYear': '',
-  'reportViewAll': 'View+All',
-}
+REPORT_URL_BASE = "https://www.doioig.gov"
+REPORT_SEARCH_URL = ("https://www.doioig.gov/reports?keywords=&report_number="
+                     "&category=All&report_type=All&date_type=report"
+                     "&report_date_op=%3E%3D&report_date[date]=01/01/{}"
+                     "&page={}")
 
 def run(options):
   year_range = inspector.year_range(options, archive)
+  min_year = min(year_range)
+  page = 0
+  last_page = 0
 
-  response = utils.scraper.post(REPORT_SEARCH_URL, data=POST_DATA)
-  doc = BeautifulSoup(response.text, "lxml")
+  while page <= last_page:
+    doc = utils.beautifulsoup_from_url(REPORT_SEARCH_URL.format(min_year, page))
+    last_page_link = doc.find("a", title="Go to last page")
+    if last_page_link:
+      href = last_page_link["href"]
+      page_match = re.search("[?&]page=([0-9]+)(?:&|$)", href)
+      if page_match:
+        last_page = int(page_match.group(1))
 
-  results = doc.select("div.report")
-  if not results:
-    raise inspector.NoReportsFoundError("Department of the Interior")
-  for result in results:
-    report = report_from(result, year_range)
-    if report:
-      inspector.save_report(report)
+    results = doc.select(".view-reports-advanced-search .views-row")
+    if not results:
+      raise inspector.NoReportsFoundError("Department of the Interior")
+    for result in results:
+      report = report_from(result, year_range)
+      if report:
+        inspector.save_report(report)
+    page += 1
+  if last_page == 0:
+    raise Exception("Did not find last page link")
 
 def report_type_from_text(report_type_text):
-  if ':' in report_type_text:
-    report_type_text = report_type_text.split(":")[1].strip()
-  else:
-    return 'other'
-
   if report_type_text in ['Audit', 'External Audit']:
     return 'audit'
   elif report_type_text == 'Investigation':
@@ -68,38 +64,49 @@ def report_type_from_text(report_type_text):
 
 
 def report_from(result, year_range):
-  title = result.select("a span")[0].text.strip()
+  title = result.header.text.strip()
 
-  report_url = urljoin(REPORT_URL_BASE, result.select("a")[0].get('href'))
-  report_url = report_url.replace("---", "-")  # See note to IG team
+  if (title == "Final Advisory Report on Costs Claimed by the State of Nevada, "
+      "Department of Conservation and Natural Resources, Division of Wildlife, "
+      "Under Federal Aid Grants from the U.S. Fish and Wildlife Service from "
+      "July 1, 1996 through June 30, 1997"):
+    return None
+
+  landing_link = result.find("a", text="Summary")
+  if landing_link:
+    landing_url = urljoin(REPORT_URL_BASE, landing_link["href"])
+  else:
+    landing_url = None
+
+  report_link = result.find("a", text="PDF") or result.find("a", text="Text")
+  report_url = urljoin(REPORT_URL_BASE, report_link["href"])
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
 
-  text_tuple = result.select("span")[1].text.split("|")
-  published_on_text = text_tuple[0]
+  summary_spans = result.select(".field-name-field-blurb .field-item")
+  if summary_spans:
+    summary = summary_spans[0].text.strip()
+  else:
+    summary = None
 
-  report_type_text = text_tuple[-1]
-  report_type = report_type_from_text(report_type_text)
+  published_on_text = result.select(".field-name-field-report-date .field-item")[0].text.strip()
 
-  published_on = datetime.datetime.strptime(published_on_text.strip(), 'Report Date: %m/%d/%Y')
+  report_type_spans = result.select(".field-name-field-report-type .field-item")
+  if report_type_spans:
+    report_type_text = report_type_spans[0].text.strip()
+    report_type = report_type_from_text(report_type_text)
+  else:
+    report_type = "other"
+
+  published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
-  # These report entries are duplicates
-  if report_id in ("2010-E-0003", "2008-E-0005", "2007-E-0019", "2007-E-0018") \
-        and report_type == "other":
-    return
-  if report_id == "2008-G-0003" and \
-        result.select("span")[2].text.strip().startswith("Our January 2003"):
-    return
-  if report_url == "http://www.doi.gov/oig/reports/upload/2003-E-0018.txt":
-    return
-
   result = {
     'inspector': 'interior',
-    'inspector_url': 'http://www.doi.gov/oig/',
+    'inspector_url': 'https://www.doioig.gov/',
     'agency': 'interior',
     'agency_name': 'Department of the Interior',
     'type': report_type,
@@ -108,6 +115,10 @@ def report_from(result, year_range):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
+  if landing_url:
+    result['landing_url'] = landing_url
+  if summary:
+    result['summary'] = summary
   return result
 
 

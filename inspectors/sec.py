@@ -158,7 +158,8 @@ def run(options):
   if topics:
     topics = topics.split(",")
   else:
-    topics = TOPIC_TO_URL.keys()
+    topics = list(TOPIC_TO_URL.keys())
+    topics.sort()
 
   for topic in topics:
     topic_url = TOPIC_TO_URL[topic]
@@ -172,7 +173,7 @@ def run(options):
         all_results = doc.select("#bodyholder")[0]
         results = [x for x in all_results.select("ul li")]
       except IndexError:
-        results = doc.select("table ul li")
+        results = doc.select("#main-content ul li")
     if not results:
       raise inspector.NoReportsFoundError("SEC (%s)" % topic)
 
@@ -197,19 +198,25 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
   except IndexError as exc:
     # There is a bug for this date where it does not have a report.
     # https://www.sec.gov/about/offices/oig/inspector_general_audits_reports.shtml
-    if result.text == 'Jan. 7, 1997':
+    if result.text.strip() == 'Jan. 7, 1997':
       return None, None
     else:
       raise exc
 
   report_url = urljoin(BASE_REPORT_URL, report_link['href'])
+
+  # HTTPS, even if they haven't updated their links yet
+  report_url = re.sub("^http://www.sec.gov", "https://www.sec.gov", report_url)
+
   logging.debug("### Processing report %s" % report_url)
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]
   title = report_link.text.strip()
   report_type = TOPIC_TO_REPORT_TYPE[topic]
 
-  published_on_text = result.text.split("\n")[0].split("through")[0].strip().replace(".", "")
+  text_lines = [line.strip() for line in result.text.split("\n")]
+  text_lines = [line for line in text_lines if line]
+  published_on_text = text_lines[0].split("through")[0].strip().replace(".", "")
   published_on = published_date_for_report(published_on_text, title, report_url, last_published_on)
 
   # Skip duplicate report

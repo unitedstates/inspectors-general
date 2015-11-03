@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://oig.nasa.gov/
+# https://oig.nasa.gov/
 archive = 1998
 
 # options:
@@ -15,12 +15,12 @@ archive = 1998
 #
 # Notes for IG's web team:
 # - There are no reports available for 1996-1997.
-# See http://oig.nasa.gov/audits/reports/FY96/index.html
+# See https://oig.nasa.gov/audits/reports/FY96/index.html
 # - The row for IG-11-007-R is misconfigured on
-# http://oig.nasa.gov/audits/reports/FY11/tableData.html
+# https://oig.nasa.gov/audits/reports/FY11/tableData.html
 
-AUDITS_REPORTS_URL = "http://oig.nasa.gov/audits/reports/FY{}/tableData.html"
-OTHER_REPORT_URL = "http://oig.nasa.gov/investigations/reports.html"
+AUDITS_REPORTS_URL = "https://oig.nasa.gov/audits/reports/FY{}/tableData.html"
+OTHER_REPORT_URL = "https://oig.nasa.gov/investigations/reports.html"
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -82,7 +82,7 @@ def audit_report_from(result, landing_url, year_range):
 
   report = {
     'inspector': 'nasa',
-    'inspector_url': 'http://oig.nasa.gov',
+    'inspector_url': 'https://oig.nasa.gov',
     'agency': 'nasa',
     'agency_name': 'National Aeronautics and Space Administration',
     'type': 'audit',
@@ -113,7 +113,7 @@ def other_report_from(result, year_range):
 
   report = {
     'inspector': 'nasa',
-    'inspector_url': 'http://oig.nasa.gov',
+    'inspector_url': 'https://oig.nasa.gov',
     'agency': 'nasa',
     'agency_name': 'National Aeronautics and Space Administration',
     'type': 'other',

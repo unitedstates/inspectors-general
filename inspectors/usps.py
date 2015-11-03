@@ -2,11 +2,13 @@
 
 from utils import utils, inspector
 from datetime import datetime
+from urllib.parse import urljoin
 import logging
 import os.path
+import re
 import time
 
-archive = 1998
+archive = 1997
 #
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -15,13 +17,11 @@ archive = 1998
 #          can include:
 #             audit - Audit Reports
 #             testimony - Congressional Testimony
-#             press - Press Releases
-#             research - Risk Analysis Research Papers
-#             interactive - SARC (Interactive)
+#             news - News Releases
 #             congress - Semiannual Report to Congress
-#          defaults to
-#             including audits, reports to Congress, and research
-#             excluding press releases, SARC, and testimony to Congress
+#             whitepapers - White Papers
+#             briefs - OIG Briefs
+#             other - Other
 
 # The report list is not stable, so sometimes we need to fetch the same page of
 # results multiple times to get everything. This constant is the maximum number
@@ -30,11 +30,9 @@ MAX_RETRIES = 10
 REPORTS_PER_PAGE = 10
 
 def run(options):
-  year_range = inspector.year_range(options, archive)
-
   report_types = options.get('types')
   if not report_types:
-    report_types = "audit,congress,research"
+    report_types = "audit,testimony,news,congress,whitepapers,briefs,other"
   report_types = report_types.split(",")
   categories = [tup for tup in CATEGORIES if (tup[0] in report_types)]
   for category_name, category_id in categories:
@@ -65,17 +63,19 @@ def run(options):
         url = url_for(options, page, category_id)
         doc = utils.beautifulsoup_from_url(url)
 
-        results = doc.select(".views-row")
+        results = doc.select("tr")
         if not results:
-          if len(doc.select(".view")[0].contents) == 3 and \
-              len(doc.select(".view > .view-filters")) == 1:
-            # If we only have the filter box, and no content box or "pagerer,"
-            # then that just means this search returned 0 results.
+          if ("Still can't find what you are searching for?" in
+              doc.select(".content")[0].text):
+            # this search returned 0 results.
             pass
           else:
             # Otherwise, there's probably something wrong with the scraper.
             raise inspector.NoReportsFoundError("USPS %s" % category_name)
         for result in results:
+          if not result.find("td"):
+            # Header row
+            continue
           if retry == 0:
             timestamp = get_timestamp(result)
             if timestamp in date_slot_counts:
@@ -98,12 +98,6 @@ def run(options):
                 date_unique_report_counts[timestamp] + 1
 
             report = report_from(result)
-            # inefficient enforcement of --year arg, USPS doesn't support it server-side
-            # TODO: change to published_on.year once it's a datetime
-            if inspector.year_from(report) not in year_range:
-              logging.warn("[%s] Skipping report, not in requested range." % report['report_id'])
-              continue
-
             inspector.save_report(report)
 
       pages_to_fetch = set()
@@ -122,12 +116,8 @@ def get_last_page(options, category_id):
   return last_page_for(doc)
 
 def get_timestamp(result):
-  pieces = result.select("span span")
-  if len(pieces) == 3:
-    timestamp = pieces[2].text.strip()
-  elif len(pieces) == 2:
-    timestamp = pieces[1].text.strip()
-  return timestamp
+  cells = result.select("td")
+  return cells[0].text.strip()
 
 # extract fields from HTML, return dict
 def report_from(result):
@@ -138,11 +128,8 @@ def report_from(result):
     'agency_name': 'United States Postal Service'
   }
 
-  pieces = result.select("span span")
-  report_type = type_for(pieces[0].text.strip())
-
-  if len(pieces) == 3:
-    report['%s_id' % report_type] = pieces[1].text.strip()
+  cells = result.select("td")
+  report_type = type_for(cells[2].text.strip())
 
   published_on = datetime.strptime(get_timestamp(result), "%m/%d/%Y")
 
@@ -151,21 +138,20 @@ def report_from(result):
 
   # if there's only one button, use that URL
   # otherwise, look for "Read Full Report" (could be first or last)
-  buttons = result.select("a.apbutton")
-  if len(buttons) > 1:
-    link = None
-    for button in buttons:
-      if "Full Report" in button.text:
-        link = button['href']
-  elif len(buttons) == 1:
-    link = buttons[0]['href']
-  report['url'] = link
+  link = cells[1].a
+  landing_url = urljoin("https://uspsoig.gov/", link["href"])
+  report['landing_url'] = landing_url
+
+  landing_page = utils.beautifulsoup_from_url(landing_url)
+  pdf_link = landing_page.find("a", text="View PDF")
+  report_url = pdf_link["href"]
+  report['url'] = report_url = pdf_link["href"]
 
   # get filename, use name as report ID, extension for type
-  filename = os.path.basename(link)
+  filename = os.path.basename(report_url)
   report['report_id'] = os.path.splitext(filename)[0]
 
-  report['title'] = result.select("h3")[0].text.strip()
+  report['title'] = cells[1].a.text.strip()
 
   return report
 
@@ -175,60 +161,43 @@ def type_for(original_type):
     return "audit"
   elif "testimony" in original:
     return "testimony"
-  elif "press release" in original:
+  elif "news releases" in original:
     return "press"
-  elif "research" in original:
-    return "research"
-  elif "sarc" in original:
-    return "interactive"
-  elif "report to congress":
+  elif "congress" in original:
     return "congress"
+  elif "white papers" in original:
+    return "other"
+  elif "oig briefs" in original:
+    return "other"
+  elif "other" in original:
+    return "other"
   else:
     return None
 
-# get the last page number, from a page of search results
-# e.g. <li class="pager-item active last">of 158</li>
+# get the last page number, from the first page of search results
 def last_page_for(doc):
-  pagers = doc.select("li.pager-item.last")
-  if len(pagers) == 0:
+  pager_last = doc.select("li.pager-last")
+  if len(pager_last) == 0:
     return 1
 
-  page = pagers[0].text.replace("of ", "").strip()
-  if page and len(page) > 0:
-    return int(page)
-
-  # this means we're on the last page, AFAIK
-  else:
-    return -1
+  page = re.search("&page=(\\d+)(?:$|&)", pager_last[0].a["href"]).group(1)
+  return int(page)
 
 
-# The USPS IG only supports a "since" filter.
-# So, if we get a --year, we'll use it as "since", and then
-# ignore reports after parsing their data (before saving them).
-# Inefficient, but more efficient than not supporting --year at all.
 def url_for(options, page, category_id):
   year_range = inspector.year_range(options, archive)
 
   url = "https://uspsoig.gov/document-library"
 
-  # hidden input, always the same
-  url += "?type=All"
+  url += "?field_doc_date_value_op=between"
+  url += "&field_doc_date_value[min][date]=%d" % min(year_range)
+  url += "&field_doc_date_value[max][date]=%d" % max(year_range)
 
-  # there's always a first year, and it defaults to current year
-  datetime_since = datetime(year=year_range[0], month=1, day=1)
-
-  # Expected date format: 2015-02-26
-  usps_formatted_datetime = datetime_since.strftime("%Y-%m-%d")
-  url += "&field_doc_date_value[value][date]=%s" % usps_formatted_datetime
-
-  url += "&field_doc_cat_tid[]=%s" % category_id
-
-  # they added this crazy thing
-  annoying_prefix = "0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C"
+  url += "&field_document_type_tid[]=%s" % category_id
 
   # page is 0-indexed
   if page > 1:
-    url += "&page=%s%i" % (annoying_prefix, (page - 1))
+    url += "&page=%i" % (page - 1)
 
   # Add a cache buster, this helps once we start retrying pages
   url += "&t=%i" % int(time.time())
@@ -237,13 +206,13 @@ def url_for(options, page, category_id):
 
 
 CATEGORIES = [
-  ('audit', '1920'),
-  ('testimony', '1933'),
-  ('other', '3534'),
-  ('press', '1921'),
-  ('congress', '1923'),
-  ('research', '1922'),
-  ('other', '3557'),
+  ('audit', '90'),
+  ('testimony', '91'),
+  ('news', '93'),
+  ('congress', '94'),
+  ('whitepapers', '95'),
+  ('briefs' '92'),
+  ('other', '96'),
 ]
 
 

@@ -84,6 +84,9 @@ def type_for_report(text):
 def report_from(result, landing_url, year_range):
   report_url = urljoin(landing_url, result.get('href'))
 
+  # HTTPS, even if they haven't updated their links yet
+  report_url = re.sub("^http://www.fca.gov", "https://www.fca.gov", report_url)
+
   if landing_url + '#' in report_url:
     # These are just anchor links, skip them.
     return
@@ -106,7 +109,10 @@ def report_from(result, landing_url, year_range):
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
   else:
     try:
-      published_on_text = result.parent.contents[1].lstrip(",").split("(")[0].strip()
+      li = result.parent
+      if li.name == "u":
+        li = li.parent
+      published_on_text = li.contents[1].lstrip(",").split("(")[0].strip()
     except (IndexError, TypeError):
       published_on_text = result.text.strip()
     published_on_text = clean_text(published_on_text)
@@ -150,6 +156,10 @@ def report_from(result, landing_url, year_range):
 
 def semiannual_report_from(result, year_range):
   report_url = urljoin(SEMIANNUAL_REPORTS_URL, result.get('href'))
+
+  # HTTPS, even if they haven't updated their links yet
+  report_url = re.sub("^http://www.fca.gov", "https://www.fca.gov", report_url)
+
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
   published_on_text = result.text.strip()

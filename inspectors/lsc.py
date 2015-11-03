@@ -48,6 +48,7 @@ REPORT_PUBLISHED_MAP = {
   "evalalas": datetime.datetime(2005, 11, 1),
   "evalglsp": datetime.datetime(2005, 11, 1),
   "evalmlsa": datetime.datetime(2005, 11, 1),
+  "fraud-alert-16-01": datetime.datetime(2015, 10, 19),
 }
 
 BLACKLIST_REPORT_TITLES = [
