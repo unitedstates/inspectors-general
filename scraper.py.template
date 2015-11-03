@@ -5,7 +5,6 @@ import logging
 import os
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup
 from utils import utils, inspector
 
 # Copy this file into inspectors, and rename it to [inspector].py,
@@ -31,10 +30,10 @@ archive = <oldest_report_year>
 REPORTS_URL = <reports_url>
 
 def run(options):
-  year_range = inspector.year_range(options)
+  year_range = inspector.year_range(options, archive)
 
   # Pull the reports
-  doc = utils.beautifulsoup_from_html(REPORTS_URL)
+  doc = utils.beautifulsoup_from_url(REPORTS_URL)
   results = doc.select("some-selector")
   for result in results:
     report = report_from(result, year_range)
