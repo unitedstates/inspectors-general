@@ -324,7 +324,7 @@ def text_from_pdf(real_pdf_path, real_text_path):
     return
 
   try:
-    subprocess.check_call(["pdftotext", "-layout", real_pdf_path, real_text_path], shell=False)
+    subprocess.check_call(["pdftotext", "-layout", "-nopgbrk", real_pdf_path, real_text_path], shell=False)
   except subprocess.CalledProcessError as exc:
     logging.warn("Error extracting text to %s:\n\n%s" % (real_text_path, format_exception(exc)))
     return
