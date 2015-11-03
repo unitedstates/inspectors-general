@@ -204,6 +204,10 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
       raise exc
 
   report_url = urljoin(BASE_REPORT_URL, report_link['href'])
+
+  # HTTPS, even if they haven't updated their links yet
+  report_url = re.sub("^http://www.sec.gov", "https://www.sec.gov", report_url)
+
   logging.debug("### Processing report %s" % report_url)
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]

@@ -84,6 +84,9 @@ def type_for_report(text):
 def report_from(result, landing_url, year_range):
   report_url = urljoin(landing_url, result.get('href'))
 
+  # HTTPS, even if they haven't updated their links yet
+  report_url = re.sub("^http://www.fca.gov", "https://www.fca.gov", report_url)
+
   if landing_url + '#' in report_url:
     # These are just anchor links, skip them.
     return
@@ -153,6 +156,10 @@ def report_from(result, landing_url, year_range):
 
 def semiannual_report_from(result, year_range):
   report_url = urljoin(SEMIANNUAL_REPORTS_URL, result.get('href'))
+
+  # HTTPS, even if they haven't updated their links yet
+  report_url = re.sub("^http://www.fca.gov", "https://www.fca.gov", report_url)
+
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
   published_on_text = result.text.strip()
