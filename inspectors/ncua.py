@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.ncua.gov/about/Leadership/Pages/page_oig.aspx
+# http://www.ncua.gov/About/Pages/inspector-general.aspx
 archive = 1999
 
 # options:
@@ -17,7 +17,7 @@ archive = 1999
 # Notes for IG's web team:
 #
 
-AUDIT_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/AuditRpt{year}.aspx"
+AUDIT_REPORTS_URL = "http://www.ncua.gov/About/Pages/inspector-general/audit-reports/{year}.aspx"
 SEMIANNUAL_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/SemiAnnRpts.aspx"
 OTHER_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/OtherRpts.aspx"
 
@@ -30,11 +30,11 @@ def run(options):
       continue
     doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL.format(year=year))
 
-    # if it's a 404 page (200 response code), move on
-    if doc == None or not_found(doc):
-      continue
+    # if it's a 404 page (200 response code), raise an error
+    if doc == None:
+      raise Exception("Failed to fetch NCUA audit reports for %d" % year)
 
-    results = doc.select("div.content table tr")
+    results = doc.select("div.mainCenter table tr")
     if not results:
       raise inspector.NoReportsFoundError("NCUA (%d)" % year)
     for index, result in enumerate(results):
@@ -65,12 +65,8 @@ def run(options):
     if report:
       inspector.save_report(report)
 
-def not_found(doc):
-  return (doc.select("h2")[0].text.strip().lower() == "page not found")
-
 def clean_text(text):
-  # This character is not technically whitespace so we have to manually replace it
-  return text.replace("\u200b", " ").strip()
+  return re.sub("[ \n]+", " ", inspector.sanitize(text))
 
 def report_from(result, report_type, year_range):
   links = result.select("a[href]")
@@ -80,13 +76,9 @@ def report_from(result, report_type, year_range):
     raise Exception("Found multiple links in one row\n%s" % links)
   report_id = clean_text("-".join(link.text.replace("/", "-").replace("'", "").replace(":", "").split()))
   report_url = urljoin(AUDIT_REPORTS_URL, link.get('href'))
-  try:
-    title = clean_text(result.select("td")[1].text)
-  except IndexError:
-    title = clean_text(result.select("td")[0].text)
+  title = clean_text(result.select("td")[1].text)
 
   published_on_text = clean_text(result.select("td")[-1].text)
-  published_on_text = published_on_text.replace("//", "/")  # Some accidental double slashes
   published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
 
   if published_on.year not in year_range:
