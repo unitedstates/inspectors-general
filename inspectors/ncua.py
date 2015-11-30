@@ -18,8 +18,8 @@ archive = 1999
 #
 
 AUDIT_REPORTS_URL = "http://www.ncua.gov/About/Pages/inspector-general/audit-reports/{year}.aspx"
-SEMIANNUAL_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/SemiAnnRpts.aspx"
-OTHER_REPORTS_URL = "http://www.ncua.gov/about/Leadership/CO/OIG/Pages/OtherRpts.aspx"
+SEMIANNUAL_REPORTS_URL = "http://www.ncua.gov/About/Pages/inspector-general/semiannual-reports.aspx"
+OTHER_REPORTS_URL = "http://www.ncua.gov/About/Pages/inspector-general/other-reports.aspx"
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -47,7 +47,7 @@ def run(options):
 
   # Pull the other reports
   doc = utils.beautifulsoup_from_url(OTHER_REPORTS_URL)
-  results = doc.select("div.content li")
+  results = doc.select("div.mainCenter p")
   if not results:
     raise inspector.NoReportsFoundError("NCUA (other)")
   for result in results:
@@ -57,7 +57,7 @@ def run(options):
 
   # Pull the semiannual reports
   doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
-  results = doc.select("div.content a")
+  results = doc.select("div#mainColumns div.mainCenter a")
   if not results:
     raise inspector.NoReportsFoundError("NCUA (semiannual reports)")
   for result in results:
@@ -98,18 +98,30 @@ def report_from(result, report_type, year_range):
   }
   return report
 
-OTHER_REPORT_RE = re.compile("^[^-]* - (.*), ((?:January|February|March|April|May|June|July|August|September|October|November|December) [0-3]?[0-9], 20[0-9][0-9])$")
+OTHER_REPORT_RE = re.compile("^ *(.+) +((?:January|February|Feb\\.|March|April|May|June|July|August|September|October|November|December) [0-3]?[0-9], 20[0-9][0-9]) *$")
 
 def other_report_from(result, year_range):
   link = result.find("a")
-  report_id = inspector.sanitize(clean_text("-".join(link.text.replace("/", "-").replace("'", "").replace(":", "").split())))
-  report_id = re.sub('--*', '-', report_id)
-  report_url = urljoin(OTHER_REPORTS_URL, link.get('href'))
+  basename = os.path.splitext(os.path.basename(link["href"]))[0]
+  report_id = clean_text(basename).replace("'", "").replace(":", "")
+  report_id = re.sub("-+", "-", report_id)
+  report_url = urljoin(OTHER_REPORTS_URL, link["href"])
 
-  match = OTHER_REPORT_RE.match(inspector.sanitize(clean_text(link.text)))
+  match = OTHER_REPORT_RE.match(clean_text(link.text))
   title = match.group(1)
   published_on_text = match.group(2)
-  published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+  published_on = None
+  try:
+    published_on = datetime.datetime.strptime(published_on_text, "%B %d, %Y")
+  except ValueError:
+    pass
+  if not published_on:
+    try:
+      published_on = datetime.datetime.strptime(published_on_text, "%b. %d, %Y")
+    except ValueError:
+      pass
+  if not published_on:
+    raise Exception("Could not parse date from %s" % published_on_text)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -129,10 +141,10 @@ def other_report_from(result, year_range):
   return report
 
 def semiannual_report_from(result, year_range):
-  report_url = urljoin(SEMIANNUAL_REPORTS_URL, result.get('href'))
-  report_filename = report_url.split("/")[-1]
+  title = clean_text(result.text)
+  report_url = urljoin(SEMIANNUAL_REPORTS_URL, result['href'])
+  report_filename = os.path.basename(report_url)
   report_id, _ = os.path.splitext(report_filename)
-  title = result.text
 
   # This normalization will make later processing easier
   published_on_text = title.replace(" thru ", " - ")
