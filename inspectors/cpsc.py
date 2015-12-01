@@ -3,7 +3,6 @@
 import datetime
 import logging
 import os
-import re
 from urllib.parse import urljoin
 
 from utils import utils, inspector
@@ -55,9 +54,13 @@ def report_from(result, year_range):
   if report_url in BLACKLIST_REPORT_URLS:
     return
 
+  # Follow redirects to get real file names
+  if report_url.startswith("http://www.cpsc.gov/Media/"):
+    report_url = utils.resolve_redirect(report_url)
+
   # URLs with /PageFiles in them need to use the filename and its
   # directory to be unique. Other URLs can just use the filename.
-  if re.compile("PageFiles").search(report_url):
+  if "PageFiles" in report_url:
     # e.g. /../132643/fy11fisma.pdf -> 132643-fy11fisma.pdf
     report_filename = str.join("-", report_url.split("/")[-2:])
   else:
