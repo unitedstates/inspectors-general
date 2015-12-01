@@ -93,12 +93,12 @@ def any_pdf_test(tag):
   is_pdf = (RE_PDF_HREF.search(tag['href']) or RE_BACKUP_PDF_HREF.search(tag['href']))
   return is_pdf
 
-RE_OFFICIAL = re.compile('For Official Use Only', re.I)
+RE_OFFICIAL = re.compile('For\\s+Official\\s+Use\\s+Only', re.I)
 RE_CLASSIFIED = re.compile('Classified', re.I)
 RE_INTEL = re.compile('-INTEL-') # case-sensitive
-RE_FOIA = re.compile('Freedom (?:of|on) Information Act', re.I)
+RE_FOIA = re.compile('Freedom\\s+(?:of|on)\\s+Information\\s+Act', re.I)
 RE_RESTRICTED = re.compile('Restricted', re.I)
-RE_AFGHANISTAN = re.compile('Provided to the Security Forces of Afghanistan', re.I)
+RE_AFGHANISTAN = re.compile('Provided\\s+to\\s+the\\s+Security\\s+Forces\\s+of\\s+Afghanistan', re.I)
 
 # Landing pages to be skipped (dupes, etc.)
 LANDING_PAGE_BLACKLIST = [

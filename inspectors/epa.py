@@ -156,6 +156,7 @@ def report_from_table(tds, published_on_dt, base_url):
       if "Report At A Glance" in text or "Report At a Glance" in text:
         report['summary_url'] = absolute_href
       elif ("Full Report" in text or
+            "Full Semiannual Report" in text or
             "Full Compendium" in text or
             "Full Document" in text or
             "Key Management Challenges Memorandum" in text):
