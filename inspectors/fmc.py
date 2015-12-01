@@ -47,8 +47,8 @@ def run(options):
   results = doc.select("table tr")
   if not results:
     raise inspector.NoReportsFoundError("Federal Maritime Commission (audits)")
-  for index, result in enumerate(results):
-    if not index:
+  for result in results:
+    if result.th:
       # Skip the header row
       continue
     report = report_from(result, AUDIT_REPORTS_URL, report_type='audit', year_range=year_range)
@@ -66,8 +66,8 @@ def run(options):
       results = doc.select("div.col-2-2 ul")[1:-1]
     if not results:
       raise inspector.NoReportsFoundError("Federal Maritime Commission (%s)" % audit_year_url)
-    for index, result in enumerate(results):
-      if not index:
+    for result in results:
+      if result.th:
         # Skip the header row
         continue
       report = report_from(result, AUDIT_REPORTS_URL, report_type='audit', year_range=year_range)
