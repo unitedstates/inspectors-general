@@ -17,9 +17,14 @@ archive = 1999
 # Notes for IG's web team:
 #
 
+HOMEPAGE_URL = "http://www.ncua.gov/About/Pages/inspector-general.aspx"
 AUDIT_REPORTS_URL = "http://www.ncua.gov/About/Pages/inspector-general/audit-reports/{year}.aspx"
 SEMIANNUAL_REPORTS_URL = "http://www.ncua.gov/About/Pages/inspector-general/semiannual-reports.aspx"
 OTHER_REPORTS_URL = "http://www.ncua.gov/About/Pages/inspector-general/other-reports.aspx"
+PLANS_URL = "http://www.ncua.gov/About/Pages/inspector-general/performance-strategic-plans.aspx"
+# Note: There is no need to scrape the "Material Loss Reviews" page, since
+# these reports are included with the audit reports for each year.
+
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -65,6 +70,16 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+  # Pull the performance and strategic plans
+  doc = utils.beautifulsoup_from_url(PLANS_URL)
+  results = doc.select("div.mainCenter p")
+  if not results:
+    raise inspector.NoReportsFoundError("NCUA (performance/strategic plans)")
+  for result in results:
+    report = plan_from(result, year_range)
+    if report:
+      inspector.save_report(report)
+
 def clean_text(text):
   return re.sub("[ \n]+", " ", inspector.sanitize(text))
 
@@ -87,7 +102,7 @@ def report_from(result, report_type, year_range):
 
   report = {
     'inspector': "ncua",
-    'inspector_url': "http://www.ncua.gov/about/Leadership/Pages/page_oig.aspx",
+    'inspector_url': HOMEPAGE_URL,
     'agency': "ncua",
     'agency_name': "National Credit Union Administration",
     'type': report_type,
@@ -98,7 +113,9 @@ def report_from(result, report_type, year_range):
   }
   return report
 
+
 OTHER_REPORT_RE = re.compile("^ *(.+) +((?:January|February|Feb\\.|March|April|May|June|July|August|September|October|November|December) [0-3]?[0-9], 20[0-9][0-9]) *$")
+
 
 def other_report_from(result, year_range):
   link = result.find("a")
@@ -129,7 +146,7 @@ def other_report_from(result, year_range):
 
   report = {
     'inspector': "ncua",
-    'inspector_url': "http://www.ncua.gov/about/Leadership/Pages/page_oig.aspx",
+    'inspector_url': HOMEPAGE_URL,
     'agency': "ncua",
     'agency_name': "National Credit Union Administration",
     'type': "other",
@@ -162,10 +179,42 @@ def semiannual_report_from(result, year_range):
 
   report = {
     'inspector': "ncua",
-    'inspector_url': "http://www.ncua.gov/about/Leadership/Pages/page_oig.aspx",
+    'inspector_url': HOMEPAGE_URL,
     'agency': "ncua",
     'agency_name': "National Credit Union Administration",
     'type': 'semiannual_report',
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  return report
+
+
+YEAR_RE = re.compile("20[0-9][0-9]")
+
+
+def plan_from(result, year_range):
+  link = result.find("a")
+  basename = os.path.splitext(os.path.basename(link["href"]))[0]
+  report_id = clean_text(basename).replace("'", "").replace(":", "")
+  report_id = re.sub("-+", "-", report_id)
+  report_url = urljoin(OTHER_REPORTS_URL, link["href"])
+
+  title = clean_text(result.text)
+  published_on_year = YEAR_RE.search(result.text).group(0)
+  published_on = datetime.datetime(int(published_on_year), 1, 1)
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  report = {
+    'inspector': "ncua",
+    'inspector_url': HOMEPAGE_URL,
+    'agency': "ncua",
+    'agency_name': "National Credit Union Administration",
+    'type': 'other',
     'report_id': report_id,
     'url': report_url,
     'title': title,
