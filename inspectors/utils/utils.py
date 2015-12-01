@@ -41,14 +41,17 @@ class Soft404HttpAdapter(requests.adapters.HTTPAdapter):
       if resp.getheader("Content-Type") in ["text/html; charset=utf-8",
                                             "text/html"]:
         data = resp.data
+        headers = resp.headers
         if resp.getheader("Content-Encoding") == "gzip":
           decompressed_data = gzip.decompress(data)
         else:
           decompressed_data = data
+        if resp.getheader("Transfer-Encoding") == "chunked":
+          headers.pop("Transfer-Encoding")
         body = io.BytesIO(data)
         resp = requests.packages.urllib3.response.HTTPResponse(
                 body=body,
-                headers=resp.headers,
+                headers=headers,
                 status=resp.status,
                 version=resp.version,
                 reason=resp.reason,

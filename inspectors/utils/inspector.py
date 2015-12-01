@@ -240,6 +240,7 @@ def verify_uniqueness_finalize_summary():
 # run over common string fields automatically
 sanitize_table = str.maketrans({
   "\xa0": " ",          # no-break space
+  "\u200b": " ",        # zero-width space
   "\u2013": "-",        # en dash
   "\u2014": "-",        # em dash
   "\u2018": "'",        # left single quotation mark
