@@ -317,12 +317,28 @@ def domain_verify_options(url):
       return False
   return True
 
+
+_tool_present_cache = {}
+
+
+def check_tool_present(*args):
+  if args in _tool_present_cache:
+    return _tool_present_cache[args]
+  try:
+    subprocess.Popen(args,
+                     shell=False,
+                     stdout=subprocess.DEVNULL,
+                     stderr=subprocess.STDOUT).communicate()
+    result = True
+  except FileNotFoundError:
+    result = False
+  _tool_present_cache[args] = result
+  return result
+
 # uses pdftotext to get text out of PDFs,
 # then writes it and returns the /data-relative path.
 def text_from_pdf(real_pdf_path, real_text_path):
-  try:
-    subprocess.Popen(["pdftotext", "-v"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
-  except FileNotFoundError:
+  if not check_tool_present("pdftotext", "-v"):
     logging.warn("Install pdftotext to extract text! The pdftotext executable must be in a directory that is in your PATH environment variable.")
     return
 
@@ -336,9 +352,7 @@ def text_from_pdf(real_pdf_path, real_text_path):
     logging.warn("Text not extracted to %s" % real_text_path)
 
 def text_from_doc(real_doc_path, real_text_path):
-  try:
-    subprocess.Popen(["abiword", "-?"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
-  except FileNotFoundError:
+  if not check_tool_present("abiword", "-?"):
     logging.warn("Install AbiWord to extract text! The abiword executable must be in a directory that is in your PATH environment variable.")
     return
 
@@ -408,9 +422,7 @@ def parse_pdf_datetime(raw):
       return None
 
 def metadata_from_pdf(pdf_path):
-  try:
-    subprocess.Popen(["pdfinfo", "-v"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
-  except FileNotFoundError:
+  if not check_tool_present("pdfinfo", "-v"):
     logging.warn("Install pdfinfo to extract metadata! The pdfinfo executable must be in a directory that is in your PATH environment variable.")
     return None
 
@@ -481,9 +493,7 @@ def parse_doc_datetime(raw):
     return None
 
 def metadata_from_doc(doc_path):
-  try:
-    subprocess.Popen(["file", "-v"], shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).communicate()
-  except FileNotFoundError:
+  if not check_tool_present("file", "-v"):
     logging.warn("Install file to extract metadata! The file executable must be in a directory that is in your PATH environment variable.")
     return None
 
