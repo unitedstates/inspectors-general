@@ -339,13 +339,20 @@ def check_tool_present(*args):
 # then writes it and returns the /data-relative path.
 def text_from_pdf(real_pdf_path, real_text_path):
   if not check_tool_present("pdftotext", "-v"):
-    logging.warn("Install pdftotext to extract text! The pdftotext executable must be in a directory that is in your PATH environment variable.")
+    logging.warn("Install pdftotext to extract text! "
+                 "The pdftotext executable must be in a directory that is in "
+                 "your PATH environment variable.")
     return
 
   try:
-    subprocess.check_call(["pdftotext", "-layout", "-nopgbrk", real_pdf_path, real_text_path], shell=False)
+    subprocess.check_call(["pdftotext",
+                           "-layout",
+                           "-nopgbrk",
+                           real_pdf_path,
+                           real_text_path], shell=False)
   except subprocess.CalledProcessError as exc:
-    logging.warn("Error extracting text to %s:\n\n%s" % (real_text_path, format_exception(exc)))
+    logging.warn("Error extracting text to %s:\n\n%s" %
+                 (real_text_path, format_exception(exc)))
     return
 
   if not os.path.exists(real_text_path):
@@ -353,13 +360,19 @@ def text_from_pdf(real_pdf_path, real_text_path):
 
 def text_from_doc(real_doc_path, real_text_path):
   if not check_tool_present("abiword", "-?"):
-    logging.warn("Install AbiWord to extract text! The abiword executable must be in a directory that is in your PATH environment variable.")
+    logging.warn("Install AbiWord to extract text! "
+                 "The abiword executable must be in a directory that is in "
+                 "your PATH environment variable.")
     return
 
   try:
-    subprocess.check_call(["abiword", real_doc_path, "--to", "txt"], shell=False)
+    subprocess.check_call(["abiword",
+                           real_doc_path,
+                           "--to",
+                           "txt"], shell=False)
   except subprocess.CalledProcessError as exc:
-    logging.warn("Error extracting text to %s:\n\n%s" % (real_text_path, format_exception(exc)))
+    logging.warn("Error extracting text to %s:\n\n%s" %
+                 (real_text_path, format_exception(exc)))
     return
 
   if not os.path.exists(real_text_path):
@@ -391,7 +404,8 @@ def text_from_docx(real_docx_path, real_text_path):
     text = text_from_doc_or_cell(document)
     write(text, real_text_path, binary=False)
   except zipfile.BadZipFile as exc:
-    logging.warn("Error extracting text to %s:\n\n%s" % (real_text_path, format_exception(exc)))
+    logging.warn("Error extracting text to %s:\n\n%s" %
+                 (real_text_path, format_exception(exc)))
     return None
 
 PDF_PAGE_RE = re.compile("Pages: +([0-9]+)\r?\n")
@@ -423,16 +437,20 @@ def parse_pdf_datetime(raw):
 
 def metadata_from_pdf(pdf_path):
   if not check_tool_present("pdfinfo", "-v"):
-    logging.warn("Install pdfinfo to extract metadata! The pdfinfo executable must be in a directory that is in your PATH environment variable.")
+    logging.warn("Install pdfinfo to extract metadata! "
+                 "The pdfinfo executable must be in a directory that is in "
+                 "your PATH environment variable.")
     return None
 
-  real_pdf_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), pdf_path)))
+  real_pdf_path = os.path.expandvars(os.path.join(data_dir(), pdf_path))
+  real_pdf_path = os.path.abspath(real_pdf_path)
 
   try:
     output = subprocess.check_output(["pdfinfo", real_pdf_path], shell=False)
     output = output.decode('utf-8', errors='replace')
   except subprocess.CalledProcessError as exc:
-    logging.warn("Error extracting metadata for %s:\n\n%s" % (pdf_path, format_exception(exc)))
+    logging.warn("Error extracting metadata for %s:\n\n%s" %
+                 (pdf_path, format_exception(exc)))
     return None
 
   metadata = {}
@@ -494,16 +512,20 @@ def parse_doc_datetime(raw):
 
 def metadata_from_doc(doc_path):
   if not check_tool_present("file", "-v"):
-    logging.warn("Install file to extract metadata! The file executable must be in a directory that is in your PATH environment variable.")
+    logging.warn("Install file to extract metadata! "
+                 "The file executable must be in a directory that is in your "
+                 "PATH environment variable.")
     return None
 
-  real_doc_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), doc_path)))
+  real_doc_path = os.path.expandvars(os.path.join(data_dir(), doc_path))
+  real_doc_path = os.path.abspath(real_doc_path)
 
   try:
     output = subprocess.check_output(["file", real_doc_path], shell=False)
     output = output.decode('utf-8', errors='replace')
   except subprocess.CalledProcessError as exc:
-    logging.warn("Error extracting metadata for %s:\n\n%s" % (doc_path, format_exception(exc)))
+    logging.warn("Error extracting metadata for %s:\n\n%s" %
+                 (doc_path, format_exception(exc)))
     return None
 
   metadata = {}
@@ -534,7 +556,8 @@ def metadata_from_doc(doc_path):
 
 def metadata_from_docx(docx_path):
   try:
-    real_docx_path = os.path.abspath(os.path.expandvars(os.path.join(data_dir(), docx_path)))
+    real_docx_path = os.path.expandvars(os.path.join(data_dir(), docx_path))
+    real_docx_path = os.path.abspath(real_docx_path)
     document = docx.Document(real_docx_path)
     core_props = document.core_properties
 
@@ -559,7 +582,8 @@ def metadata_from_docx(docx_path):
       return metadata
     return None
   except zipfile.BadZipFile as exc:
-    logging.warn("Error extracting metadata for %s:\n\n%s" % (docx_path, format_exception(exc)))
+    logging.warn("Error extracting metadata for %s:\n\n%s" %
+                 (docx_path, format_exception(exc)))
     return None
 
 def format_exception(exception):
