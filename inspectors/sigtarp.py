@@ -6,7 +6,7 @@ import os
 
 from utils import utils, inspector
 
-# http://www.sigtarp.gov
+# https://www.sigtarp.gov
 archive = 2009
 
 # options:
@@ -16,10 +16,10 @@ archive = 2009
 #
 
 REPORT_URLS = {
-  "semiannual_report": "http://www.sigtarp.gov/pages/quarterly.aspx",
-  "audit": "http://www.sigtarp.gov/pages/audit.aspx",
-  "audit": "http://www.sigtarp.gov/pages/auditrc.aspx",
-  "audit": "http://www.sigtarp.gov/pages/engmem.aspx",
+  "semiannual_report": "https://www.sigtarp.gov/pages/quarterly.aspx",
+  "audit": "https://www.sigtarp.gov/pages/audit.aspx",
+  "audit": "https://www.sigtarp.gov/pages/auditrc.aspx",
+  "audit": "https://www.sigtarp.gov/pages/engmem.aspx",
 }
 
 def run(options):
@@ -55,7 +55,7 @@ def report_from(result, report_type, year_range):
 
   report = {
     'inspector': 'sigtarp',
-    'inspector_url': "http://www.sigtarp.gov",
+    'inspector_url': "https://www.sigtarp.gov",
     'agency': 'sigtarp',
     'agency_name': "Special Inspector General for the Troubled Asset Relief Program",
     'type': report_type,
