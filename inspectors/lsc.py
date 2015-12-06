@@ -49,6 +49,7 @@ REPORT_PUBLISHED_MAP = {
   "EvalGLSP": datetime.datetime(2005, 11, 1),
   "EvalMLSA": datetime.datetime(2005, 11, 1),
   "fraud-alert-16-01": datetime.datetime(2015, 10, 19),
+  "15-029": datetime.datetime(2015, 9, 30),
 }
 
 BLACKLIST_REPORT_TITLES = [
@@ -89,7 +90,9 @@ def parse_investigation(content, landing_url, report_type, year_range):
   doj_report_counter = 0
   other_report_counter = 0
   for child in content.children:
-    if isinstance(child, Tag) and child.name == 'hr':
+    if (isinstance(child, Tag) and
+        child.name == 'h3' and
+        child.text == 'Reports'):
       doj_flag = False
       continue
     if doj_flag:
