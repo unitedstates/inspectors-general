@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.sigar.mil/
+# https://www.sigar.mil/
 archive = 2008
 
 # options:
@@ -16,23 +16,23 @@ archive = 2008
 # Notes for IG's web team:
 #
 
-SPOTLIGHT_REPORTS_URL = "http://www.sigar.mil/Newsroom/spotlight/spotlight.xml"
-SPEECHES_REPORTS_URL = "http://www.sigar.mil/Newsroom/speeches/speeches.xml"
-TESTIMONY_REPORTS_URL = "http://www.sigar.mil/Newsroom/testimony/testimony.xml"
+SPOTLIGHT_REPORTS_URL = "https://www.sigar.mil/Newsroom/spotlight/spotlight.xml"
+SPEECHES_REPORTS_URL = "https://www.sigar.mil/Newsroom/speeches/speeches.xml"
+TESTIMONY_REPORTS_URL = "https://www.sigar.mil/Newsroom/testimony/testimony.xml"
 
 REPORT_URLS = {
   "other": SPOTLIGHT_REPORTS_URL,
   "press": SPEECHES_REPORTS_URL,
   "testimony": TESTIMONY_REPORTS_URL,
-  "audit": "http://www.sigar.mil/audits/auditreports/reports.xml",
-  "inspection": "http://www.sigar.mil/audits/inspectionreports/inspection-reports.xml",
-  "audit": "http://www.sigar.mil/audits/financialreports/Financial-Audits.xml",
-  "other": "http://www.sigar.mil/SpecialProjects/projectreports/reports.xml",
-  "other": "http://www.sigar.mil/Audits/alertandspecialreports/alert-special-reports.xml",
-  "semiannual_report": "http://www.sigar.mil/quarterlyreports/index.xml",
+  "audit": "https://www.sigar.mil/audits/auditreports/reports.xml",
+  "inspection": "https://www.sigar.mil/audits/inspectionreports/inspection-reports.xml",
+  "audit": "https://www.sigar.mil/audits/financialreports/Financial-Audits.xml",
+  "other": "https://www.sigar.mil/SpecialProjects/projectreports/reports.xml",
+  "other": "https://www.sigar.mil/Audits/alertandspecialreports/alert-special-reports.xml",
+  "semiannual_report": "https://www.sigar.mil/quarterlyreports/index.xml",
 }
 
-BASE_REPORT_URL = "http://www.sigar.mil/allreports/index.aspx"
+BASE_REPORT_URL = "https://www.sigar.mil/allreports/index.aspx"
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -64,7 +64,7 @@ def report_from(result, landing_url, report_type, year_range):
 
   report = {
     'inspector': 'sigar',
-    'inspector_url': "http://www.sigar.mil",
+    'inspector_url': "https://www.sigar.mil",
     'agency': 'sigar',
     'agency_name': "Special Inspector General for Afghanistan Reconstruction",
     'type': report_type,
@@ -78,7 +78,7 @@ def report_from(result, landing_url, report_type, year_range):
 
 def report_url_for_landing_page(relative_url, landing_url):
   """
-  We need to mimic the logic used in http://www.sigar.mil/js/AllReports.js
+  We need to mimic the logic used in https://www.sigar.mil/js/AllReports.js
 
   case SPOTLIGHT:
       Title = "Spotlight";
