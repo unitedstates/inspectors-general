@@ -18,10 +18,10 @@ archive = 2001
 # Notes for IG's web team:
 #   - Filters only work back through 2004, but there are documents back to 2001
 #   - One landing page does not match the linked report, see
-#     http://www.hudoig.gov/reports-publications/audit-reports/housing-authority-of-city-of-conyers-georgia-did-not-maintain
+#     https://www.hudoig.gov/reports-publications/audit-reports/housing-authority-of-city-of-conyers-georgia-did-not-maintain
 
-BASE_URL = 'http://www.hudoig.gov/reports-publications/results'
-BASE_REPORT_PAGE_URL = "http://www.hudoig.gov/"
+BASE_URL = 'https://www.hudoig.gov/reports-publications/results'
+BASE_REPORT_PAGE_URL = "https://www.hudoig.gov/"
 ARCHIVES_URL = "http://archives.hud.gov/offices/oig/reports/oigstate.cfm"
 ALL_PAGES = 1000
 
@@ -74,80 +74,80 @@ UNRELEASED_TEXTS = [
 ]
 
 DUPLICATE_LANDING_PAGES = (
-  "http://www.hudoig.gov/reports-publications/audit-reports-17",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/cheyenne-housing-authority-cheyenne-wyoming-improperly-awarded
+  "https://www.hudoig.gov/reports-publications/audit-reports-17",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/cheyenne-housing-authority-cheyenne-wyoming-improperly-awarded
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-huntington-park-huntington-park-california-did-not-alwa-0",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-huntington-park-huntington-park-california-did-not-always
+  "https://www.hudoig.gov/reports-publications/audit-reports/city-of-huntington-park-huntington-park-california-did-not-alwa-0",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/city-of-huntington-park-huntington-park-california-did-not-always
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-new-rochelle-home-investment-partnership-program",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-new-rochelle-new-rochelle-new-york-had-administrative
+  "https://www.hudoig.gov/reports-publications/audit-reports/city-of-new-rochelle-home-investment-partnership-program",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/city-of-new-rochelle-new-rochelle-new-york-had-administrative
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/holyoke-housing-authority%E2%80%99s-holyoke-massachusetts-lack-of",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/holyoke-housing-authoritys-holyoke-massachusetts-lack-of
+  "https://www.hudoig.gov/reports-publications/audit-reports/holyoke-housing-authority%E2%80%99s-holyoke-massachusetts-lack-of",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/holyoke-housing-authoritys-holyoke-massachusetts-lack-of
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/richard-hutchens-and-associates-management-agent",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/richard-hutchens-associates-management-agent-buffalo-new-york
+  "https://www.hudoig.gov/reports-publications/audit-reports/richard-hutchens-and-associates-management-agent",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/richard-hutchens-associates-management-agent-buffalo-new-york
 
-  "http://www.hudoig.gov/reports-publications/inspections-evaluations/follow-of-inspections-and-evaluations-division-its",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/follow-of-inspections-and-evaluations-division-its-inspection-of
+  "https://www.hudoig.gov/reports-publications/inspections-evaluations/follow-of-inspections-and-evaluations-division-its",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/follow-of-inspections-and-evaluations-division-its-inspection-of
 
-  "http://www.hudoig.gov/reports-publications/inspections-evaluations/%C2%A0american-recovery-and-reinvestment-act-lessons-learned",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/american-recovery-and-reinvestment-act-lessons-learned-initiative
+  "https://www.hudoig.gov/reports-publications/inspections-evaluations/%C2%A0american-recovery-and-reinvestment-act-lessons-learned",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/american-recovery-and-reinvestment-act-lessons-learned-initiative
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/idaho-housing-and-finance-association-did-not-always-comply-hom-0",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/idaho-housing-and-finance-association-did-not-always-comply-home
+  "https://www.hudoig.gov/reports-publications/audit-reports/idaho-housing-and-finance-association-did-not-always-comply-hom-0",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/idaho-housing-and-finance-association-did-not-always-comply-home
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/lackawanna-municipal-housing-authority-lackawanna-new-york-need-0",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/lackawanna-municipal-housing-authority-lackawanna-new-york-needs
+  "https://www.hudoig.gov/reports-publications/audit-reports/lackawanna-municipal-housing-authority-lackawanna-new-york-need-0",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/lackawanna-municipal-housing-authority-lackawanna-new-york-needs
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/ameritrust-mortgage-bankers-inc-lake-success-ny-did-not",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/ameritrust-mortgage-bankers-inc-lake-success-ny-did-not-always
+  "https://www.hudoig.gov/reports-publications/audit-reports/ameritrust-mortgage-bankers-inc-lake-success-ny-did-not",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/ameritrust-mortgage-bankers-inc-lake-success-ny-did-not-always
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/miami-dade-county-floridaneeds-strengthen-controls-over-its",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/miami-dade-county-florida-needs-strengthen-controls-over
+  "https://www.hudoig.gov/reports-publications/audit-reports/miami-dade-county-floridaneeds-strengthen-controls-over-its",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/miami-dade-county-florida-needs-strengthen-controls-over
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/miami-dade-housing-agency-miami-florida-did-not-maintain-adequa-1",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/miami-dade-housing-agency-miami-florida-did-not-maintain-adequate
+  "https://www.hudoig.gov/reports-publications/audit-reports/miami-dade-housing-agency-miami-florida-did-not-maintain-adequa-1",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/miami-dade-housing-agency-miami-florida-did-not-maintain-adequate
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-miami-gardens-fl-did-not-adequately-support-salary-cost-0",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-miami-gardens-fl-did-not-adequately-support-salary-costs
+  "https://www.hudoig.gov/reports-publications/audit-reports/city-of-miami-gardens-fl-did-not-adequately-support-salary-cost-0",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/city-of-miami-gardens-fl-did-not-adequately-support-salary-costs
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-troy-community-development-block-grant-program",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-troy-new-york-did-not-always-administer-its-community
+  "https://www.hudoig.gov/reports-publications/audit-reports/city-of-troy-community-development-block-grant-program",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/city-of-troy-new-york-did-not-always-administer-its-community
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-rochester-new-york%E2%80%99s-management-controls-over-asset",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-rochester-new-yorks-management-controls-over-asset
+  "https://www.hudoig.gov/reports-publications/audit-reports/city-of-rochester-new-york%E2%80%99s-management-controls-over-asset",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/city-of-rochester-new-yorks-management-controls-over-asset
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-newburgh-new-york-did-not-always-administer-its-communi-0",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-newburgh-new-york-did-not-always-administer-its community
+  "https://www.hudoig.gov/reports-publications/audit-reports/city-of-newburgh-new-york-did-not-always-administer-its-communi-0",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/city-of-newburgh-new-york-did-not-always-administer-its community
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/polk-county-fl-did-not-comply-procurement-and",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/polk-county-fl-did-not-comply-procurement-and-contract
+  "https://www.hudoig.gov/reports-publications/audit-reports/polk-county-fl-did-not-comply-procurement-and",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/polk-county-fl-did-not-comply-procurement-and-contract
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/broward-county-fl-needs-strengthen-controls-over-its-neighborho-0",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/broward-county-fl-needs-strengthen-controls-over-its-neighborhood
+  "https://www.hudoig.gov/reports-publications/audit-reports/broward-county-fl-needs-strengthen-controls-over-its-neighborho-0",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/broward-county-fl-needs-strengthen-controls-over-its-neighborhood
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-west-palm-beach-fl-did-not-administer-its-community",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-west-palm-beach-fl-did-not-properly-administer-its
+  "https://www.hudoig.gov/reports-publications/audit-reports/city-of-west-palm-beach-fl-did-not-administer-its-community",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/city-of-west-palm-beach-fl-did-not-properly-administer-its
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-rochester-new-york%E2%80%99s-management-controls-over-asset",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-rochester-new-yorks-management-controls-over-asset
+  "https://www.hudoig.gov/reports-publications/audit-reports/city-of-rochester-new-york%E2%80%99s-management-controls-over-asset",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/city-of-rochester-new-yorks-management-controls-over-asset
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-newburgh-new-york-did-not-always-administer-its-communi-0",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-newburgh-new-york-did-not-always-administer-its-community
+  "https://www.hudoig.gov/reports-publications/audit-reports/city-of-newburgh-new-york-did-not-always-administer-its-communi-0",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/city-of-newburgh-new-york-did-not-always-administer-its-community
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/all-american-home-mortgage-corp-brooklyn-ny-did-not-always-comp-0",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/all-american-home-mortgage-corp-brooklyn-ny-did-not-always-comply
+  "https://www.hudoig.gov/reports-publications/audit-reports/all-american-home-mortgage-corp-brooklyn-ny-did-not-always-comp-0",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/all-american-home-mortgage-corp-brooklyn-ny-did-not-always-comply
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/adams-county-colorado-did-not-comply-home-investment-partnerships",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/adams-county-colorado-office-of-community-and-development-did-not
+  "https://www.hudoig.gov/reports-publications/audit-reports/adams-county-colorado-did-not-comply-home-investment-partnerships",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/adams-county-colorado-office-of-community-and-development-did-not
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/women%E2%80%99s-development-center-las-vegas-nv-charged-unallowable-flat",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/womens-development-center-las-vegas-nv-charged-unallowable-flat
+  "https://www.hudoig.gov/reports-publications/audit-reports/women%E2%80%99s-development-center-las-vegas-nv-charged-unallowable-flat",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/womens-development-center-las-vegas-nv-charged-unallowable-flat
 
-  "http://www.hudoig.gov/reports-publications/audit-reports/city-of-fort-lauderdale-florida-did-not-properly-administer",
-  # Duplicate of http://www.hudoig.gov/reports-publications/audit-reports/city-of-fort-lauderdale-florida-did-not-properly-administer-its
+  "https://www.hudoig.gov/reports-publications/audit-reports/city-of-fort-lauderdale-florida-did-not-properly-administer",
+  # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/city-of-fort-lauderdale-florida-did-not-properly-administer-its
 )
 
 def run(options):
@@ -274,7 +274,7 @@ def report_from(report_row, year_range):
   if landing_url in DUPLICATE_LANDING_PAGES:
     return
 
-  if landing_url == "http://www.hudoig.gov/reports-publications/audit-reports/housing-authority-of-city-of-conyers-georgia-did-not-maintain":
+  if landing_url == "https://www.hudoig.gov/reports-publications/audit-reports/housing-authority-of-city-of-conyers-georgia-did-not-maintain":
     # Handle this elsewhere as a canned report
     return
 
@@ -301,9 +301,9 @@ def report_from(report_row, year_range):
     report_id = os.path.splitext(report_filename)[0]  # Strip off the extension
 
   # These both have filenames of "appendix", so we use different report IDs
-  if landing_url == "http://www.hudoig.gov/reports-publications/audit-guides/chapter-1-appendix-attribute-sampling":
+  if landing_url == "https://www.hudoig.gov/reports-publications/audit-guides/chapter-1-appendix-attribute-sampling":
     report_id = "Attribute-Sampling"
-  elif landing_url == "http://www.hudoig.gov/reports-publications/audit-guides/appendix-hud-regional-inspector-generals-audit":
+  elif landing_url == "https://www.hudoig.gov/reports-publications/audit-guides/appendix-hud-regional-inspector-generals-audit":
     report_id = "HUD-Regional-Inspector-Generals-for-Audit"
 
   try:
@@ -347,7 +347,7 @@ def report_from(report_row, year_range):
 
   report = {
     'inspector': 'hud',
-    'inspector_url': 'http://www.hudoig.gov/',
+    'inspector_url': 'https://www.hudoig.gov/',
     'agency': 'hud',
     'agency_name': 'Housing and Urban Development',
     'report_id': report_id,
@@ -431,7 +431,7 @@ def report_from_archive(result, state_name, landing_url, year_range):
 
   report = {
     'inspector': 'hud',
-    'inspector_url': 'http://www.hudoig.gov/',
+    'inspector_url': 'https://www.hudoig.gov/',
     'agency': 'hud',
     'agency_name': 'Housing and Urban Development',
     'report_id': report_id,
@@ -465,14 +465,14 @@ def url_for(year_range, page=1):
 def do_canned_reports(year_range):
   report = {
     'inspector': 'hud',
-    'inspector_url': 'http://www.hudoig.gov/',
+    'inspector_url': 'https://www.hudoig.gov/',
     'agency': 'hud',
     'agency_name': 'Housing and Urban Development',
     'report_id': '2009-AT-1011',
-    'url': 'http://www.hudoig.gov/sites/default/files/documents/audit-reports/ig0941011.pdf',
+    'url': 'https://www.hudoig.gov/sites/default/files/documents/audit-reports/ig0941011.pdf',
     'title': 'The City of Miami, Florida, Did Not Properly Administer Its Community Development Block Grant Program',
     'published_on': '2009-08-18',
-    'landing_url': 'http://www.hudoig.gov/reports-publications/audit-reports/housing-authority-of-city-of-conyers-georgia-did-not-maintain',
+    'landing_url': 'https://www.hudoig.gov/reports-publications/audit-reports/housing-authority-of-city-of-conyers-georgia-did-not-maintain',
     'type': 'audit',
     'program_area': 'Public and Indian Housing',
     'state': 'Georgia'
