@@ -4,7 +4,7 @@ BeautifulSoup4
 pyyaml
 lxml
 requests>=2.5.3
-certifi>=2015.04.28
+certifi>=2015.11.20.1
 python-docx
 
 # for backing up reports. can't use [speedups] while it depends on gevent.
