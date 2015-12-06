@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.ftc.gov/about-ftc/office-inspector-general
+# https://www.ftc.gov/about-ftc/office-inspector-general
 archive = 1990
 
 # options:
@@ -17,8 +17,8 @@ archive = 1990
 # Notes for IG's web team:
 # - Add published dates for reports
 
-AUDIT_REPORTS_URL = "http://www.ftc.gov/about-ftc/office-inspector-general/oig-reading-room/oig-audit-reports"
-SEMIANNUAL_REPORTS_URL = "http://www.ftc.gov/about-ftc/office-inspector-general/oig-reading-room/semi-annual-reports-congress"
+AUDIT_REPORTS_URL = "https://www.ftc.gov/about-ftc/office-inspector-general/oig-reading-room/oig-audit-reports"
+SEMIANNUAL_REPORTS_URL = "https://www.ftc.gov/about-ftc/office-inspector-general/oig-reading-room/semi-annual-reports-congress"
 
 REPORT_URLS = {
   "audit": AUDIT_REPORTS_URL,
@@ -82,7 +82,7 @@ def report_from(result, landing_url, report_type, year_range):
 
   report = {
     'inspector': 'ftc',
-    'inspector_url': "http://www.ftc.gov/about-ftc/office-inspector-general",
+    'inspector_url': "https://www.ftc.gov/about-ftc/office-inspector-general",
     'agency': 'ftc',
     'agency_name': "Federal Trade Commission",
     'type': report_type,
