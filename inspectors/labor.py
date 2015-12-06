@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.oig.dol.gov/auditreports.htm
+# https://www.oig.dol.gov/auditreports.htm
 archive = 1979
 
 # options:
@@ -17,9 +17,9 @@ archive = 1979
 # - Fix published date for "Audit of The National Council on the Aging, INC.".
 # Right now it just says "February 11" without a year.
 
-AUDIT_REPORTS_URL = "http://www.oig.dol.gov/cgi-bin/oa_rpts.cgi?s=&y=fy9{}&a=all"
-SEMIANNUAL_REPORTS_URL = "http://www.oig.dol.gov/semiannual.htm"
-BASE_URL = "http://www.oig.dol.gov"
+AUDIT_REPORTS_URL = "https://www.oig.dol.gov/cgi-bin/oa_rpts.cgi?s=&y=fy9{}&a=all"
+SEMIANNUAL_REPORTS_URL = "https://www.oig.dol.gov/semiannual.htm"
+BASE_URL = "https://www.oig.dol.gov"
 
 REPORT_PUBLISHED_MAPPING = {
   "02-02-202-03-360": datetime.datetime(2002, 2, 11),
@@ -94,11 +94,11 @@ def report_from(result, year_url):
       response_url = urljoin(BASE_URL, link.get('href'))
 
   # Fix incomplete URLs and report numbers
-  if report_url == "http://www.oig.dol.gov/public/reports/oa/pre_1998/05-97-107-.pdf":
-    report_url = "http://www.oig.dol.gov/public/reports/oa/pre_1998/05-97-107-10-105.pdf"
+  if report_url == "https://www.oig.dol.gov/public/reports/oa/pre_1998/05-97-107-.pdf":
+    report_url = "https://www.oig.dol.gov/public/reports/oa/pre_1998/05-97-107-10-105.pdf"
     report_id = "05-97-107-10-105"
-  elif report_url == "http://www.oig.dol.gov/public/reports/oa/2001/2E--0002.pdf":
-    report_url = "http://www.oig.dol.gov/public/reports/oa/2001/2E-10-105-0002.pdf"
+  elif report_url == "https://www.oig.dol.gov/public/reports/oa/2001/2E--0002.pdf":
+    report_url = "https://www.oig.dol.gov/public/reports/oa/2001/2E-10-105-0002.pdf"
     report_id = "2E-10-105-0002"
 
   UNRELEASED_TEXTS = [
@@ -113,7 +113,7 @@ def report_from(result, year_url):
 
   report = {
     'inspector': 'labor',
-    'inspector_url': 'http://www.oig.dol.gov',
+    'inspector_url': 'https://www.oig.dol.gov',
     'agency': "labor",
     'agency_name': "Department of Labor",
     'report_id': report_id,
@@ -146,7 +146,7 @@ def semiannual_report_from(result, year_range):
 
   report = {
     'inspector': 'labor',
-    'inspector_url': 'http://www.oig.dol.gov',
+    'inspector_url': 'https://www.oig.dol.gov',
     'agency': "labor",
     'agency_name': "Department of Labor",
     'report_id': report_id,
