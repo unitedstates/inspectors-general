@@ -79,7 +79,7 @@ PDF_DESCRIPTION_RE = re.compile("(.*)\\(PDF, [0-9]+ pages - [0-9.]+ ?[mMkK][bB]\
 def report_from(result, component, url):
   report = {
     'inspector': 'dhs',
-    'inspector_url': 'http://www.oig.dhs.gov'
+    'inspector_url': 'https://www.oig.dhs.gov/'
   }
 
   link = result.select("td")[2].select("a")[0]
@@ -130,19 +130,19 @@ def report_from(result, component, url):
 
   # Discard these results, both the URLs and the report numbesr are correctly
   # listed in other entries
-  if report_id == "OIG-13-48_2013" and report_url == "http://www.oig.dhs.gov/" \
-        "assets/Mgmt/2014/OIG_14-48_Mar14.pdf":
+  if report_id == "OIG-13-48_2013" and report_url == "https://www.oig.dhs.gov" \
+        "/assets/Mgmt/2014/OIG_14-48_Mar14.pdf":
     return
-  if report_id == "OIG-13-61_2013" and report_url == "http://www.oig.dhs.gov/" \
-        "assets/Mgmt/2014/OIG_14-61_Apr14.pdf":
+  if report_id == "OIG-13-61_2013" and report_url == "https://www.oig.dhs.gov" \
+        "/assets/Mgmt/2014/OIG_14-61_Apr14.pdf":
     return
-  if report_id == "OIG-13-86_2013" and report_url == "http://www.oig.dhs.gov/" \
-        "assets/Mgmt/2014/OIG_14-86_Apr14.pdf":
+  if report_id == "OIG-13-86_2013" and report_url == "https://www.oig.dhs.gov" \
+        "/assets/Mgmt/2014/OIG_14-86_Apr14.pdf":
     return
 
   # Fix typos in this report's date and number
-  if report_id == "OIG-12-105_2012" and report_url == "http://www.oig.dhs.gov/"\
-        "assets/Mgmt/OIG_11-105_Aug11.pdf":
+  if report_id == "OIG-12-105_2012" and report_url == "https://www.oig.dhs.gov"\
+        "/assets/Mgmt/OIG_11-105_Aug11.pdf":
     published_on = "2011-08-25"
     report['published_on'] = published_on
     report_id = "OIG-11-105_2011"
@@ -161,7 +161,7 @@ def report_from(result, component, url):
 
 
 def url_for(options, component):
-  base = "http://www.oig.dhs.gov/index.php?option=com_content&view=article"
+  base = "https://www.oig.dhs.gov/index.php?option=com_content&view=article"
   return "%s&id=%s&Itemid=%s" % (base, COMPONENTS[component][0], COMPONENTS[component][1])
 
 
