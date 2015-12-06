@@ -141,9 +141,34 @@ def run(run_method, additional=None):
   except Exception as exception:
     admin.notify(exception)
 
+
 # read options from the command line
 #   e.g. ./inspectors/usps.py --since=2012-03-04 --debug
 #     => {"since": "2012-03-04", "debug": True}
+AVAILABLE_OPTIONS = (
+  "archive",
+  "bulk",
+  "component",
+  "debug",
+  "dry_run",
+  "end",
+  "ig",
+  "limit",
+  "log",
+  "only",
+  "pages",
+  "quick",
+  "report_id",
+  "safe",
+  "since",
+  "skip_downloaded",
+  "start",
+  "topics",
+  "types",
+  "year",
+)
+
+
 def options():
   options = {}
   for arg in sys.argv[1:]:
@@ -152,12 +177,22 @@ def options():
       if "=" in arg:
         key, value = arg.split('=')
       else:
-        key, value = arg, "True"
+        key, value = arg, "true"
 
       key = key.split("--")[1]
-      if value.lower() == 'true': value = True
-      elif value.lower() == 'false': value = False
-      options[key.lower()] = value
+      key = key.lower()
+      value = value.lower()
+
+      if key not in AVAILABLE_OPTIONS:
+        print("Unknown option: \"%s\"\n"
+              "The following options are recognized\n"
+              "  %s"% (key, ", ".join(AVAILABLE_OPTIONS)))
+        sys.exit(1)
+
+      if value == 'true': value = True
+      elif value == 'false': value = False
+      options[key] = value
+
   return options
 
 def configure_logging(options=None):
