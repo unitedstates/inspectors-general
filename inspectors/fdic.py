@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.fdicoig.gov
+# https://www.fdicig.gov
 archive = 1998
 
 # options:
@@ -22,10 +22,10 @@ archive = 1998
 # - The press release "pr-08-24-12a.shtml" is posted twice, once with the wrong
 #   title
 
-REPORTS_URL = "http://www.fdicoig.gov/Search-Engine.asp"
+REPORTS_URL = "https://www.fdicig.gov/Search-Engine.asp"
 
 # Reports with this URL should be designated as missing
-GENERIC_MISSING_REPORT_URL = 'http://www.fdicoig.gov/notice.pdf'
+GENERIC_MISSING_REPORT_URL = 'https://www.fdicig.gov/notice.pdf'
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -74,20 +74,20 @@ def report_from(result, year_range):
     unreleased = True
     report_url = None
 
-  if report_url == "http://www.fdicoig.gov/semi-reports/sar2003mar/" \
+  if report_url == "https://www.fdicig.gov/semi-reports/sar2003mar/" \
         "oigsemi-03-09.pdf":
     # This URL is a typo, results in 404
-    report_url = "http://www.fdicoig.gov/semi-reports/Semi2003OCT/sarOCT03.shtml"
+    report_url = "https://www.fdicig.gov/semi-reports/Semi2003OCT/sarOCT03.shtml"
 
-  if report_url == "http://www.fdicoig.gov/semi-reports/sar2009mar/" \
+  if report_url == "https://www.fdicig.gov/semi-reports/sar2009mar/" \
         "oigsemi-03-09.pdf" and \
         title == "FDIC Office of Inspector General's Semiannual Report to " \
         "the Congress 4/1/2009 - 9/30/2009":
     # This URL points to the wrong report
-    report_url = "http://www.fdicoig.gov/semi-reports/SAROCT09/" \
+    report_url = "https://www.fdicig.gov/semi-reports/SAROCT09/" \
         "OIGSemi_FDIC_09-9-09.pdf"
 
-  if report_url == "http://www.fdicoig.gov/press/pr-08-24-12.shtml" and \
+  if report_url == "https://www.fdicig.gov/press/pr-08-24-12.shtml" and \
         title == "Bank President Imprisoned for Embezzlement":
     # The title and URL don't match, and both were copied from other reports,
     # so we skip this entry
@@ -125,7 +125,7 @@ def report_from(result, year_range):
 
   report = {
     'inspector': "fdic",
-    'inspector_url': "http://www.fdicoig.gov",
+    'inspector_url': "https://www.fdicig.gov",
     'agency': "fdic",
     'agency_name': "Federal Deposit Insurance Corporation",
     'type': report_type,
