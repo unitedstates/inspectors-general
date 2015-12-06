@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://house.gov/content/learn/officers_and_organizations/inspector_general.php
+# https://www.house.gov/content/learn/officers_and_organizations/inspector_general.php
 
 archive = 2008
 
@@ -23,7 +23,7 @@ archive = 2008
 #     would be very helpful.
 #
 
-IG_URL = 'http://house.gov/content/learn/officers_and_organizations/inspector_general.php'
+IG_URL = 'https://www.house.gov/content/learn/officers_and_organizations/inspector_general.php'
 
 REPORT_ID_DATE_EXTRACTION = [
   re.compile('.*(?P<month>\d{2})(?P<day>\d{2})(?P<year_2>\d{2})$'),
