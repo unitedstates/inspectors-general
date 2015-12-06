@@ -147,13 +147,19 @@ def semiannual_report_from(report_url, year_range):
     published_on_text = landing_page.select("div.work-plan-container p strong")[0].text.split("–")[-1].strip()
     published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
-  if not published_on:
-    date_format = '%B%Y'
-    try:
-      published_on = datetime.datetime.strptime(report_id.split("_")[-1], date_format)
-    except ValueError:
-      report_date = report_id.replace("SAR", "").replace("web", "").replace("_", "").split("-")[-1]
-      published_on = datetime.datetime.strptime(report_date, date_format)
+  for date_format in ("%B%Y", "%b%Y"):
+    if not published_on:
+      try:
+        published_on = datetime.datetime.strptime(report_id.split("_")[-1], date_format)
+      except ValueError:
+        pass
+
+    if not published_on:
+      try:
+        report_date = report_id.replace("SAR", "").replace("web", "").replace("_", "").split("-")[-1]
+        published_on = datetime.datetime.strptime(report_date, date_format)
+      except ValueError:
+        pass
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
