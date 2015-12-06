@@ -65,10 +65,12 @@ def report_from(result, year_range):
   title = result.find("em").text.strip()
   landing_url = REPORTS_URL
 
-  unreleased = False
-  try:
-    report_url = urljoin(REPORTS_URL, result.select("a")[-1].get("href").strip())
-  except IndexError:
+  hrefs = [a.get("href").strip() for a in result.find_all("a")]
+  hrefs = [href for href in hrefs if href]
+  if hrefs:
+    unreleased = False
+    report_url = urljoin(REPORTS_URL, hrefs[-1])
+  else:
     unreleased = True
     report_url = None
 
