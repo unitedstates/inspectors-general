@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.cpsc.gov/en/about-cpsc/inspector-general/
+# https://www.cpsc.gov/en/About-CPSC/Inspector-General/
 archive = 2003
 
 # options:
@@ -16,10 +16,9 @@ archive = 2003
 # Notes for IG's web team:
 # - Fix the links for BLACKLIST_REPORT_URLS
 
-REPORTS_URL = "http://www.cpsc.gov/en/about-cpsc/inspector-general/"
+REPORTS_URL = "https://www.cpsc.gov/en/About-CPSC/Inspector-General/"
 
 BLACKLIST_REPORT_URLS = [
-  'http://www.cpsc.gov/Media/Documents/About/OIG/Audits/CPSC-Fiscal-Year-2009-Financial-Statements-released-November-13-2009/',
 ]
 
 def run(options):
@@ -55,7 +54,7 @@ def report_from(result, year_range):
     return
 
   # Follow redirects to get real file names
-  if report_url.startswith("http://www.cpsc.gov/Media/"):
+  if report_url.startswith("https://www.cpsc.gov/Media/"):
     report_url = utils.resolve_redirect(report_url)
 
   # URLs with /PageFiles in them need to use the filename and its
@@ -80,7 +79,7 @@ def report_from(result, year_range):
 
   report = {
     'inspector': 'cpsc',
-    'inspector_url': 'http://www.cpsc.gov/en/about-cpsc/inspector-general/',
+    'inspector_url': 'https://www.cpsc.gov/en/About-CPSC/Inspector-General/',
     'agency': 'cpsc',
     'agency_name': 'Consumer Product Safety Commission',
     'type': report_type,
