@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.archives.gov/oig/
+# https://www.archives.gov/oig/
 archive = 2005
 
 # options:
@@ -17,9 +17,9 @@ archive = 2005
 # Notes for IG's web team:
 # - List more than the most recent peer review
 
-AUDIT_REPORTS_URL = "http://www.archives.gov/oig/reports/audit-reports-{year}.html"
-SEMIANNUAL_REPORTS_URL = "http://www.archives.gov/oig/reports/semiannual-congressional.html"
-PEER_REVIEWS_URL = "http://www.archives.gov/oig/reports/peer-review-reports.html"
+AUDIT_REPORTS_URL = "https://www.archives.gov/oig/reports/audit-reports-{year}.html"
+SEMIANNUAL_REPORTS_URL = "https://www.archives.gov/oig/reports/semiannual-congressional.html"
+PEER_REVIEWS_URL = "https://www.archives.gov/oig/reports/peer-review-reports.html"
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -85,7 +85,7 @@ def audit_report_from(result, landing_url, year, year_range):
 
   report = {
     'inspector': 'archives',
-    'inspector_url': 'http://www.archives.gov/oig/',
+    'inspector_url': 'https://www.archives.gov/oig/',
     'agency': 'archives',
     'agency_name': 'National Archives and Records Administration',
     'report_id': report_id,
@@ -113,7 +113,7 @@ def semiannual_report_from(result, year_range):
 
   report = {
     'inspector': 'archives',
-    'inspector_url': 'http://www.archives.gov/oig/',
+    'inspector_url': 'https://www.archives.gov/oig/',
     'agency': 'archives',
     'agency_name': 'National Archives and Records Administration',
     'report_id': report_id,
@@ -142,7 +142,7 @@ def peer_review_from(result, year_range):
 
   report = {
     'inspector': 'archives',
-    'inspector_url': 'http://www.archives.gov/oig/',
+    'inspector_url': 'https://www.archives.gov/oig/',
     'agency': 'archives',
     'agency_name': 'National Archives and Records Administration',
     'report_id': report_id,

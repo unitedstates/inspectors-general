@@ -39,7 +39,7 @@ def url_for(options, index, year=None):
 def report_from(result):
   report = {
     'inspector': 'amtrak',
-    'inspector_url': 'http://amtrakoig.gov/',
+    'inspector_url': 'https://www.amtrakoig.gov/',
     'agency': 'amtrak',
     'agency_name': 'Amtrak'
   }

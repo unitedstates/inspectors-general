@@ -4,8 +4,11 @@ from utils import utils, inspector
 from datetime import datetime
 import re
 import logging
+from urllib.parse import urljoin
 
 archive = 1979
+
+BASE_URL = "https://www.gsaig.gov/"
 
 def run(options):
   crawl_index(SEMIANNUAL_REPORTS_URL, options)
@@ -48,7 +51,7 @@ def crawl_index(base_url, options, is_meta_index=False):
       if "moreResults" in result.get("class"):
         continue
       if is_meta_index:
-        url = "http://www.gsaig.gov" + result.a.get("href")
+        url = urljoin(BASE_URL, result.a["href"])
         crawl_index(url, options, False)
       else:
         report = report_from(result, base_url)
@@ -72,7 +75,7 @@ def url_for(base_url, page = 1):
 def report_from(result, base_url):
   report = {
     'inspector': 'gsa',
-    'inspector_url': 'http://www.gsaig.gov/',
+    'inspector_url': 'https://www.gsaig.gov/',
     'agency': 'gsa',
     'agency_name': 'General Services Administration'
   }
@@ -112,9 +115,9 @@ def report_from(result, base_url):
 
   js_match = JS_RE.match(url)
   if js_match:
-    url = "http://www.gsaig.gov" + js_match.group(1)
+    url = urljoin(BASE_URL, js_match.group(1))
   elif url.startswith('/'):
-    url = "http://www.gsaig.gov" + url
+    url = urljoin(BASE_URL, url)
 
   report['type'] = report_type
   report['published_on'] = datetime.strftime(date, "%Y-%m-%d")
@@ -132,10 +135,10 @@ def type_for(base_url):
     return "audit"
   return "other"
 
-SEMIANNUAL_REPORTS_URL = "http://www.gsaig.gov/index.cfm/oig-reports/semiannual-reports-to-the-congress/"
-AUDIT_REPORTS_URL = "http://www.gsaig.gov/index.cfm/oig-reports/audit-reports/"
-PEER_REVIEW_REPORTS_URL = "http://www.gsaig.gov/index.cfm/oig-reports/peer-review-reports/"
-MISCELLANEOUS_REPORTS_URL = "http://www.gsaig.gov/index.cfm/oig-reports/miscellaneous-reports/"
+SEMIANNUAL_REPORTS_URL = "https://www.gsaig.gov/index.cfm/oig-reports/semiannual-reports-to-the-congress/"
+AUDIT_REPORTS_URL = "https://www.gsaig.gov/index.cfm/oig-reports/audit-reports/"
+PEER_REVIEW_REPORTS_URL = "https://www.gsaig.gov/index.cfm/oig-reports/peer-review-reports/"
+MISCELLANEOUS_REPORTS_URL = "https://www.gsaig.gov/index.cfm/oig-reports/miscellaneous-reports/"
 
 ID_RE = re.compile("LinkServID=([-0-9A-F]*)&showMeta=")
 JS_RE = re.compile("""javascript:newWin=window.open\('/(\?LinkServID=([-0-9A-F]*)&showMeta=0)','NewWin[0-9]*'\);newWin.focus\(\);void\(0\)""")

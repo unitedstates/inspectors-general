@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://oig.federalreserve.gov/reports/allyearsboardcfpb.htm
+# https://oig.federalreserve.gov/reports/allyearsboardcfpb.htm
 archive = 2007
 
 # options:
@@ -16,9 +16,9 @@ archive = 2007
 # Notes for IG's web team:
 #
 
-BASE_PAGE_URL = "http://oig.federalreserve.gov/"
-REPORTS_URL = "http://oig.federalreserve.gov/reports/allyearsboardcfpb.htm"
-SEMIANNUAL_REPORTS_URL = "http://oig.federalreserve.gov/reports/semiannual-report-to-congress.htm"
+BASE_PAGE_URL = "https://oig.federalreserve.gov/"
+REPORTS_URL = "https://oig.federalreserve.gov/reports/allyearsboardcfpb.htm"
+SEMIANNUAL_REPORTS_URL = "https://oig.federalreserve.gov/reports/semiannual-report-to-congress.htm"
 
 AGENCY_SLUGS = {
   'CFPB': "cfpb",
@@ -37,7 +37,7 @@ UNRELEASED_TEXTS = [
 ]
 UNRELEASED_LANDING_URLS = [
   # It may be an overstatement to call these unreleased.
-  "http://oig.federalreserve.gov/reports/board_FMIC_loss_or_theft_confidential_jun2008.htm",
+  "https://oig.federalreserve.gov/reports/board_FMIC_loss_or_theft_confidential_jun2008.htm",
 ]
 
 REPORT_PUBLISHED_MAPPING = {
@@ -114,7 +114,7 @@ def report_from(result, year_range):
 
   report = {
     'inspector': 'fed',
-    'inspector_url': 'http://oig.federalreserve.gov',
+    'inspector_url': 'https://oig.federalreserve.gov/',
     'agency': AGENCY_SLUGS[agency],
     'agency_name': AGENCY_NAMES[agency],
     'type': 'audit',
@@ -147,13 +147,19 @@ def semiannual_report_from(report_url, year_range):
     published_on_text = landing_page.select("div.work-plan-container p strong")[0].text.split("–")[-1].strip()
     published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
-  if not published_on:
-    date_format = '%B%Y'
-    try:
-      published_on = datetime.datetime.strptime(report_id.split("_")[-1], date_format)
-    except ValueError:
-      report_date = report_id.replace("SAR", "").replace("web", "").replace("_", "").split("-")[-1]
-      published_on = datetime.datetime.strptime(report_date, date_format)
+  for date_format in ("%B%Y", "%b%Y"):
+    if not published_on:
+      try:
+        published_on = datetime.datetime.strptime(report_id.split("_")[-1], date_format)
+      except ValueError:
+        pass
+
+    if not published_on:
+      try:
+        report_date = report_id.replace("SAR", "").replace("web", "").replace("_", "").split("-")[-1]
+        published_on = datetime.datetime.strptime(report_date, date_format)
+      except ValueError:
+        pass
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -163,7 +169,7 @@ def semiannual_report_from(report_url, year_range):
 
   return {
     'inspector': 'fed',
-    'inspector_url': 'http://oig.federalreserve.gov',
+    'inspector_url': 'https://oig.federalreserve.gov/',
     'agency': AGENCY_SLUGS['Board'],
     'agency_name': AGENCY_NAMES['Board'],
     'type': 'semiannual_report',

@@ -124,6 +124,8 @@ WHITELIST_SHA1_DOMAINS = (
   "https://www.sigar.mil/",
   "http://www.sigar.mil/",
   "https://oig.nasa.gov/",
+  "https://www.gsaig.gov/",
+  "https://www.house.gov/",
 )
 
 # will pass correct options on to individual scrapers whether
