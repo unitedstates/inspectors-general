@@ -108,15 +108,14 @@ scraper.mount("https://www.sba.gov/", Tls1HttpAdapter())
 # The IGnet and FHFA OIG websites require extra certificate downloads, as of
 # 10/2/2015
 WHITELIST_INSECURE_DOMAINS = (
-  "https://www.ignet.gov/",
-  "https://origin.www.fhfaoig.gov/",
+  "https://www.ignet.gov/",  # incomplete chain as of 1/25/2015
+  "https://www.ncua.gov/",  # incomplete chain as of 12/5/2015
 
   # The following domains will 301/302 redirect to the above domains, so
   # validate=False is needed for these cases as well
   "http://www.ignet.gov/",
   "http://ignet.gov/",
-  "http://www.fhfaoig.gov/",
-  "http://fhfaoig.gov/",
+  "http://www.ncua.gov/",
 )
 WHITELIST_SHA1_DOMAINS = (
   "https://www.sba.gov/",

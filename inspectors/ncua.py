@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.ncua.gov/About/Pages/inspector-general.aspx
+# https://www.ncua.gov/About/Pages/inspector-general.aspx
 archive = 1999
 
 # options:
@@ -17,11 +17,11 @@ archive = 1999
 # Notes for IG's web team:
 #
 
-HOMEPAGE_URL = "http://www.ncua.gov/About/Pages/inspector-general.aspx"
-AUDIT_REPORTS_URL = "http://www.ncua.gov/About/Pages/inspector-general/audit-reports/{year}.aspx"
-SEMIANNUAL_REPORTS_URL = "http://www.ncua.gov/About/Pages/inspector-general/semiannual-reports.aspx"
-OTHER_REPORTS_URL = "http://www.ncua.gov/About/Pages/inspector-general/other-reports.aspx"
-PLANS_URL = "http://www.ncua.gov/About/Pages/inspector-general/performance-strategic-plans.aspx"
+HOMEPAGE_URL = "https://www.ncua.gov/About/Pages/inspector-general.aspx"
+AUDIT_REPORTS_URL = "https://www.ncua.gov/About/Pages/inspector-general/audit-reports/{year}.aspx"
+SEMIANNUAL_REPORTS_URL = "https://www.ncua.gov/About/Pages/inspector-general/semiannual-reports.aspx"
+OTHER_REPORTS_URL = "https://www.ncua.gov/About/Pages/inspector-general/other-reports.aspx"
+PLANS_URL = "https://www.ncua.gov/About/Pages/inspector-general/performance-strategic-plans.aspx"
 # Note: There is no need to scrape the "Material Loss Reviews" page, since
 # these reports are included with the audit reports for each year.
 
