@@ -276,7 +276,7 @@ def download_report(report):
   else:
     return None
 
-FILE_EXTENSIONS_HTML = ("htm", "html", "cfm", "php", "asp", "aspx")
+FILE_EXTENSIONS_HTML = ("htm", "html", "shtml", "cfm", "php", "asp", "aspx")
 
 def extract_metadata(report):
   report_path = path_for(report, report['file_type'])
