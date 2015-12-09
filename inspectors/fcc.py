@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://transition.fcc.gov/oig/oigreportsaudit.html
+# https://transition.fcc.gov/oig/oigreportsaudit.html
 archive = 1994
 
 # options:
@@ -15,9 +15,9 @@ archive = 1994
 #
 # Notes for IG's web team:
 
-AUDIT_REPORTS_URL = "http://transition.fcc.gov/oig/oigreportsaudit.html"
-SEMIANNUAL_REPORTS_URL = "http://transition.fcc.gov/oig/oigreportssemiannual.html"
-OTHER_REPORTS_URL = "http://transition.fcc.gov/oig/oigreportsletters.html"
+AUDIT_REPORTS_URL = "https://transition.fcc.gov/oig/oigreportsaudit.html"
+SEMIANNUAL_REPORTS_URL = "https://transition.fcc.gov/oig/oigreportssemiannual.html"
+OTHER_REPORTS_URL = "https://transition.fcc.gov/oig/oigreportsletters.html"
 
 REPORT_URLS = {
   "audit": AUDIT_REPORTS_URL,
@@ -70,7 +70,7 @@ def report_from(result, page_url, report_type, year_range):
 
   report = {
     'inspector': 'fcc',
-    'inspector_url': 'http://fcc.gov/oig/',
+    'inspector_url': 'https://fcc.gov/oig/',
     'agency': 'fcc',
     'agency_name': "Federal Communications Commission",
     'type': report_type,

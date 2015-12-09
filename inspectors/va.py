@@ -3,11 +3,12 @@
 import datetime
 import logging
 import os
+import re
 import time
 
 from utils import utils, inspector
 
-# http://www.va.gov/oig/apps/info/OversightReports.aspx
+# https://www.va.gov/oig/apps/info/OversightReports.aspx
 archive = 1996
 
 # options:
@@ -16,8 +17,8 @@ archive = 1996
 # Notes for IG's web team:
 #
 
-REPORTS_URL = "http://www.va.gov/oig/apps/info/OversightReports.aspx"
-SEMIANNUAL_REPORTS_URL = "http://www.va.gov/oig/publications/semiannual-reports.asp"
+REPORTS_URL = "https://www.va.gov/oig/apps/info/OversightReports.aspx"
+SEMIANNUAL_REPORTS_URL = "https://www.va.gov/oig/publications/semiannual-reports.asp"
 
 AGENCY_SLUG_MAP = {
   "Department of Veterans Affairs": "VA",
@@ -93,6 +94,8 @@ def report_from(result, year_range):
   link = result.select("a")[0]
   title = link.text
   landing_url = result.select("p.summary a")[0].get('href')
+  landing_url = re.sub("^http://www.va.gov/", "https://www.va.gov/",
+                       landing_url)
   published_on_text = result.select("p.summary")[0].text.split("|")[0].strip()
   published_on = datetime.datetime.strptime(published_on_text, "%m/%d/%Y")
 
@@ -103,7 +106,7 @@ def report_from(result, year_range):
   # This landing page is a copy of another one, except it has a broken
   # report link.
   if landing_url == \
-        'http://www.va.gov/oig/publications/report-summary.asp?id=2491':
+        'https://www.va.gov/oig/publications/report-summary.asp?id=2491':
     return
 
   # These pages occassionally return text indicating there was a temporary
@@ -142,11 +145,11 @@ def report_from(result, year_range):
 
   # Fix a typo
   if report_id == "11-04130-192" and \
-      report_url == "http://www.va.gov/oig/pubs/VAOIG-11-04130-192.pdf":
-    report_url = "http://www.va.gov/oig/pubs/VAOIG-12-04130-192.pdf"
+      report_url == "https://www.va.gov/oig/pubs/VAOIG-11-04130-192.pdf":
+    report_url = "https://www.va.gov/oig/pubs/VAOIG-12-04130-192.pdf"
   elif report_id == "15-00138-392" and \
-      report_url == "http://www.va.gov/oig/pubs/VAOIG-15-000138-392.pdf":
-    report_url = "http://www.va.gov/oig/pubs/VAOIG-15-00138-392.pdf"
+      report_url == "https://www.va.gov/oig/pubs/VAOIG-15-000138-392.pdf":
+    report_url = "https://www.va.gov/oig/pubs/VAOIG-15-00138-392.pdf"
 
   agency_slug = None
   for name in AGENCY_SLUG_MAP:
@@ -158,7 +161,7 @@ def report_from(result, year_range):
   unreleased = (release_type == "Restricted")
   report = {
     'inspector': 'va',
-    'inspector_url': 'http://www.va.gov/oig',
+    'inspector_url': 'https://www.va.gov/oig',
     'agency': agency_slug,
     'agency_name': "Department of Veterans Affairs",
     'report_id': report_id,
@@ -194,7 +197,7 @@ def semiannual_report_from(result, year_range):
 
   report = {
     'inspector': 'va',
-    'inspector_url': 'http://www.va.gov/oig',
+    'inspector_url': 'https://www.va.gov/oig',
     'agency': 'VA',
     'agency_name': "Department of Veterans Affairs",
     'type': 'semiannual_report',

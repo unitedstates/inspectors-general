@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.si.edu/OIG
+# https://www.si.edu/OIG
 archive = 2003
 
 # options:
@@ -29,30 +29,30 @@ archive = 2003
 # consistent report ids across pages. We only grab reports the first time a
 # a given report id is seen.
 
-RSS_URL = "http://www.si.edu/Content/OIG/Misc/OIG-RSS.xml"
-RECENT_AUDITS_URL = "http://www.si.edu/OIG/Audits"
-AUDIT_ARCHIVE_URL = "http://www.si.edu/oig/Archive"
-OTHER_REPORTS_URl = "http://www.si.edu/OIG/ReportsToCongress"
+RSS_URL = "https://www.si.edu/Content/OIG/Misc/OIG-RSS.xml"
+RECENT_AUDITS_URL = "https://www.si.edu/OIG/Audits"
+AUDIT_ARCHIVE_URL = "https://www.si.edu/oig/Archive"
+OTHER_REPORTS_URl = "https://www.si.edu/OIG/ReportsToCongress"
 
 RSS_BROKEN_LINKS = {
   "http://www.si.edu/Content/OIG/Misc/Peer_Review_09-21-2011.pdf":
-    "http://www.si.edu/Content/OIG/Misc/Peer_Review_09-21-11.pdf",
+    "https://www.si.edu/Content/OIG/Misc/Peer_Review_09-21-11.pdf",
   "http://www.si.edu/oig/RecoveryAct.htm":
-    "http://www.si.edu/OIG/Recovery",
+    "https://www.si.edu/OIG/Recovery",
   "http://www.si.edu/oig/AuditReports/UnderstandingAudits.pdf":
-    "http://www.si.edu/Content/OIG/Misc/UnderstandingAudits.pdf",
+    "https://www.si.edu/Content/OIG/Misc/UnderstandingAudits.pdf",
   "http://www.si.edu/oig/AuditReports/A-0907-FSA-Oversight.pdf":
-    "http://www.si.edu/Content/OIG/Audits/2010/A-09-07.pdf",
+    "https://www.si.edu/Content/OIG/Audits/2010/A-09-07.pdf",
   "http://www.si.edu/oig/ARRA_Reports/M-10--04-1.pdf":
-    "http://www.si.edu/Content/OIG/Audits/M-10-04-1.pdf",
+    "https://www.si.edu/Content/OIG/Audits/M-10-04-1.pdf",
   "http://www.si.edu/oig/AuditReports/SIIG_Testimony_121009.pdf":
-    "http://www.si.edu/Content/OIG/Testimony/SIIG_Testimony_121009.pdf",
+    "https://www.si.edu/Content/OIG/Testimony/SIIG_Testimony_121009.pdf",
   "http://www.si.edu/oig/AuditReports/IBA-0902.pdf":
-    "http://www.si.edu/Content/OIG/Audits/2009/IBA-09-02.pdf",
+    "https://www.si.edu/Content/OIG/Audits/2009/IBA-09-02.pdf",
   "http://www.si.edu/oig/AuditReports/IBA-0808.pdf":
-    "http://www.si.edu/Content/OIG/Audits/2009/IBA-08-08.pdf",
+    "https://www.si.edu/Content/OIG/Audits/2009/IBA-08-08.pdf",
   "http://www.si.edu/oig/AuditReports/A-08-05-FSA-Oversight-Letter.pdf":
-    "http://www.si.edu/Content/OIG/Audits/2009/A-08-05.pdf",
+    "https://www.si.edu/Content/OIG/Audits/2009/A-08-05.pdf",
 }
 
 report_ids_seen = set()
@@ -159,7 +159,7 @@ def rss_report_from(result, year_range):
 
   report = {
     'inspector': 'smithsonian',
-    'inspector_url': 'http://www.si.edu/OIG',
+    'inspector_url': 'https://www.si.edu/OIG',
     'agency': 'smithsonian',
     'agency_name': 'Smithsonian Institution',
     'type': report_type,
@@ -235,7 +235,7 @@ def report_from(result, year_range):
 
   report = {
     'inspector': 'smithsonian',
-    'inspector_url': 'http://www.si.edu/OIG',
+    'inspector_url': 'https://www.si.edu/OIG',
     'agency': 'smithsonian',
     'agency_name': 'Smithsonian Institution',
     'type': report_type,
