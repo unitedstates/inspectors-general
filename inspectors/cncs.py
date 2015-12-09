@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.cncsoig.gov
+# https://www.cncsoig.gov
 archive = 1995
 
 # options:
@@ -16,18 +16,18 @@ archive = 1995
 #
 
 REPORTS_URLS = [
-  ('http://www.cncsoig.gov/news/semi-annual-reports', 'semiannual_report'),
-  ('http://www.cncsoig.gov/news/audit-reports', 'audit'),
-  ('http://www.cncsoig.gov/operations/investigations', 'investigation'),
-  ('http://www.cncsoig.gov/news/archive', 'investigation'),
-  ('http://www.cncsoig.gov/news/closed-cases', 'case'),
+  ('https://www.cncsoig.gov/news/semi-annual-reports', 'semiannual_report'),
+  ('https://www.cncsoig.gov/news/audit-reports', 'audit'),
+  ('https://www.cncsoig.gov/operations/investigations', 'investigation'),
+  ('https://www.cncsoig.gov/news/archive', 'investigation'),
+  ('https://www.cncsoig.gov/news/closed-cases', 'case'),
 ]
 
 # some hardcoded fields for a single peer review
 PEER_REVIEW_2012 = {
   "report_id": "fbrinvestpeer2012_1",
-  "landing_url": "http://www.cncsoig.gov/2012-investigations-peer-review",
-  "url": "http://www.cncsoig.gov/sites/default/files/peer_review.pdf",
+  "landing_url": "https://www.cncsoig.gov/2012-investigations-peer-review",
+  "url": "https://www.cncsoig.gov/sites/default/files/peer_review.pdf",
   "published_on": datetime.datetime(2012, 9, 19),
   "title": "Quality Assessment Review of the Investigative Operations of the Office of Inspector General for the Corporation for National and Community Service Investigative Operations",
   "summary": "Review of the system of internal safeguards and management procedures for the investigative functions of the Office of Inspector General (OIG) for the Corporation for National and Community Service (CNCS) in effect during the period May 1, 2011, through May 18, 2012. Our review was conducted in conformity with the Quality Standards for Investigations and the Quality Assessment Review Guidelines for Investigative Operations of Federal Offices of Inspector General established by the Council of the Inspectors General on Integrity and Efficiency (CIGIE) and the Attorney General's Guidelines for Office of Inspectors General with Statutory Law Enforcement Authority, as applicable."
@@ -98,9 +98,9 @@ def report_from(result, reports_page, report_type, year_range):
     landing_url = urljoin(reports_page, landing_a['href'])
     long_title = landing_a.text.strip()
 
-    # http://www.cncsoig.gov/news-entry/97-09 and
-    # http://www.cncsoig.gov/news-entry/97-09-0 are duplicates of each other
-    if landing_url == "http://www.cncsoig.gov/news-entry/97-09-0":
+    # https://www.cncsoig.gov/news-entry/97-09 and
+    # https://www.cncsoig.gov/news-entry/97-09-0 are duplicates of each other
+    if landing_url == "https://www.cncsoig.gov/news-entry/97-09-0":
       return
 
     # PDF URL and summary are on the report's landing page
@@ -182,7 +182,7 @@ def report_from(result, reports_page, report_type, year_range):
 
   report = {
     'inspector': 'cncs',
-    'inspector_url': 'http://www.cncsoig.gov',
+    'inspector_url': 'https://www.cncsoig.gov',
     'agency': 'cncs',
     'agency_name': 'Corporation for National and Community Service',
     'report_id': report_id,
@@ -209,7 +209,7 @@ def report_from(result, reports_page, report_type, year_range):
 def do_peer_review():
   return {
     'inspector': 'cncs',
-    'inspector_url': 'http://www.cncsoig.gov',
+    'inspector_url': 'https://www.cncsoig.gov',
     'agency': 'cncs',
     'agency_name': 'Corporation for National and Community Service',
     'type': 'peer_review',
