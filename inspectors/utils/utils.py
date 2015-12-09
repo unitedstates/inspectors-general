@@ -110,6 +110,7 @@ scraper.mount("https://www.sba.gov/", Tls1HttpAdapter())
 WHITELIST_INSECURE_DOMAINS = (
   "https://www.ignet.gov/",  # incomplete chain as of 1/25/2015
   "https://www.va.gov/",  # incomplete chain as of 12/6/2015
+  "https://transition.fcc.gov/",  # incomplete chain as of 12/6/2015
 
   # The following domains will 301/302 redirect to the above domains, so
   # validate=False is needed for these cases as well
