@@ -234,21 +234,28 @@ def report_from(result, landing_url, report_type, year_range, year=None):
   elif link_text == "June 2015":
     published_on = datetime.datetime(2015, 6, 1)
   else:
+    published_on_text = None
     try:
       published_on_text = re.search('(\d+/\d+/\d+)', title).groups()[0]
     except AttributeError:
+      pass
+    if not published_on_text:
       try:
         published_on_text = re.search('(\w+ \d+, \d+)', title).groups()[0]
       except AttributeError:
-        try:
-          published_on_text = re.search('(\d+/\d+)', title).groups()[0]
-        except AttributeError:
-          if year is None:
-            raise Exception("No date or year was detected for %s (%s)" %
-                            (report_id, title))
-          # Since we only have the year, set this to Nov 1st of that year
-          published_on = datetime.datetime(year, 11, 1)
-          estimated_date = True
+        pass
+    if not published_on_text:
+      try:
+        published_on_text = re.search('(\d+/\d+)', title).groups()[0]
+      except AttributeError:
+        pass
+    if not published_on_text:
+      if year is None:
+        raise Exception("No date or year was detected for %s (%s)" %
+                        (report_id, title))
+      # Since we only have the year, set this to Nov 1st of that year
+      published_on = datetime.datetime(year, 11, 1)
+      estimated_date = True
 
     if not published_on:
       datetime_formats = [
