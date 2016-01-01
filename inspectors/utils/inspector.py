@@ -264,7 +264,7 @@ def slugify(report_id):
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])
-  binary = (report['file_type'].lower() in ('pdf', 'doc', 'ppt', 'docx'))
+  binary = (report['file_type'].lower() in ('pdf', 'doc', 'ppt', 'docx', 'xls'))
 
   result = utils.download(
     report['url'],
