@@ -377,6 +377,11 @@ def year_range(options, archive):
     year_range = list(range(since, this_year + 1))
   elif year:
     year_range = list(range(year, year + 1))
+  elif datetime.datetime.now().month == 1:
+    # During January, default to crawling for the current year and last year.
+    # This overlap ensures more reports are caught as they are posted, and
+    # cuts down on spurious "no reports found" errors.
+    year_range = list(range(this_year - 1, this_year + 1))
   else:
     year_range = list(range(this_year, this_year + 1))
 
