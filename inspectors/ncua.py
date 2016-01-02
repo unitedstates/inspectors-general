@@ -28,6 +28,7 @@ PLANS_URL = "https://www.ncua.gov/About/Pages/inspector-general/performance-stra
 
 def run(options):
   year_range = inspector.year_range(options, archive)
+  results_flag = False
 
   # Pull the audit reports
   for year in year_range:
@@ -35,13 +36,13 @@ def run(options):
       continue
     doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL.format(year=year))
 
-    # if it's a 404 page (200 response code), raise an error
     if doc == None:
-      raise Exception("Failed to fetch NCUA audit reports for %d" % year)
+      # Next year's audit page may not be published yet
+      continue
 
     results = doc.select("div.mainCenter table tr")
-    if not results:
-      raise inspector.NoReportsFoundError("NCUA (%d)" % year)
+    if results:
+      results_flag = True
     for index, result in enumerate(results):
       if not index:
         # Skip the header row
@@ -49,6 +50,9 @@ def run(options):
       report = report_from(result, report_type='audit', year_range=year_range)
       if report:
         inspector.save_report(report)
+
+  if not results_flag:
+    raise inspector.NoReportsFoundError("NCUA (audit reports)")
 
   # Pull the other reports
   doc = utils.beautifulsoup_from_url(OTHER_REPORTS_URL)
