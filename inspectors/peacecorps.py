@@ -44,6 +44,7 @@ REPORT_PUBLISHED_MAPPING = {
   "Safety_and_security_weaknesses_in PC_Cameroon": datetime.datetime(2012, 7, 31),
   "Peace_Corps_Gambia_Grant_Activities": datetime.datetime(2010, 5, 14),
   "OIG_Investigations_have_Disclosed_Improper_Vehicle_Disposal_Practices_and_Vehicle_Sales_that_do_not_generate_Fair_Market_Returns": datetime.datetime(2010, 3, 30),
+  "management-performance-challenges-fy2015": datetime.datetime(2015, 12, 3),
 }
 
 REPORT_TYPE_MAP = {

@@ -51,6 +51,8 @@ AGENCY_NAMES = {
   "oig": "Office of the Inspector General",
   "ots": "The Office of Thrift",
   "restore": "The RESTORE Act",
+  "sblf": "Small Business Lending Fund",
+  "ssbci": "State Small Business Credit Initiative",
   "tfi": "Office of Terrorism and Financial Intelligence",
   "ttb": "The Alcohol and Tobacco Tax and Trade Bureau",
   "tff": "Treasury Forfeiture Fund",
@@ -89,6 +91,10 @@ REPORT_PUBLISHED_MAP = {
 
 def run(options):
   year_range = inspector.year_range(options, archive)
+  if datetime.datetime.now().month >= 10:
+    # October, November, and December fall into the next fiscal year
+    # Add next year to year_range to compensate
+    year_range.append(max(year_range) + 1)
 
   # Pull the audit reports
   for year in year_range:
@@ -183,6 +189,10 @@ def audit_report_from(result, page_url, year_range):
       "July 31, 2014":
     # This one is missing its ID on the index
     report_id = "OIG-14-049"
+    title = report_summary
+  elif report_summary == "Correspondence related to the resolution of audit recommendation 1 OIG-16-001 OFAC Libyan Sanctions Case Study (Please read this correspondence in conjunction with the report.)":
+    # Need to make up a report_id for this supplemental document
+    report_id = "OIG-16-001-resolution"
     title = report_summary
   else:
     raise Exception("Couldn't parse report ID: %s" % repr(report_summary))

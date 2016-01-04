@@ -264,7 +264,7 @@ def slugify(report_id):
 
 def download_report(report):
   report_path = path_for(report, report['file_type'])
-  binary = (report['file_type'].lower() in ('pdf', 'doc', 'ppt', 'docx'))
+  binary = (report['file_type'].lower() in ('pdf', 'doc', 'ppt', 'docx', 'xls'))
 
   result = utils.download(
     report['url'],
@@ -377,6 +377,11 @@ def year_range(options, archive):
     year_range = list(range(since, this_year + 1))
   elif year:
     year_range = list(range(year, year + 1))
+  elif datetime.datetime.now().month == 1:
+    # During January, default to crawling for the current year and last year.
+    # This overlap ensures more reports are caught as they are posted, and
+    # cuts down on spurious "no reports found" errors.
+    year_range = list(range(this_year - 1, this_year + 1))
   else:
     year_range = list(range(this_year, this_year + 1))
 

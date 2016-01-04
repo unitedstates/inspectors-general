@@ -34,6 +34,10 @@ MISSING_REPORT_IDS = [
 
 def run(options):
   year_range = inspector.year_range(options, archive)
+  if datetime.datetime.now().month >= 10:
+    # October, November, and December fall into the next fiscal year
+    # Add next year to year_range to compensate
+    year_range.append(max(year_range) + 1)
 
   # Pull the audit reports
   for year in year_range:
@@ -83,9 +87,13 @@ def report_from(javascript_attributes, format_slug, year, year_range, report_typ
   result_pieces = [field.strip() for field in parse_fields(javascript_attributes)]
   report_id = result_pieces[0]
   title = result_pieces[1]
-  published_on_text = result_pieces[2]
+  published_on_text = result_pieces[2].replace('"', '')
 
-  published_on = datetime.datetime.strptime(published_on_text.replace('"', ''), '%Y%m%d')
+  if published_on_text == "201510011":
+    # Fix typo in date
+    published_on_text = "20151001"
+
+  published_on = datetime.datetime.strptime(published_on_text, '%Y%m%d')
 
   # This formatting is described more in https://www.treasury.gov/tigta/oa_auditreports_updated_fy14.js
   report_url = "https://www.treasury.gov/tigta/{}/{}reports/{}fr.pdf".format(format_slug, year, report_id)

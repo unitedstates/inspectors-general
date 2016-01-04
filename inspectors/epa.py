@@ -11,7 +11,7 @@ archive = 1996
 # options:
 #   standard since/year options for a year range to fetch from.
 
-RE_YEAR = re.compile(r'\d{4} Reports')
+RE_YEAR = re.compile(r'\d{4} (?:OIG )?Reports')
 RE_DATE = re.compile('(?:(?:Jan|January|JANUARY|Feb|February|FEBRUARY|Mar|'
                      'March|MARCH|Apr|April|APRIL|May|MAY|June|JUNE|July|JULY|'
                      'Aug|August|AUGUST|Sept|September|SEPTEMBER|'
@@ -250,7 +250,22 @@ def extract_url(td):
       url = pdf_links[0]['href']
   return url
 
+
+_latest_year = None
+
+
 def years_to_index_urls(year_range):
+  global _latest_year
+  if _latest_year is None:
+    doc = utils.beautifulsoup_from_url(REPORTS_LATEST_URL)
+    for ul in doc.select("ul.pipeline"):
+      if ul.li and ul.li.a:
+        link_text = ul.li.a.text.strip()
+        if link_text.isdigit():
+          _latest_year = int(link_text)
+  if _latest_year is None:
+    raise Exception("Could not find \"Reports by Year\" links")
+
   urls = set([REPORTS_LATEST_URL])
   for year in year_range:
     if year <= 2001:
@@ -261,7 +276,7 @@ def years_to_index_urls(year_range):
       urls.add(REPORTS_2008_2005_URL)
     elif year <= 2012:
       urls.add(REPORTS_2012_2009_URL)
-    elif year == datetime.date.today().year:
+    elif year >= _latest_year:
       pass
     else:
       urls.add(REPORTS_YEAR_URL_FORMAT % year)

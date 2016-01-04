@@ -23,6 +23,7 @@ PEER_REVIEWS_URL = "https://www.archives.gov/oig/reports/peer-review-reports.htm
 
 def run(options):
   year_range = inspector.year_range(options, archive)
+  results_flag = False
 
   # Pull the audit reports
   for year in year_range:
@@ -30,13 +31,19 @@ def run(options):
       continue
     url = AUDIT_REPORTS_URL.format(year=year)
     doc = utils.beautifulsoup_from_url(url)
+    if not doc:
+      # Maybe page for current year hasn't been created yet
+      continue
     results = doc.select("div#content li")
-    if not results:
-      raise inspector.NoReportsFoundError("National Archives and Records Administration audit reports")
+    if results:
+      results_flag = True
     for result in results:
       report = audit_report_from(result, url, year, year_range)
       if report:
         inspector.save_report(report)
+
+  if not results_flag:
+    raise inspector.NoReportsFoundError("National Archives and Records Administration audit reports")
 
   # Pull the semiannual reports
   doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)

@@ -40,15 +40,17 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
+  results_flag = False
   for year in year_range:
     report_type = 'audit'
     for page in range(0, ALL_PAGES):
       reports_found = reports_from_page(AUDIT_REPORTS_URL, page, report_type, year_range, year)
       if not reports_found:
-        if page == 0:
-          raise inspector.NoReportsFoundError("Social Security Administration (%d)" % year)
-        else:
-          break
+        break
+      else:
+        results_flag = True
+  if not results_flag:
+    raise inspector.NoReportsFoundError("Social Security Administration (audit)")
 
   # Pull the other reports
   for report_type, report_format in OTHER_REPORT_URLS.items():

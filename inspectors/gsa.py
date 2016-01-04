@@ -4,19 +4,28 @@ from utils import utils, inspector
 from datetime import datetime
 import re
 import logging
-from urllib.parse import urljoin
+from urllib.parse import urljoin, unquote_plus
+import os
 
 archive = 1979
 
-BASE_URL = "https://www.gsaig.gov/"
+INDEX_URLS = [
+  "https://www.gsaig.gov/Audit-Reports",
+  "https://www.gsaig.gov/Testimony",
+  "https://www.gsaig.gov/FOIA-Reading-Room",
+  "https://www.gsaig.gov/Recovery-Act-Reports",
+  "https://www.gsaig.gov/Other-Documents",
+  "https://www.gsaig.gov/Presentations",
+  "https://www.gsaig.gov/Semiannual-Reports-to-the-Congre",
+  "https://www.gsaig.gov/Inspection-and-Evaluation-Report",
+  "https://www.gsaig.gov/Peer-Review-Reports",
+]
 
 def run(options):
-  crawl_index(SEMIANNUAL_REPORTS_URL, options)
-  crawl_index(AUDIT_REPORTS_URL, options, True)
-  crawl_index(PEER_REVIEW_REPORTS_URL, options)
-  crawl_index(MISCELLANEOUS_REPORTS_URL, options)
+  for url in INDEX_URLS:
+    crawl_index(url, options)
 
-def crawl_index(base_url, options, is_meta_index=False):
+def crawl_index(base_url, options):
   year_range = inspector.year_range(options, archive)
   max_pages = options.get('pages')
   if max_pages:
@@ -32,7 +41,7 @@ def crawl_index(base_url, options, is_meta_index=False):
 
     next_page = page + 1
     found_next_page = False
-    page_links = doc.select("dl.moreResults a")
+    page_links = doc.select("ul.pagination li a")
     for page_link in page_links:
       if page_link.text == str(next_page):
         found_next_page = True
@@ -42,35 +51,30 @@ def crawl_index(base_url, options, is_meta_index=False):
     if max_pages and next_page > max_pages:
       done = True
 
-    results = doc.select("div#svPortal dl")
+    results = doc.select(".views-row")
     if not results and page == 1:
-      temp_text = doc.select("div#svPortal")[0].text.strip()
-      if temp_text != "There is currently no content available.":
-        raise inspector.NoReportsFoundError("Government Services Administration (%s)" % url)
+      raise inspector.NoReportsFoundError("Government Services Administration (%s)" % url)
     for result in results:
-      if "moreResults" in result.get("class"):
+      report = report_from(result, base_url)
+      if not report:
         continue
-      if is_meta_index:
-        url = urljoin(BASE_URL, result.a["href"])
-        crawl_index(url, options, False)
-      else:
-        report = report_from(result, base_url)
-        year = int(report['published_on'][:4])
 
-        if only_id and (report['report_id'] != only_id):
-          continue
+      year = int(report['published_on'][:4])
 
-        if year not in year_range:
-          continue
+      if only_id and (report['report_id'] != only_id):
+        continue
 
-        inspector.save_report(report)
+      if year not in year_range:
+        continue
+
+      inspector.save_report(report)
 
     page = next_page
     if not done:
       logging.info('Moving to next page (%d)' % page)
 
 def url_for(base_url, page = 1):
-  return "%s?startRow=%d" % (base_url, page * 10 - 9)
+  return "%s?page=%d" % (base_url, page - 1)
 
 def report_from(result, base_url):
   report = {
@@ -80,88 +84,94 @@ def report_from(result, base_url):
     'agency_name': 'General Services Administration'
   }
 
-  link = result.a
-  title = link.text
-  url = link.get('href')
+  title_h4 = result.find("div", property="dc:title").h4
+  title = inspector.sanitize(title_h4.text)
+  if title_h4.a:
+    report['landing_url'] = urljoin(base_url, title_h4.a["href"])
+  else:
+    report['landing_url'] = base_url
 
-  date_holders = result.find_all("dt", class_="releaseDate")
-  if len(date_holders) > 0:
-    published_date = date_holders[0].text
+  description = result.find("div", class_="field-name-field-description")
+  if description:
+    report['summary'] = inspector.sanitize(description.text)
+
+  unreleased = False
+  url = None
+  file_section = result.find("span", class_="file")
+  if file_section:
+    file_links = file_section.find_all("a")
+    if len(file_links) > 1:
+      raise Exception("Multiple file links for %s" % title)
+    link = file_links[0]
+    url = link.get('href')
+    url = urljoin(base_url, url)
+
+    if url == "https://www.gsaig.gov/sites/default/files/recovery-reports/FINAL%20TESTIMONY%20FOR%20APRIL%2021.pdf":
+      # This testimony is also posted in the testimony section, so we can skip
+      # the one posted under recovery reports
+      return
+
+    report_id = os.path.splitext(os.path.basename(unquote_plus(url)))[0]
+    report_id = re.sub('[-/\\s]+', '-', inspector.sanitize(report_id))
+  else:
+    unreleased = report['unreleased'] = True
+    report_id = re.sub('[-/\\s]+', '-', inspector.sanitize(title))
+
+  published_date_div = result.find("div", class_="field-name-post-date")
+  if published_date_div:
+    published_date = published_date_div.text
     date = datetime.strptime(published_date, "%B %d, %Y")
-  elif title in HARDCODED_DATES:
-    # This is an ugly solution, but there's no date information on the web page.
-    # The next best solution would be to grab the PDF file and pull the file
-    # creation date out of its metadata.
-    published_date = HARDCODED_DATES[title]
-    date = datetime.strptime(published_date, "%B %d, %Y")
-  elif base_url == SEMIANNUAL_REPORTS_URL:
+  else:
     # get last match
     match = None
     for match in DATE_RE.finditer(title):
       pass
     published_date = match.group(0)
     date = datetime.strptime(published_date, "%B %d, %Y")
-  else:
-    match = DATE_RE_MM_DD_YY.search(result.text)
-    if match:
-      published_date = match.group(0)
-      date = datetime.strptime(published_date, "%m/%d/%y")
-    else:
-      raise Exception("Couldn't find date for %s" % title)
-
-  id = ID_RE.search(url).group(1)
 
   report_type = type_for(base_url)
 
-  js_match = JS_RE.match(url)
-  if js_match:
-    url = urljoin(BASE_URL, js_match.group(1))
-  elif url.startswith('/'):
-    url = urljoin(BASE_URL, url)
-
   report['type'] = report_type
   report['published_on'] = datetime.strftime(date, "%Y-%m-%d")
-  report['url'] = url
-  report['report_id'] = id
+  if not unreleased:
+    report['url'] = url
+    if url.lower().endswith(".pdf"):
+      report['file_type'] = "pdf"
+    elif url.lower().endswith(".doc"):
+      report['file_type'] = "doc"
+    elif url.lower().endswith(".xls"):
+      report['file_type'] = "xls"
+    elif url.lower().endswith(".ppt"):
+      report['file_type'] = "ppt"
+    else:
+      raise Exception("Unexpected filetype for %s" % url)
+  report['report_id'] = report_id
   report['title'] = title.strip()
-  report['file_type'] = 'pdf'
 
   return report
 
 def type_for(base_url):
-  if base_url.find('special-reports') != -1:
+  if "Audit-Reports" in base_url:
     return "audit"
-  if base_url.find('audit-reports') != -1:
+  if "Testimony" in base_url:
+    return "testimony"
+  if "FOIA-Reading-Room" in base_url:
+    return "other"
+  if "Recovery-Act-Reports" in base_url:
     return "audit"
-  return "other"
+  if "Other-Documents" in base_url:
+    return "other"
+  if "Presentations" in base_url:
+    return "other"
+  if "Semiannual-Reports-to-the-Congre" in base_url:
+    return "semiannual_report"
+  if "Inspection-and-Evaluation-Report" in base_url:
+    return "inspection"
+  if "Peer-Review-Reports" in base_url:
+    return "peer_review"
 
-SEMIANNUAL_REPORTS_URL = "https://www.gsaig.gov/index.cfm/oig-reports/semiannual-reports-to-the-congress/"
-AUDIT_REPORTS_URL = "https://www.gsaig.gov/index.cfm/oig-reports/audit-reports/"
-PEER_REVIEW_REPORTS_URL = "https://www.gsaig.gov/index.cfm/oig-reports/peer-review-reports/"
-MISCELLANEOUS_REPORTS_URL = "https://www.gsaig.gov/index.cfm/oig-reports/miscellaneous-reports/"
-
-ID_RE = re.compile("LinkServID=([-0-9A-F]*)&showMeta=")
-JS_RE = re.compile("""javascript:newWin=window.open\('/(\?LinkServID=([-0-9A-F]*)&showMeta=0)','NewWin[0-9]*'\);newWin.focus\(\);void\(0\)""")
-DATE_RE = re.compile("(January|February|March|April|May|June|July|August|" +
-                     "September|October|November|December) ([123]?[0-9]), " +
+DATE_RE = re.compile("(January|February|March|April|May|June|July|August|"
+                     "September|October|November|December) ([123]?[0-9]), "
                      "([12][0-9][0-9][0-9])")
-DATE_RE_MM_DD_YY = re.compile("[0-9]?[0-9]/[0-9]?[0-9]/[0-9][0-9]")
-
-HARDCODED_DATES = {
-  "Hats Off Program Investigative Report": "June 16, 2011",
-  "Major Issues from Fiscal Year 2010 Multiple Award Schedule Preaward Audits": "September 26, 2011",
-  "Review of Center for Information Security Services FTS": "March 23, 2001",
-  "Audit of Procurement of Profesional Services from the FSS Multiple Award Schedules": "July 31, 2003",
-  "Special Report: MAS Pricing Practices: Is FSS Observing Regulatory Provisions Regarding Pricing?": "August 24, 2001",
-  "Updated Assessment of GSA's Most Serious Challenges": "December 8, 2004",
-  "Limited Audit of FSS's Contracting for Services Under Multiple Award Schedule Contracts": "January 9, 2001",
-  "Procurement Reform and the Multiple Award Schedule Program": "July 30, 2010",
-  "FTS Alert Report": "March 6, 2003",
-  "FTS CSC Audit Report": "January 8, 2004",
-  "Compendium FTS CSC Audit Report": "December 14, 2004",
-  "Compendium FTS CSC Controls Audit Report": "June 14, 2005",
-  "Compendium FTS Client Support Center Controls Audit Report": "September 29, 2006",
-  "Review of the Federal Acquisition Service's Client Support Center, Southeast Sunbelt Region - A090139-3": "June 4, 2010"
-}
 
 utils.run(run) if (__name__ == "__main__") else None

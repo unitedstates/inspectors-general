@@ -33,6 +33,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   pre_1998_done = False
+  results_flag = False
 
   # Pull the audit reports
   for year in year_range:
@@ -46,14 +47,16 @@ def run(options):
       doc = utils.beautifulsoup_from_url(year_url)
       results = doc.select("ol li")
       if not results:
-        if page_number == 0:
-          raise inspector.NoReportsFoundError("Department of Labor (%s)" % year_url)
-        else:
-          break
+        break
+      else:
+        results_flag = True
       for result in results:
         report = report_from(result, year_url)
         if report:
           inspector.save_report(report)
+
+  if not results_flag:
+    raise inspector.NoReportsFoundError("Department of Labor (audit reports)")
 
   # Pull the semiannual reports
   doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)

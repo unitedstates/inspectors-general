@@ -40,14 +40,14 @@ REPORT_PUBLISHED_MAP = {
   "MeekerOIGMappingReport": datetime.datetime(2005, 9, 14),
   "core-legal-services": datetime.datetime(2005, 3, 14),
   "Mapping_Evaluation_Phase_I_Volume_I_Final_Report": datetime.datetime(2003, 11, 1),
-  "EvalICLS": datetime.datetime(2005, 11, 1),
-  "EvalLAFLA": datetime.datetime(2004, 11, 1),
-  "EvalLASOC": datetime.datetime(2004, 11, 1),
-  "EvalLASSD": datetime.datetime(2004, 11, 1),
-  "EvalNLS": datetime.datetime(2004, 11, 1),
-  "EvalALAS": datetime.datetime(2005, 11, 1),
-  "EvalGLSP": datetime.datetime(2005, 11, 1),
-  "EvalMLSA": datetime.datetime(2005, 11, 1),
+  "evalicls": datetime.datetime(2005, 11, 1),
+  "evallafla": datetime.datetime(2004, 11, 1),
+  "evallasoc": datetime.datetime(2004, 11, 1),
+  "evallassd": datetime.datetime(2004, 11, 1),
+  "evalnls": datetime.datetime(2004, 11, 1),
+  "evalalas": datetime.datetime(2005, 11, 1),
+  "evalglsp": datetime.datetime(2005, 11, 1),
+  "evalmlsa": datetime.datetime(2005, 11, 1),
   "fraud-alert-16-01": datetime.datetime(2015, 10, 19),
   "15-029": datetime.datetime(2015, 9, 30),
 }
@@ -150,7 +150,7 @@ def parse_mapping(content, landing_url, report_type, year_range):
       result = link.parent
     elif href == "https://www.oig.lsc.gov/images/mapping/Mapping_Evaluation_Phase_I_Volume_I_Final_Report.pdf":
       result = link.parent.parent
-    elif (href.startswith("https://www.oig.lsc.gov/images/Eval") and
+    elif (href.startswith("https://oig.lsc.gov/mapping/references/eval") and
           href.endswith(".pdf")):
       result = link.parent
     else:
@@ -234,21 +234,28 @@ def report_from(result, landing_url, report_type, year_range, year=None):
   elif link_text == "June 2015":
     published_on = datetime.datetime(2015, 6, 1)
   else:
+    published_on_text = None
     try:
       published_on_text = re.search('(\d+/\d+/\d+)', title).groups()[0]
     except AttributeError:
+      pass
+    if not published_on_text:
       try:
         published_on_text = re.search('(\w+ \d+, \d+)', title).groups()[0]
       except AttributeError:
-        try:
-          published_on_text = re.search('(\d+/\d+)', title).groups()[0]
-        except AttributeError:
-          if year is None:
-            raise Exception("No date or year was detected for %s (%s)" %
-                            (report_id, title))
-          # Since we only have the year, set this to Nov 1st of that year
-          published_on = datetime.datetime(year, 11, 1)
-          estimated_date = True
+        pass
+    if not published_on_text:
+      try:
+        published_on_text = re.search('(\d+/\d+)', title).groups()[0]
+      except AttributeError:
+        pass
+    if not published_on_text:
+      if year is None:
+        raise Exception("No date or year was detected for %s (%s)" %
+                        (report_id, title))
+      # Since we only have the year, set this to Nov 1st of that year
+      published_on = datetime.datetime(year, 11, 1)
+      estimated_date = True
 
     if not published_on:
       datetime_formats = [
@@ -287,6 +294,10 @@ def report_from(result, landing_url, report_type, year_range, year=None):
 
   if report_url in ("https://www.oig.lsc.gov/core-legal-services"):
     report['file_type'] = "html"
+
+  if report_url.startswith("https://oig.lsc.gov/mapping/references/eval"):
+    report['unreleased'] = True
+    report['missing'] = True
 
   return report
 

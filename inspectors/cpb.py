@@ -65,6 +65,10 @@ def report_from(result, landing_url, report_type, year_range):
   if 'semiannual' in report_id:
     title = "Semi-Annual Report: %s" % title
 
+  if title == "Report in Brief":
+    # Skip report in brief after a full report
+    return
+
   published_on = None
   issued_on = ISSUED_DATE_EXTRACTION.search(result.text)
 

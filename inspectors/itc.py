@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.usitc.gov/oig/
+# https://www.usitc.gov/oig.htm
 archive = 1990
 
 # options:
@@ -17,9 +17,9 @@ archive = 1990
 # - There are some typos in report numbers and link URLS for audit reports
 #   between 1999 and 2001. See the comments in report_from() for details.
 
-AUDIT_REPORTS_URL = "http://www.usitc.gov/oig/audit_reports.html"
-SEMIANNUAL_REPORTS_URL = "http://www.usitc.gov/oig/semiannual_reports.htm"
-PEER_REVIEWS_URL = "http://www.usitc.gov/oig/peer_reviews.htm"
+AUDIT_REPORTS_URL = "https://www.usitc.gov/oig/audit_reports.html"
+SEMIANNUAL_REPORTS_URL = "https://www.usitc.gov/oig/semiannual_reports.htm"
+PEER_REVIEWS_URL = "https://www.usitc.gov/oig/peer_reviews.htm"
 
 REPORT_URLS = {
   "audit": AUDIT_REPORTS_URL,
@@ -68,7 +68,7 @@ def audit_report_from(year, result, landing_url, year_range):
     # The title doesn't match the ID or URL, and this title doesn't show up
     # anywhere else, so patch in the correct ID/URL and save the report.
     report_id = "Inspection-Report-01-99"
-    report_url = "http://www.usitc.gov/oig/documents/OIG-IR-01-99.pdf"
+    report_url = "https://www.usitc.gov/oig/documents/OIG-IR-01-99.pdf"
   elif report_id == "Inspection-Report-02-00" and \
         title.find("Second Follow-up Review of Commission's Preparation for " \
         "Year 2000") != -1:
@@ -120,7 +120,7 @@ def audit_report_from(year, result, landing_url, year_range):
 
   report = {
     'inspector': 'itc',
-    'inspector_url': 'http://www.usitc.gov/oig/',
+    'inspector_url': 'https://www.usitc.gov/oig.htm',
     'agency': 'itc',
     'agency_name': 'International Trade Commission',
     'type': 'audit',
