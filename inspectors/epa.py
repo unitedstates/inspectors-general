@@ -75,6 +75,8 @@ def run(options):
         report_seen_flag = True
 
         published_on_dt = parse_date(tds[0].text.strip())
+        if not published_on_dt:
+          raise inspector.NoDateFoundError(tds[2].text, tds[1].text)
         if published_on_dt.year not in year_range:
           continue
 
@@ -91,8 +93,8 @@ def run(options):
           href = urljoin(url, li.a["href"])
           if href in REPORT_PUBLISHED_MAPPING:
             published_on_dt = REPORT_PUBLISHED_MAPPING[href]
-          else:
-            raise Exception("Could not parse date from %r" % li.text)
+        if not published_on_dt:
+          raise inspector.NoDateFoundError(extract_url(li), li.a.text)
         if published_on_dt.year not in year_range:
           continue
 
@@ -294,6 +296,6 @@ def parse_date(text):
       return datetime.datetime.strptime(text, date_format)
     except ValueError:
       pass
-  raise Exception("Could not parse date from %r" % text)
+  return None
 
 utils.run(run) if (__name__ == "__main__") else None

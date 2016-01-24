@@ -75,24 +75,31 @@ def report_from(result, year_range, report_type=None):
   title = link.text
 
   estimated_date = False
+  published_on = None
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
-  else:
+  if not published_on:
     try:
       published_on_text = "/".join(re.search("(\w+) (\d+), (\d+)", title).groups())
       published_on = datetime.datetime.strptime(published_on_text, '%B/%d/%Y')
     except AttributeError:
-      try:
-        published_on_text = "/".join(re.search("(\w+) (\d+), (\d+)", str(link.next_sibling)).groups())
-        published_on = datetime.datetime.strptime(published_on_text, '%B/%d/%Y')
-      except AttributeError:
-        try:
-          # For reports where we can only find the year, set them to Nov 1st of that year
-          published_on_year = int(re.search('(\d+)', title).groups()[0])
-          published_on = datetime.datetime(published_on_year, 11, 1)
-          estimated_date = True
-        except AttributeError:
-          raise Exception('Could not parse date for report "%s"' % title)
+      pass
+  if not published_on:
+    try:
+      published_on_text = "/".join(re.search("(\w+) (\d+), (\d+)", str(link.next_sibling)).groups())
+      published_on = datetime.datetime.strptime(published_on_text, '%B/%d/%Y')
+    except AttributeError:
+      pass
+  if not published_on:
+    try:
+      # For reports where we can only find the year, set them to Nov 1st of that year
+      published_on_year = int(re.search('(\d+)', title).groups()[0])
+      published_on = datetime.datetime(published_on_year, 11, 1)
+      estimated_date = True
+    except AttributeError:
+      pass
+  if not published_on:
+    raise inspector.NoDateFoundError(report_id, title)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)

@@ -251,8 +251,7 @@ def report_from(result, landing_url, report_type, year_range, year=None):
         pass
     if not published_on_text:
       if year is None:
-        raise Exception("No date or year was detected for %s (%s)" %
-                        (report_id, title))
+        raise inspector.NoDateFoundError(report_id, title)
       # Since we only have the year, set this to Nov 1st of that year
       published_on = datetime.datetime(year, 11, 1)
       estimated_date = True

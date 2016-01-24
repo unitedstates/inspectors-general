@@ -160,9 +160,6 @@ def audit_report_from(result, page_url, year_range):
     except ValueError:
       pass
 
-  if published_on is None:
-    raise Exception("No valid date found for this report: %s" % published_on_text)
-
   report_summary = clean_text(children[2].text)
   if not report_summary:
     # There is an extra row that we want to skip
@@ -178,7 +175,7 @@ def audit_report_from(result, page_url, year_range):
   elif summary_match_2:
     report_id = summary_match_2.expand(r"(\2-\1-\3")
     title = summary_match_2.group(4)
-  elif report_summary.startswith("IGATI"):
+  elif report_summary.startswith("IGATI") and published_on is not None:
     # There are two such annual reports from different years, append the year
     report_id = "IGATI %d" % published_on.year
     title = report_summary
@@ -212,6 +209,9 @@ def audit_report_from(result, page_url, year_range):
       return
   if report_id == 'OIG-13-021' and published_on_text == '12/12/2012':
     return
+
+  if published_on is None:
+    raise inspector.NoDateFoundError(report_id, title)
 
   agency_slug_text = children[0].text
 
@@ -313,7 +313,7 @@ def report_from(result, page_url, report_type, year_range):
     published_on = REPORT_PUBLISHED_MAP[report_id]
 
   if not published_on:
-    raise Exception('Could not parse date for report "%s"' % title)
+    raise inspector.NoDateFoundError(report_id, title)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)

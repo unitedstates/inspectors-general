@@ -217,7 +217,7 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
   text_lines = [line.strip() for line in result.text.split("\n")]
   text_lines = [line for line in text_lines if line]
   published_on_text = text_lines[0].split("through")[0].strip().replace(".", "")
-  published_on = published_date_for_report(published_on_text, title, report_url, last_published_on)
+  published_on = published_date_for_report(published_on_text, title, report_url, last_published_on, report_id)
 
   # Skip duplicate report
   if report_id == '283fin' and published_on.year == 1999 and published_on.month == 3 and published_on.day == 16:
@@ -261,7 +261,7 @@ def find_first_matching_datetime_format_from_text(text_datetime_format_tuples):
     except ValueError:
       pass
 
-def published_date_for_report(published_on_text, title, report_url, last_published_on):
+def published_date_for_report(published_on_text, title, report_url, last_published_on, report_id):
   "There are multiple different ways we try to extract the published date"
   if report_url in REPORT_URL_TO_PUBLISHED_DATETIMES:
     return REPORT_URL_TO_PUBLISHED_DATETIMES[report_url]
@@ -307,7 +307,8 @@ def published_date_for_report(published_on_text, title, report_url, last_publish
     published_on = last_published_on
 
   if not published_on:
-    raise Exception('Could not find a date for "%s"' % title)
+    raise inspector.NoDateFoundError(report_id, title)
+
   return published_on
 
 DATE_RE_1 = re.compile('(?:January|Jan\\.?|February|Feb\\.?|March|Mar\\.?|' \
