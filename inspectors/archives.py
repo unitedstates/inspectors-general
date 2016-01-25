@@ -21,6 +21,10 @@ AUDIT_REPORTS_URL = "https://www.archives.gov/oig/reports/audit-reports-{year}.h
 SEMIANNUAL_REPORTS_URL = "https://www.archives.gov/oig/reports/semiannual-congressional.html"
 PEER_REVIEWS_URL = "https://www.archives.gov/oig/reports/peer-review-reports.html"
 
+REPORT_PUBLISHED_MAP = {
+  "peer-review-2014": datetime.datetime(2014, 4, 30),
+}
+
 def run(options):
   year_range = inspector.year_range(options, archive)
   results_flag = False
@@ -136,16 +140,16 @@ def peer_review_from(result, year_range):
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
 
-  # For reports where we can only find the year, set them to Nov 1st of that year
-  published_on_year = int(report_url.split("/")[-2])
-  published_on = datetime.datetime(published_on_year, 11, 1)
-  estimated_date = True
+  if report_id in REPORT_PUBLISHED_MAP:
+    published_on = REPORT_PUBLISHED_MAP[report_id]
+  else:
+    raise inspector.NoDateFoundError(report_id, result.text)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
-  title = "Peer Review {}".format(published_on_year)
+  title = "Peer Review {}".format(published_on.year)
 
   report = {
     'inspector': 'archives',
@@ -153,7 +157,6 @@ def peer_review_from(result, year_range):
     'agency': 'archives',
     'agency_name': 'National Archives and Records Administration',
     'report_id': report_id,
-    'estimated_date': estimated_date,
     'url': report_url,
     'title': title,
     'type': 'peer_review',
