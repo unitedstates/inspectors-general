@@ -86,11 +86,18 @@ def audit_report_from(result, landing_url, year, year_range):
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
 
+  cleaned_text = re.sub("\s+", " ", inspector.sanitize(result.text))
   if not published_on:
     try:
-      cleaned_text = re.sub("\s+", " ", inspector.sanitize(result.text))
       published_on_text = re.search('(\w+ \d+, \d+)', cleaned_text).groups()[0]
       published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+    except AttributeError:
+      pass
+
+  if not published_on:
+    try:
+      published_on_text = re.search('(\w+ \d+ , \d+)', cleaned_text).groups()[0]
+      published_on = datetime.datetime.strptime(published_on_text, '%B %d , %Y')
     except AttributeError:
       pass
 
