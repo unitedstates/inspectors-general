@@ -188,6 +188,7 @@ def audit_report_from(result, landing_url, year, year_range):
   title_prefixer = re.compile("(Advisory|Management|Audit)\\s*(Letter|Report)\\s*[\\d\\-]+:\\s*", re.I)
   title = title_prefixer.sub("", title)
 
+  estimated_date = False
   published_on = None
 
   if report_id in REPORT_PUBLISHED_MAP:
@@ -209,6 +210,14 @@ def audit_report_from(result, landing_url, year, year_range):
       pass
 
   if not published_on:
+    try:
+      response = utils.scraper.request(method="HEAD", url=report_url)
+      last_modified = response.headers["Last-Modified"]
+      published_on = datetime.datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
+    except ValueError:
+      pass
+
+  if not published_on:
     raise inspector.NoDateFoundError(report_id, title)
 
   if published_on.year not in year_range:
@@ -226,6 +235,8 @@ def audit_report_from(result, landing_url, year, year_range):
     'type': 'audit',
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
+  if estimated_date:
+    report['estimated_date'] = estimated_date
   return report
 
 def semiannual_report_from(result, year_range):
