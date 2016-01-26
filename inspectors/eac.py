@@ -37,7 +37,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports
-  for report_type, url in REPORT_URLS.items():
+  for report_type, url in sorted(REPORT_URLS.items()):
     doc = utils.beautifulsoup_from_url(url)
     results = doc.select("div.mainRegion p a")
     if not results:
