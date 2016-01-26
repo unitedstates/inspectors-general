@@ -110,29 +110,21 @@ def report_from(result, year_range, report_type, title_prefix=None):
     published_on_text = published_on_text.replace("Period ending ", "")
     published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
-  estimated_date = False
   if not published_on:
     if report_id in REPORT_PUBLISHED_MAPPING:
       published_on = REPORT_PUBLISHED_MAPPING[report_id]
-    else:
-      try:
-        published_on_text = "-".join(re.search('(\w+)\s+(\d{4})', title).groups())
-        published_on = datetime.datetime.strptime(published_on_text, '%B-%Y')
-      except (ValueError, AttributeError):
-        estimated_date = True
-        try:
-          fiscal_year = re.search('FY(\d+)', report_id).groups()[0]
-          published_on = datetime.datetime.strptime("November {}".format(fiscal_year), '%B %y')
-        except (ValueError, AttributeError):
-          try:
-            fiscal_year = int(re.search('(\d{4})', report_id).groups()[0])
-            published_on = datetime.datetime(fiscal_year, 11, 1)
-          except AttributeError:
-            fiscal_year = re.search('(\d{2})', report_id).groups()[0]
-            published_on = datetime.datetime.strptime("November {}".format(fiscal_year), '%B %y')
+  if not published_on:
+    try:
+      published_on_text = "-".join(re.search('(\w+)\s+(\d{4})', title).groups())
+      published_on = datetime.datetime.strptime(published_on_text, '%B-%Y')
+    except (ValueError, AttributeError):
+      pass
 
   if title_prefix:
     title = "{}{}".format(title_prefix, title)
+
+  if not published_on:
+    raise inspector.NoDateFoundError(report_id, title)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -149,8 +141,6 @@ def report_from(result, year_range, report_type, title_prefix=None):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),  # Date of publication
   }
-  if estimated_date:
-    report['estimated_date'] = estimated_date
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
