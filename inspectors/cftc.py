@@ -24,6 +24,29 @@ REPORT_PUBLISHED_MAPPING = {
   "oigcommentletter042214": datetime.datetime(2014, 4, 22),
   "oig_auditruleenforcementreview": datetime.datetime(2015, 8, 5),
   "oig_pensionawardsaudit": datetime.datetime(2015, 9, 24),
+  "oigfinancialstatementalert": datetime.datetime(2016, 1, 15),
+  "2015finstatementaudit": datetime.datetime(2016, 1, 15),
+  "2009par": datetime.datetime(2009, 11, 13),
+  "2004finstatementaudit": datetime.datetime(2004, 11, 16),
+  "oigmgmtchall2015": datetime.datetime(2015, 10, 26),
+  "oigmgmtchall2014": datetime.datetime(2014, 11, 17),
+  "oigmgmtchall2013": datetime.datetime(2013, 12, 13),
+  "oigmgmtchall2012": datetime.datetime(2012, 11, 14),
+  "oigmgmtchall2011": datetime.datetime(2011, 11, 10),
+  "oigmgmtchall2010": datetime.datetime(2010, 10, 10),
+  "oigmgmtchall2009": datetime.datetime(2009, 11, 16),
+  "oigmgmtchall2008": datetime.datetime(2008, 11, 14),
+  "oigmgmtchall2007": datetime.datetime(2007, 11, 15),
+  "oigmgmtchall2006": datetime.datetime(2006, 10, 31),
+  "oigmgmtchall2005": datetime.datetime(2005, 10, 10),
+  "oigmgmtchall2004": datetime.datetime(2004, 11, 12),
+  "FOIAaudit20122011": datetime.datetime(2013, 1, 28),
+  "cpfreport2015": datetime.datetime(2015, 10, 30),
+  "cpfreport2014": datetime.datetime(2014, 10, 30),
+  "cpfreport2013": datetime.datetime(2013, 10, 31),
+  "cpfreport2012": datetime.datetime(2012, 10, 25),
+  "cpfreport2011": datetime.datetime(2011, 10, 25),
+  "fisma2014": datetime.datetime(2014, 2, 20),
 }
 
 REPORTS_URL = "http://www.cftc.gov/About/OfficeoftheInspectorGeneral/index.htm"
@@ -74,7 +97,6 @@ def report_from(result, year_range, report_type=None):
 
   title = link.text
 
-  estimated_date = False
   published_on = None
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
@@ -88,14 +110,6 @@ def report_from(result, year_range, report_type=None):
     try:
       published_on_text = "/".join(re.search("(\w+) (\d+), (\d+)", str(link.next_sibling)).groups())
       published_on = datetime.datetime.strptime(published_on_text, '%B/%d/%Y')
-    except AttributeError:
-      pass
-  if not published_on:
-    try:
-      # For reports where we can only find the year, set them to Nov 1st of that year
-      published_on_year = int(re.search('(\d+)', title).groups()[0])
-      published_on = datetime.datetime(published_on_year, 11, 1)
-      estimated_date = True
     except AttributeError:
       pass
   if not published_on:
@@ -124,8 +138,6 @@ def report_from(result, year_range, report_type=None):
     'type': report_type,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
-  if estimated_date:
-    report['estimate_date'] = estimated_date
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
