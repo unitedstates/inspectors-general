@@ -104,10 +104,10 @@ def report_from(result, landing_url, year_range):
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
 
-  estimated_date = False
+  published_on = None
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
-  else:
+  if not published_on:
     try:
       li = result.parent
       if li.name == "u":
@@ -120,17 +120,17 @@ def report_from(result, landing_url, year_range):
     try:
       published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
     except ValueError:
-      try:
-        published_on_text = "/".join(re.search("(\w{3}).* (\d{4})", published_on_text).groups())
-        published_on = datetime.datetime.strptime(published_on_text, '%b/%Y')
-      except AttributeError:
-        # For reports where we can only find the year, set them to Nov 1st of that year
-        try:
-          published_on_year = int(re.search("FYs?\s*(\d{4})", title).groups()[0])
-        except AttributeError:
-          published_on_year = int(title.split()[0])
-        published_on = datetime.datetime(published_on_year, 11, 1)
-        estimated_date = True
+      pass
+
+  if not published_on:
+    try:
+      published_on_text = "/".join(re.search("(\w{3}).* (\d{4})", published_on_text).groups())
+      published_on = datetime.datetime.strptime(published_on_text, '%b/%Y')
+    except AttributeError:
+      pass
+
+  if not published_on:
+    raise inspector.NoDateFoundError(report_id, title)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -150,8 +150,6 @@ def report_from(result, landing_url, year_range):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
-  if estimated_date:
-    report['estimated_date'] = estimated_date
   return report
 
 def semiannual_report_from(result, year_range):
