@@ -39,6 +39,32 @@ REPORT_PUBLISHED_MAPPING = {
   "westlaw": datetime.datetime(2001, 7, 1),
   "fmfia": datetime.datetime(2001, 6, 1),
   "internet": datetime.datetime(2001, 5, 1),
+  "FY2015FinancialStatementAuditReport-Final": datetime.datetime(2015, 11, 16),
+  "FEC2014FinancialStatementAuditReport": datetime.datetime(2014, 11, 17),
+  "FY2013FinancialStatementAuditReport": datetime.datetime(2013, 12, 13),
+  "HRaudit2013": datetime.datetime(2013, 7, 9),
+  "FY12FinancialStatementAuditReport": datetime.datetime(2012, 12, 14),
+  "Final_FY2011_Financial_Statement_Audit_Report": datetime.datetime(2011, 11, 14),
+  "ProcurementandContractManagement2010": datetime.datetime(2011, 6, 6),
+  "2010PrivacyReport": datetime.datetime(2011, 3, 31),
+  "financial10": datetime.datetime(2010, 11, 12),
+  "financial09": datetime.datetime(2009, 11, 13),
+  "financial08": datetime.datetime(2008, 11, 12),
+  "2007Privacy": datetime.datetime(2007, 12, 7),
+  "financial07": datetime.datetime(2007, 11, 15),
+  "transit07": datetime.datetime(2007, 2, 1),
+  "financial06": datetime.datetime(2006, 11, 15),
+  "financial05": datetime.datetime(2005, 11, 10),
+  "financial04": datetime.datetime(2004, 12, 16),
+  "ManagementandPerformanceChallenges-2015-FinalReport": datetime.datetime(2015, 10, 16),
+  "ReviewofCompletedCorrectiveActionsofFY2014FinancialStatementAudit-December2014_000": datetime.datetime(2014, 12, 9),
+  "FinalReport-InspectionoftheFECsTravelandPurchaseCardPrograms-OIG-14-05-June2015": datetime.datetime(2015, 2, 1),
+  "2014ManagementChallenges-IncludesIGStatementandManagementsResponse": datetime.datetime(2014, 10, 15),
+  "FEC-A-123InspectionReport-Final06-17-14-assessed": datetime.datetime(2014, 6, 10),
+  "FECOIG_Peer_Review_2013": datetime.datetime(2014, 2, 11),
+  "Final-SurveyoftheFECsNewEmployeeOrientationProgram-OIG12-08": datetime.datetime(2012, 9, 1),
+  "PeerReview2010": datetime.datetime(2011, 5, 5),
+  "transit09": datetime.datetime(2009, 7, 1),
 }
 
 
@@ -99,6 +125,9 @@ def report_from(result, year_range, report_type, title_prefix=None):
   if report_url.endswith(".pdf"):
     # Inline report
     title = result.contents[0].strip().rstrip("-").strip()
+    if title.endswith(" 200") or title.endswith(" 201"):
+      # some years are split up by a <span> tag
+      title = title + result.contents[1].text
   else:
     # Some pages have separate landing pages.
     doc = utils.beautifulsoup_from_url(report_url)
