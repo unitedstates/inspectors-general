@@ -22,19 +22,19 @@ QA_REVIEWS_URL = "https://www.flra.gov/OIG_QA_Reviews"
 SEMIANNUAL_REPORTS_URL = "https://www.flra.gov/IG_semi-annual_reports"
 PEER_REVIEWS_URL = "https://www.flra.gov/OIG-PEER-REVIEW"
 
-REPORT_URLS = {
-  "audit": AUDIT_REPORTS_URL,
-  "inspection": INTERNAL_REVIEWS_URL,
-  "inspection": QA_REVIEWS_URL,
-  "semiannual_report": SEMIANNUAL_REPORTS_URL,
-  "peer_review": PEER_REVIEWS_URL,
-}
+REPORT_URLS = [
+  ("audit", AUDIT_REPORTS_URL),
+  ("inspection", INTERNAL_REVIEWS_URL),
+  ("inspection", QA_REVIEWS_URL),
+  ("semiannual_report", SEMIANNUAL_REPORTS_URL),
+  ("peer_review", PEER_REVIEWS_URL),
+]
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports
-  for report_type, url in REPORT_URLS.items():
+  for report_type, url in REPORT_URLS:
     doc = utils.beautifulsoup_from_url(url)
     results = doc.select("div.node ul li")
     if not results:
@@ -60,8 +60,18 @@ def report_from(result, landing_url, report_type, year_range):
     # Some reports have incorrect relative paths
     relative_report_url = link.get('href').replace("../", "")
     report_url = urljoin(landing_url, relative_report_url)
+    if report_url == "http://ignet.gov/internal/flra/03govveh.pdf":
+      report_url = "https://www.flra.gov/webfm_send/395"
     report_filename = report_url.split("/")[-1]
     report_id, _ = os.path.splitext(report_filename)
+
+  if (title == "Financial Statement Audit for Fiscal Year 2007" and
+      report_id == "internalcontrolindpaud08"):
+    # This link points to the wrong report, mark FY2007 financial statement
+    # audit as unreleased
+    report_id = "-".join(title.split())
+    unreleased = True
+    report_url = None
 
   estimated_date = False
   try:

@@ -15,18 +15,18 @@ archive = 2009
 # Notes for IG's web team:
 #
 
-REPORT_URLS = {
-  "semiannual_report": "https://www.sigtarp.gov/pages/quarterly.aspx",
-  "audit": "https://www.sigtarp.gov/pages/audit.aspx",
-  "audit": "https://www.sigtarp.gov/pages/auditrc.aspx",
-  "audit": "https://www.sigtarp.gov/pages/engmem.aspx",
-}
+REPORT_URLS = [
+  ("semiannual_report", "https://www.sigtarp.gov/pages/quarterly.aspx"),
+  ("audit", "https://www.sigtarp.gov/pages/audit.aspx"),
+  ("audit", "https://www.sigtarp.gov/pages/auditrc.aspx"),
+  ("audit", "https://www.sigtarp.gov/pages/engmem.aspx"),
+]
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports
-  for report_type, report_url in REPORT_URLS.items():
+  for report_type, report_url in REPORT_URLS:
     doc = utils.beautifulsoup_from_url(report_url)
     results =  doc.select("td.mainInner div.ms-WPBody li")
 
