@@ -63,7 +63,6 @@ agency_decoder = {
     "Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF)": ["Bureau of Alcohol, Tobacco, Firearms and Explosives", "ATF"],
     "Office on Violence Against Women (OVW)": ["Office on Violence Against Women", "OVW"],
     "Immigration and Naturalization Service (INS) – 1994 to 2003": ["Immigration and Naturalization Service", "INS"],
-    "United States Marshals Service (USMS)": ["United States Marshals Service", "USMS"],
 }
 
 not_agency = (
