@@ -20,17 +20,17 @@ SPOTLIGHT_REPORTS_URL = "https://www.sigar.mil/Newsroom/spotlight/spotlight.xml"
 SPEECHES_REPORTS_URL = "https://www.sigar.mil/Newsroom/speeches/speeches.xml"
 TESTIMONY_REPORTS_URL = "https://www.sigar.mil/Newsroom/testimony/testimony.xml"
 
-REPORT_URLS = {
-  "other": SPOTLIGHT_REPORTS_URL,
-  "press": SPEECHES_REPORTS_URL,
-  "testimony": TESTIMONY_REPORTS_URL,
-  "audit": "https://www.sigar.mil/audits/auditreports/reports.xml",
-  "inspection": "https://www.sigar.mil/audits/inspectionreports/inspection-reports.xml",
-  "audit": "https://www.sigar.mil/audits/financialreports/Financial-Audits.xml",
-  "other": "https://www.sigar.mil/SpecialProjects/projectreports/reports.xml",
-  "other": "https://www.sigar.mil/Audits/alertandspecialreports/alert-special-reports.xml",
-  "semiannual_report": "https://www.sigar.mil/quarterlyreports/index.xml",
-}
+REPORT_URLS = [
+  ("other", SPOTLIGHT_REPORTS_URL),
+  ("press", SPEECHES_REPORTS_URL),
+  ("testimony", TESTIMONY_REPORTS_URL),
+  ("audit", "https://www.sigar.mil/audits/auditreports/reports.xml"),
+  ("inspection", "https://www.sigar.mil/audits/inspectionreports/inspection-reports.xml"),
+  ("audit", "https://www.sigar.mil/audits/financialreports/Financial-Audits.xml"),
+  ("other", "https://www.sigar.mil/SpecialProjects/projectreports/reports.xml"),
+  ("other", "https://www.sigar.mil/Audits/alertandspecialreports/alert-special-reports.xml"),
+  ("semiannual_report", "https://www.sigar.mil/quarterlyreports/index.xml"),
+]
 
 BASE_REPORT_URL = "https://www.sigar.mil/allreports/index.aspx"
 
@@ -38,7 +38,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports
-  for report_type, report_url in REPORT_URLS.items():
+  for report_type, report_url in REPORT_URLS:
     doc = utils.beautifulsoup_from_url(report_url)
     results = doc.select("item")
     if not results:
@@ -57,6 +57,10 @@ def report_from(result, landing_url, report_type, year_range):
 
   published_on_text = result.find("pubdate").text.strip()
   published_on = datetime.datetime.strptime(published_on_text, '%A, %B %d, %Y')
+
+  if report_id == "SIGAR-14-42-AL" and title == "SIGAR 14-42-AL":
+    # this report is posted in both "spotlight" and "special reports"
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)

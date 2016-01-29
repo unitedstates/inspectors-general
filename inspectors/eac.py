@@ -24,14 +24,14 @@ CONGRESSIONAL_REPORTS_URL = "http://www.eac.gov/inspector_general/congressional_
 INVESTIGATIONS_URL = "http://www.eac.gov/inspector_general/investigation_reports.aspx"
 PEER_REVIEWS_URL = "http://www.eac.gov/inspector_general/peer_review_reports.aspx"
 
-REPORT_URLS = {
-  "testimony": CONGRESSIONAL_TESTIMONY_URL,
-  "audit": HAVA_AUDITS_URL,
-  "audit": EAC_AUDITS_URL,
-  "congress": CONGRESSIONAL_REPORTS_URL,
-  "investigation": INVESTIGATIONS_URL,
-  "peer_review": PEER_REVIEWS_URL,
-}
+REPORT_URLS = [
+  ("testimony", CONGRESSIONAL_TESTIMONY_URL),
+  ("audit", HAVA_AUDITS_URL),
+  ("audit", EAC_AUDITS_URL),
+  ("congress", CONGRESSIONAL_REPORTS_URL),
+  ("investigation", INVESTIGATIONS_URL),
+  ("peer_review", PEER_REVIEWS_URL),
+]
 
 REPORT_PUBLISHED_MAP = {
   "U.S.-Election-Assistance-Commission's-Financial-Statements-for-Fiscal-Years-2015-and-2014": datetime.datetime(2015, 11, 12),
@@ -76,7 +76,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports
-  for report_type, url in sorted(REPORT_URLS.items()):
+  for report_type, url in REPORT_URLS:
     doc = utils.beautifulsoup_from_url(url)
     results = doc.select("div.mainRegion p a")
     if not results:

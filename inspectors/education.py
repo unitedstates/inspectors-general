@@ -32,13 +32,13 @@ CONGRESSIONAL_TESTIMONY_URL = "https://www2.ed.gov/about/offices/list/oig/testim
 SPECIAL_REPORTS_URL = "https://www2.ed.gov/about/offices/list/oig/specialreportstocongress.html"
 OTHER_REPORTS_URL = "https://www2.ed.gov/about/offices/list/oig/otheroigproducts.html"
 
-OTHER_REPORTS_URL = {
-  "other": OTHER_REPORTS_URL,
-  "other": SPECIAL_REPORTS_URL,
-  "testimony": CONGRESSIONAL_TESTIMONY_URL,
-  "investigation": INVESTIGATIVE_REPORTS_URL,
-  "inspection": INSPECTION_REPORTS_URL,
-}
+OTHER_REPORTS_URLS = [
+  ("other", OTHER_REPORTS_URL),
+  ("other", SPECIAL_REPORTS_URL),
+  ("testimony", CONGRESSIONAL_TESTIMONY_URL),
+  ("investigation", INVESTIGATIVE_REPORTS_URL),
+  ("inspection", INSPECTION_REPORTS_URL),
+]
 
 REPORT_PUBLISHED_MAP = {
   "statelocal032002": datetime.datetime(2002, 3, 21),
@@ -100,7 +100,7 @@ def run(options):
       inspector.save_report(report)
 
   # Get other reports
-  for report_type, url in OTHER_REPORTS_URL.items():
+  for report_type, url in OTHER_REPORTS_URLS:
     doc = utils.beautifulsoup_from_url(url)
     results = doc.select("div.contentText ul li")
     if not results:
@@ -277,6 +277,12 @@ def report_from(result, url, report_type, year_range):
     return
 
   if "thestartingline.ed.gov" in report_url:
+    return None
+
+  if (report_id in ("x13j0003", "x19k0008", "x05j0019") and
+      url == OTHER_REPORTS_URL):
+    # These reports are also posted on the audit report pages, so we skip the
+    # copy on the other reports page
     return None
 
   key = (report_id, title, report_url)

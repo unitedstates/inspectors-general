@@ -7,9 +7,11 @@ sudo: false
 
 install:
   - pip install -r requirements.txt
-  - pip install pyflakes
+  - pip install pyflakes pylint
 
-script: pyflakes .
+script:
+  - pyflakes .
+  - pylint --disable=all --enable=duplicate-key inspectors/*.py inspectors/utils/*.py scripts/*.py igs qa backup
 
 notifications:
   email:
