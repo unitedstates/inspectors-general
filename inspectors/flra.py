@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 from utils import utils, inspector
@@ -72,6 +73,41 @@ REPORT_PUBLISHED_MAP = {
   "internalcontrolindpaud08": datetime.datetime(2008, 2, 8),
   "Audit-Report-FLRA-Security-Programs-(September-2004)---Non-Public-Report": datetime.datetime(2004, 9, 1),
   "03govveh": datetime.datetime(2003, 11, 30),
+  "Financial-Statement-Audit-for-Fiscal-Year-2007": datetime.datetime(2008, 1, 1),
+  "395": datetime.datetime(2003, 11, 30),
+  "976": datetime.datetime(2015, 2, 6),
+  "837": datetime.datetime(2014, 2, 11),
+  "671": datetime.datetime(2013, 1, 14),
+  "598": datetime.datetime(2012, 3, 12),
+  "335": datetime.datetime(2009, 12, 7),
+  "171": datetime.datetime(2009, 10, 13),
+  "337": datetime.datetime(2009, 7, 13),
+  "333": datetime.datetime(2009, 3, 17),
+  "334": datetime.datetime(2009, 1, 26),
+  "340": datetime.datetime(2009, 3, 3),
+  "501": datetime.datetime(2009, 8, 21),
+  "502": datetime.datetime(2009, 6, 10),
+  "344": datetime.datetime(2008, 8, 14),
+  "500": datetime.datetime(2005, 1, 1),
+  "483": datetime.datetime(2002, 11, 5),
+  "499": datetime.datetime(2002, 1, 1),
+  "572": datetime.datetime(2000, 11, 1),
+  "477": datetime.datetime(2000, 5, 1),
+  "478": datetime.datetime(2000, 1, 1),
+  "484": datetime.datetime(1999, 4, 14),
+  "486": datetime.datetime(2000, 11, 1),
+  "503": datetime.datetime(2007, 2, 27),
+  "401": datetime.datetime(2004, 12, 1),
+  "403": datetime.datetime(2004, 12, 9),
+  "398": datetime.datetime(2003, 5, 2),
+}
+
+IGNET_REWRITE_URL = {
+  "http://ignet.gov/internal/flra/03govveh.pdf": "https://www.flra.gov/webfm_send/395",
+  "http://ignet.gov/internal/flra/internalreview2006.pdf": "https://www.flra.gov/webfm_send/503",
+  "http://ignet.gov/internal/flra/courtreporting.pdf": "https://www.flra.gov/webfm_send/401",
+  "http://ignet.gov/internal/flra/sandh.pdf": "https://www.flra.gov/webfm_send/403",
+  "http://ignet.gov/internal/flra/human03.pdf": "https://www.flra.gov/webfm_send/398",
 }
 
 def run(options):
@@ -104,8 +140,8 @@ def report_from(result, landing_url, report_type, year_range):
     # Some reports have incorrect relative paths
     relative_report_url = link.get('href').replace("../", "")
     report_url = urljoin(landing_url, relative_report_url)
-    if report_url == "http://ignet.gov/internal/flra/03govveh.pdf":
-      report_url = "https://www.flra.gov/webfm_send/395"
+    if report_url in IGNET_REWRITE_URL:
+      report_url = IGNET_REWRITE_URL[report_url]
     report_filename = report_url.split("/")[-1]
     report_id, _ = os.path.splitext(report_filename)
 
@@ -117,6 +153,7 @@ def report_from(result, landing_url, report_type, year_range):
     unreleased = True
     report_url = None
 
+  estimated_date = False
   published_on = None
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
@@ -125,6 +162,14 @@ def report_from(result, landing_url, report_type, year_range):
       published_on = datetime.datetime.strptime(title, '%B %Y')
     except ValueError:
       pass
+
+  if not published_on:
+    if "Non-Public Report" in title:
+      year_match = re.search("\\(([0-9]{4})\\)", title)
+      if year_match:
+        year = int(year_match.group(1))
+        published_on = datetime.datetime(year, 1, 1)
+        estimated_date = True
 
   if not published_on:
     raise inspector.NoDateFoundError(report_id, title)
@@ -145,6 +190,8 @@ def report_from(result, landing_url, report_type, year_range):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
+  if estimated_date:
+    report['estimated_date'] = estimated_date
   if unreleased:
     report['unreleased'] = unreleased
     report['landing_url'] = landing_url
