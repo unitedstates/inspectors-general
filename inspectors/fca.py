@@ -100,7 +100,6 @@ REPORT_PUBLISHED_MAPPING = {
   "FY2003FCSSurvey": datetime.datetime(2003, 10, 30),
   "FY2002FCSSurvey": datetime.datetime(2002, 10, 28),
   "FY2001FCSSurvey": datetime.datetime(2001, 9, 1),
-  "RegulatoryDevelopmentSurvey2002": datetime.datetime(2002, 10, 22),
   "FinancialAuditReport09": datetime.datetime(2009, 11, 4),
   "FinancialAuditReport08": datetime.datetime(2008, 11, 7),
   "FinancialAuditReport07": datetime.datetime(2007, 11, 7),
