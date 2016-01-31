@@ -29,7 +29,6 @@ MAPPING_PROJECT_ARCHIVE_URL = "https://www.oig.lsc.gov/products/report-archives/
 MAPPING_PROJECT_ARCHIVE_GRANTEE_URL = "https://www.oig.lsc.gov/grantee-evaluation"
 
 REPORT_PUBLISHED_MAP = {
-  "14-06": datetime.datetime(2014, 6, 30),
   "fraud-alert-15-02": datetime.datetime(2015, 4, 22),
   "fraud_alert_12-01-JS": datetime.datetime(2012, 1, 18),
   "check_fraud_attachment": datetime.datetime(2012, 1, 18),
@@ -107,7 +106,6 @@ REPORT_PUBLISHED_MAP = {
   "99-013": datetime.datetime(1999, 3, 1),
   "99-012": datetime.datetime(1999, 3, 1),
   "99-001": datetime.datetime(1998, 10, 1),
-  "FY1999_Audit_of_the_Corporation": datetime.datetime(2000, 1, 14),
   "FY1998_Audit_of_the_Corporation": datetime.datetime(1998, 11, 25),
   "FY1997_Audit_of_the_Corporation": datetime.datetime(1997, 11, 21),
   "97-002": datetime.datetime(1997, 7, 30),
