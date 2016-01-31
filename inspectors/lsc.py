@@ -50,6 +50,134 @@ REPORT_PUBLISHED_MAP = {
   "evalmlsa": datetime.datetime(2005, 11, 1),
   "fraud-alert-16-01": datetime.datetime(2015, 10, 19),
   "15-029": datetime.datetime(2015, 9, 30),
+  "16-03": datetime.datetime(2015, 12, 7),
+  "16-01": datetime.datetime(2015, 11, 23),
+  "15-12": datetime.datetime(2015, 9, 30),
+  "15-11": datetime.datetime(2015, 9, 29),
+  "15-10": datetime.datetime(2015, 8, 20),
+  "15-09": datetime.datetime(2015, 7, 9),
+  "15-08": datetime.datetime(2015, 7, 7),
+  "15-07": datetime.datetime(2015, 5, 27),
+  "15-06": datetime.datetime(2015, 5, 4),
+  "15-05": datetime.datetime(2015, 3, 26),
+  "15-04": datetime.datetime(2015, 3, 30),
+  "15-03": datetime.datetime(2015, 2, 2),
+  "15-02": datetime.datetime(2015, 1, 27),
+  "15-01": datetime.datetime(2014, 10, 9),
+  "14-08": datetime.datetime(2014, 8, 7),
+  "14-07": datetime.datetime(2014, 7, 10),
+  "14-06": datetime.datetime(2014, 6, 30),
+  "14-05": datetime.datetime(2014, 6, 9),
+  "14-04": datetime.datetime(2014, 5, 15),
+  "14-03": datetime.datetime(2014, 5, 6),
+  "14-02": datetime.datetime(2014, 3, 26),
+  "14-01": datetime.datetime(2014, 3, 24),
+  "04-07": datetime.datetime(2004, 8, 27),
+  "04-06": datetime.datetime(2004, 8, 25),
+  "04-05": datetime.datetime(2004, 8, 10),
+  "04-03": datetime.datetime(2004, 3, 9),
+  "04-02": datetime.datetime(2003, 12, 11),
+  "04-01": datetime.datetime(2004, 1, 29),
+  "03-06": datetime.datetime(2003, 9, 30),
+  "03-05": datetime.datetime(2003, 9, 26),
+  "03-03": datetime.datetime(2003, 6, 24),
+  "03-02": datetime.datetime(2003, 3, 26),
+  "03-01": datetime.datetime(2002, 12, 16),
+  "02-03": datetime.datetime(2002, 3, 18),
+  "02-01": datetime.datetime(2001, 10, 30),
+  "FY2001_Audit_of_the_Corporation": datetime.datetime(2001, 11, 30),
+  "01-005": datetime.datetime(2001, 9, 25),
+  "01-004": datetime.datetime(2001, 8, 1),
+  "01-003": datetime.datetime(2001, 6, 8),
+  "01-002": datetime.datetime(2001, 3, 15),
+  "FY2000_Audit_of_the_Corporation": datetime.datetime(2000, 11, 23),
+  "00-006": datetime.datetime(2000, 9, 29),
+  "00-004": datetime.datetime(2000, 2, 1),
+  "00-002": datetime.datetime(1999, 12, 1),
+  "00-001": datetime.datetime(1999, 11, 1),
+  "FY1999_Audit_of_the_Corporation": datetime.datetime(2000, 1, 14),
+  "99-021": datetime.datetime(1999, 9, 1),
+  "99-020": datetime.datetime(1999, 9, 1),
+  "99-019": datetime.datetime(1999, 9, 1),
+  "99-018": datetime.datetime(1999, 9, 1),
+  "99-017": datetime.datetime(1999, 8, 1),
+  "99-016": datetime.datetime(1999, 7, 21),
+  "99-015": datetime.datetime(1999, 7, 1),
+  "99-014": datetime.datetime(1999, 5, 1),
+  "99-013": datetime.datetime(1999, 3, 1),
+  "99-012": datetime.datetime(1999, 3, 1),
+  "99-001": datetime.datetime(1998, 10, 1),
+  "FY1999_Audit_of_the_Corporation": datetime.datetime(2000, 1, 14),
+  "FY1998_Audit_of_the_Corporation": datetime.datetime(1998, 11, 25),
+  "FY1997_Audit_of_the_Corporation": datetime.datetime(1997, 11, 21),
+  "97-002": datetime.datetime(1997, 7, 30),
+  "FY1996_Audit_of_the_Corporation": datetime.datetime(1996, 12, 2),
+  "96-062": datetime.datetime(1998, 2, 1),
+  "96-063A": datetime.datetime(1997, 9, 1),
+  "96-063B": datetime.datetime(1997, 12, 1),
+  "96-063C": datetime.datetime(1997, 9, 1),
+  "96-063D": datetime.datetime(1997, 12, 1),
+  "96-063E": datetime.datetime(1997, 9, 1),
+  "96-063F": datetime.datetime(1997, 9, 1),
+  "96-063G": datetime.datetime(1997, 9, 1),
+  "96-063H": datetime.datetime(1997, 9, 1),
+  "96-064A": datetime.datetime(1997, 9, 1),
+  "96-064B": datetime.datetime(1997, 9, 1),
+  "96-064C": datetime.datetime(1997, 9, 1),
+  "96-064D": datetime.datetime(1997, 12, 1),
+  "96-064E": datetime.datetime(1997, 9, 1),
+  "96-064F": datetime.datetime(1997, 9, 1),
+  "96-064G": datetime.datetime(1997, 9, 1),
+  "96-064H": datetime.datetime(1997, 9, 1),
+  "93-067": datetime.datetime(1994, 5, 4),
+  "Fiscal_Matters_Final_Report": datetime.datetime(2006, 9, 25),
+  "LSCManagementStatementRegardingOIGReportOnCertainFiscalPracticesAtLSC": datetime.datetime(2006, 9, 26),
+  "CRLA0603": datetime.datetime(2006, 9, 14),
+  "KW092606": datetime.datetime(2006, 9, 26),
+  "mg060719": datetime.datetime(2006, 7, 19),
+  "kw060727": datetime.datetime(2006, 7, 27),
+  "Financial_Implications_of_the_Lease_Report": datetime.datetime(2005, 4, 22),
+  "CTF-03-002": datetime.datetime(2003, 3, 6),
+  "CTF-03-001": datetime.datetime(2002, 11, 1),
+  "CTF-02-005": datetime.datetime(2002, 9, 10),
+  "CTF-02-004": datetime.datetime(2002, 9, 10),
+  "CTF-02-003": datetime.datetime(2002, 9, 9),
+  "CTF-02-002": datetime.datetime(2001, 12, 18),
+  "CTF-02-001": datetime.datetime(2001, 11, 6),
+  "CTF-01-008": datetime.datetime(2001, 11, 9),
+  "CTF-01-007": datetime.datetime(2001, 10, 11),
+  "CTF-01-006": datetime.datetime(2001, 9, 27),
+  "CTF-01-005": datetime.datetime(2001, 8, 22),
+  "CTF-01-004": datetime.datetime(2001, 7, 23),
+  "CTF-01-003": datetime.datetime(2001, 5, 8),
+  "CTF-01-002": datetime.datetime(2001, 4, 9),
+  "CTF-01-001": datetime.datetime(2001, 3, 20),
+  "CTF-00-013": datetime.datetime(2000, 12, 13),
+  "CTF-00-012": datetime.datetime(2000, 10, 13),
+  "CTF-00-011": datetime.datetime(2000, 9, 8),
+  "INP00-011b": datetime.datetime(2000, 9, 8),
+  "CTF-00-010": datetime.datetime(2000, 8, 9),
+  "INP00-010a": datetime.datetime(2000, 8, 9),
+  "CTF-00-008": datetime.datetime(2000, 6, 8),
+  "INP00-008a": datetime.datetime(2000, 6, 8),
+  "INP00-008b": datetime.datetime(2000, 6, 8),
+  "CTF-00-006": datetime.datetime(2000, 5, 12),
+  "CTF-00-005": datetime.datetime(2000, 3, 24),
+  "CTF-00-003": datetime.datetime(2000, 2, 4),
+  "special-report-00-001": datetime.datetime(2000, 7, 30),
+  "assessment_of_compliance_Sept1999": datetime.datetime(1999, 10, 29),
+  "CTF-99-020": datetime.datetime(2000, 1, 3),
+  "CTF-99-015": datetime.datetime(1999, 9, 17),
+  "CTF-99-011": datetime.datetime(1999, 9, 30),
+  "CTF-99-010": datetime.datetime(1999, 9, 16),
+  "CTF-99-008": datetime.datetime(1999, 5, 5),
+  "CTF-99-007": datetime.datetime(1999, 5, 1),
+  "CTF-99-006": datetime.datetime(1999, 3, 26),
+  "CTF-99-004": datetime.datetime(1999, 2, 26),
+  "Survey_of_LSCGrantees": datetime.datetime(1998, 2, 1),
+  "96-040": datetime.datetime(1997, 1, 1),
+  "95-035": datetime.datetime(1996, 8, 1),
+  "95-096": datetime.datetime(1995, 7, 18),
 }
 
 BLACKLIST_REPORT_TITLES = [
@@ -69,10 +197,6 @@ def parse_year_accordion(content, landing_url, report_type, year_range):
   for accordion in accordions:
     heading = accordion.select("div.accordion-heading")[0]
     year_text = inspector.sanitize(heading.text)
-    if year_text.startswith("FY"):
-      year = int(year_text[2:])
-    else:
-      year = int(year_text)
     body = accordion.select("div.accordion-body div.accordion-inner")[0]
     if year_text == "FY1995" and body.text.strip() == "FY1995":
       continue
@@ -81,7 +205,7 @@ def parse_year_accordion(content, landing_url, report_type, year_range):
       raise inspector.NoReportsFoundError("Legal Services Corporation (%s)" %
                                           landing_url)
     for result in results:
-      report = report_from(result, landing_url, report_type, year_range, year)
+      report = report_from(result, landing_url, report_type, year_range)
       if report:
         inspector.save_report(report)
 
@@ -185,7 +309,7 @@ def run(options):
 
 REPORT_NO_RE = re.compile("[0-9]{2}-[0-9]{2,3}[A-Z]?")
 
-def report_from(result, landing_url, report_type, year_range, year=None):
+def report_from(result, landing_url, report_type, year_range):
   if not result.text or result.text in BLACKLIST_REPORT_TITLES:
     # There are a few empty links due to bad html and some links for alternative
     # formats (PDF) that we will just ignore.
@@ -249,12 +373,9 @@ def report_from(result, landing_url, report_type, year_range, year=None):
         published_on_text = re.search('(\d+/\d+)', title).groups()[0]
       except AttributeError:
         pass
+
     if not published_on_text:
-      if year is None:
-        raise inspector.NoDateFoundError(report_id, title)
-      # Since we only have the year, set this to Nov 1st of that year
-      published_on = datetime.datetime(year, 11, 1)
-      estimated_date = True
+      raise inspector.NoDateFoundError(report_id, title)
 
     if not published_on:
       datetime_formats = [
@@ -271,6 +392,9 @@ def report_from(result, landing_url, report_type, year_range, year=None):
           pass
         else:
           break
+
+  if not published_on:
+    raise inspector.NoDateFoundError(report_id, title)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
