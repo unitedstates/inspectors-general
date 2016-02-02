@@ -2,8 +2,6 @@
 
 import datetime
 import logging
-import os
-from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 from utils import utils, inspector
@@ -32,6 +30,7 @@ REPORT_TYPES = ( #there can be multiple files within each type. The integer is t
 
 )
 
+
 """
 These are the outcome codes as of 2015, but let's generate this dynamically, in case it changes
 
@@ -47,7 +46,6 @@ OUTCOME_CODES = { #there can be several for each case
   '90':    'Special Counsel found report not reasonable'
 }
 """
-
 
 #take a beautifulsoup document and parse the list of outcome codes from the first table, returning a dict like the one above
 def generate_outcome_codes(doc):
@@ -74,14 +72,17 @@ def run(options):
 
     OUTCOME_CODES = generate_outcome_codes(doc)
 
+    keys_used = [] #a few reports appear multiple times... ignore them the second time if they appear more than once
+
     results = doc.findAll("table")[1].tbody.findAll('tr') #no ids on the tables, but it's the second one
     for result in results:
       reports = report_from(result, year, year_range,OUTCOME_CODES)
       for report in reports:
-        inspector.save_report(report)
+        if report['report_id'] not in keys_used:
+          inspector.save_report(report)
+          keys_used.append(report['report_id'])    
 
 previous_report = None #global variable to let us see the previous row in case the following one needs to reference it
-
 
 # takes a row in the table (one group of related PDFs) and extracts them into
 # a list of dicts of details that are ready for inspector.save_report().
@@ -102,7 +103,6 @@ def report_from(result, year, year_range,OUTCOME_CODES):
   """
 
   global previous_report
-  global repeating_case_file_row #if there are multiple rows with the same case file
   reports = []
 
   cells = result.findAll('td')
@@ -171,7 +171,6 @@ def report_from(result, year, year_range,OUTCOME_CODES):
         'case_num_long': case_num_long,
         'outcomes': result_codes,
         'main_letter_url': main_letter_url
-
       }
 
       reports.append(report)
@@ -217,7 +216,7 @@ def get_extra_descrip(pdf_link):
 
 def fix_partial_row(cells,previous_report):
   #deal with a few rows from very old years where colspans and rowspans are used, leaving seemingly orphaned PDFs.
-  #for these, the PDFs get their metadata from the previous, full row.
+  #for these, the PDFs will (as they should) their metadata from the previous, full row.
 
   reports = []
   report = previous_report
@@ -231,6 +230,7 @@ def fix_partial_row(cells,previous_report):
 
       title = '%s | %s | %s | %s' % (report['agency_name'], location, report['case_num_short'], 'Unknown')  
       report['url'] = 'https://osc.gov%s' % a['href']
+      report['report_id'] = make_report_id(a['href'])
       report['type'] = 'Unknown'
       extra_descrip = get_extra_descrip(a)
 
@@ -239,11 +239,10 @@ def fix_partial_row(cells,previous_report):
           title = title+' | '+extra_descrip
         except:
           pass
-
       report['title'] = title
-      report['report_id'] = make_report_id(a['href'])
 
       reports.append(report)
+      previous_report = report        
 
   return reports
 
