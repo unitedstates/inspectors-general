@@ -55,6 +55,60 @@ RSS_BROKEN_LINKS = {
     "https://www.si.edu/Content/OIG/Audits/2009/A-08-05.pdf",
 }
 
+REPORT_PUBLISHED_MAP = {
+  "A-15-06": datetime.datetime(2015, 12, 10),
+  "A-13-03": datetime.datetime(2013, 2, 27),
+  "A-12-08": datetime.datetime(2013, 6, 3),
+  "A-11-05": datetime.datetime(2012, 5, 15),
+  "A-11-07": datetime.datetime(2013, 3, 30),
+  "M-11-03": datetime.datetime(2011, 7, 1),
+  "A-09-03-02": datetime.datetime(2009, 9, 14),
+  "A-09-03-01": datetime.datetime(2009, 9, 3),
+  "WRW_TravelReview": datetime.datetime(2008, 10, 28),
+  "A-07-09-1": datetime.datetime(2008, 7, 18),
+  "SBVCEOAUPFY06-7": datetime.datetime(2008, 7, 7),
+  "SecretaryAUPFY06-7": datetime.datetime(2008, 7, 3),
+  "IBA-07-08": datetime.datetime(2008, 3, 31),
+  "A-07-01": datetime.datetime(2008, 3, 31),
+  "A-07-05": datetime.datetime(2008, 2, 25),
+  "A-06-04": datetime.datetime(2007, 1, 16),
+  "A-06-06R": datetime.datetime(2007, 1, 19),
+  "A-06-02R": datetime.datetime(2007, 1, 19),
+  "A-06-08": datetime.datetime(2007, 5, 16),
+  "SBVCEOAUP": datetime.datetime(2007, 7, 19),
+  "A-06-07": datetime.datetime(2007, 8, 10),
+  "A-06-01": datetime.datetime(2007, 8, 28),
+  "A-06-05": datetime.datetime(2007, 4, 20),
+  "A-07-06": datetime.datetime(2007, 9, 19),
+  "A-07-04": datetime.datetime(2007, 9, 28),
+  "A-05-03": datetime.datetime(2006, 2, 16),
+  "M-06-01": datetime.datetime(2006, 2, 14),
+  "IBA-05-05": datetime.datetime(2006, 7, 25),
+  "A-05-07": datetime.datetime(2006, 8, 21),
+  "A-05-06R": datetime.datetime(2006, 9, 29),
+  "A-04-05": datetime.datetime(2005, 1, 6),
+  "A-04-10": datetime.datetime(2005, 2, 25),
+  "A-04-11": datetime.datetime(2005, 3, 3),
+  "A-05-01": datetime.datetime(2005, 9, 29),
+  "A-05-04": datetime.datetime(2005, 9, 28),
+  "M-05-01": datetime.datetime(2006, 6, 8),
+  "M-05-02": datetime.datetime(2005, 9, 15),
+  "M-05-03": datetime.datetime(2005, 12, 5),
+  "A-03-07": datetime.datetime(2004, 3, 31),
+  "A-04-02": datetime.datetime(2004, 6, 16),
+  "A-04-03": datetime.datetime(2004, 9, 9),
+  "A-04-06": datetime.datetime(2004, 8, 25),
+  "A-04-07": datetime.datetime(2004, 7, 22),
+  "A-02-04": datetime.datetime(2003, 7, 31),
+  "A-02-06": datetime.datetime(2003, 1, 17),
+  "A-02-10": datetime.datetime(2003, 4, 16),
+  "A-03-02": datetime.datetime(2003, 3, 31),
+  "A-03-04": datetime.datetime(2003, 3, 27),
+  "A-03-05": datetime.datetime(2003, 12, 18),
+  "A-03-06": datetime.datetime(2003, 12, 3),
+  "A-03-08": datetime.datetime(2003, 9, 3),
+}
+
 report_ids_seen = set()
 
 def run(options):
@@ -147,11 +201,22 @@ def rss_report_from(result, year_range):
 
   title = result.find("title").text
   report_type = report_type_from_url(report_url)
+
+  published_on = None
   published_on_text = result.find("pubdate").text
   try:
     published_on = datetime.datetime.strptime(published_on_text, '%a, %d %b %Y %H:%M:%S %z').date()
   except ValueError:
-    published_on = datetime.datetime.strptime(published_on_text, '%a, %d %B %Y %H:%M:%S %z').date()
+    pass
+
+  if not published_on:
+    try:
+      published_on = datetime.datetime.strptime(published_on_text, '%a, %d %B %Y %H:%M:%S %z').date()
+    except ValueError:
+      pass
+
+  if not published_on:
+    raise inspector.NoDateFoundError(report_id, title)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -200,11 +265,15 @@ def report_from(result, year_range):
 
   estimated_date = False
   published_on = None
-  try:
-    published_on_text = "/".join(re.search('(\w+) (\d+), (\d+)', title).groups())
-    published_on = datetime.datetime.strptime(published_on_text, '%B/%d/%Y')
-  except AttributeError:
-    pass
+  if report_id in REPORT_PUBLISHED_MAP:
+    published_on = REPORT_PUBLISHED_MAP[report_id]
+
+  if not published_on:
+    try:
+      published_on_text = "/".join(re.search('(\w+) (\d+), (\d+)', title).groups())
+      published_on = datetime.datetime.strptime(published_on_text, '%B/%d/%Y')
+    except AttributeError:
+      pass
 
   if not published_on:
     month_year_match = MONTH_YEAR_RE.search(result.text)
@@ -214,20 +283,7 @@ def report_from(result, year_range):
       estimated_date = True
 
   if not published_on:
-    try:
-      # For reports where we can only find the year, set them to Nov 1st of
-      # that year
-      published_on_year = int(result.find_previous("h2").text)
-      published_on = datetime.datetime(published_on_year, 11, 1)
-      estimated_date = True
-    except AttributeError:
-      pass
-
-  if not published_on:
-    result_text = str(result.text)
-    if result_text.find('CNCS') != -1 and \
-                result_text.find('peer review report') != -1:
-      published_on = datetime.datetime(2013, 2, 27)
+    raise inspector.NoDateFoundError(report_id, title)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
