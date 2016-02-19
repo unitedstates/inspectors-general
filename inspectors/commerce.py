@@ -135,6 +135,9 @@ def report_from(result, topic, topic_url, year_range):
       else:
         report_url_relative = landing_page.select("div.oig_Publications a")\
             [-1].get('href')
+      if report_url_relative == "http://www.oig.doc.gov/Pages/FOIA-Electronic-Reading-Room.aspx":
+        report_url_relative = landing_page.select("div.oig_Publications a")\
+            [0].get('href')
     except IndexError:
       # If there is no linked report, this page is the report. We know that
       # these are not unreleased reports or we would have caught them above
