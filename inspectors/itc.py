@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import re
 from urllib.parse import urljoin
 
 from utils import utils, inspector
@@ -33,7 +34,10 @@ def run(options):
   # Pull the audit reports
   doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL)
 
-  headers = doc.select("p.Ptitle1")
+  headers = set([a.parent for a in
+                 doc.find_all("a", id=re.compile("^[0-9]{4}$"))])
+  headers.update(doc.find_all("p", class_="Ptitle1"))
+  headers = sorted(headers, key=lambda p: int(p.text.strip()), reverse=True)
   if not headers:
     raise inspector.NoReportsFoundError("ITC")
 
