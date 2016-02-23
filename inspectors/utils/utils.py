@@ -109,6 +109,7 @@ WHITELIST_INSECURE_DOMAINS = (
   "https://www.ignet.gov/",  # incomplete chain as of 1/25/2015
   "https://www.va.gov/",  # incomplete chain as of 12/6/2015
   "https://origin.www.fhfaoig.gov/",  # incomplete chain as of 1/5/2016
+  "https://www.archives.gov",  # incomplete chain as of 2/19/2016
 
   # The following domains will 301/302 redirect to the above domains, so
   # validate=False is needed for these cases as well
