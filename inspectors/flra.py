@@ -100,6 +100,7 @@ REPORT_PUBLISHED_MAP = {
   "401": datetime.datetime(2004, 12, 1),
   "403": datetime.datetime(2004, 12, 9),
   "398": datetime.datetime(2003, 5, 2),
+  "1074": datetime.datetime(2016, 2, 3),
 }
 
 IGNET_REWRITE_URL = {
