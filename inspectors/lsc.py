@@ -40,14 +40,14 @@ REPORT_PUBLISHED_MAP = {
   "MeekerOIGMappingReport": datetime.datetime(2005, 9, 14),
   "core-legal-services": datetime.datetime(2005, 3, 14),
   "Mapping_Evaluation_Phase_I_Volume_I_Final_Report": datetime.datetime(2003, 11, 1),
-  "evalicls": datetime.datetime(2005, 11, 1),
-  "evallafla": datetime.datetime(2004, 11, 1),
-  "evallasoc": datetime.datetime(2004, 11, 1),
-  "evallassd": datetime.datetime(2004, 11, 1),
-  "evalnls": datetime.datetime(2004, 11, 1),
-  "evalalas": datetime.datetime(2005, 11, 1),
-  "evalglsp": datetime.datetime(2005, 11, 1),
-  "evalmlsa": datetime.datetime(2005, 11, 1),
+  "EvalICLS": datetime.datetime(2005, 11, 1),
+  "EvalLAFLA": datetime.datetime(2004, 11, 1),
+  "EvalLASOC": datetime.datetime(2004, 11, 1),
+  "EvalLASSD": datetime.datetime(2004, 11, 1),
+  "EvalNLS": datetime.datetime(2004, 11, 1),
+  "EvalALAS": datetime.datetime(2005, 11, 1),
+  "EvalGLSP": datetime.datetime(2005, 11, 1),
+  "EvalMLSA": datetime.datetime(2005, 11, 1),
   "fraud-alert-16-01": datetime.datetime(2015, 10, 19),
   "15-029": datetime.datetime(2015, 9, 30),
 }
@@ -150,7 +150,14 @@ def parse_mapping(content, landing_url, report_type, year_range):
       result = link.parent
     elif href == "https://www.oig.lsc.gov/images/mapping/Mapping_Evaluation_Phase_I_Volume_I_Final_Report.pdf":
       result = link.parent.parent
-    elif (href.startswith("https://oig.lsc.gov/mapping/references/eval") and
+    elif (href.startswith("https://www.oig.lsc.gov/images/pdfs/mapping/Eval") and
+          href.endswith(".pdf")):
+      result = link.parent
+    elif (href.startswith("https://www.oig.lsc.gov/images/mapping/references/"
+                          "Eval") and
+          href.endswith(".pdf")):
+      result = link.parent
+    elif (href.startswith("https://www.oig.lsc.gov/images/Eval") and
           href.endswith(".pdf")):
       result = link.parent
     else:
