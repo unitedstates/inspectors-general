@@ -165,6 +165,8 @@ REPORT_PUBLISHED_MAPPING = {
 
   # This has the right date in one place and the wrong date in another
   'oei-07-91-01470': datetime.datetime(1992, 4, 1),
+
+  "41206159": datetime.datetime(2013, 12, 4),
 }
 
 # This manually entered data is used to skip landing pages that hold more than
@@ -489,6 +491,8 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
         report_url,
       )
 
+  if not published_on:
+    raise inspector.NoDateFoundError(report_id, title)
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
