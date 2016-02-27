@@ -18,7 +18,9 @@ archive = 1995
 # - There are a few report pages which don't list published dates. See
 # REPORT_PUBLISHED_MAPPING
 
-AUDITS_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/{}/"
+AUDIT_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/{}/"
+ARCHIVED_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/archived.html"
+PRIOR_PENDING_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/prior-pending.html"
 SEMIANNUAL_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr1415/index.html"
 OTHER_REPORT_URLS = [
 # These brochures have been taken off of the website as of April 7, 2015
@@ -48,9 +50,13 @@ PDF_REGEX = re.compile("pdf")
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  # Pull the audit reports
+  urls = [ARCHIVED_REPORTS_URL, PRIOR_PENDING_REPORTS_URL]
   for year in year_range:
-    url = AUDITS_REPORTS_URL.format(year)
+    if year >= 2005:
+        urls.append(AUDIT_REPORTS_URL.format(year))
+
+  # Pull the audit reports
+  for url in urls:
     doc = utils.beautifulsoup_from_url(url)
     results = doc.find("table", border="1").select("tr")
     if not results:

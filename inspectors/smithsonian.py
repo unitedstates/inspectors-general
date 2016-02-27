@@ -260,8 +260,11 @@ def report_from(result, year_range):
     return
   report_ids_seen.add(report_id)
 
-  title = result.text
+  title = result.text.strip()
   report_type = report_type_from_url(report_url)
+
+  if not title:
+    return None
 
   estimated_date = False
   published_on = None
