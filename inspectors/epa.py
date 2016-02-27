@@ -19,7 +19,7 @@ RE_DATE = re.compile('(?:(?:Jan|January|JANUARY|Feb|February|FEBRUARY|Mar|'
                      'Dec|December|DECEMBER)'
                      ',?(?:\\s+[0-9I]{1,2}\\s*,)?\\s*[0-9]{4})|'
                      '[0-9]{2}/[0-9]{2}/[0-9]{4}')
-BASE_URL = "http://www2.epa.gov/office-inspector-general/"
+BASE_URL = "http://www.epa.gov/office-inspector-general/"
 REPORTS_LATEST_URL = BASE_URL + "oig-reports"
 REPORTS_YEAR_URL_FORMAT = BASE_URL + "%d-reports"
 REPORTS_2012_2009_URL = BASE_URL + "2012-2009-reports"
@@ -42,15 +42,15 @@ DATE_FORMATS = [
   '%m/%d/%Y',
 ]
 REPORT_PUBLISHED_MAPPING = {
-  "http://www2.epa.gov/sites/production/files/2015-09/documents/9p00210.pdf":
+  "http://www.epa.gov/sites/production/files/2015-09/documents/9p00210.pdf":
     datetime.datetime(1999, 6, 30),
-  "http://www2.epa.gov/sites/production/files/2015-09/documents/20090806-09-p-0203.pdf":
+  "http://www.epa.gov/sites/production/files/2015-09/documents/20090806-09-p-0203.pdf":
     datetime.datetime(2009, 8, 6),
 }
 REPORT_ID_MAPPING = {
-  "http://www2.epa.gov/sites/production/files/2015-09/documents/9p00210.pdf":
+  "http://www.epa.gov/sites/production/files/2015-09/documents/9p00210.pdf":
     "99P00210",
-  "http://www2.epa.gov/sites/production/files/2015-09/documents/20090806-09-p-0203.pdf":
+  "http://www.epa.gov/sites/production/files/2015-09/documents/20090806-09-p-0203.pdf":
     "09-P-0203",
 }
 
