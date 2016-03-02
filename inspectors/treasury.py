@@ -84,9 +84,10 @@ REPORT_PUBLISHED_MAP = {
   "OIG-CA-14-017": datetime.datetime(2014, 9, 30),
   "OIG-CA-14-015": datetime.datetime(2014, 9, 4),
   "OIG-CA-15-023": datetime.datetime(2015, 7, 29),
-  "OIG-15-CA-020": datetime.datetime(2015, 6, 22),
+  "OIG-CA-15-020": datetime.datetime(2015, 6, 22),
   "OIG-15-CA-012": datetime.datetime(2015, 4, 7),
   "OIG-CA-15-024": datetime.datetime(2015, 9, 15),
+  "M-12-12 Reporting": datetime.datetime(2016, 1, 28),
 }
 
 def run(options):
