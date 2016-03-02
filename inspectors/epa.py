@@ -72,7 +72,10 @@ def run(options):
           continue
         report_seen_flag = True
 
-        published_on_dt = parse_date(tds[0].text.strip())
+        try:
+          published_on_dt = parse_date(tds[0].text.strip())
+        except Exception:
+          published_on_dt = parse_date(tds[2].text.strip())
         if published_on_dt.year not in year_range:
           continue
 
@@ -122,7 +125,10 @@ def report_from_table(tds, published_on_dt, base_url):
 
 
   report_id = re.sub("\s+", " ", tds[2].text).strip()
-  # fallback, only needed for one testimony, apparently
+  # fix typo
+  if report_id == "May 17, 2006":
+    report_id = None
+  # fallback
   if (report_id == "") or (not report_id):
     report_id, extension = os.path.splitext(report_url.split("/")[-1])
 
