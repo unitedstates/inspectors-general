@@ -37,6 +37,8 @@ def run(options):
         continue
 
       paragraph = a.parent
+      while paragraph.name != "p":
+        paragraph = paragraph.parent
       all_text = paragraph.text.strip()
 
       # Response letters don't get their own date heading -- keep date from
