@@ -66,6 +66,7 @@ REPORT_URL_TO_PUBLISHED_DATETIMES = {
   "https://www.sec.gov/about/offices/oig/reports/reppubs/other/kotz_legislativerecommendationsforbankingcommittee.pdf": datetime.datetime(2009, 10, 29),
   "https://www.sec.gov/about/offices/oig/reports/reppubs/other/sec_oig_pressrelease_1_13.pdf": datetime.datetime(2012, 1, 13),
   "https://www.sec.gov/about/offices/oig/reports/reppubs/other/oig_strategicplan2010-2015-9-1-10-508.pdf": datetime.datetime(2010, 9, 1),
+  "https://www.sec.gov/oig/reportspubs/Review-of-the-SECs-Pay-Transition-Program-15-ONR-0281-R-1-27-2016.pdf": datetime.datetime(2016, 1, 27),
 }
 
 CANNED_REPORTS = [
