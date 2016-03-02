@@ -170,10 +170,20 @@ def report_from_table(tds, published_on_dt, base_url):
             "Response to OIG Report" in text or
             "Report Briefing with Gallery" in text or
             "Dispute Resolution" in text or
-            "Materials Relating to" in text):
+            "Materials Relating to" in text or
+            "Addendum" in text or
+            "Press Statement" in text or
+            "Detailed Comments" in text or
+            text.startswith("Attachment") or
+            "In Response to" in text or
+            "Full Resolution Materials" in text or
+            "Podcast Transcript" in text):
         pass
       else:
         raise Exception("Unrecognized document link: %s" % doc_link.text)
+    if report.get('summary_url') and not report.get('url'):
+      report['summary_only'] = True
+      report['unreleased'] = True
     what_we_found = landing_page.find("strong", text=["What We Found",
                                                       "What Was Found",
                                                       "What the Firm Found"])
@@ -186,6 +196,8 @@ def report_from_table(tds, published_on_dt, base_url):
       report['summary'] = summary
     elif "annual-plan-fiscal-year-" in report_url:
       report['summary'] = landing_page.article.p.text.strip()
+    elif "annual-superfund-report-" in report_url:
+      report['summary'] = landing_page.article.find_all("a")[1].text.strip()
     else:
       raise Exception("No report summary was found on %s" % report_url)
   else:
@@ -245,8 +257,11 @@ def extract_url(td):
   url = None
   links = td.select('a')
   links = [link for link in links
-           if not "/office-inspector-general/multimedia" in link['href']]
+           if not "/office-inspector-general/multimedia" in link['href']
+           and not "/office-inspector-general/oig-multimedia" in link['href']]
   if len(links) == 1:
+    url = links[0]['href']
+  elif len(links) == 2 and links[0]['href'] == links[1]['href']:
     url = links[0]['href']
   else:
     pdf_links = [link for link in links if RE_PDF.search(link.text)]
