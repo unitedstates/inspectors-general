@@ -22,10 +22,8 @@ RE_DATE = re.compile('(?:(?:Jan|January|JANUARY|Feb|February|FEBRUARY|Mar|'
 BASE_URL = "http://www.epa.gov/office-inspector-general/"
 REPORTS_LATEST_URL = BASE_URL + "oig-reports"
 REPORTS_YEAR_URL_FORMAT = BASE_URL + "%d-reports"
-REPORTS_2012_2009_URL = BASE_URL + "2012-2009-reports"
-REPORTS_2008_2005_URL = BASE_URL + "2008-2005-reports"
-REPORTS_2004_2002_URL = BASE_URL + "2004-2002-reports-0"
-REPORTS_2001_1996_URL = BASE_URL + "2001-1996-reports"
+REPORTS_1999_1996_URL = BASE_URL + "1999-1996-reports"
+REPORTS_2015_URL = BASE_URL + "2015-oig-reports"
 DATE_FORMATS = [
   '%b %d, %Y',
   '%B %d, %Y',
@@ -268,14 +266,10 @@ def years_to_index_urls(year_range):
 
   urls = set([REPORTS_LATEST_URL])
   for year in year_range:
-    if year <= 2001:
-      urls.add(REPORTS_2001_1996_URL)
-    elif year <= 2004:
-      urls.add(REPORTS_2004_2002_URL)
-    elif year <= 2008:
-      urls.add(REPORTS_2008_2005_URL)
-    elif year <= 2012:
-      urls.add(REPORTS_2012_2009_URL)
+    if year <= 1999:
+      urls.add(REPORTS_1999_1996_URL)
+    elif year == 2015:
+      urls.add(REPORTS_2015_URL)
     elif year >= _latest_year:
       pass
     else:
