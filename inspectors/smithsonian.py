@@ -32,7 +32,7 @@ archive = 2003
 RSS_URL = "https://www.si.edu/Content/OIG/Misc/OIG-RSS.xml"
 RECENT_AUDITS_URL = "https://www.si.edu/OIG/Audits"
 AUDIT_ARCHIVE_URL = "https://www.si.edu/oig/Archive"
-OTHER_REPORTS_URl = "https://www.si.edu/OIG/ReportsToCongress"
+OTHER_REPORTS_URL = "https://www.si.edu/OIG/ReportsToCongress"
 
 RSS_BROKEN_LINKS = {
   "http://www.si.edu/Content/OIG/Misc/Peer_Review_09-21-2011.pdf":
@@ -109,6 +109,13 @@ REPORT_PUBLISHED_MAP = {
   "A-03-08": datetime.datetime(2003, 9, 3),
 }
 
+URL_BLACKLIST = [
+  RECENT_AUDITS_URL,
+  OTHER_REPORTS_URL,
+  AUDIT_ARCHIVE_URL,
+  "https://get.adobe.com/reader/"
+]
+
 report_ids_seen = set()
 
 def run(options):
@@ -145,7 +152,7 @@ def run(options):
       inspector.save_report(report)
 
   # Pull the other reports
-  doc = utils.beautifulsoup_from_url(OTHER_REPORTS_URl)
+  doc = utils.beautifulsoup_from_url(OTHER_REPORTS_URL)
   results = doc.select("div.block > a")
   if not results:
     raise inspector.NoReportsFoundError("Smithsonian (other)")
@@ -239,6 +246,8 @@ def rss_report_from(result, year_range):
 
 def report_from(result, year_range):
   report_url = urljoin(RECENT_AUDITS_URL, result.get('href'))
+  if report_url in URL_BLACKLIST:
+    return None
   # Strip extra path adjustments
   report_url = report_url.replace("../", "")
 
@@ -246,7 +255,7 @@ def report_from(result, year_range):
   if not report_url.endswith(".pdf"):
     # Some reports link to other page which link to the full report
     report_page = utils.beautifulsoup_from_url(report_url)
-    relative_report_url = report_page.select("div.block a")[0].get('href')
+    relative_report_url = report_page.select("div.block a[href]")[0]['href']
     report_url = urljoin(report_url, relative_report_url)
     # Strip extra path adjustments
     report_url = report_url.replace("../", "")
