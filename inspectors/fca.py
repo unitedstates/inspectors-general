@@ -34,6 +34,7 @@ REPORT_PUBLISHED_MAPPING = {
   "S&OPP14-15": datetime.datetime(2013, 9, 11),
   "S&OPP13-14": datetime.datetime(2012, 8, 21),
   "S&OPP12-13": datetime.datetime(2011, 8, 22),
+  "PerformanceReport14&15": datetime.datetime(2016, 1, 20),
   "PerformanceReport12&13": datetime.datetime(2014, 1, 15),
   "PerformanceReport10&11": datetime.datetime(2012, 1, 9),
   "PerformanceReport08-09": datetime.datetime(2010, 1, 20),
