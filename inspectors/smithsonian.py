@@ -57,6 +57,7 @@ RSS_BROKEN_LINKS = {
 
 REPORT_PUBLISHED_MAP = {
   "A-15-06": datetime.datetime(2015, 12, 10),
+  "A-13-07": datetime.datetime(2013, 7, 26),
   "A-13-03": datetime.datetime(2013, 2, 27),
   "A-12-08": datetime.datetime(2013, 6, 3),
   "A-11-05": datetime.datetime(2012, 5, 15),
