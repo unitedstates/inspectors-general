@@ -26,6 +26,7 @@ REPORT_URLS = {
 }
 
 REPORT_PUBLISHED_MAP = {
+  "ftcfismarepor2015": datetime.datetime(2016, 2, 29),
   "ftcmgmtltrfy2015": datetime.datetime(2016, 1, 8),
   "2016_oig_ocio_report": datetime.datetime(2015, 12, 16),
   "151208oig-mgmtchallenges": datetime.datetime(2015, 10, 15),
