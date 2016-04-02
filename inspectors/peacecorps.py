@@ -178,6 +178,8 @@ REPORT_PUBLISHED_MAPPING = {
   "PC_Guinea_Final_Evaluation_Report_IG-07-14-E": datetime.datetime(2007, 8, 1),
   "PC_ProgramStudyReport11": datetime.datetime(2007, 1, 1),
   "PC_South_Africa_Final_Evaluation-Report-IG-0702EA": datetime.datetime(2006, 10, 1),
+  "Management_Advisory_Report-FOIA": datetime.datetime(2016, 3, 10),
+  "Final_Report_Follow_Up_Evaluation_of_Issues_in_2010_PC_Morocco_Assessment_of_Medical_Care": datetime.datetime(2016, 3, 1),
 }
 
 REPORT_TYPE_MAP = {
