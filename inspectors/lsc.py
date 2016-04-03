@@ -221,17 +221,17 @@ def parse_investigation(content, landing_url, report_type, year_range):
       continue
     if doj_flag:
       if isinstance(child, Tag) and child.name == 'ul':
+        doj_report_counter = doj_report_counter + 1
         report = report_from(child.li, landing_url, report_type, year_range)
         if report:
           inspector.save_report(report)
-          doj_report_counter = doj_report_counter + 1
     else:
       if isinstance(child, Tag):
         if child.name != 'h3' and child.text.strip():
+          other_report_counter = other_report_counter + 1
           report = report_from(child, landing_url, report_type, year_range)
           if report:
             inspector.save_report(report)
-            other_report_counter = other_report_counter + 1
       elif isinstance(child, Comment):
         continue
       elif isinstance(child, NavigableString):

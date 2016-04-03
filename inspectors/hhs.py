@@ -519,9 +519,10 @@ def filter_links(link_list, base_url):
     if href_list[i].startswith("http://go.usa.gov/"):
       href_list[i] = utils.resolve_redirect(href_list[i])
   href_list = [urldefrag(urljoin(base_url, href))[0] for href in href_list]
-  filtered_list = [href for href in href_list \
-      if href and href not in BLACKLIST_REPORT_URLS and \
-      not href.startswith("mailto:")]
+  filtered_list = [href for href in href_list
+      if href and href not in BLACKLIST_REPORT_URLS and
+      not href.startswith("mailto:") and
+      not href.endswith(".jpg")]
   filtered_list = list(set(filtered_list))
   return filtered_list
 
@@ -534,6 +535,11 @@ def report_from_landing_url(report_url):
   related = doc.find(id="related")
   if related:
     related.extract()
+  captioned = doc.find(class_="captioned-image")
+  if captioned:
+    h3 = captioned.h3
+    if h3 and h3.text.strip() == "Related Reports":
+      captioned.extract()
 
   possible_tags = (
     doc.select("h1") +

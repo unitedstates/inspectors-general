@@ -17,7 +17,7 @@ archive = 1979
 # - Fix published date for "Audit of The National Council on the Aging, INC.".
 # Right now it just says "February 11" without a year.
 
-AUDIT_REPORTS_URL = "https://www.oig.dol.gov/cgi-bin/oa_rpts.cgi?s=&y=fy9{}&a=all"
+AUDIT_REPORTS_URL = "https://www.oig.dol.gov/cgi-bin/oa_rpts-v4.cgi?s=&y={}&a=all"
 SEMIANNUAL_REPORTS_URL = "https://www.oig.dol.gov/semiannual.htm"
 BASE_URL = "https://www.oig.dol.gov"
 
