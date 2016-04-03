@@ -3,7 +3,8 @@
 import datetime
 import re
 import logging
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
+import os
 
 from utils import utils, inspector
 
@@ -19,10 +20,9 @@ archive = 2010
 #   Standardize the report file names, and include the year, month, and day consistently.
 #
 
-AUDIT_REPORTS_URL = "http://www.cpb.org/oig/reports/"
-SEMIANNUAL_REPORTS_URL = "http://www.cpb.org/oig/"
+REPORTS_URL = "http://www.cpb.org/oig/reports/"
 
-ISSUED_DATE_EXTRACTION = re.compile('Issued ([A-Z][a-z]+ \d{1,2}, \d{4})')
+ISSUED_DATE_EXTRACTION = re.compile('[A-Z][a-z]+ \d{1,2}, \d{4}')
 
 REPORT_ID_DATE_EXTRACTION = [
   re.compile('.*(?P<month>\d{2})(?P<day>\d{2})(?P<year_2>\d{2})$'),
@@ -33,33 +33,58 @@ REPORT_ID_DATE_EXTRACTION = [
   re.compile('^Strategic-Plan-(?P<year>\d{4})-\d{4}$'),
 ]
 
-REPORT_TYPE_MAP = {
-  "audit": AUDIT_REPORTS_URL,
-  "semiannual_report": SEMIANNUAL_REPORTS_URL
-}
-
 def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports
-  for report_type, url in REPORT_TYPE_MAP.items():
-    doc = utils.beautifulsoup_from_url(url)
-    results = doc.select("div#content div#contentMain ul li.pdf")
-    if not results:
-      raise inspector.NoReportsFoundError("CPB (%s)" % url)
-    for result in results:
-      if not result.find('a'):
-        # Skip unlinked PDF's
-        continue
-      report = report_from(result, url, report_type, year_range)
-      if report:
-        inspector.save_report(report)
+  doc = utils.beautifulsoup_from_url(REPORTS_URL)
+  rows = doc.select("div.content > div > div > div > div.row")
+  row_audits = rows[0]
+  row_peer_review = rows[1]
+  col_plans = rows[2].select("div.col-md-6")[0]
+  col_congress = rows[2].select("div.col-md-6")[1]
+
+  # Audit reports
+  results = row_audits.select("ul li.pdf")
+  if not results:
+    raise inspector.NoReportsFoundError("CPB (audits)")
+  for result in results:
+    report = report_from(result, REPORTS_URL, "audit", year_range)
+    if report:
+      inspector.save_report(report)
+
+  # Peer review
+  results = row_peer_review.select("ul li.pdf")
+  if not results:
+    raise inspector.NoReportsFoundError("CPB (peer reviews)")
+  for result in results:
+    report = report_from(result, REPORTS_URL, "other", year_range)
+    if report:
+      inspector.save_report(report)
+
+  # Plans
+  results = col_plans.select("ul li.pdf")
+  if not results:
+    raise inspector.NoReportsFoundError("CPB (plans)")
+  for result in results:
+    report = report_from(result, REPORTS_URL, "other", year_range)
+    if report:
+      inspector.save_report(report)
+
+  # Semiannual reports to congress
+  results = col_congress.select("ul li.pdf")
+  if not results:
+    raise inspector.NoReportsFoundError("CPB (semiannual reports)")
+  for result in results:
+    report = report_from(result, REPORTS_URL, "semiannual_report", year_range)
+    if report:
+      inspector.save_report(report)
+
 
 def report_from(result, landing_url, report_type, year_range):
   link = result.find('a')
-
-  report_id = link.get('href').split('/')[-1].rstrip('.pdf')
-  report_url = urljoin(landing_url, link.get('href'))
+  report_url = urljoin(landing_url, link['href'])
+  report_id = os.path.basename(urlparse(report_url)[2]).rstrip('.pdf')
 
   title = link.text
   if 'semiannual' in report_id:
@@ -70,11 +95,13 @@ def report_from(result, landing_url, report_type, year_range):
     return
 
   published_on = None
-  issued_on = ISSUED_DATE_EXTRACTION.search(result.text)
+  issued_strong = result.parent.parent.parent.find("strong", text="Issued")
+  if issued_strong:
+    issued_on = ISSUED_DATE_EXTRACTION.search(issued_strong.parent.text)
+    if issued_on:
+      published_on = datetime.datetime.strptime(issued_on.group(0), '%B %d, %Y')
 
-  if issued_on:
-    published_on = datetime.datetime.strptime(issued_on.group(1), '%B %d, %Y')
-  else:
+  if not published_on:
     published_on = extract_date_from_report_id(report_id)
 
   if published_on.year not in year_range:
