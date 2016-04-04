@@ -302,7 +302,8 @@ def audit_report_from(year, result, landing_url, year_range):
     report_id = "%s-%s" % (report_id, published_on.strftime("%m-%y"))
 
   if not published_on:
-    raise inspector.NoDateFoundError(report_id, title)
+    inspector.log_no_date(report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)

@@ -396,10 +396,9 @@ class NoReportsFoundError(AssertionError):
   def __str__(self):
     return "No reports were found for %s" % self.value
 
-class NoDateFoundError(AssertionError):
-  def __init__(self, report_id, title):
-    self.report_id = report_id
-    self.title = title
-
-  def __str__(self):
-    return "No date was found for %s, \"%s\"" % (self.report_id, self.title)
+def log_no_date(report_id, title, url=None):
+  if url is None:
+    message = "No date was found for %s, \"%s\"" % (report_id, title)
+  else:
+    message = "No date was found for %s, \"%s\" (%s)" % (report_id, title, url)
+  admin.notify(message)

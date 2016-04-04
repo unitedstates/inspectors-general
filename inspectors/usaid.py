@@ -97,7 +97,8 @@ def report_from(result, landing_url, report_type, year_range):
       pass
 
   if not published_on:
-    raise inspector.NoDateFoundError(report_url, title)
+    inspector.log_no_date(report_url, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)

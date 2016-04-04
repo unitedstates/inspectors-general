@@ -224,7 +224,8 @@ def rss_report_from(result, year_range):
       pass
 
   if not published_on:
-    raise inspector.NoDateFoundError(report_id, title)
+    inspector.log_no_date(report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -296,7 +297,8 @@ def report_from(result, year_range):
       estimated_date = True
 
   if not published_on:
-    raise inspector.NoDateFoundError(report_id, title)
+    inspector.log_no_date(report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)

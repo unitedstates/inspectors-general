@@ -147,7 +147,8 @@ def report_from(result, landing_url, report_type, year_range):
       published_on = REPORT_PUBLISHED_MAP[report_id]
 
   if not published_on:
-    raise inspector.NoDateFoundError(report_id, title)
+    inspector.log_no_date(report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)

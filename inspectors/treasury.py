@@ -213,7 +213,8 @@ def audit_report_from(result, page_url, year_range):
     return
 
   if published_on is None:
-    raise inspector.NoDateFoundError(report_id, title)
+    inspector.log_no_date(report_id, title)
+    return
 
   agency_slug_text = children[0].text
 
@@ -315,7 +316,8 @@ def report_from(result, page_url, report_type, year_range):
     published_on = REPORT_PUBLISHED_MAP[report_id]
 
   if not published_on:
-    raise inspector.NoDateFoundError(report_id, title)
+    inspector.log_no_date(report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)

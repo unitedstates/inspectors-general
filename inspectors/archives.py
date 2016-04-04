@@ -218,7 +218,8 @@ def audit_report_from(result, landing_url, year, year_range):
       pass
 
   if not published_on:
-    raise inspector.NoDateFoundError(report_id, title)
+    inspector.log_no_date(report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -273,7 +274,8 @@ def peer_review_from(result, year_range):
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
   else:
-    raise inspector.NoDateFoundError(report_id, result.text)
+    inspector.log_no_date(report_id, result.text, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
