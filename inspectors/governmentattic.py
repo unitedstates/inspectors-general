@@ -30,9 +30,6 @@ https://archive.org/details/governmentattic.org?sort=-publicdate
 IG_REPORTS_ONLY = True
 
 
-def remove_non_ascii(text):
-    return ''.join(i for i in text if ord(i)<128)
-
 # <oig_url>
 archive = 1930
 #govattic page structure isn't based on year
@@ -139,7 +136,7 @@ for line in GOVATTIC_MAPPING.splitlines():
 def remove_linebreaks(s):
   #lots of weird tabs, etc. inside HTML strings. would replace all at once, but since utils.beautifulsoup_from_url
   #is taking the html straight to soup, we'll do it individually for the fields we need
-  return remove_non_ascii(s.replace('\n','').replace('\t','').replace('\r',''))  #.encode('ascii','ignore')
+  return inspector.sanitize(s.replace('\n','').replace('\t','').replace('\r',''))
 
 def run(options):
   year_range = inspector.year_range(options, archive)
