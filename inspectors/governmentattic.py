@@ -160,11 +160,6 @@ def run(options):
           inspector.save_report(report)
         
 
-#all dates successfully parse as of this writing, but it's a hand-coded HTML site, 
-#so it's possible one may not have a valid date in the future. use a set-in-time
-#default as a fallback so we get a consistent year-based slug for it.
-DEFAULT_DATE = datetime.datetime(2015,11,1,1,1,1)
-
 # extract a dict of details that are ready for inspector.save_report().
 def report_from(result, category_name, agency, year_range):
 
@@ -184,6 +179,11 @@ def report_from(result, category_name, agency, year_range):
     return
   report_url = a['href']
 
+  #these will be stored in folders with documents scraped by the official IG scrapers, so
+  #use the governmentattic url as slug to assure no conflict.
+  report_id = inspector.slugify(report_url.replace('http://www.',''))
+
+  title = remove_linebreaks(a.text).strip()
   text = remove_linebreaks(result.text)
   r = re.compile('\[.*\s(\d{2})-+(\w{3,12})-+(\d{4})')
   datematch = r.search(text)
@@ -201,11 +201,9 @@ def report_from(result, category_name, agency, year_range):
       except:
         published_on = None
   if not published_on:
-    logging.debug("[%s] Can't parse date %s, using default date." % (report_url,datestring))
-    published_on = DEFAULT_DATE
+    inspector.log_no_date(report_id, title, report_url)
+    return
 
-  title = remove_linebreaks(a.text).strip()
-  
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
@@ -215,11 +213,6 @@ def report_from(result, category_name, agency, year_range):
   if IG_REPORTS_ONLY and 'OIG' not in title and 'inspector general' not in title.lower():
     logging.debug("[%s] Skipping, not an IG report." % title)
     return
-
-  #these will be stored in folders with documents scraped by the official IG scrapers, so
-  #use the governmentattic url as slug to assure no conflict.
-  report_id = inspector.slugify(report_url.replace('http://www.',''))
-
 
   report = {
     'inspector': ig_slug,     # Store these with their natively-scraped counterparts, not in a govattic-specific place
