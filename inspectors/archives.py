@@ -21,6 +21,117 @@ AUDIT_REPORTS_URL = "https://www.archives.gov/oig/reports/audit-reports-{year}.h
 SEMIANNUAL_REPORTS_URL = "https://www.archives.gov/oig/reports/semiannual-congressional.html"
 PEER_REVIEWS_URL = "https://www.archives.gov/oig/reports/peer-review-reports.html"
 
+REPORT_PUBLISHED_MAP = {
+  "peer-review-2014": datetime.datetime(2014, 4, 30),
+  "audit-report-10-01": datetime.datetime(2009, 10, 26),
+  "audit-report-10-02": datetime.datetime(2009, 12, 11),
+  "advisory-report-10-03": datetime.datetime(2010, 1, 28),
+  "audit-report-10-04": datetime.datetime(2010, 4, 2),
+  "audit-report-10-05": datetime.datetime(2010, 8, 18),
+  "management-letter-10-06": datetime.datetime(2010, 3, 15),
+  "audit-report-10-07": datetime.datetime(2010, 4, 28),
+  "management-letter-10-08": datetime.datetime(2010, 3, 24),
+  "audit-report-10-09": datetime.datetime(2010, 5, 27),
+  "management-letter-10-10": datetime.datetime(2010, 4, 23),
+  "advisory-report-10-11": datetime.datetime(2010, 4, 29),
+  "advisory-report-10-12": datetime.datetime(2010, 5, 5),
+  "audit-report-10-13": datetime.datetime(2010, 7, 15),
+  "audit-report-10-14": datetime.datetime(2010, 8, 6),
+  "audit-report-10-15": datetime.datetime(2010, 6, 23),
+  "audit-report-10-16": datetime.datetime(2010, 8, 18),
+  "management-letter-10-18": datetime.datetime(2010, 9, 16),
+  "audit-report-10-19": datetime.datetime(2010, 9, 29),
+  "management-letter-oi-10-01": datetime.datetime(2010, 3, 2),
+  "management-letter-oi-10-02": datetime.datetime(2010, 1, 1),
+  "management-letter-oi-10-03": datetime.datetime(2010, 5, 13),
+  "audit-report-11-01": datetime.datetime(2010, 10, 29),
+  "audit-report-11-02": datetime.datetime(2010, 10, 18),
+  "audit-report-11-03": datetime.datetime(2011, 2, 16),
+  "audit-report-11-04": datetime.datetime(2010, 11, 12),
+  "audit-report-11-05": datetime.datetime(2011, 2, 18),
+  "audit-report-11-06": datetime.datetime(2010, 11, 30),
+  "audit-report-11-07": datetime.datetime(2011, 3, 22),
+  "mgmt-letter-11-08": datetime.datetime(2011, 1, 5),
+  "audit-report-11-09": datetime.datetime(2011, 1, 31),
+  "audit-report-11-10": datetime.datetime(2011, 3, 8),
+  "audit-report-11-11": datetime.datetime(2011, 3, 18),
+  "mgmt-letter-11-12": datetime.datetime(2011, 5, 4),
+  "mgmt-letter-11-13": datetime.datetime(2011, 6, 15),
+  "audit-report-11-14": datetime.datetime(2011, 7, 7),
+  "audit-report-11-15": datetime.datetime(2011, 7, 7),
+  "audit-report-11-16": datetime.datetime(2011, 7, 15),
+  "audit-report-11-17": datetime.datetime(2011, 9, 30),
+  "mgmt-letter-11-18": datetime.datetime(2011, 8, 2),
+  "mgmt-letter-11-19": datetime.datetime(2011, 8, 11),
+  "audit-report-11-20": datetime.datetime(2011, 9, 30),
+  "mgmt-letter-11-21": datetime.datetime(2011, 1, 1),
+  "mgmt-letter-OI-11-01": datetime.datetime(2011, 6, 28),
+  "mgmt-letter-12-01": datetime.datetime(2011, 10, 13),
+  "audit-report-12-02": datetime.datetime(2012, 1, 1),
+  "audit-report-12-03": datetime.datetime(2011, 11, 14),
+  "advisory-report-12-04": datetime.datetime(2012, 1, 30),
+  "audit-report-12-05": datetime.datetime(2012, 3, 27),
+  "mgmt-letter-12-06": datetime.datetime(2012, 2, 21),
+  "audit-memo-12-07": datetime.datetime(2012, 2, 23),
+  "advisory-report-12-08": datetime.datetime(2012, 3, 30),
+  "audit-report-12-09": datetime.datetime(2012, 5, 10),
+  "audit-report-12-10": datetime.datetime(2012, 9, 13),
+  "audit-report-12-11": datetime.datetime(2012, 1, 1),
+  "audit-report-12-12": datetime.datetime(2012, 6, 5),
+  "mgmt-letter-12-13": datetime.datetime(2012, 5, 22),
+  "audit-report-12-14": datetime.datetime(2012, 9, 11),
+  "audit-report-12-15": datetime.datetime(2012, 7, 23),
+  "management-letter-12-16": datetime.datetime(2012, 9, 28),
+  "audit-report-12-17": datetime.datetime(2012, 8, 27),
+  "mgmt-letter-12-18": datetime.datetime(2012, 7, 30),
+  "system-review-report-12-19": datetime.datetime(2012, 9, 27),
+  "audit-report-13-01": datetime.datetime(2012, 12, 10),
+  "audit-report-13-03": datetime.datetime(2013, 2, 15),
+  "audit-report-13-05": datetime.datetime(2012, 12, 10),
+  "audit-memorandum-13-06": datetime.datetime(2013, 1, 31),
+  "advisory-report-13-07": datetime.datetime(2013, 1, 31),
+  "audit-report-13-08": datetime.datetime(2013, 7, 9),
+  "audit-report-13-09": datetime.datetime(2013, 7, 9),
+  "audit-memorandum-13-10": datetime.datetime(2013, 7, 19),
+  "audit-report-13-11": datetime.datetime(2013, 9, 19),
+  "audit-report-13-12": datetime.datetime(2013, 9, 10),
+  "audit-report-13-14": datetime.datetime(2013, 9, 18),
+  "audit-memorandum-13-15": datetime.datetime(2013, 9, 25),
+  "management-letter-13-02": datetime.datetime(2012, 10, 18),
+  "management-letter-13-04": datetime.datetime(2012, 12, 4),
+  "management-letter-13-13": datetime.datetime(2013, 7, 29),
+  "audit-report-14-01": datetime.datetime(2014, 1, 30),
+  "audit-report-14-03": datetime.datetime(2014, 1, 15),
+  "audit-report-14-04": datetime.datetime(2014, 3, 5),
+  "audit-report-14-05": datetime.datetime(2014, 3, 11),
+  "audit-report-14-07": datetime.datetime(2014, 4, 2),
+  "audit-report-14-08": datetime.datetime(2014, 4, 17),
+  "audit-report-14-09": datetime.datetime(2014, 5, 1),
+  "audit-report-14-10": datetime.datetime(2014, 5, 9),
+  "audit-report-14-11": datetime.datetime(2014, 5, 5),
+  "audit-report-14-12": datetime.datetime(2014, 7, 3),
+  "advisory-report-14-14": datetime.datetime(2014, 6, 25),
+  "mgmt-letter-14-02": datetime.datetime(2014, 1, 9),
+  "mgmt-letter-14-06": datetime.datetime(2014, 1, 1),
+  "mgmt-letter-14-17": datetime.datetime(2014, 8, 20),
+  "mgmt-letter-14-18": datetime.datetime(2014, 9, 11),
+  "audit-memorandum-14-13": datetime.datetime(2014, 5, 17),
+  "audit-report-15-01": datetime.datetime(2014, 10, 27),
+  "audit-report-15-02": datetime.datetime(2014, 11, 12),
+  "audit-report-15-03": datetime.datetime(2015, 2, 6),
+  "advisory-report-15-04": datetime.datetime(2014, 12, 11),
+  "audit-report-15-05": datetime.datetime(2014, 12, 19),
+  "audit-report-15-06": datetime.datetime(2015, 2, 10),
+  "audit-report-15-10": datetime.datetime(2015, 3, 30),
+  "audit-report-15-11": datetime.datetime(2015, 5, 5),
+  "audit-report-15-12": datetime.datetime(2015, 5, 26),
+  "audit-report-15-13": datetime.datetime(2015, 8, 24),
+  "audit-report-15-14": datetime.datetime(2015, 9, 29),
+  "mgmt-letter-15-09": datetime.datetime(2015, 2, 25),
+  "audit-memo-15-07": datetime.datetime(2015, 1, 13),
+  "audit-memo-15-08": datetime.datetime(2015, 2, 12),
+}
+
 def run(options):
   year_range = inspector.year_range(options, archive)
   results_flag = False
@@ -78,13 +189,37 @@ def audit_report_from(result, landing_url, year, year_range):
   title = title_prefixer.sub("", title)
 
   estimated_date = False
-  try:
-    published_on_text = re.search('(\w+ \d+, \d+)', result.text).groups()[0]
-    published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
-  except AttributeError:
-    # Since we only have the year, set this to Nov 1st of that year
-    published_on = datetime.datetime(year, 11, 1)
-    estimated_date = True
+  published_on = None
+
+  if report_id in REPORT_PUBLISHED_MAP:
+    published_on = REPORT_PUBLISHED_MAP[report_id]
+
+  cleaned_text = re.sub("\s+", " ", inspector.sanitize(result.text))
+  if not published_on:
+    try:
+      published_on_text = re.search('(\w+ \d+, \d+)', cleaned_text).groups()[0]
+      published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+    except AttributeError:
+      pass
+
+  if not published_on:
+    try:
+      published_on_text = re.search('(\w+ \d+ , \d+)', cleaned_text).groups()[0]
+      published_on = datetime.datetime.strptime(published_on_text, '%B %d , %Y')
+    except AttributeError:
+      pass
+
+  if not published_on:
+    try:
+      response = utils.scraper.request(method="HEAD", url=report_url)
+      last_modified = response.headers["Last-Modified"]
+      published_on = datetime.datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
+    except ValueError:
+      pass
+
+  if not published_on:
+    inspector.log_no_date(report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -136,16 +271,17 @@ def peer_review_from(result, year_range):
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
 
-  # For reports where we can only find the year, set them to Nov 1st of that year
-  published_on_year = int(report_url.split("/")[-2])
-  published_on = datetime.datetime(published_on_year, 11, 1)
-  estimated_date = True
+  if report_id in REPORT_PUBLISHED_MAP:
+    published_on = REPORT_PUBLISHED_MAP[report_id]
+  else:
+    inspector.log_no_date(report_id, result.text, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
-  title = "Peer Review {}".format(published_on_year)
+  title = "Peer Review {}".format(published_on.year)
 
   report = {
     'inspector': 'archives',
@@ -153,7 +289,6 @@ def peer_review_from(result, year_range):
     'agency': 'archives',
     'agency_name': 'National Archives and Records Administration',
     'report_id': report_id,
-    'estimated_date': estimated_date,
     'url': report_url,
     'title': title,
     'type': 'peer_review',

@@ -39,6 +39,32 @@ REPORT_PUBLISHED_MAPPING = {
   "westlaw": datetime.datetime(2001, 7, 1),
   "fmfia": datetime.datetime(2001, 6, 1),
   "internet": datetime.datetime(2001, 5, 1),
+  "FY2015FinancialStatementAuditReport-Final": datetime.datetime(2015, 11, 16),
+  "FEC2014FinancialStatementAuditReport": datetime.datetime(2014, 11, 17),
+  "FY2013FinancialStatementAuditReport": datetime.datetime(2013, 12, 13),
+  "HRaudit2013": datetime.datetime(2013, 7, 9),
+  "FY12FinancialStatementAuditReport": datetime.datetime(2012, 12, 14),
+  "Final_FY2011_Financial_Statement_Audit_Report": datetime.datetime(2011, 11, 14),
+  "ProcurementandContractManagement2010": datetime.datetime(2011, 6, 6),
+  "2010PrivacyReport": datetime.datetime(2011, 3, 31),
+  "financial10": datetime.datetime(2010, 11, 12),
+  "financial09": datetime.datetime(2009, 11, 13),
+  "financial08": datetime.datetime(2008, 11, 12),
+  "2007Privacy": datetime.datetime(2007, 12, 7),
+  "financial07": datetime.datetime(2007, 11, 15),
+  "transit07": datetime.datetime(2007, 2, 1),
+  "financial06": datetime.datetime(2006, 11, 15),
+  "financial05": datetime.datetime(2005, 11, 10),
+  "financial04": datetime.datetime(2004, 12, 16),
+  "ManagementandPerformanceChallenges-2015-FinalReport": datetime.datetime(2015, 10, 16),
+  "ReviewofCompletedCorrectiveActionsofFY2014FinancialStatementAudit-December2014_000": datetime.datetime(2014, 12, 9),
+  "FinalReport-InspectionoftheFECsTravelandPurchaseCardPrograms-OIG-14-05-June2015": datetime.datetime(2015, 2, 1),
+  "2014ManagementChallenges-IncludesIGStatementandManagementsResponse": datetime.datetime(2014, 10, 15),
+  "FEC-A-123InspectionReport-Final06-17-14-assessed": datetime.datetime(2014, 6, 10),
+  "FECOIG_Peer_Review_2013": datetime.datetime(2014, 2, 11),
+  "Final-SurveyoftheFECsNewEmployeeOrientationProgram-OIG12-08": datetime.datetime(2012, 9, 1),
+  "PeerReview2010": datetime.datetime(2011, 5, 5),
+  "transit09": datetime.datetime(2009, 7, 1),
 }
 
 
@@ -99,6 +125,9 @@ def report_from(result, year_range, report_type, title_prefix=None):
   if report_url.endswith(".pdf"):
     # Inline report
     title = result.contents[0].strip().rstrip("-").strip()
+    if title.endswith(" 200") or title.endswith(" 201"):
+      # some years are split up by a <span> tag
+      title = title + result.contents[1].text
   else:
     # Some pages have separate landing pages.
     doc = utils.beautifulsoup_from_url(report_url)
@@ -110,29 +139,22 @@ def report_from(result, year_range, report_type, title_prefix=None):
     published_on_text = published_on_text.replace("Period ending ", "")
     published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
-  estimated_date = False
   if not published_on:
     if report_id in REPORT_PUBLISHED_MAPPING:
       published_on = REPORT_PUBLISHED_MAPPING[report_id]
-    else:
-      try:
-        published_on_text = "-".join(re.search('(\w+)\s+(\d{4})', title).groups())
-        published_on = datetime.datetime.strptime(published_on_text, '%B-%Y')
-      except (ValueError, AttributeError):
-        estimated_date = True
-        try:
-          fiscal_year = re.search('FY(\d+)', report_id).groups()[0]
-          published_on = datetime.datetime.strptime("November {}".format(fiscal_year), '%B %y')
-        except (ValueError, AttributeError):
-          try:
-            fiscal_year = int(re.search('(\d{4})', report_id).groups()[0])
-            published_on = datetime.datetime(fiscal_year, 11, 1)
-          except AttributeError:
-            fiscal_year = re.search('(\d{2})', report_id).groups()[0]
-            published_on = datetime.datetime.strptime("November {}".format(fiscal_year), '%B %y')
+  if not published_on:
+    try:
+      published_on_text = "-".join(re.search('(\w+)\s+(\d{4})', title).groups())
+      published_on = datetime.datetime.strptime(published_on_text, '%B-%Y')
+    except (ValueError, AttributeError):
+      pass
 
   if title_prefix:
     title = "{}{}".format(title_prefix, title)
+
+  if not published_on:
+    inspector.log_no_date(report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -149,8 +171,6 @@ def report_from(result, year_range, report_type, title_prefix=None):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),  # Date of publication
   }
-  if estimated_date:
-    report['estimated_date'] = estimated_date
   return report
 
 utils.run(run) if (__name__ == "__main__") else None

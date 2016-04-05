@@ -98,6 +98,7 @@ def report_from(result, topic, topic_url, year_range):
     # Assurance Practices," and there isn't a link.
     return
 
+  missing = False
   unreleased = False
   if "not publically released" in title:
     unreleased = True
@@ -134,6 +135,9 @@ def report_from(result, topic, topic_url, year_range):
       else:
         report_url_relative = landing_page.select("div.oig_Publications a")\
             [-1].get('href')
+      if report_url_relative == "http://www.oig.doc.gov/Pages/FOIA-Electronic-Reading-Room.aspx":
+        report_url_relative = landing_page.select("div.oig_Publications a")\
+            [0].get('href')
     except IndexError:
       # If there is no linked report, this page is the report. We know that
       # these are not unreleased reports or we would have caught them above
@@ -147,7 +151,6 @@ def report_from(result, topic, topic_url, year_range):
       # HTTPS, even if they haven't updated their links yet
       report_url = re.sub("^http://www.oig.doc.gov", "https://www.oig.doc.gov", report_url)
 
-    missing = False
     if report_url == "https://www.oig.doc.gov/OIGPublications/Announcement-DOC-IPERA.pdf":
       missing = True
       unreleased = True

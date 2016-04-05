@@ -167,7 +167,9 @@ def validate_report(report):
     return "Er, this shouldn't happen: empty `type` field."
 
   try:
-    datetime.datetime.strptime(report['published_on'], "%Y-%m-%d")
+    when = datetime.datetime.strptime(report['published_on'], "%Y-%m-%d")
+    if when > datetime.datetime.now():
+      return "Date in `published_on` is in the future."
   except ValueError:
     return "Invalid format for `published_on`, must be YYYY-MM-DD."
 
@@ -393,3 +395,10 @@ class NoReportsFoundError(AssertionError):
 
   def __str__(self):
     return "No reports were found for %s" % self.value
+
+def log_no_date(report_id, title, url=None):
+  if url is None:
+    message = "No date was found for %s, \"%s\"" % (report_id, title)
+  else:
+    message = "No date was found for %s, \"%s\" (%s)" % (report_id, title, url)
+  admin.notify(message)

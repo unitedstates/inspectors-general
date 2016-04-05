@@ -22,7 +22,7 @@ archive = 1989
 # http://www.nsf.gov/pubs/2002/oldsemiannuals/oigseptember1992.pdf
 
 # This needs to be HTTP, see note to IG Web team
-CASE_REPORTS_URL = "http://www.nsf.gov/oig/case-closeout/results.cfm"
+CASE_REPORTS_URL = "http://www.nsf.gov/oig/case-closeout/results.jsp"
 
 AUDIT_REPORTS_URL = "https://www.nsf.gov/oig/auditpubs.jsp"
 SEMIANNUAL_REPORTS_URL = "https://www.nsf.gov/oig/reports/semiannual.jsp"
@@ -120,6 +120,7 @@ def report_from(result, report_type, year_range):
       # If an explicit report_id is listed, use that.
       report_id = report_id_text[0]
     published_on_text = published_on_text.replace(" ,", ",").strip()
+    published_on_text = published_on_text.replace("Februray", "February")
     published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
   else:
     # No text in the last column. This is an incomplete row
@@ -148,7 +149,7 @@ def case_report_from(result, landing_url, year_range):
 
   report_url = urljoin(CASE_REPORTS_URL, link['href'])
   report_id = link.text
-  title = result.contents[5].text
+  title = result.contents[5].text.strip()
 
   # catch all until this can be more easily diagnosed
   if not title:
