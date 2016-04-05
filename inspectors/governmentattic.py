@@ -171,9 +171,6 @@ def report_from(result, category_name, agency, year_range):
   (ig_short,ig_url,ig_slug) = GOVATTIC_MAPPING_DICT[(category_name,agency)]
 
   a = result.find('a')
-  if not a:
-    if result.p and result.p.font and result.p.font.find('a'):
-      a = result.p.font.find('a')
   if not a: 
     #there's no link, so this must just be some explanatory text, such as the footer
     return
