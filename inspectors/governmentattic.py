@@ -185,7 +185,7 @@ def report_from(result, category_name, agency, year_range):
 
   title = remove_linebreaks(a.text).strip()
   text = remove_linebreaks(result.text)
-  r = re.compile('\[.*\s(\d{2})-+(\w{3,12})-+(\d{4})')
+  r = re.compile('\[.*\s-?(\d{2})-+(\w{3,12})-+(\d{4})')
   datematch = r.search(text)
   published_on = None
   datestring = None
