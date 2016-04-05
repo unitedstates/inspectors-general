@@ -191,6 +191,7 @@ def report_from(result, category_name, agency, year_range):
   datestring = None
   if datematch:
     datestring = '-'.join(datematch.groups()) #'01-Mar-2015
+    datestring = datestring.replace("Sept", "Sep")
     try:
       published_on = datetime.datetime.strptime(datestring, '%d-%b-%Y')
     except:    
