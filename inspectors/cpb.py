@@ -33,6 +33,16 @@ REPORT_ID_DATE_EXTRACTION = [
   re.compile('^Strategic-Plan-(?P<year>\d{4})-\d{4}$'),
 ]
 
+REPORT_PUBLISHED_MAP = {
+  "606_EvaluationCPBResponse": datetime.datetime(2006, 6, 9),
+  "602_cpb_ig_reportofreview": datetime.datetime(2005, 11, 15),
+  "OIGPeerReview-2013-September": datetime.datetime(2013, 9, 27),
+  "annualplan16": datetime.datetime(2015, 10, 14),
+  "annualplan15": datetime.datetime(2014, 10, 17),
+  "annualplan14": datetime.datetime(2013, 9, 17),
+  "Strategic-Plan-2014-2018": datetime.datetime(2013, 8, 22),
+}
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -95,14 +105,23 @@ def report_from(result, landing_url, report_type, year_range):
     return
 
   published_on = None
-  issued_strong = result.parent.parent.parent.find("strong", text="Issued")
-  if issued_strong:
-    issued_on = ISSUED_DATE_EXTRACTION.search(issued_strong.parent.text)
-    if issued_on:
-      published_on = datetime.datetime.strptime(issued_on.group(0), '%B %d, %Y')
+  if report_id in REPORT_PUBLISHED_MAP:
+    published_on = REPORT_PUBLISHED_MAP[report_id]
+
+  if not published_on:
+    issued_strong = result.parent.parent.parent.find("strong", text="Issued")
+    if issued_strong:
+      issued_on = ISSUED_DATE_EXTRACTION.search(issued_strong.parent.text)
+      if issued_on:
+        date_fmt = "%B %d, %Y"
+        published_on = datetime.datetime.strptime(issued_on.group(0), date_fmt)
 
   if not published_on:
     published_on = extract_date_from_report_id(report_id)
+
+  if not published_on:
+    inspector.log_no_date(report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -155,13 +174,13 @@ def extract_date_from_report_id(report_id):
           try:
             month = match.group('month')
           except IndexError:
-            month = '09'
+            return None
 
       day = ''
       try:
         day = match.group('day')
       except IndexError:
-        day = '01' # Default to the first of the month.
+        return None
 
       date_string = '%s-%s-%s' % (year, month, day)
       published_on = datetime.datetime.strptime(date_string, '%Y-%m-%d')

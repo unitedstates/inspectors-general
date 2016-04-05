@@ -75,7 +75,7 @@ TOPIC_TO_URL = {
   "HCF": 'http://oig.hhs.gov/reports-and-publications/hcfac/index.asp',
   "SAR": 'http://oig.hhs.gov/reports-and-publications/semiannual/index.asp',
   "MIR": 'http://oig.hhs.gov/reports-and-publications/medicaid-integrity/index.asp',
-  "TMPC": 'http://oig.hhs.gov/reports-and-publications/top-challenges/',
+  "TMPC": 'http://oig.hhs.gov/reports-and-publications/top-challenges/2015/',
   "CPR": 'http://oig.hhs.gov/reports-and-publications/compendium/index.asp',
   "SP": 'http://oig.hhs.gov/reports-and-publications/strategic-plan/index.asp',
   "WP": 'http://oig.hhs.gov/reports-and-publications/workplan/index.asp',
@@ -165,6 +165,8 @@ REPORT_PUBLISHED_MAPPING = {
 
   # This has the right date in one place and the wrong date in another
   'oei-07-91-01470': datetime.datetime(1992, 4, 1),
+
+  "41206159": datetime.datetime(2013, 12, 4),
 }
 
 # This manually entered data is used to skip landing pages that hold more than
@@ -263,7 +265,7 @@ def run(options):
 
   topics = options.get('topics')
   if topics:
-    topics = topics.split(",")
+    topics = topics.upper().split(",")
   else:
     topics = list(TOPIC_TO_URL.keys())
     topics.sort()
@@ -489,6 +491,9 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
         report_url,
       )
 
+  if not published_on:
+    inspector.log_no_date(report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -612,46 +617,34 @@ def published_on_from_inline_link(result, report_filename, title, report_id, rep
         break
       except (AttributeError, ValueError):
         pass
-  if published_on == None:
+  if not published_on:
     try:
-      fiscal_year = int(result.text.split(":")[0].split()[1])
-      published_on = datetime.datetime(fiscal_year - 1, 10, 1)
-    except (ValueError, IndexError):
+      published_on = datetime.datetime.strptime(title.replace(": ", ":"), "Compendium:%B %Y Edition")
+    except ValueError:
+      pass
+  if not published_on:
+    try:
+      published_on = datetime.datetime.strptime(report_id.split("-")[-1], "%m%d%Y")
+    except ValueError:
+      pass
+  if not published_on:
+    # Try using the last-modified header
+    response = utils.scraper.request(method='HEAD', url=report_url)
+    last_modified = response.headers['Last-Modified']
+    published_on = datetime.datetime.strptime(last_modified, '%a, %d %b %Y %H:%M:%S %Z')
+    if published_on.year < 2003:
+      # We don't trust the last-modified for dates before 2003
+      # since a lot of historical reports were published at this
+      # time. For these reports, fallback to a hacky method based
+      # on the report id. For example: oei-04-12-00490. These are
+      # the dates that the report_id was assigned which is before
+      # the report was actually published
+      published_on_text = "-".join(report_id.split("-")[1:3])
       try:
-        fiscal_year = int(report_filename.split("-")[0])
-        published_on = datetime.datetime(fiscal_year - 1, 10, 1)
+        published_on = datetime.datetime.strptime(published_on_text, '%m-%y')
       except ValueError:
-        try:
-          published_on = datetime.datetime.strptime(title.replace(": ", ":"), "Compendium:%B %Y Edition")
-        except ValueError:
-          try:
-            published_on = datetime.datetime.strptime(report_id.split("-")[-1], "%m%d%Y")
-          except ValueError:
-            try:
-              report_year = int(report_url.split("/")[-2:-1][0])
-              published_on = datetime.datetime(report_year, 1, 1)
-            except (ValueError, IndexError):
-              try:
-                fiscal_year = int(title.replace("Fiscal Year ", ""))
-                published_on = datetime.datetime(fiscal_year - 1, 10, 1)
-              except ValueError:
-                # Try using the last-modified header
-                response = utils.scraper.request(method='HEAD', url=report_url)
-                last_modified = response.headers['Last-Modified']
-                published_on = datetime.datetime.strptime(last_modified, '%a, %d %b %Y %H:%M:%S %Z')
-                if published_on.year < 2003:
-                  # We don't trust the last-modified for dates before 2003
-                  # since a lot of historical reports were published at this
-                  # time. For these reports, fallback to a hacky method based
-                  # on the report id. For example: oei-04-12-00490. These are
-                  # the dates that the report_id was assigned which is before
-                  # the report was actually published
-                  published_on_text = "-".join(report_id.split("-")[1:3])
-                  try:
-                    published_on = datetime.datetime.strptime(published_on_text, '%m-%y')
-                  except ValueError:
-                    pass
-                    # Fall back to the Last-Modified header
+        pass
+        # Fall back to the Last-Modified header
   return published_on
 
 def get_subtopic_map(topic_url):
