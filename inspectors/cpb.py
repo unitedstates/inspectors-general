@@ -20,7 +20,8 @@ archive = 2010
 #   Standardize the report file names, and include the year, month, and day consistently.
 #
 
-REPORTS_URL = "http://www.cpb.org/oig/reports/"
+AUDIT_REPORTS_URL = "http://www.cpb.org/oig/reports/"
+OTHER_REPORTS_URL = "http://www.cpb.org/oig/other-reports"
 
 ISSUED_DATE_EXTRACTION = re.compile('[A-Z][a-z]+ \d{1,2}, \d{4}')
 
@@ -47,28 +48,31 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports
-  doc = utils.beautifulsoup_from_url(REPORTS_URL)
+  doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL)
   rows = doc.select("div.content > div > div > div > div.row")
   row_audits = rows[0]
-  row_peer_review = rows[1]
-  col_plans = rows[2].select("div.col-md-6")[0]
-  col_congress = rows[2].select("div.col-md-6")[1]
 
   # Audit reports
   results = row_audits.select("ul li.pdf")
   if not results:
     raise inspector.NoReportsFoundError("CPB (audits)")
   for result in results:
-    report = report_from(result, REPORTS_URL, "audit", year_range)
+    report = report_from(result, AUDIT_REPORTS_URL, "audit", year_range)
     if report:
       inspector.save_report(report)
+
+  doc = utils.beautifulsoup_from_url(OTHER_REPORTS_URL)
+  rows = doc.select("div.content > div > div > div > div.row")
+  row_peer_review = rows[0]
+  col_plans = rows[1].select("div.col-md-6")[0]
+  col_congress = rows[1].select("div.col-md-6")[1]
 
   # Peer review
   results = row_peer_review.select("ul li.pdf")
   if not results:
     raise inspector.NoReportsFoundError("CPB (peer reviews)")
   for result in results:
-    report = report_from(result, REPORTS_URL, "other", year_range)
+    report = report_from(result, OTHER_REPORTS_URL, "other", year_range)
     if report:
       inspector.save_report(report)
 
@@ -77,7 +81,7 @@ def run(options):
   if not results:
     raise inspector.NoReportsFoundError("CPB (plans)")
   for result in results:
-    report = report_from(result, REPORTS_URL, "other", year_range)
+    report = report_from(result, OTHER_REPORTS_URL, "other", year_range)
     if report:
       inspector.save_report(report)
 
@@ -86,7 +90,7 @@ def run(options):
   if not results:
     raise inspector.NoReportsFoundError("CPB (semiannual reports)")
   for result in results:
-    report = report_from(result, REPORTS_URL, "semiannual_report", year_range)
+    report = report_from(result, OTHER_REPORTS_URL, "semiannual_report", year_range)
     if report:
       inspector.save_report(report)
 
