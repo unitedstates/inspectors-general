@@ -177,8 +177,18 @@ class EnergyScraper(object):
       summary = ''
       published_on = '1997-08-11'
 
+    missing = False
+    # Several reports have summaries but no report available. All of their
+    # report numbers start with the same prefix.
+    if report_id.startswith("CR-B-") and not report_url:
+      unreleased = True
+      missing = True
+
     if unreleased:
       report['unreleased'] = True
+
+    if missing:
+      report['missing'] = True
 
     report.update({
       'report_id': report_id,

@@ -76,7 +76,7 @@ def run(options):
 
 def report_from(result, year_range):
   title = result.select("a")[0].text
-  agency = result.select("td.Col_Agency")[0].text
+  agency = result.select("td.Col_Agency")[0].text.strip()
   topic = result.get('class')[0]
   landing_url = urljoin(BASE_PAGE_URL, result.select("a")[0].get('href'))
   published_on_text = result.select("td.Col_Date")[0].text

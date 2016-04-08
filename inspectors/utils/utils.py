@@ -109,6 +109,7 @@ WHITELIST_INSECURE_DOMAINS = (
   "https://www.ignet.gov/",  # incomplete chain as of 1/25/2015
   "https://www.va.gov/",  # incomplete chain as of 12/6/2015
   "https://origin.www.fhfaoig.gov/",  # incomplete chain as of 1/5/2016
+  "https://www.archives.gov",  # incomplete chain as of 2/19/2016
 
   # The following domains will 301/302 redirect to the above domains, so
   # validate=False is needed for these cases as well
@@ -262,6 +263,12 @@ def download(url, destination=None, options=None):
       except connection_errors() as e:
         log_http_error(e, url)
         return None
+
+      # Special case handling for governmentattic.org:
+      # These pages are served without an encoding in the HTTP headers,
+      # and with utf-8 specified in a <meta> tag inside the document.
+      if url.startswith("http://www.governmentattic.org"):
+        response.encoding = "utf-8"
 
       body = response.text
       if not isinstance(body, str): raise ValueError("Content not decoded.")

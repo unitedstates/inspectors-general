@@ -23,16 +23,20 @@ AUDIT_REPORTS_URL = "https://oig.usaid.gov/auditandspecialbyyear?page={page}"
 TESTIMONY_URL = "https://oig.usaid.gov/testimony?page={page}"
 SEMIANNUAL_REPORTS_URL = "https://oig.usaid.gov/reports/semi-annual"
 
-PAGINATED_REPORT_FORMATS = {
-  "testimony": TESTIMONY_URL,
-  "audit": AUDIT_REPORTS_URL,
-}
+PAGINATED_REPORT_FORMATS = [
+  ("testimony", TESTIMONY_URL),
+  ("audit", AUDIT_REPORTS_URL),
+]
+
+DATE_RE = re.compile("(:?January|February|March|April|May|June|July|"
+                     "August|September|October|November|December) [0-9]{2}, "
+                     "[0-9]{4}")
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports with pagination
-  for report_type, report_url_format in PAGINATED_REPORT_FORMATS.items():
+  for report_type, report_url_format in PAGINATED_REPORT_FORMATS:
     for page in range(0, 999):
       url = report_url_format.format(page=page)
       doc = utils.beautifulsoup_from_url(url)
@@ -76,12 +80,25 @@ def report_from(result, landing_url, report_type, year_range):
     report_url = None
     unreleased = True
 
+  published_on = None
   try:
     published_on_text = result.select("span.date-display-single")[0].text
     published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
   except IndexError:
-    published_on_text = result.select("div.views-field-created span")[0].text
-    published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+    pass
+  if not published_on:
+    try:
+      title_text = result.select("div.views-field-title span")[0].text.strip()
+      date_match = DATE_RE.match(title_text)
+      published_on_text = date_match.group(0)
+      published_on = datetime.datetime.strptime(published_on_text, "%B %d, %Y")
+      title = title_text[date_match.end():]
+    except (IndexError, AttributeError):
+      pass
+
+  if not published_on:
+    inspector.log_no_date(report_url, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -157,7 +174,7 @@ def semiannual_report_from(result, year_range):
   landing_url = urljoin(SEMIANNUAL_REPORTS_URL, link.get('href'))
   landing_page = utils.beautifulsoup_from_url(landing_url)
 
-  report_url = landing_page.select("div.filefield-file a")[0].get('href')
+  report_url = landing_page.select("div.field-type-file a")[0].get('href')
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
 

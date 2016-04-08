@@ -29,6 +29,7 @@ REPORT_ID_TO_EST_DATE = {
   'WTTSOTGPARMA': datetime.datetime(2013, 3, 1),
   'MDCITSOICBISCFPR': datetime.datetime(2010, 10, 1),
   'RRSASBRJ2T2A': datetime.datetime(2007, 7, 1),
+  'LOCFY2FS': datetime.datetime(2010, 1, 20),
 }
 
 PARTS_MONTH = ('(January|February|March|April|May|June|July|August|September|'
@@ -38,7 +39,6 @@ RE_DATE = re.compile(r'%s +\d\d\d\d' % PARTS_MONTH)
 RE_SHORT_DATE = re.compile(r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Oct|Nov|Dec)'
                            r' +\d\d\d\d')
 RE_LONG_DATE = re.compile(r'%s \d\d,? +\d\d\d\d' % PARTS_MONTH)
-RE_FISCAL_YEAR = re.compile('Fiscal Year (\d\d\d\d)')
 RE_OWLC = re.compile('Open +World +Leadership +Center')
 RE_JMCF = re.compile('James +Madison +Council +Fund')
 
@@ -175,14 +175,8 @@ class LibraryOfCongressScraper(object):
 
     md = RE_SHORT_DATE.search(title)
     if md:
-      # Seriously IG? Sept?
       return datetime.datetime.strptime(md.group(0).replace('Sept', 'Sep'),
                                         '%b %Y')
-
-    md = RE_FISCAL_YEAR.search(title)
-    if md:
-      year = int(md.group(1))
-      return datetime.datetime(year+1, 11, 1)
 
     md = RE_LONG_DATE.search(title)
     if md:
@@ -204,7 +198,7 @@ class LibraryOfCongressScraper(object):
     if temp_id in REPORT_ID_TO_EST_DATE:
      return REPORT_ID_TO_EST_DATE[temp_id]
 
-    raise ValueError('Found report with no listed and no hardcoded date:'
+    raise ValueError('Found report with no listed and no hardcoded date: '
                      '%s <%s>' % (title, report_url))
 
 

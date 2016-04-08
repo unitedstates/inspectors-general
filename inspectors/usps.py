@@ -186,12 +186,18 @@ def last_page_for(doc):
 
 def url_for(options, page, category_id):
   year_range = inspector.year_range(options, archive)
+  year_start = min(year_range)
+  year_end = max(year_range)
+  if category_id == "94":
+    # Always get all semiannual reports to congress
+    # This avoids false positives from the "no reports found" heuristic
+    year_start = archive
 
   url = "https://uspsoig.gov/document-library"
 
   url += "?field_doc_date_value_op=between"
-  url += "&field_doc_date_value[min][date]=%d" % min(year_range)
-  url += "&field_doc_date_value[max][date]=%d" % max(year_range)
+  url += "&field_doc_date_value[min][date]=%d" % year_start
+  url += "&field_doc_date_value[max][date]=%d" % year_end
 
   url += "&field_document_type_tid[]=%s" % category_id
 

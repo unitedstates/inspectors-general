@@ -11,6 +11,11 @@ INDEX_URLS = [
   "https://www.amtrakoig.gov/reading-room/all-documents",
 ]
 
+REPORT_PUBLISHED_MAP = {
+  "009-2016": datetime(2015, 12, 23),
+  "003-2016": datetime(2015, 12, 21),
+}
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -64,6 +69,9 @@ def report_from(result):
 
   if not report_id:
     report_id = url[url.rfind('/') + 1 : url.rfind('.')]
+
+  if report_id in REPORT_PUBLISHED_MAP:
+    published_on = REPORT_PUBLISHED_MAP[report_id]
 
   report['type'] = report_type
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")

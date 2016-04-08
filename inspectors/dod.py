@@ -99,6 +99,7 @@ RE_INTEL = re.compile('-INTEL-') # case-sensitive
 RE_FOIA = re.compile('Freedom\\s+(?:of|on)\\s+Information\\s+Act', re.I)
 RE_RESTRICTED = re.compile('Restricted', re.I)
 RE_AFGHANISTAN = re.compile('Provided\\s+to\\s+the\\s+Security\\s+Forces\\s+of\\s+Afghanistan', re.I)
+RE_HOSTED = re.compile('which\\s+is\\s+hosted\\s+on\\s+the\\s+website\\s+of', re.I)
 
 # Landing pages to be skipped (dupes, etc.)
 LANDING_PAGE_BLACKLIST = [
@@ -258,7 +259,7 @@ def fetch_from_landing_page(landing_url):
   examine_text = table.text
 
   maybe_unreleased = False
-  if RE_OFFICIAL.search(examine_text) or RE_CLASSIFIED.search(examine_text) or RE_FOIA.search(examine_text) or RE_AFGHANISTAN.search(examine_text) or RE_RESTRICTED.search(examine_text) or RE_INTEL.search(examine_text):
+  if RE_OFFICIAL.search(examine_text) or RE_CLASSIFIED.search(examine_text) or RE_FOIA.search(examine_text) or RE_AFGHANISTAN.search(examine_text) or RE_RESTRICTED.search(examine_text) or RE_INTEL.search(examine_text) or RE_HOSTED.search(examine_text):
     # 'Official use only' or 'Classified' materials don't have PDFs. Mark the
     # report metadata appropriately.
     maybe_unreleased = True

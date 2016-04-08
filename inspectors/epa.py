@@ -19,13 +19,11 @@ RE_DATE = re.compile('(?:(?:Jan|January|JANUARY|Feb|February|FEBRUARY|Mar|'
                      'Dec|December|DECEMBER)'
                      ',?(?:\\s+[0-9I]{1,2}\\s*,)?\\s*[0-9]{4})|'
                      '[0-9]{2}/[0-9]{2}/[0-9]{4}')
-BASE_URL = "http://www2.epa.gov/office-inspector-general/"
+BASE_URL = "http://www.epa.gov/office-inspector-general/"
 REPORTS_LATEST_URL = BASE_URL + "oig-reports"
 REPORTS_YEAR_URL_FORMAT = BASE_URL + "%d-reports"
-REPORTS_2012_2009_URL = BASE_URL + "2012-2009-reports"
-REPORTS_2008_2005_URL = BASE_URL + "2008-2005-reports"
-REPORTS_2004_2002_URL = BASE_URL + "2004-2002-reports-0"
-REPORTS_2001_1996_URL = BASE_URL + "2001-1996-reports"
+REPORTS_1999_1996_URL = BASE_URL + "1999-1996-reports"
+REPORTS_2015_URL = BASE_URL + "2015-oig-reports"
 DATE_FORMATS = [
   '%b %d, %Y',
   '%B %d, %Y',
@@ -42,15 +40,15 @@ DATE_FORMATS = [
   '%m/%d/%Y',
 ]
 REPORT_PUBLISHED_MAPPING = {
-  "http://www2.epa.gov/sites/production/files/2015-09/documents/9p00210.pdf":
+  "http://www.epa.gov/sites/production/files/2015-09/documents/9p00210.pdf":
     datetime.datetime(1999, 6, 30),
-  "http://www2.epa.gov/sites/production/files/2015-09/documents/20090806-09-p-0203.pdf":
+  "http://www.epa.gov/sites/production/files/2015-09/documents/20090806-09-p-0203.pdf":
     datetime.datetime(2009, 8, 6),
 }
 REPORT_ID_MAPPING = {
-  "http://www2.epa.gov/sites/production/files/2015-09/documents/9p00210.pdf":
+  "http://www.epa.gov/sites/production/files/2015-09/documents/9p00210.pdf":
     "99P00210",
-  "http://www2.epa.gov/sites/production/files/2015-09/documents/20090806-09-p-0203.pdf":
+  "http://www.epa.gov/sites/production/files/2015-09/documents/20090806-09-p-0203.pdf":
     "09-P-0203",
 }
 
@@ -74,7 +72,18 @@ def run(options):
           continue
         report_seen_flag = True
 
-        published_on_dt = parse_date(tds[0].text.strip())
+        try:
+          published_on_dt = parse_date(tds[0].text.strip())
+        except Exception:
+          pass
+        if not published_on_dt:
+          try:
+            published_on_dt = parse_date(tds[2].text.strip())
+          except Exception:
+            pass
+        if not published_on_dt:
+          inspector.log_no_date(tds[2].text, tds[1].text)
+          continue
         if published_on_dt.year not in year_range:
           continue
 
@@ -91,8 +100,9 @@ def run(options):
           href = urljoin(url, li.a["href"])
           if href in REPORT_PUBLISHED_MAPPING:
             published_on_dt = REPORT_PUBLISHED_MAPPING[href]
-          else:
-            raise Exception("Could not parse date from %r" % li.text)
+        if not published_on_dt:
+          inspector.log_no_date(extract_url(li), li.a.text, href)
+          continue
         if published_on_dt.year not in year_range:
           continue
 
@@ -124,7 +134,10 @@ def report_from_table(tds, published_on_dt, base_url):
 
 
   report_id = re.sub("\s+", " ", tds[2].text).strip()
-  # fallback, only needed for one testimony, apparently
+  # fix typo
+  if report_id == "May 17, 2006":
+    report_id = None
+  # fallback
   if (report_id == "") or (not report_id):
     report_id, extension = os.path.splitext(report_url.split("/")[-1])
 
@@ -166,10 +179,20 @@ def report_from_table(tds, published_on_dt, base_url):
             "Response to OIG Report" in text or
             "Report Briefing with Gallery" in text or
             "Dispute Resolution" in text or
-            "Materials Relating to" in text):
+            "Materials Relating to" in text or
+            "Addendum" in text or
+            "Press Statement" in text or
+            "Detailed Comments" in text or
+            text.startswith("Attachment") or
+            "In Response to" in text or
+            "Full Resolution Materials" in text or
+            "Podcast Transcript" in text):
         pass
       else:
         raise Exception("Unrecognized document link: %s" % doc_link.text)
+    if report.get('summary_url') and not report.get('url'):
+      report['summary_only'] = True
+      report['unreleased'] = True
     what_we_found = landing_page.find("strong", text=["What We Found",
                                                       "What Was Found",
                                                       "What the Firm Found"])
@@ -182,6 +205,8 @@ def report_from_table(tds, published_on_dt, base_url):
       report['summary'] = summary
     elif "annual-plan-fiscal-year-" in report_url:
       report['summary'] = landing_page.article.p.text.strip()
+    elif "annual-superfund-report-" in report_url:
+      report['summary'] = landing_page.article.find_all("a")[1].text.strip()
     else:
       raise Exception("No report summary was found on %s" % report_url)
   else:
@@ -241,8 +266,11 @@ def extract_url(td):
   url = None
   links = td.select('a')
   links = [link for link in links
-           if not "/office-inspector-general/multimedia" in link['href']]
+           if not "/office-inspector-general/multimedia" in link['href']
+           and not "/office-inspector-general/oig-multimedia" in link['href']]
   if len(links) == 1:
+    url = links[0]['href']
+  elif len(links) == 2 and links[0]['href'] == links[1]['href']:
     url = links[0]['href']
   else:
     pdf_links = [link for link in links if RE_PDF.search(link.text)]
@@ -268,14 +296,10 @@ def years_to_index_urls(year_range):
 
   urls = set([REPORTS_LATEST_URL])
   for year in year_range:
-    if year <= 2001:
-      urls.add(REPORTS_2001_1996_URL)
-    elif year <= 2004:
-      urls.add(REPORTS_2004_2002_URL)
-    elif year <= 2008:
-      urls.add(REPORTS_2008_2005_URL)
-    elif year <= 2012:
-      urls.add(REPORTS_2012_2009_URL)
+    if year <= 1999:
+      urls.add(REPORTS_1999_1996_URL)
+    elif year == 2015:
+      urls.add(REPORTS_2015_URL)
     elif year >= _latest_year:
       pass
     else:
@@ -294,6 +318,6 @@ def parse_date(text):
       return datetime.datetime.strptime(text, date_format)
     except ValueError:
       pass
-  raise Exception("Could not parse date from %r" % text)
+  return None
 
 utils.run(run) if (__name__ == "__main__") else None
