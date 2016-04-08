@@ -180,7 +180,7 @@ def report_from(result, year, year_range,OUTCOME_CODES):
 
 
 def make_report_id(url):
-  return url.replace('/PublicFiles/','').replace('/publicfiles/','').replace('/','-').replace('.pdf','')
+  return inspector.slugify(url.replace('/PublicFiles/','').replace('/publicfiles/','').replace('.pdf',''))
 
 def get_extra_descrip(pdf_link):
   #takes a beautifulsoup object representing a PDF and tries to find the blurb of text that may be right above it.

@@ -264,6 +264,12 @@ def download(url, destination=None, options=None):
         log_http_error(e, url)
         return None
 
+      # Special case handling for governmentattic.org:
+      # These pages are served without an encoding in the HTTP headers,
+      # and with utf-8 specified in a <meta> tag inside the document.
+      if url.startswith("http://www.governmentattic.org"):
+        response.encoding = "utf-8"
+
       body = response.text
       if not isinstance(body, str): raise ValueError("Content not decoded.")
 
