@@ -24,7 +24,7 @@ archive = 1989
 # This needs to be HTTP, see note to IG Web team
 CASE_REPORTS_URL = "http://www.nsf.gov/oig/case-closeout/results.jsp"
 
-AUDIT_REPORTS_URL = "https://www.nsf.gov/oig/auditpubs.jsp"
+AUDIT_REPORTS_URL = "https://www.nsf.gov/oig/reports/reviews.jsp"
 SEMIANNUAL_REPORTS_URL = "https://www.nsf.gov/oig/reports/semiannual.jsp"
 TESTIMONY_REPORTS_URL = "https://www.nsf.gov/oig/testimony.jsp"
 
@@ -52,7 +52,7 @@ def run(options):
     # ignore divider lines
     if result.select("img"): continue
 
-    report = report_from(result, report_type='audit', year_range=year_range)
+    report = report_from(result, report_type='audit', year_range=year_range, base_url=AUDIT_REPORTS_URL)
     if report:
       inspector.save_report(report)
 
@@ -92,18 +92,18 @@ def run(options):
   for result in results:
     if not result.text.strip():
       continue
-    report = report_from(result, report_type='testimony', year_range=year_range)
+    report = report_from(result, report_type='testimony', year_range=year_range, base_url=TESTIMONY_REPORTS_URL)
     if report:
       inspector.save_report(report)
 
-def report_from(result, report_type, year_range):
+def report_from(result, report_type, year_range, base_url):
   link = result.find("a")
 
   if not link:
     logging.debug("Markup error, skipping: %s" % result)
     return None
 
-  report_url = urljoin(AUDIT_REPORTS_URL, link['href'])
+  report_url = urljoin(base_url, link['href'])
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
 
