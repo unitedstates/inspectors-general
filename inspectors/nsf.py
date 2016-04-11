@@ -18,8 +18,6 @@ archive = 1989
 # Notes for IG's web team:
 # - https://www.nsf.gov/oig/search/ encounters an error when using https.
 # while it works if just using http.
-# - The link for the September 1992 Semiannual Report should point to
-# http://www.nsf.gov/pubs/2002/oldsemiannuals/oigseptember1992.pdf
 
 # This needs to be HTTP, see note to IG Web team
 CASE_REPORTS_URL = "http://www.nsf.gov/oig/case-closeout/results.jsp"
@@ -178,11 +176,6 @@ def case_report_from(result, landing_url, year_range):
 def semiannual_report_from(result, year_range):
   link = result.find("a")
   report_url = urljoin(SEMIANNUAL_REPORTS_URL, link['href'])
-
-  if link.text == "September 1992":
-    # One of the links on the semiannual report page points to the wrong year's
-    # report
-    report_url = "http://www.nsf.gov/pubs/2002/oldsemiannuals/oigseptember1992.pdf"
 
   if not report_url.endswith(".pdf") and not report_url.endswith(".txt"):
     landing_url = report_url
