@@ -174,6 +174,10 @@ def audit_report_from(result, page_url, year_range):
   elif report_url == "https://www2.ed.gov/about/offices/list/oig/auditreports/fy2008/b19i0001p.pdf":
     report_id = "B19I0001P"
 
+  # The federal student aid site has been reorganized
+  if report_url == "http://www.federalstudentaid.ed.gov/docs/fsa_annual_report_2008.pdf":
+    report_url = "https://studentaid.ed.gov/sa/sites/default/files/fsawg/static/gw/docs/fsa_annual_report_2008.pdf"
+
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
@@ -197,6 +201,14 @@ def audit_report_from(result, page_url, year_range):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
+
+  # This report was taken down; the URL now returns a 404
+  if report_url == "https://www2.ed.gov/about/offices/list/oig/auditreports/a07c0001.pdf":
+    del report['url']
+    report['unreleased'] = True
+    report['missing'] = True
+    report['landing_url'] = page_url
+
   return report
 
 def audit_url_for(year):
@@ -301,6 +313,14 @@ def report_from(result, url, report_type, year_range):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
+
+  # This report comes up as 404, mark missing
+  if report_url == "https://www2.ed.gov/about/offices/list/oig/invtreports/ga032013.html":
+    del report['url']
+    report['unreleased'] = True
+    report['missing'] = True
+    report['landing_url'] = url
+
   return report
 
 
