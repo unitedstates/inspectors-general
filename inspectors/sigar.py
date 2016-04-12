@@ -52,8 +52,13 @@ def report_from(result, landing_url, report_type, year_range):
   title = result.find("title").text.strip()
 
   report_url = report_url_for_landing_page(result.find("link").next.strip(), landing_url)
-  if report_url == "https://www.sigar.mil/pdf/audits/Financial_Audits/SIGAR _14-15\u2013FA.pdf":
+
+  if report_url in (
+      "https://www.sigar.mil/pdf/audits/Financial_Audits/SIGAR _14-15\u2013FA.pdf",
+      "https://www.sigar.mil/pdf/audits/Financial_Audits/SIGAR_14-14\u2013FA.pdf",
+      ):
     report_url = report_url.replace("\u2013", "-")
+
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
 
