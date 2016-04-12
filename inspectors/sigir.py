@@ -167,7 +167,8 @@ def run(options):
           url = child.a["href"]
           report = testimony_from(url, published_on_text, title, report_id,
                                   summary, year_range)
-          inspector.save_report(report)
+          if report:
+            inspector.save_report(report)
 
           # Reset collected information for next cycle and next testimony
           url = None
