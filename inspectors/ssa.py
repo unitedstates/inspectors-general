@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://oig.ssa.gov/
+# https://oig.ssa.gov/
 archive = 1996
 
 # options:
@@ -21,11 +21,11 @@ archive = 1996
 # so 1,000 should be good.
 ALL_PAGES = 1000
 
-AUDIT_REPORTS_URL = "http://oig.ssa.gov/audits-and-investigations/audit-reports/{year}-01--{year}-12?page={page}"
-INVESTIGATIONS_REPORT_URL = "http://oig.ssa.gov/audits-and-investigations/investigations?page={page}"
-SEMIANNUAL_REPORTS_URL = "http://oig.ssa.gov/newsroom/semiannual-reports?page={page}"
-CONGRESSIONAL_TESTIMONY_URL = "http://oig.ssa.gov/newsroom/congressional-testimony?page={page}"
-PERFORMANCE_REPORTS_URL = "http://oig.ssa.gov/newsroom/performance-reports?page={page}"
+AUDIT_REPORTS_URL = "https://oig.ssa.gov/audits-and-investigations/audit-reports/{year}-01--{year}-12?page={page}"
+INVESTIGATIONS_REPORT_URL = "https://oig.ssa.gov/audits-and-investigations/investigations?page={page}"
+SEMIANNUAL_REPORTS_URL = "https://oig.ssa.gov/newsroom/semiannual-reports?page={page}"
+CONGRESSIONAL_TESTIMONY_URL = "https://oig.ssa.gov/newsroom/congressional-testimony?page={page}"
+PERFORMANCE_REPORTS_URL = "https://oig.ssa.gov/newsroom/performance-reports?page={page}"
 
 OTHER_REPORT_URLS = {
   "investigation": INVESTIGATIONS_REPORT_URL,
@@ -34,7 +34,7 @@ OTHER_REPORT_URLS = {
   "performance": PERFORMANCE_REPORTS_URL,
 }
 
-BASE_REPORT_URL = "http://oig.ssa.gov/"
+BASE_REPORT_URL = "https://oig.ssa.gov/"
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -85,7 +85,7 @@ visited_landing_urls = set()
 def report_from(result, report_type, year_range):
   landing_page_link = result.find("a")
   title = landing_page_link.text.strip()
-  landing_url = urljoin(BASE_REPORT_URL, landing_page_link.get('href'))
+  landing_url = urljoin(BASE_REPORT_URL, landing_page_link['href'])
 
   # Sometimes the last report on one page is also the first report on the next
   # page. Here, we skip any duplicate landing pages we've already saved.
@@ -93,7 +93,7 @@ def report_from(result, report_type, year_range):
     return
 
   # This landing page is a duplicate of another one
-  if landing_url == "http://oig.ssa.gov/physical-security-office-disability-" \
+  if landing_url == "https://oig.ssa.gov/physical-security-office-disability-" \
         "adjudication-and-reviews-headquarters-building-limited-0":
     return
 
@@ -110,7 +110,7 @@ def report_from(result, report_type, year_range):
     report_id = landing_url.split("/")[-1]
 
   # This report has the wrong report number entered
-  if landing_url == "http://oig.ssa.gov/audits-and-investigations/" \
+  if landing_url == "https://oig.ssa.gov/audits-and-investigations/" \
         "audit-reports/congressional-response-report-internet-claim-" \
         "applications-0":
     report_id = "A-07-10-20166"
@@ -147,7 +147,7 @@ def report_from(result, report_type, year_range):
 
   report = {
     'inspector': "ssa",
-    'inspector_url': "http://oig.ssa.gov",
+    'inspector_url': "https://oig.ssa.gov",
     'agency': "ssa",
     'agency_name': "Social Security Administration",
     'type': report_type,
