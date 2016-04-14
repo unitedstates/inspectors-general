@@ -41,6 +41,8 @@ REPORT_PUBLISHED_MAP = {
   "16-09": datetime.datetime(2016, 1, 1),
   "16-10": datetime.datetime(2016, 3, 30),
   "16-11": datetime.datetime(2016, 1, 1),
+  "16-12": datetime.datetime(2016, 1, 1),
+  "16-13": datetime.datetime(2016, 1, 1),
   "15-01": datetime.datetime(2015, 1, 1),
   "15-02": datetime.datetime(2015, 3, 20),
   "15-03": datetime.datetime(2015, 2, 5),
@@ -230,7 +232,8 @@ def report_from(result, landing_url, report_type, year_range):
   title = re.sub("\\s+", " ", title)
 
   report_id_match = REPORT_ID_RE.match(result.td.text.strip())
-  if "contains sensitive information" in title:
+  if ("contains sensitive information" in title or
+      "This correspondence will not be posted" in title):
     unreleased = True
     report_url = None
     if report_id_match:
