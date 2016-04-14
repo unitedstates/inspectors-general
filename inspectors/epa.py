@@ -263,11 +263,17 @@ def report_from_list(li, published_on_dt, base_url):
   return report
 
 def extract_url(td):
+  def filter_url(href):
+    for string in ("/office-inspector-general/multimedia",
+                   "/office-inspector-general/oig-multimedia",
+                   "informe-agua-potable-la-epa-necesita-adoptar-medidas"):
+      if string in href:
+        return False
+    return True
+
   url = None
   links = td.select('a')
-  links = [link for link in links
-           if not "/office-inspector-general/multimedia" in link['href']
-           and not "/office-inspector-general/oig-multimedia" in link['href']]
+  links = [link for link in links if filter_url(link['href'])]
   if len(links) == 1:
     url = links[0]['href']
   elif len(links) == 2 and links[0]['href'] == links[1]['href']:
