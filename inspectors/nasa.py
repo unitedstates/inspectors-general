@@ -51,10 +51,14 @@ def run(options):
       inspector.save_report(report)
 
 def audit_report_from(result, landing_url, year_range):
-  report_id = result.select("td")[0].text
-  title = result.select("td")[1].text
+  tds = result.find_all("td")
+  if len(tds) < 4:
+    return
 
-  published_on_text = result.select("td")[2].text
+  report_id = tds[0].text
+  title = tds[1].text
+
+  published_on_text = tds[2].text
 
   if report_id == 'IG-11-007-R' and published_on_text == 'IG-11-007-R.pdf':
     # Skip this row, the next row has everything for this report ID.
@@ -66,7 +70,7 @@ def audit_report_from(result, landing_url, year_range):
     except ValueError:
       published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
-  report_url = urljoin(landing_url, result.select("td")[3].text.strip())
+  report_url = urljoin(landing_url, tds[3].text.strip())
   unreleased = "foia" in report_url.lower() or "not available*" in report_url.lower()
 
   if unreleased:
