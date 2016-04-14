@@ -92,7 +92,12 @@ def report_from(item):
   report['published_on'] = "%04d-%02d-%02d" % (int(year), int(month), int(day))
 
   raw_link = item.find_all('td')[0].a
-  report['url'] = urllib.parse.urljoin(REPORTS_URL, raw_link.get('href'))
+  href = raw_link['href']
+  if href == "#":
+    report['unreleased'] = True
+    report['landing_url'] = REPORTS_URL
+  else:
+    report['url'] = urllib.parse.urljoin(REPORTS_URL, href)
   report['title'] = raw_link.text.strip()
 
   if 'audit' not in report['title'].lower():
