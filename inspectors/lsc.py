@@ -52,6 +52,7 @@ REPORT_PUBLISHED_MAP = {
   "16-05": datetime.datetime(2016, 3, 30),
   "16-04": datetime.datetime(2016, 3, 14),
   "16-03": datetime.datetime(2015, 12, 7),
+  "16-02": datetime.datetime(2015, 12, 3),
   "16-01": datetime.datetime(2015, 11, 23),
   "15-12": datetime.datetime(2015, 9, 30),
   "15-11": datetime.datetime(2015, 9, 29),
