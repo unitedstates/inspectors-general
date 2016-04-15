@@ -168,7 +168,7 @@ def validate_report(report):
 
   try:
     when = datetime.datetime.strptime(report['published_on'], "%Y-%m-%d")
-    if when > datetime.datetime.now():
+    if when > datetime.datetime.now() + datetime.timedelta(weeks=1):
       return "Date in `published_on` is in the future."
   except ValueError:
     return "Invalid format for `published_on`, must be YYYY-MM-DD."
