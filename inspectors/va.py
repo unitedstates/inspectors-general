@@ -49,14 +49,25 @@ AGENCY_SLUG_MAP = {
 }
 
 MAX_ATTEMPTS = 5
-ERROR_PAGE_TEXT = 'This report summary cannnot be displayed at this time.'
+ERROR_TEXT_SUMMARY = 'This report summary cannnot be displayed at this time.'
+ERROR_TEXT_LIST = 'Reports are not available at this time.'
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
   for page in range(1, 1000):
-    doc = utils.beautifulsoup_from_url("{}?RS={}".format(REPORTS_URL, page))
+    # Intermittent errors are indistinguishable from reaching the end of the
+    # reports. In both cases, the "content" div only contains an empty div with
+    # class "search-results-pagination". Thus, we will always retry pages that
+    # look like this.
+    url = "{}?RS={}".format(REPORTS_URL, page)
+    for attempt in range(MAX_ATTEMPTS):
+      doc = utils.beautifulsoup_from_url(url)
+      if doc.select(".content")[0].text.strip():
+        break
+      time.sleep(3)
+
     results = doc.select("div.leadin")
     if not results:
       if page == 1:
@@ -69,7 +80,15 @@ def run(options):
         inspector.save_report(report)
 
   # Pull the semiannual reports
-  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  for attempt in range(MAX_ATTEMPTS):
+    doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+    page_text = doc.select("div.single-column-report-list")[0].text.strip()
+    if page_text != ERROR_TEXT_LIST:
+      break
+    time.sleep(3)
+  if page_text == ERROR_TEXT_LIST:
+    raise Exception("Could not retrieve semiannual reports list")
+
   results = doc.select("div.leadin")
   if not results:
     raise inspector.NoReportsFoundError("VA (semiannual reports)")
@@ -114,11 +133,11 @@ def report_from(result, year_range):
   for attempt in range(MAX_ATTEMPTS):
     landing_page = utils.beautifulsoup_from_url(landing_url)
     page_text = landing_page.select("div.report-summary")[0].text.strip()
-    if page_text != ERROR_PAGE_TEXT:
+    if page_text != ERROR_TEXT_SUMMARY:
       break
     time.sleep(3)
-  if attempt == MAX_ATTEMPTS - 1:
-    raise Exception("Could not retrieve url %s", landing_url)
+  if page_text == ERROR_TEXT_SUMMARY:
+    raise Exception("Could not retrieve url %s" % landing_url)
 
   field_mapping = {}
   for field in landing_page.select("div.report-summary tr"):
