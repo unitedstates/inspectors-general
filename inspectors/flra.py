@@ -4,11 +4,11 @@ import datetime
 import logging
 import os
 import re
-from urllib.parse import urljoin
+from urllib.parse import urljoin, unquote
 
 from utils import utils, inspector
 
-# https://www.flra.gov/OIG
+# https://www.flra.gov/components-offices/offices/office-inspector-general
 archive = 1999
 
 # options:
@@ -17,11 +17,11 @@ archive = 1999
 # Notes for IG's web team:
 #
 
-AUDIT_REPORTS_URL = "https://www.flra.gov/IG_audit-reports"
-INTERNAL_REVIEWS_URL = "https://www.flra.gov/IG_internal-reviews"
-QA_REVIEWS_URL = "https://www.flra.gov/OIG_QA_Reviews"
-SEMIANNUAL_REPORTS_URL = "https://www.flra.gov/IG_semi-annual_reports"
-PEER_REVIEWS_URL = "https://www.flra.gov/OIG-PEER-REVIEW"
+AUDIT_REPORTS_URL = "https://www.flra.gov/components-offices/offices/office-inspector-general/audit-reports"
+INTERNAL_REVIEWS_URL = "https://www.flra.gov/components-offices/offices/office-inspector-general/internal-reviews"
+QA_REVIEWS_URL = "https://www.flra.gov/components-offices/offices/office-inspector-general/quality-assurance-reviews"
+SEMIANNUAL_REPORTS_URL = "https://www.flra.gov/components-offices/offices/office-inspector-general/semiannual-reports"
+PEER_REVIEWS_URL = "https://www.flra.gov/components-offices/offices/office-inspector-general/peer-review-reports"
 
 REPORT_URLS = [
   ("audit", AUDIT_REPORTS_URL),
@@ -31,84 +31,93 @@ REPORT_URLS = [
   ("peer_review", PEER_REVIEWS_URL),
 ]
 
+REPORT_ID_RE = re.compile("\(([A-Z]{2}-[0-9]{2}-[0-9]{2})\)|Report Number\\s+((?:[A-Z]{3}-)?[0-9]{2}-[0-9]{2})")
+
 REPORT_PUBLISHED_MAP = {
-  "1014": datetime.datetime(2015, 6, 12),
-  "886": datetime.datetime(2014, 7, 2),
-  "757": datetime.datetime(2013, 8, 29),
-  "756": datetime.datetime(2012, 11, 2),
-  "931": datetime.datetime(2014, 9, 22),
-  "505": datetime.datetime(2011, 6, 9),
-  "451": datetime.datetime(2008, 9, 16),
-  "612": datetime.datetime(2005, 4, 18),
-  "613": datetime.datetime(2002, 4, 3),
-  "1050": datetime.datetime(2015, 11, 16),
-  "1058": datetime.datetime(2015, 12, 14),
-  "1063": datetime.datetime(2016, 1, 20),
-  "1059": datetime.datetime(2015, 12, 14),
-  "945": datetime.datetime(2014, 11, 14),
-  "963": datetime.datetime(2015, 1, 20),
-  "949": datetime.datetime(2014, 12, 2),
-  "1016": datetime.datetime(2015, 1, 1),
-  "944": datetime.datetime(2014, 11, 14),
-  "792": datetime.datetime(2013, 12, 6),
-  "924": datetime.datetime(2013, 12, 6),
-  "794": datetime.datetime(2013, 12, 18),
-  "841": datetime.datetime(2014, 2, 24),
-  "793": datetime.datetime(2013, 12, 18),
-  "657": datetime.datetime(2012, 12, 15),
-  "666": datetime.datetime(2012, 12, 30),
-  "667": datetime.datetime(2012, 11, 30),
-  "543": datetime.datetime(2011, 11, 15),
-  "550": datetime.datetime(2011, 12, 28),
-  "552": datetime.datetime(2011, 12, 28),
-  "417": datetime.datetime(2010, 11, 15),
-  "480": datetime.datetime(2010, 9, 30),
-  "397": datetime.datetime(2009, 11, 13),
-  "479": datetime.datetime(2009, 11, 15),
-  "411": datetime.datetime(2009, 8, 14),
-  "481": datetime.datetime(2009, 7, 9),
-  "412": datetime.datetime(2007, 1, 1),
-  "396": datetime.datetime(2005, 11, 14),
-  "413": datetime.datetime(2004, 11, 12),
-  "internalcontrolindpaud08": datetime.datetime(2008, 2, 8),
-  "Audit-Report-FLRA-Security-Programs-(September-2004)---Non-Public-Report": datetime.datetime(2004, 9, 1),
-  "03govveh": datetime.datetime(2003, 11, 30),
+  # Quality Assurance Reviews
+  "ER-15-03": datetime.datetime(2015, 6, 12),
+  "ER-14-03": datetime.datetime(2014, 7, 2),
+  "ER-13-03": datetime.datetime(2013, 8, 29),
+  "ER-12-03": datetime.datetime(2012, 11, 2),
+
+  # Peer Review Reports
+  "14-04": datetime.datetime(2014, 9, 22),
+  "11-04": datetime.datetime(2011, 6, 9),
+  "01-08": datetime.datetime(2008, 9, 16),
+  "QCR-05-01": datetime.datetime(2005, 4, 18),
+  "QCR-02-01": datetime.datetime(2002, 4, 3),
+
+  # Audit Reports
+  "AR-16-01": datetime.datetime(2015, 11, 16),
+  "AR-16-02": datetime.datetime(2015, 12, 14),
+  "AR-16-03": datetime.datetime(2016, 1, 20),
+  "2015-AU-C-260-Letter": datetime.datetime(2015, 12, 14),
+  "AR-15-01": datetime.datetime(2014, 11, 14),
+  "AR-15-02": datetime.datetime(2015, 1, 20),
+  "AR-15-03": datetime.datetime(2014, 12, 2),
+  "AR-15-04": datetime.datetime(2015, 1, 1),
+  "2014-AU-C-260-Letter": datetime.datetime(2014, 11, 14),
+  "AR-14-01": datetime.datetime(2013, 12, 6),
+  "Transmittal-Letter-Dated-12-6-2013": datetime.datetime(2013, 12, 6),
+  "AR-14-02": datetime.datetime(2013, 12, 18),
+  "AR-14-03": datetime.datetime(2014, 2, 24),
+  "Statement-on-114-Letter-Communication": datetime.datetime(2013, 12, 18),
+  "AR-13-01": datetime.datetime(2012, 12, 15),
+  "AR-13-02": datetime.datetime(2012, 12, 30),
+  "2012-SAS-114-Letter": datetime.datetime(2012, 11, 30),
+  "AR-12-01": datetime.datetime(2011, 11, 15),
+  "AR-12-02": datetime.datetime(2011, 12, 28),
+  "Statement-on-Auditing-Standards-No-114": datetime.datetime(2011, 12, 28),
+  "AR-11-01": datetime.datetime(2010, 11, 15),
+  "AR-11-02": datetime.datetime(2010, 9, 30),
+  "FS-Audit-2009": datetime.datetime(2009, 11, 13),
+  "FLRA-FY2009-Management-Letter": datetime.datetime(2009, 11, 15),
+  "FS-Audit-2008": datetime.datetime(2009, 8, 14),
+  "Management-Letter-September-30,-2008-and-2007": datetime.datetime(2009, 7, 9),
   "Financial-Statement-Audit-for-Fiscal-Year-2007": datetime.datetime(2008, 1, 1),
-  "395": datetime.datetime(2003, 11, 30),
-  "976": datetime.datetime(2015, 2, 6),
-  "837": datetime.datetime(2014, 2, 11),
-  "671": datetime.datetime(2013, 1, 14),
-  "598": datetime.datetime(2012, 3, 12),
-  "335": datetime.datetime(2009, 12, 7),
-  "171": datetime.datetime(2009, 10, 13),
-  "337": datetime.datetime(2009, 7, 13),
-  "333": datetime.datetime(2009, 3, 17),
-  "334": datetime.datetime(2009, 1, 26),
-  "340": datetime.datetime(2009, 3, 3),
-  "501": datetime.datetime(2009, 8, 21),
-  "502": datetime.datetime(2009, 6, 10),
-  "344": datetime.datetime(2008, 8, 14),
-  "500": datetime.datetime(2005, 1, 1),
-  "483": datetime.datetime(2002, 11, 5),
-  "499": datetime.datetime(2002, 1, 1),
-  "572": datetime.datetime(2000, 11, 1),
-  "477": datetime.datetime(2000, 5, 1),
-  "478": datetime.datetime(2000, 1, 1),
-  "484": datetime.datetime(1999, 4, 14),
-  "486": datetime.datetime(2000, 11, 1),
-  "503": datetime.datetime(2007, 2, 27),
-  "401": datetime.datetime(2004, 12, 1),
-  "403": datetime.datetime(2004, 12, 9),
-  "398": datetime.datetime(2003, 5, 2),
-  "1074": datetime.datetime(2016, 2, 3),
+  "FS-Audit-2006": datetime.datetime(2007, 1, 1),
+  "FS-Audit-2005": datetime.datetime(2005, 11, 14),
+  "FS-Audit-2004": datetime.datetime(2004, 11, 12),
+  "Audit-Report-FLRA-Security-Programs-(September-2004)---Non-Public-Report": datetime.datetime(2004, 9, 1),
+  "Audit-Report-FLRA-Use-of-Government-Vehicles-Nov-20-2003": datetime.datetime(2003, 11, 20),
+
+  # Internal Reviews
+  "ER-16-02": datetime.datetime(2016, 2, 3),
+  "ER-15-02": datetime.datetime(2015, 2, 6),
+  "ER-14-02": datetime.datetime(2014, 2, 11),
+  "ER-13-02": datetime.datetime(2013, 1, 14),
+  "ER-12-02": datetime.datetime(2012, 3, 12),
+  "2009-Check-Out-Process-Report-for-FOIA": datetime.datetime(2009, 12, 7),
+  "Internal-Review-of-Case-Intake-and-Publication-2009": datetime.datetime(2009, 10, 13),
+  "2009-Internal-Review-of-Purchase-Cards": datetime.datetime(2009, 7, 13),
+  "2009-Internal-Review-of-FSIP": datetime.datetime(2009, 3, 17),
+  "2009-Internal-Review-of-IT": datetime.datetime(2009, 1, 26),
+  "2009-Internal-Review-ALJ": datetime.datetime(2009, 3, 3),
+  "Internal-Review-Human-Capital-Succession-Planning-Report": datetime.datetime(2009, 8, 21),
+  "2009-Management-&-Employee-Survey-Report": datetime.datetime(2009, 6, 10),
+  "Final-8-14-08-Admiinistration-Report": datetime.datetime(2008, 8, 14),
+  "Report-of-Independent-Auditors-on-Internal-Controls-(2008)": datetime.datetime(2008, 2, 8),
+  "2-27-Final-Instruction-MaintenanceReport": datetime.datetime(2007, 2, 27),
+  "Internal-Review-of-FLRA's-Alternative-Work-Schedule": datetime.datetime(2005, 1, 1),
+  "Internal-Review-of-FLRA-Court-Reporting-Procurement---Dec-2004": datetime.datetime(2004, 12, 1),
+  "Internal-Review-of-FLRAs-Occupational-Safety-and-Health-Program": datetime.datetime(2004, 12, 9),
+  "IG-FLRA-Human-Capital-Progress-Assessment-Follow-up-on-FY-2000-Internal-Review-of-FLRA-Human-Capital-May-2-2003": datetime.datetime(2003, 5, 2),
+  "FLRA's-FY-2002-Use-of-Government-Credit-Card": datetime.datetime(2002, 11, 5),
+  "Fair-Act-Evaluation": datetime.datetime(2002, 1, 1),
+  "Evaluation-of-the-FLRA-FY-99-Annual-Performance-Plan-Submission": datetime.datetime(2000, 11, 1),
+  "External-Affairs-Function-Internal-Review-(Report-No.-00-02)": datetime.datetime(2000, 5, 1),
+  "Human-Capital-Investment": datetime.datetime(2000, 1, 1),
+  "Review-and-Update-of-FLRA-Regulations,-Memoranda-of-Agreement-and-Authority-Delegations": datetime.datetime(1999, 4, 14),
+  "Evaluation-of-the-FLRA-FY99-Annual-Performance-Plan-Submission": datetime.datetime(2000, 11, 1),
 }
 
 IGNET_REWRITE_URL = {
-  "http://ignet.gov/internal/flra/03govveh.pdf": "https://www.flra.gov/webfm_send/395",
-  "http://ignet.gov/internal/flra/internalreview2006.pdf": "https://www.flra.gov/webfm_send/503",
-  "http://ignet.gov/internal/flra/courtreporting.pdf": "https://www.flra.gov/webfm_send/401",
-  "http://ignet.gov/internal/flra/sandh.pdf": "https://www.flra.gov/webfm_send/403",
-  "http://ignet.gov/internal/flra/human03.pdf": "https://www.flra.gov/webfm_send/398",
+  "https://www.ignet.gov/internal/flra/03govveh.pdf": "https://www.flra.gov/system/files/webfm/Inspector General/Audit Reports/Audit Report FLRA Use of Government Vehicles Nov 20 2003.pdf",
+  "https://www.ignet.gov/internal/flra/internalreview2006.pdf": "https://www.flra.gov/system/files/webfm/Inspector General/2-27 Final Instruction MaintenanceReport.pdf",
+  "https://www.ignet.gov/internal/flra/courtreporting.pdf": "https://www.flra.gov/system/files/webfm/Inspector General/Audit Reports/Internal Review of FLRA Court Reporting Procurement - Dec 2004.pdf",
+  "https://www.ignet.gov/internal/flra/sandh.pdf": "https://www.flra.gov/system/files/webfm/Inspector General/Audit Reports/Internal Review of FLRAs Occupational Safety and Health Program.pdf",
+  "https://www.ignet.gov/internal/flra/human03.pdf": "https://www.flra.gov/system/files/webfm/Inspector General/Audit Reports/IG FLRA Human Capital Progress Assessment Follow-up on FY 2000 Internal Review of FLRA Human Capital May 2 2003.pdf",
+  "https://www.ignet.gov/internal/flra/internalcontrolindpaud08.pdf": "https://www.flra.gov/system/files/webfm/Inspector General/Internal Reviews/Report of Independent Auditors on Internal Controls (2008).pdf",
 }
 
 def run(options):
@@ -117,7 +126,7 @@ def run(options):
   # Pull the reports
   for report_type, url in REPORT_URLS:
     doc = utils.beautifulsoup_from_url(url)
-    results = doc.select("div.node ul li")
+    results = doc.select("section#content ul li")
     if not results:
       raise inspector.NoReportsFoundError("Federal Labor Relations Authority (%s)" % report_type)
     for result in results:
@@ -131,7 +140,7 @@ def report_from(result, landing_url, report_type, year_range):
   if 'Non-Public Report' in title:
     unreleased = True
     report_url = None
-    report_id = "-".join(title.split())
+    report_id = "-".join(unquote(title).split())
     report_id = report_id.replace(":", "")
   else:
     unreleased = False
@@ -143,11 +152,16 @@ def report_from(result, landing_url, report_type, year_range):
     report_url = urljoin(landing_url, relative_report_url)
     if report_url in IGNET_REWRITE_URL:
       report_url = IGNET_REWRITE_URL[report_url]
-    report_filename = report_url.split("/")[-1]
-    report_id, _ = os.path.splitext(report_filename)
+    report_id_match = REPORT_ID_RE.search(title)
+    if report_id_match:
+      report_id = report_id_match.group(1) or report_id_match.group(2)
+    else:
+      report_filename = report_url.split("/")[-1]
+      report_id, _ = os.path.splitext(report_filename)
+      report_id = "-".join(unquote(report_id).split())
 
   if (title == "Financial Statement Audit for Fiscal Year 2007" and
-      report_id == "internalcontrolindpaud08"):
+      report_id == "Report-of-Independent-Auditors-on-Internal-Controls-(2008)"):
     # This link points to the wrong report, mark FY2007 financial statement
     # audit as unreleased
     report_id = "-".join(title.split())
@@ -182,7 +196,7 @@ def report_from(result, landing_url, report_type, year_range):
 
   report = {
     'inspector': 'flra',
-    'inspector_url': 'https://www.flra.gov/OIG',
+    'inspector_url': 'https://www.flra.gov/components-offices/offices/office-inspector-general',
     'agency': 'flra',
     'agency_name': 'Federal Labor Relations Authority',
     'file_type': 'pdf',
