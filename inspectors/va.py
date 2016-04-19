@@ -66,7 +66,7 @@ def run(options):
       doc = utils.beautifulsoup_from_url(url)
       if doc.select(".content")[0].text.strip():
         break
-      time.sleep(3)
+      time.sleep(30)
 
     results = doc.select("div.leadin")
     if not results:
@@ -85,7 +85,7 @@ def run(options):
     page_text = doc.select("div.single-column-report-list")[0].text.strip()
     if page_text != ERROR_TEXT_LIST:
       break
-    time.sleep(3)
+    time.sleep(30)
   if page_text == ERROR_TEXT_LIST:
     raise Exception("Could not retrieve semiannual reports list")
 
@@ -135,7 +135,7 @@ def report_from(result, year_range):
     page_text = landing_page.select("div.report-summary")[0].text.strip()
     if page_text != ERROR_TEXT_SUMMARY:
       break
-    time.sleep(3)
+    time.sleep(30)
   if page_text == ERROR_TEXT_SUMMARY:
     raise Exception("Could not retrieve url %s" % landing_url)
 
