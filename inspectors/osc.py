@@ -166,7 +166,7 @@ def report_from(result, year, year_range,OUTCOME_CODES):
         'type': report_type,                # Letter to president, Analysis, etc., from tuple above
         'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),  # Date of publication
         'landing_url': landing_url,          # The OSC web page listing investigations for the year this one occurred
-        'unreleased': 'False',
+        'unreleased': False,
         'case_num_short': case_num_short,
         'case_num_long': case_num_long,
         'outcomes': result_codes,
