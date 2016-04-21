@@ -104,8 +104,8 @@ def report_from(result, landing_url, report_type, year_range):
   if 'semiannual' in report_id:
     title = "Semi-Annual Report: %s" % title
 
-  if title == "Report in Brief":
-    # Skip report in brief after a full report
+  if title == "Report in Brief" or title.endswith("Determination Letter"):
+    # Skip report in brief or determination letter after a full report
     return
 
   published_on = None
