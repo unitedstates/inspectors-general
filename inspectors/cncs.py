@@ -172,7 +172,7 @@ def report_from(result, reports_page, report_type, year_range):
     unreleased = True
     report_url = None
 
-    year = int(report_id.split("-")[0])
+    year = int(report_id.replace("\u2010", "-").split("-")[0])
     published_on = datetime.date(year, 1, 1)
     estimated_date = True
 
