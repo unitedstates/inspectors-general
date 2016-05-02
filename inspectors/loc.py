@@ -25,6 +25,7 @@ OTHER_REPORTS = {
 }
 
 REPORT_ID_TO_EST_DATE = {
+  'LOCMMTTCCFPR': datetime.datetime(2016, 4, 28),
   'TLHAOTBMPIAMECT': datetime.datetime(2013, 3, 1),
   'WTTSOTGPARMA': datetime.datetime(2013, 3, 1),
   'MDCITSOICBISCFPR': datetime.datetime(2010, 10, 1),
@@ -196,7 +197,7 @@ class LibraryOfCongressScraper(object):
     # definitely fail, but it's no big deal to try.
     temp_id = generate_id(title)
     if temp_id in REPORT_ID_TO_EST_DATE:
-     return REPORT_ID_TO_EST_DATE[temp_id]
+      return REPORT_ID_TO_EST_DATE[temp_id]
 
     raise ValueError('Found report with no listed and no hardcoded date: '
                      '%s <%s>' % (title, report_url))
