@@ -22,6 +22,7 @@ REPORT_ARCHIVE_URL = "https://www.fca.gov/home/inspector/oigarchive.html"
 SEMIANNUAL_REPORTS_URL = "https://www.fca.gov/home/inspector/semiannual.html"
 
 REPORT_PUBLISHED_MAPPING = {
+  "ControlseOPF": datetime.datetime(2016, 4, 21),
   "RegulatoryDevelopmentSurvey2002": datetime.datetime(2002, 10, 22),
   "FinancialAuditReport15": datetime.datetime(2015, 11, 9),
   "FinancialAuditReport14": datetime.datetime(2014, 11, 13),
