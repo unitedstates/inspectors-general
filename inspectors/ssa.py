@@ -129,8 +129,11 @@ def report_from(result, report_type, year_range):
         try:
           report_url = landing_page.find("a", attrs={"type": 'application/octet-stream;'}).get('href')
         except AttributeError:
-          unreleased = True
-          report_url = None
+          if report_type == "investigation":
+            report_url = landing_url
+          else:
+            unreleased = True
+            report_url = None
 
   try:
     summary = landing_page.select("div.field-type-text-with-summary")[0].text.strip()
