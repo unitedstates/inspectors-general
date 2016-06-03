@@ -45,12 +45,6 @@ TYPES_WITHOUT_REPORTS = [
   'Press Release'
 ]
 
-UNRELEASED_REPORT_TYPES = [
-  'Audit Reports',
-  'Correspondence',
-  'Investigations',
-]
-
 UNRELEASED_REPORT_IDS = [
   "30277"
 ]
@@ -141,30 +135,31 @@ def report_from(result, year_range, topic, options):
   report_id = landing_url.split("/")[-1]
 
   unreleased = False
+  file_type = None
   try:
     report_url = urljoin(BASE_REPORT_URL, report_page.select(".download-pdf a")[0]['href'])
-  except IndexError as exc:
+    file_type = os.path.splitext(os.path.basename(report_url))[1][1:]
+  except IndexError:
     if report_type in TYPES_WITHOUT_REPORTS:
       # Some types just don't have reports(Announcements), ignore them
       return
     elif (
         'For Official Use Only' in summary
-        or report_type in UNRELEASED_REPORT_TYPES
         or report_id in UNRELEASED_REPORT_IDS
       ):
       unreleased = True
       report_url = None
     elif landing_url in LANDING_URLS_TO_REPORT_LINKS:
       report_url = LANDING_URLS_TO_REPORT_LINKS[landing_url]
+      file_type = os.path.splitext(os.path.basename(report_url))[1][1:]
     else:
-      raise exc
+      report_url = landing_url
+      file_type = "html"
 
   # Some investigations provide a report link, but they are just links to other
   # sites. Mark these as unreleased.
-  # Ex. https://www.oig.dot.gov/library-item/5085
   if report_url:
-    report_extension = os.path.splitext(os.path.basename(report_url))[1]
-    if report_type == 'Investigations' and not report_extension:
+    if report_type == 'Investigations' and not file_type:
       unreleased = True
       report_url = None
 
@@ -191,6 +186,7 @@ def report_from(result, year_range, topic, options):
     'agency_name': 'Department of Transportation',
     'report_id': report_id,
     'url': report_url,
+    'file_type': file_type,
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
     'landing_url': landing_url,
