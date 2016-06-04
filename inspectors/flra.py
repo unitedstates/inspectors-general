@@ -51,6 +51,7 @@ REPORT_PUBLISHED_MAP = {
   "AR-16-01": datetime.datetime(2015, 11, 16),
   "AR-16-02": datetime.datetime(2015, 12, 14),
   "AR-16-03": datetime.datetime(2016, 1, 20),
+  "AR-16-04": datetime.datetime(2016, 5, 18),
   "2015-AU-C-260-Letter": datetime.datetime(2015, 12, 14),
   "AR-15-01": datetime.datetime(2014, 11, 14),
   "AR-15-02": datetime.datetime(2015, 1, 20),
