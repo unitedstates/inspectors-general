@@ -227,7 +227,7 @@ class EnergyScraper(object):
       unreleased = True
 
     report_url = None
-    pdf_link = page.select('.file a')
+    pdf_link = page.select('.field-name-field-download-files a')
     if not pdf_link:
       logging.warn('No pdf link found on page: {0}'.format(landing_url))
     else:
