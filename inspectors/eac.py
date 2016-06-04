@@ -70,6 +70,7 @@ REPORT_PUBLISHED_MAP = {
   "Investigation-of-Allegations-of-Fraudulent-Certification-of-Election-Equipment-by-SysTest-Labs-Incorporated": datetime.datetime(2007, 12, 31),
   "209": datetime.datetime(2009, 6, 10),
   "2012-PeerReview-of-USElectionAssistanceCommision-by-FLRA-OIG": datetime.datetime(2012, 7, 31),
+  "E-NS-NH-07-16-EAC-Management-Advisory-Nature-of-HAVA-Funds": datetime.datetime(2016, 5, 10),
   "delaware-issued-2015": datetime.datetime(2015, 4, 6),
   "dc-issued-report": datetime.datetime(2015, 3, 24),
   "issued-idaho-2015": datetime.datetime(2015, 3, 12),
