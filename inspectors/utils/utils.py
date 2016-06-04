@@ -264,10 +264,12 @@ def download(url, destination=None, options=None):
         log_http_error(e, url)
         return None
 
-      # Special case handling for governmentattic.org:
+      # Special case handling for governmentattic.org and va.gov:
       # These pages are served without an encoding in the HTTP headers,
       # and with utf-8 specified in a <meta> tag inside the document.
-      if url.startswith("http://www.governmentattic.org"):
+      if (url.startswith("http://www.governmentattic.org") or
+          url.startswith("https://www.va.gov/oig/publications"
+                         "/report-summary.asp?")):
         response.encoding = "utf-8"
 
       body = response.text

@@ -35,6 +35,7 @@ AGENCY_SLUG_MAP = {
   "Office of Policy and Planning": "OPP",
   "Office of Public and Intergovernmental Affairs": "OPIA",
   "Board of Veterans' Appeals": "BVA",
+  "Board of Veterans\u2019 Appeals": "BVA",
   "Center for Minority Veterans": "CMV",
   "Center for Women Veterans": "CWM",
   "Office of Employment Discrimination Complaint Adjudication": "OEDCA",
@@ -175,6 +176,8 @@ def report_from(result, year_range):
     if name in agency_name:
       agency_slug = AGENCY_SLUG_MAP[name]
       break
+  else:
+    raise Exception("Couldn't look up agency slug for \"%s\"" % agency_name)
 
   release_type = field_mapping['Release Type']
   unreleased = (release_type == "Restricted")
