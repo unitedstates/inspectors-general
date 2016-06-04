@@ -74,8 +74,8 @@ REPORT_PUBLISHED_MAP = {
   "FS-Audit-2009": datetime.datetime(2009, 11, 13),
   "FLRA-FY2009-Management-Letter": datetime.datetime(2009, 11, 15),
   "FS-Audit-2008": datetime.datetime(2009, 8, 14),
-  "Management-Letter-September-30,-2008-and-2007": datetime.datetime(2009, 7, 9),
-  "Financial-Statement-Audit-for-Fiscal-Year-2007": datetime.datetime(2008, 1, 1),
+  "2009-Management-Letter-for-Fiscal-Year-2008": datetime.datetime(2009, 7, 9),
+  "Financial-Statement-Audit-for-Fiscal-Year-2007": datetime.datetime(2008, 2, 8),
   "FS-Audit-2006": datetime.datetime(2007, 1, 1),
   "FS-Audit-2005": datetime.datetime(2005, 11, 14),
   "FS-Audit-2004": datetime.datetime(2004, 11, 12),
@@ -98,27 +98,18 @@ REPORT_PUBLISHED_MAP = {
   "2009-Management-&-Employee-Survey-Report": datetime.datetime(2009, 6, 10),
   "Final-8-14-08-Admiinistration-Report": datetime.datetime(2008, 8, 14),
   "Report-of-Independent-Auditors-on-Internal-Controls-(2008)": datetime.datetime(2008, 2, 8),
-  "2-27-Final-Instruction-MaintenanceReport": datetime.datetime(2007, 2, 27),
+  "Internal-Review-of-FLRA-Administrative-Instructions-Report-(2006)": datetime.datetime(2006, 11, 1),
   "Internal-Review-of-FLRA's-Alternative-Work-Schedule": datetime.datetime(2005, 1, 1),
-  "Internal-Review-of-FLRA-Court-Reporting-Procurement---Dec-2004": datetime.datetime(2004, 12, 1),
-  "Internal-Review-of-FLRAs-Occupational-Safety-and-Health-Program": datetime.datetime(2004, 12, 9),
-  "IG-FLRA-Human-Capital-Progress-Assessment-Follow-up-on-FY-2000-Internal-Review-of-FLRA-Human-Capital-May-2-2003": datetime.datetime(2003, 5, 2),
+  "Internal-Review-of-FLRA-Court-Reporting-Procurement-(December,-2004)-Executive-Summary": datetime.datetime(2004, 12, 1),
+  "Internal-Review-of-FLRA's-Occupational-Safety-and-Health-Program": datetime.datetime(2004, 12, 9),
+  "Internal-Review-of-FLRA's-Human-Capital-Progress-Assessment-Followup-on-2000-and-May-2,-2003": datetime.datetime(2003, 5, 2),
   "FLRA's-FY-2002-Use-of-Government-Credit-Card": datetime.datetime(2002, 11, 5),
   "Fair-Act-Evaluation": datetime.datetime(2002, 1, 1),
   "Evaluation-of-the-FLRA-FY-99-Annual-Performance-Plan-Submission": datetime.datetime(2000, 11, 1),
   "External-Affairs-Function-Internal-Review-(Report-No.-00-02)": datetime.datetime(2000, 5, 1),
   "Human-Capital-Investment": datetime.datetime(2000, 1, 1),
-  "Review-and-Update-of-FLRA-Regulations,-Memoranda-of-Agreement-and-Authority-Delegations": datetime.datetime(1999, 4, 14),
+  "Management-Letter-dated-April-14,-1999": datetime.datetime(1999, 4, 14),
   "Evaluation-of-the-FLRA-FY99-Annual-Performance-Plan-Submission": datetime.datetime(2000, 11, 1),
-}
-
-IGNET_REWRITE_URL = {
-  "https://www.ignet.gov/internal/flra/03govveh.pdf": "https://www.flra.gov/system/files/webfm/Inspector General/Audit Reports/Audit Report FLRA Use of Government Vehicles Nov 20 2003.pdf",
-  "https://www.ignet.gov/internal/flra/internalreview2006.pdf": "https://www.flra.gov/system/files/webfm/Inspector General/2-27 Final Instruction MaintenanceReport.pdf",
-  "https://www.ignet.gov/internal/flra/courtreporting.pdf": "https://www.flra.gov/system/files/webfm/Inspector General/Audit Reports/Internal Review of FLRA Court Reporting Procurement - Dec 2004.pdf",
-  "https://www.ignet.gov/internal/flra/sandh.pdf": "https://www.flra.gov/system/files/webfm/Inspector General/Audit Reports/Internal Review of FLRAs Occupational Safety and Health Program.pdf",
-  "https://www.ignet.gov/internal/flra/human03.pdf": "https://www.flra.gov/system/files/webfm/Inspector General/Audit Reports/IG FLRA Human Capital Progress Assessment Follow-up on FY 2000 Internal Review of FLRA Human Capital May 2 2003.pdf",
-  "https://www.ignet.gov/internal/flra/internalcontrolindpaud08.pdf": "https://www.flra.gov/system/files/webfm/Inspector General/Internal Reviews/Report of Independent Auditors on Internal Controls (2008).pdf",
 }
 
 def run(options):
@@ -151,8 +142,6 @@ def report_from(result, landing_url, report_type, year_range):
     # Some reports have incorrect relative paths
     relative_report_url = link.get('href').replace("../", "")
     report_url = urljoin(landing_url, relative_report_url)
-    if report_url in IGNET_REWRITE_URL:
-      report_url = IGNET_REWRITE_URL[report_url]
     report_id_match = REPORT_ID_RE.search(title)
     if report_id_match:
       report_id = report_id_match.group(1) or report_id_match.group(2)
@@ -160,14 +149,6 @@ def report_from(result, landing_url, report_type, year_range):
       report_filename = report_url.split("/")[-1]
       report_id, _ = os.path.splitext(report_filename)
       report_id = "-".join(unquote(report_id).split())
-
-  if (title == "Financial Statement Audit for Fiscal Year 2007" and
-      report_id == "Report-of-Independent-Auditors-on-Internal-Controls-(2008)"):
-    # This link points to the wrong report, mark FY2007 financial statement
-    # audit as unreleased
-    report_id = "-".join(title.split())
-    unreleased = True
-    report_url = None
 
   estimated_date = False
   published_on = None
