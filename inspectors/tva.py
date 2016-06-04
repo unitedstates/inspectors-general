@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
 from utils import utils, inspector
@@ -16,31 +17,29 @@ archive = 1998
 # Notes for IG's web team:
 #
 
-AUDIT_REPORTS_URL = "http://oig.tva.gov/reports/{year}.html"
-SEMIANNUAL_REPORTS_URL = "http://oig.tva.gov/reports/oig-reports.xml"
-
-PDF_REPORT_FORMAT = "http://oig.tva.gov/reports/node/semi/{report_number}/semi{report_number}.pdf"
+AUDIT_REPORTS_URL = "http://oig.tva.gov/reports.html"
+SEMIANNUAL_REPORTS_URL = "http://oig.tva.gov/sar_reports.html"
+PEER_REVIEW_REPORTS_URL = "http://oig.tva.gov/peer_reports.html"
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the audit reports
+  doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL)
   for year in year_range:
     if year < 2005:  # This is the earliest audits go back
       continue
-    url = AUDIT_REPORTS_URL.format(year=year)
-    doc = utils.beautifulsoup_from_url(url)
-    results = doc.select("div.content")
+    results = doc.find(id=str(year)).select(".panel")
     if not results:
       raise inspector.NoReportsFoundError("Tennessee Valley Authority (%d)" % year)
     for result in results:
-      report = audit_report_from(result, url, year_range)
+      report = audit_report_from(result, AUDIT_REPORTS_URL, year_range)
       if report:
         inspector.save_report(report)
 
   # Pull the semiannual reports
   doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
-  results = doc.select("report")
+  results = doc.select(".tab-content .row")
   if not results:
     raise inspector.NoReportsFoundError("Tennessee Valley Authority (semiannual reports)")
   for result in results:
@@ -48,20 +47,31 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+  # Pull the peer review reports
+  doc = utils.beautifulsoup_from_url(PEER_REVIEW_REPORTS_URL)
+  results = doc.select(".tab-content .row")
+  if not results:
+    raise inspector.NoReportsFoundError("Tennessee Valley Authority (peer review reports)")
+  for result in results:
+    report = peer_review_report_from(result, year_range)
+    if report:
+      inspector.save_report(report)
+
 def audit_report_from(result, landing_url, year_range):
-  header = result.find_previous("p", class_="heading")
+  header = result.select(".panel-heading")[0]
 
   published_on_text, title, report_id = header.text.split("-", 2)
 
   # Some reports list multiple dates. Split on '&' to get the latter.
   published_on_text = published_on_text.split("&")[-1].strip()
+  published_on_text = published_on_text.replace("NSeptember", "September")
   published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % title)
     return
 
-  title = " ".join(title.split())
+  title = re.sub("\\s+", " ", title)
   report_id = report_id.strip().replace("/", "-").replace(":", "")
 
   if "summary only" in result.text.lower():
@@ -69,11 +79,11 @@ def audit_report_from(result, landing_url, year_range):
     report_url = None
   else:
     unreleased = False
-    report_url = urljoin(landing_url, result.find("a").get('href'))
+    link = result.find("a", href=lambda h: h and not h.startswith("#"))
+    report_url = urljoin(landing_url, link['href'])
 
-  # Skip the last 'p' since it is just the report link
-  summary_text = " ".join([paragraph.text for paragraph in result.findAll("p")[:-1]])
-  summary = " ".join(summary_text.split())  # Remove extra whitespace
+  summary_text = result.find("div", class_="panel-body").text
+  summary = re.sub("\\s+", " ", summary_text)
 
   report = {
     'inspector': 'tva',
@@ -93,17 +103,11 @@ def audit_report_from(result, landing_url, year_range):
   return report
 
 def semiannual_report_from(result, year_range):
-  report_url = urljoin(SEMIANNUAL_REPORTS_URL, result.get('pdfurl'))
-  if report_url.endswith("index.html"):
-    # Sometime they link to the landing page instead of the report. We convert
-    # the url to get the actual report.
-    report_number = report_url.split("/")[-2]
-    report_url = PDF_REPORT_FORMAT.format(report_number=report_number)
-
-  report_filename = report_url.split("/")[-1]
+  report_url = urljoin(SEMIANNUAL_REPORTS_URL, result.a["href"])
+  report_filename = os.path.basename(report_url)
   report_id, _ = os.path.splitext(report_filename)
 
-  published_on_text = result.find("date").text
+  published_on_text = result.select(".info .title")[0].text
   published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
   if published_on.year not in year_range:
@@ -111,10 +115,10 @@ def semiannual_report_from(result, year_range):
     return
 
   title = "Semiannual Report {}".format(published_on_text)
-  alternative_title = result.find("title").text.strip()
+  alternative_title = result.select(".info .brief-description")[0].text.strip()
   if alternative_title:
     title = "{} ({})".format(alternative_title, title)
-  summary = result.find("summary").text.strip()
+  summary = result.p.text.strip()
 
   report = {
     'inspector': 'tva',
@@ -122,6 +126,36 @@ def semiannual_report_from(result, year_range):
     'agency': 'tva',
     'agency_name': 'Tennessee Valley Authority',
     'type': 'semiannual_report',
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'summary': summary,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  return report
+
+def peer_review_report_from(result, year_range):
+  report_url = urljoin(PEER_REVIEW_REPORTS_URL, result.a["href"])
+  report_filename = os.path.basename(report_url)
+  report_id, _ = os.path.splitext(report_filename)
+
+  published_on_text = result.select(".info .title")[0].text
+  published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  title = "Peer Review Report {}".format(published_on_text)
+  summary = result.find("div", class_="info").find_next_sibling("p").text
+  summary = summary.strip()
+
+  report = {
+    'inspector': 'tva',
+    'inspector_url': 'http://oig.tva.gov',
+    'agency': 'tva',
+    'agency_name': 'Tennessee Valley Authority',
+    'type': 'peer_review',
     'report_id': report_id,
     'url': report_url,
     'title': title,
