@@ -100,6 +100,14 @@ def audit_report_from(result, landing_url, year_range):
   if unreleased:
     report['unreleased'] = unreleased
     report['landing_url'] = landing_url
+
+  # Handle missing file
+  if report_url == "http://oig.tva.gov/reports/PDF/07rpts/2007-10997.pdf":
+    report['url'] = None
+    report['landing_url'] = landing_url
+    report['unreleased'] = True
+    report['missing'] = True
+
   return report
 
 def semiannual_report_from(result, year_range):
