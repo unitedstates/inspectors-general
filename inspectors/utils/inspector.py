@@ -400,5 +400,6 @@ def log_no_date(report_id, title, url=None):
   if url is None:
     message = "No date was found for %s, \"%s\"" % (report_id, title)
   else:
-    message = "No date was found for %s, \"%s\" (%s)" % (report_id, title, url)
+    message = ("No date was found for %s, \"%s\" (%s)"
+               % (report_id, title, url.replace(" ", "%20")))
   admin.notify(message)
