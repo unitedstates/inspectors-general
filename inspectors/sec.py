@@ -195,7 +195,7 @@ def run(options):
 
 def report_from(result, landing_url, topic, year_range, last_published_on):
   try:
-    report_link = result.select("a")[0]
+    report_link = result.select("a[href]")[0]
   except IndexError as exc:
     # There is a bug for this date where it does not have a report.
     # https://www.sec.gov/about/offices/oig/inspector_general_audits_reports.shtml
