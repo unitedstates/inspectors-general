@@ -90,6 +90,7 @@ REPORT_PUBLISHED_MAP = {
   "M-12-12 Reporting": datetime.datetime(2016, 1, 28),
   "OIG-CA-16-012": datetime.datetime(2016, 3, 30),
   "OIG-CA-16-014": datetime.datetime(2016, 4, 19),
+  "Role of Non-Career Officials in Treasury FOIA Processing": datetime.datetime(2016, 3, 9),
 }
 
 def run(options):
@@ -318,6 +319,10 @@ def report_from(result, page_url, report_type, year_range):
 
   if not published_on:
     inspector.log_no_date(report_id, title, report_url)
+    return
+
+  # Skip this report, it already shows up under other audit reports
+  if report_id == "Role of Non-Career Officials in Treasury FOIA Processing":
     return
 
   if published_on.year not in year_range:
