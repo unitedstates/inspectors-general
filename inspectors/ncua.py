@@ -142,7 +142,7 @@ def other_report_from(result, year_range):
     except ValueError:
       pass
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    inspector.log_no_date("ncua", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

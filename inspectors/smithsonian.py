@@ -225,7 +225,7 @@ def rss_report_from(result, year_range):
       pass
 
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    inspector.log_no_date("smithsonian", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:
@@ -298,7 +298,7 @@ def report_from(result, year_range):
       estimated_date = True
 
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    inspector.log_no_date("smithsonian", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

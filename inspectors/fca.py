@@ -226,7 +226,7 @@ def report_from(result, landing_url, year_range):
       pass
 
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    inspector.log_no_date("fca", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

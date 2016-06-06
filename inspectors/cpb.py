@@ -124,7 +124,7 @@ def report_from(result, landing_url, report_type, year_range):
     published_on = extract_date_from_report_id(report_id)
 
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    inspector.log_no_date("cpb", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

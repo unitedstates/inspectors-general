@@ -153,7 +153,7 @@ def report_from(result, year_range, report_type, title_prefix=None):
     title = "{}{}".format(title_prefix, title)
 
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    inspector.log_no_date("fec", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

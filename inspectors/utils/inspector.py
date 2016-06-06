@@ -396,10 +396,10 @@ class NoReportsFoundError(AssertionError):
   def __str__(self):
     return "No reports were found for %s" % self.value
 
-def log_no_date(report_id, title, url=None):
+def log_no_date(inspector, report_id, title, url=None):
   if url is None:
-    message = "No date was found for %s, \"%s\"" % (report_id, title)
+    message = "[%s] No date was found for %s, \"%s\"" % (inspector, report_id, title)
   else:
-    message = ("No date was found for %s, \"%s\" (%s)"
-               % (report_id, title, url.replace(" ", "%20")))
+    message = ("[%s] No date was found for %s, \"%s\" (%s)"
+               % (inspector, report_id, title, url.replace(" ", "%20")))
   admin.notify(message)

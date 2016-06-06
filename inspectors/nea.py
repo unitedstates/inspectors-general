@@ -147,7 +147,7 @@ def report_from(result, landing_url, report_type, year_range):
       published_on = REPORT_PUBLISHED_MAP[report_id]
 
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    inspector.log_no_date("nea", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

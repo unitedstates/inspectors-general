@@ -383,7 +383,7 @@ def report_from(result, landing_url, report_type, year_range):
         pass
 
     if not published_on_text:
-      inspector.log_no_date(report_id, title, report_url)
+      inspector.log_no_date("lsc", report_id, title, report_url)
       return
 
     if not published_on:
@@ -403,7 +403,7 @@ def report_from(result, landing_url, report_type, year_range):
           break
 
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    inspector.log_no_date("lsc", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

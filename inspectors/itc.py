@@ -304,7 +304,7 @@ def audit_report_from(year, result, landing_url, year_range):
     report_id = "%s-%s" % (report_id, published_on.strftime("%m-%y"))
 
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    inspector.log_no_date("itc", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:
