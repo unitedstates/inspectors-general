@@ -227,6 +227,12 @@ class DashboardErrorHandler(ErrorHandler):
     if not self.dashboard_data:
       return
 
+    for scraper in self.dashboard_data:
+      if "exceptions" in self.dashboard_data[scraper]:
+        self.dashboard_data[scraper]["severity"] = 2
+      else:
+        self.dashboard_data[scraper]["severity"] = 0
+
     options = config["dashboard"]
     message_json = json.dumps(self.dashboard_data)
     message_bytes = message_json.encode("utf-8")
