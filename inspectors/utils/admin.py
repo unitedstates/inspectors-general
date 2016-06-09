@@ -211,7 +211,7 @@ class DashboardErrorHandler(ErrorHandler):
       self.dashboard_data[scraper]["exceptions"] = []
     entry = {
       "class_name": class_name,
-      "filename": "inspectors/%.py" % scraper,
+      "filename": "inspectors/%s.py" % scraper,
       "line_num": line_num,
       "function": function
     }
