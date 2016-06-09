@@ -29,6 +29,13 @@ slack:
   # to only send a direct message
   channel: "@yournamehere"
 
+# configuration for sending errors and statistics to the dashboard
+dashboard:
+  # server endpoint
+  url: "https://oversight.garden/dashboard/upload"
+  # shared secret with server for authentication
+  secret: ""
+
 # data output directory
 data_directory: data
 
