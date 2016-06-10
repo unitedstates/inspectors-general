@@ -213,7 +213,8 @@ class DashboardErrorHandler(ErrorHandler):
       "class_name": class_name,
       "filename": "inspectors/%s.py" % scraper,
       "line_num": line_num,
-      "function": function
+      "function": function,
+      "traceback": body
     }
     self.dashboard_data[scraper]["exceptions"].append(entry)
 
