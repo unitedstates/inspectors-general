@@ -4,7 +4,7 @@ import datetime
 import logging
 import os
 import re
-from urllib.parse import urljoin
+from urllib.parse import urljoin, admin
 
 from utils import utils, inspector
 
@@ -167,7 +167,7 @@ def report_from(result, landing_url, report_type, year_range):
           estimated_date = True
 
   if not published_on:
-    inspector.log_no_date("ftc", report_id, title, report_url)
+    admin.log_no_date("ftc", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

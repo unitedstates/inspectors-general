@@ -6,7 +6,7 @@ import os
 import re
 from urllib.parse import urljoin, unquote
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # https://www.flra.gov/components-offices/offices/office-inspector-general
 archive = 1999
@@ -169,7 +169,7 @@ def report_from(result, landing_url, report_type, year_range):
         estimated_date = True
 
   if not published_on:
-    inspector.log_no_date("flra", report_id, title, report_url)
+    admin.log_no_date("flra", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

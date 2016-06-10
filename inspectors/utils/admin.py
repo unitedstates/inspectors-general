@@ -36,6 +36,24 @@ def notify(body):
       print(format_exception(exception))
 
 
+def log_duplicate_id(scraper, report_id, msg):
+  for error_handler in error_handlers:
+    try:
+      error_handler.log_duplicate_id(scraper, report_id, msg)
+    except Exception as exception:
+      print("Exception logging message to admin, halting as to avoid loop")
+      print(format_exception(exception))
+
+
+def log_no_date(scraper, report_id, title, url=None):
+  for error_handler in error_handlers:
+    try:
+      error_handler.log_no_date(scraper, report_id, title, url)
+    except Exception as exception:
+      print("Exception logging message to admin, halting as to avoid loop")
+      print(format_exception(exception))
+
+
 def log_report(scraper):
   for error_handler in error_handlers:
     try:
@@ -113,12 +131,41 @@ class ErrorHandler(object):
   def log_report(self, scraper):
     pass
 
+  def log_no_date(self, scraper, report_id, title, url):
+    if url is None:
+      message = ("[%s] No date was found for %s, \"%s\""
+                 % (scraper, report_id, title))
+    else:
+      message = ("[%s] No date was found for %s, \"%s\" (%s)"
+                 % (scraper, report_id, title, url.replace(" ", "%20")))
+    self.log(message)
+
 
 class ConsoleErrorHandler(ErrorHandler):
+  def __init__(self):
+    self.uniqueness_messages = []
+    atexit.register(self.print_duplicate_messages)
+
+  def log_duplicate_id(self, scraper, report_id, msg):
+    self.uniqueness_messages.append(msg)
+
+  def print_duplicate_messages(self):
+    self.log("\n".join(self.uniqueness_messages))
+
   def log(self, body):
     logging.error(body)
 
 class EmailErrorHandler(ErrorHandler):
+  def __init__(self):
+    self.uniqueness_messages = []
+    atexit.register(self.print_duplicate_messages)
+
+  def log_duplicate_id(self, scraper, report_id, msg):
+    self.uniqueness_messages.append(msg)
+
+  def print_duplicate_messages(self):
+    self.log("\n".join(self.uniqueness_messages))
+
   def log(self, body):
     settings = config['email']
 
@@ -146,6 +193,16 @@ class EmailErrorHandler(ErrorHandler):
 class SlackErrorHandler(ErrorHandler):
   def __init__(self):
     self.options = config.get("slack")
+    self.uniqueness_messages = []
+    atexit.register(self.print_duplicate_messages)
+
+  def log_duplicate_id(self, scraper, report_id, msg):
+    self.uniqueness_messages.append(msg)
+
+  def print_duplicate_messages(self):
+    self.send_message({
+      "text": "\n".join(self.uniqueness_messages)
+    })
 
   def send_message(self, message):
     copy_if_present("username", self.options, message)
@@ -200,6 +257,23 @@ class SlackErrorHandler(ErrorHandler):
       ]
     })
 
+  def log_no_date(self, scraper, report_id, title, url):
+    if url is None:
+      message = ("[%s] No date was found for %s, \"%s\""
+                 % (scraper, report_id, title))
+    else:
+      message = ("[%s] No date was found for %s, \"%s\" (%s)"
+                 % (scraper, report_id, title, url.replace(" ", "%20")))
+    self.send_message({
+      "attachments": [
+        {
+          "fallback": message,
+          "text": message,
+          "color": "warning"
+        }
+      ]
+    })
+
   def log_fallback(self, body):
     self.send_message({
       "text": str(body)
@@ -214,6 +288,13 @@ class DashboardErrorHandler(ErrorHandler):
 
   def log_http_error(self, http_status_code, url, fallback, body):
     pass  # self.dashboard_data[todo]
+
+  def log_duplicate_id(self, scraper, report_id, msg):
+    if scraper not in self.dashboard_data:
+      self.dashboard_data[scraper] = {}
+    if "duplicate_ids" not in self.dashboard_data[scraper]:
+      self.dashboard_data[scraper]["duplicate_ids"] = []
+    self.dashboard_data[scraper]["duplicate_ids"].append(report_id)
 
   def log_exception(self, class_name, scraper, line_num, function,
                     fallback, body):
@@ -230,6 +311,18 @@ class DashboardErrorHandler(ErrorHandler):
     }
     self.dashboard_data[scraper]["exceptions"].append(entry)
 
+  def log_no_date(self, scraper, report_id, title, url):
+    if scraper not in self.dashboard_data:
+      self.dashboard_data[scraper] = {}
+    if "missing_dates" not in self.dashboard_data[scraper]:
+      self.dashboard_data[scraper]["missing_dates"] = []
+    entry = {
+      "report_id": report_id,
+      "title": title,
+      "url": url
+    }
+    self.dashboard_data[scraper]["missing_dates"].append(entry)
+
   def log_qa(self, text, fallback):
     pass
 
@@ -242,9 +335,17 @@ class DashboardErrorHandler(ErrorHandler):
 
     for scraper in self.dashboard_data:
       if "exceptions" in self.dashboard_data[scraper]:
-        self.dashboard_data[scraper]["severity"] = 2
+        severity = 2
+      elif "duplicate_ids" in self.dashboard_data[scraper]:
+        severity = 1
+      elif "missing_dates" in self.dashboard_data[scraper]:
+        severity = 1
       else:
-        self.dashboard_data[scraper]["severity"] = 0
+        severity = 0
+      self.dashboard_data[scraper]["severity"] = severity
+
+      if "duplicate_ids" in self.dashboard_data[scraper]:
+        self.dashboard_data[scraper]["duplicate_ids"].sort()
 
     options = config["dashboard"]
     message_json = json.dumps(self.dashboard_data)

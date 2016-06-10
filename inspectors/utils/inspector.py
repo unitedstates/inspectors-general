@@ -4,7 +4,6 @@ import re
 import logging
 import datetime
 import urllib.parse
-import atexit
 import inspect
 
 from . import admin
@@ -18,6 +17,9 @@ from . import admin
 # fields added: report_path, text_path
 
 def save_report(report):
+  caller_filename = inspect.stack()[1][1]
+  caller_scraper = os.path.splitext(os.path.basename(caller_filename))[0]
+
   options = utils.options()
 
   # create some inferred fields, set defaults
@@ -30,7 +32,8 @@ def save_report(report):
       report.get('type'), report.get('published_on'), report.get('report_id'),
       validation, str(report)))
 
-  check_uniqueness(report['inspector'], report['report_id'], report['year'])
+  check_uniqueness(report['inspector'], report['report_id'], report['year'],
+                   caller_scraper)
 
   logging.warn("[%s][%s][%s]" % (report['type'], report['published_on'], report['report_id']))
 
@@ -59,10 +62,7 @@ def save_report(report):
   data_path = write_report(report)
   logging.warn("\tdata: %s" % data_path)
 
-  caller_filename = inspect.stack()[1][1]
-  caller_scraper = os.path.splitext(os.path.basename(caller_filename))[0]
   admin.log_report(caller_scraper)
-
   return True
 
 
@@ -185,8 +185,7 @@ def validate_report(report):
 
 _uniqueness_storage_disk = {}
 _uniqueness_storage_runtime = {}
-_uniqueness_messages = []
-def check_uniqueness(inspector, report_id, report_year):
+def check_uniqueness(inspector, report_id, report_year, scraper):
   '''Given the name of an inspector, the ID of a report, and the year of the
   report, this function will check whether a duplicate report_id exists on-disk
   under a different year, or whether a duplicate report_id has been saved this
@@ -220,14 +219,14 @@ def check_uniqueness(inspector, report_id, report_year):
                         _uniqueness_storage_disk[inspector][report_id_disk],
                         year_disk)
                 print(msg)
-                _uniqueness_messages.append(msg)
+                admin.log_duplicate_id(scraper, report_id_disk, msg)
               _uniqueness_storage_disk[inspector][report_id_disk] = year_disk
 
   if report_id in _uniqueness_storage_runtime[inspector]:
     msg = "[%s] Duplicate report_id: %s has been used twice this session" % \
             (inspector, report_id)
     print(msg)
-    _uniqueness_messages.append(msg)
+    admin.log_duplicate_id(scraper, report_id, msg)
   elif report_id in _uniqueness_storage_disk[inspector]:
     if report_year != _uniqueness_storage_disk[inspector][report_id]:
       msg = "[%s] Duplicate report_id: %s is saved under %d and %d" % \
@@ -236,13 +235,9 @@ def check_uniqueness(inspector, report_id, report_year):
               _uniqueness_storage_disk[inspector][report_id],
               report_year)
       print(msg)
-      _uniqueness_messages.append(msg)
+      admin.log_duplicate_id(scraper, report_id, msg)
   _uniqueness_storage_runtime[inspector].add(report_id)
 
-@atexit.register
-def verify_uniqueness_finalize_summary():
-  if _uniqueness_messages:
-    admin.notify('\n'.join(_uniqueness_messages))
 
 # run over common string fields automatically
 sanitize_table = str.maketrans({
@@ -400,11 +395,3 @@ class NoReportsFoundError(AssertionError):
 
   def __str__(self):
     return "No reports were found for %s" % self.value
-
-def log_no_date(inspector, report_id, title, url=None):
-  if url is None:
-    message = "[%s] No date was found for %s, \"%s\"" % (inspector, report_id, title)
-  else:
-    message = ("[%s] No date was found for %s, \"%s\" (%s)"
-               % (inspector, report_id, title, url.replace(" ", "%20")))
-  admin.notify(message)

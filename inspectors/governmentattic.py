@@ -4,7 +4,7 @@ import datetime
 import logging
 import re
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 """
 This file is different in that it doesn't scrape an IG's list of public documents, but rather scrapes the largest public 
@@ -199,7 +199,7 @@ def report_from(result, category_name, agency, year_range):
       except:
         published_on = None
   if not published_on:
-    inspector.log_no_date("governmentattic", report_id, title, report_url)
+    admin.log_no_date("governmentattic", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

@@ -7,7 +7,7 @@ import re
 from urllib.parse import urljoin
 
 from bs4 import Tag
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # http://www.oig.denali.gov/
 archive = 2006
@@ -98,7 +98,7 @@ def report_from(result, year_range):
         raise Exception("No good title for %s" % report_id)
 
   if not published_on:
-    inspector.log_no_date("denali", report_id, title, report_url)
+    admin.log_no_date("denali", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

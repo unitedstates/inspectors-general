@@ -6,7 +6,7 @@ import os
 import re
 from urllib.parse import urljoin
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # https://www.archives.gov/oig/
 archive = 2005
@@ -218,7 +218,7 @@ def audit_report_from(result, landing_url, year, year_range):
       pass
 
   if not published_on:
-    inspector.log_no_date("archives", report_id, title, report_url)
+    admin.log_no_date("archives", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:
@@ -274,7 +274,7 @@ def peer_review_from(result, year_range):
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
   else:
-    inspector.log_no_date("archives", report_id, result.text, report_url)
+    admin.log_no_date("archives", report_id, result.text, report_url)
     return
 
   if published_on.year not in year_range:

@@ -7,7 +7,7 @@ import os
 import re
 from urllib.parse import urljoin, urlparse, urlunparse, urldefrag
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # http://oig.hhs.gov/reports-and-publications/index.asp
 archive = 1985
@@ -492,7 +492,7 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
       )
 
   if not published_on:
-    inspector.log_no_date("hhs", report_id, title, report_url)
+    admin.log_no_date("hhs", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

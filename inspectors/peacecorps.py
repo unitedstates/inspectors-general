@@ -5,7 +5,7 @@ import logging
 import os
 import urllib
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # http://www.peacecorps.gov/about/inspgen/
 archive = 1989
@@ -229,7 +229,7 @@ def report_from(result, year_range):
     except ValueError:
       pass
   if not published_on:
-    inspector.log_no_date("peacecorps", report_id, title, report_url)
+    admin.log_no_date("peacecorps", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

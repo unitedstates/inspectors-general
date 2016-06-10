@@ -6,7 +6,7 @@ import os
 import re
 from urllib.parse import urljoin
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # https://www.si.edu/OIG
 archive = 2003
@@ -225,7 +225,7 @@ def rss_report_from(result, year_range):
       pass
 
   if not published_on:
-    inspector.log_no_date("smithsonian", report_id, title, report_url)
+    admin.log_no_date("smithsonian", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:
@@ -298,7 +298,7 @@ def report_from(result, year_range):
       estimated_date = True
 
   if not published_on:
-    inspector.log_no_date("smithsonian", report_id, title, report_url)
+    admin.log_no_date("smithsonian", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

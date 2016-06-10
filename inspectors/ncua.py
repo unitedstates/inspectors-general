@@ -6,7 +6,7 @@ import os
 import re
 from urllib.parse import urljoin
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # https://www.ncua.gov/About/Pages/inspector-general.aspx
 archive = 1999
@@ -142,7 +142,7 @@ def other_report_from(result, year_range):
     except ValueError:
       pass
   if not published_on:
-    inspector.log_no_date("ncua", report_id, title, report_url)
+    admin.log_no_date("ncua", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:
