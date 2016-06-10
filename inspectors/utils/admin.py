@@ -200,9 +200,10 @@ class SlackErrorHandler(ErrorHandler):
     self.uniqueness_messages.append(msg)
 
   def print_duplicate_messages(self):
-    self.send_message({
-      "text": "\n".join(self.uniqueness_messages)
-    })
+    if self.uniqueness_messages:
+      self.send_message({
+        "text": "\n".join(self.uniqueness_messages)
+      })
 
   def send_message(self, message):
     copy_if_present("username", self.options, message)
