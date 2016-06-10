@@ -36,6 +36,14 @@ def notify(body):
       print(format_exception(exception))
 
 
+def log_report(scraper):
+  for error_handler in error_handlers:
+    try:
+      error_handler.log_report(scraper)
+    except Exception as exception:
+      print(format_exception(exception))
+
+
 def format_exception(exception):
   exc_type, exc_value, exc_traceback = sys.exc_info()
   return "\n".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
@@ -101,6 +109,10 @@ class ErrorHandler(object):
       self.log_qa("\n".join(lines[1:]), fallback)
     else:
       self.log_fallback(str(body))
+
+  def log_report(self, scraper):
+    pass
+
 
 class ConsoleErrorHandler(ErrorHandler):
   def log(self, body):
@@ -242,6 +254,16 @@ class DashboardErrorHandler(ErrorHandler):
     request.add_header("Content-Type", "application/json; charset=utf-8")
     request.get_method = lambda: "PUT"
     urllib.request.urlopen(request)
+
+  def log_report(self, scraper):
+    if scraper not in self.dashboard_data:
+      self.dashboard_data[scraper] = {}
+    if "report_count" not in self.dashboard_data[scraper]:
+      self.dashboard_data[scraper]["report_count"] = 1
+    else:
+      self.dashboard_data[scraper]["report_count"] = (1 +
+          self.dashboard_data[scraper]["report_count"])
+
 
 error_handlers = [ConsoleErrorHandler()]
 if config:

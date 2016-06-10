@@ -5,6 +5,7 @@ import logging
 import datetime
 import urllib.parse
 import atexit
+import inspect
 
 from . import admin
 # Save a report to disk, provide output along the way.
@@ -57,6 +58,10 @@ def save_report(report):
 
   data_path = write_report(report)
   logging.warn("\tdata: %s" % data_path)
+
+  caller_filename = inspect.stack()[1][1]
+  caller_scraper = os.path.splitext(os.path.basename(caller_filename))[0]
+  admin.log_report(caller_scraper)
 
   return True
 
