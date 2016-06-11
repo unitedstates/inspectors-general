@@ -14,6 +14,7 @@ import certifi
 import docx
 import zipfile
 from urllib.parse import urljoin
+import inspect
 
 from . import admin
 
@@ -139,7 +140,7 @@ def run(run_method, additional=None):
   try:
     return run_method(cli_options)
   except Exception as exception:
-    admin.notify(exception)
+    admin.log_exception(exception)
 
 
 # read options from the command line
@@ -210,7 +211,7 @@ def configure_logging(options=None):
 
 
 # download the data at url
-def download(url, destination=None, options=None):
+def download(url, destination=None, options=None, scraper_slug=None):
   options = {} if not options else options
   cache = options.get('cache', True) # default to caching
   binary = options.get('binary', False) # default to assuming text
@@ -244,7 +245,7 @@ def download(url, destination=None, options=None):
         verify_options = domain_verify_options(url)
         scraper.urlretrieve(url, destination, verify=verify_options)
       except connection_errors() as e:
-        log_http_error(e, url)
+        admin.log_http_error(e, url, scraper_slug)
         return None
     else: # text
       try:
@@ -261,7 +262,7 @@ def download(url, destination=None, options=None):
         response = scraper.get(url, verify=verify_options)
 
       except connection_errors() as e:
-        log_http_error(e, url)
+        admin.log_http_error(e, url, scraper_slug)
         return None
 
       # Special case handling for governmentattic.org and va.gov:
@@ -291,7 +292,10 @@ def download(url, destination=None, options=None):
     return unescape(body)
 
 def beautifulsoup_from_url(url):
-  body = download(url)
+  caller_filename = inspect.stack()[1][1]
+  caller_scraper = os.path.splitext(os.path.basename(caller_filename))[0]
+
+  body = download(url, scraper_slug=caller_scraper)
   if body is None: return None
 
   doc = BeautifulSoup(body, "lxml")
@@ -309,7 +313,7 @@ def post(url, data=None, headers=None, **kwargs):
     verify_options = domain_verify_options(url)
     response = scraper.post(url, data=data, headers=headers, verify=verify_options)
   except connection_errors() as e:
-    log_http_error(e, url)
+    admin.log_http_error(e, url)
     return None
 
   return response
@@ -323,14 +327,6 @@ def resolve_redirect(url):
 
 def connection_errors():
   return (scrapelib.HTTPError, requests.exceptions.ConnectionError, requests.packages.urllib3.exceptions.MaxRetryError)
-
-def log_http_error(e, url):
-  # intentionally print instead of using logging,
-  # so that all 404s get printed at the end of the log
-  message = "Error downloading %s:\n\n%s" % (url, format_exception(e))
-  print(message)
-  if admin.config and admin.config.get("slack"):
-    admin.send_slack(message)
 
 # uses BeautifulSoup to do a naive extraction of text from HTML,
 # then writes it and returns the /data-relative path.
@@ -531,7 +527,7 @@ def check_report_url(report_url):
     verify_options = domain_verify_options(report_url)
     scraper.request(method='HEAD', url=report_url, verify=verify_options)
   except connection_errors() as e:
-    log_http_error(e, report_url)
+    admin.log_http_error(e, report_url)
 
 DOC_PAGE_RE = re.compile("Number of Pages: ([0-9]*),")
 DOC_CREATION_DATE_RE = re.compile("Create Time/Date: ([A-Za-z 0-9:]*),")

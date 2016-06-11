@@ -25,12 +25,10 @@ else:
   config = None
 
 
-def notify(body):
+def log_exception(e):
   for error_handler in error_handlers:
     try:
-      if isinstance(body, Exception):
-        body = format_exception(body)
-      error_handler.log(body)
+      error_handler.log_exception(e)
     except Exception as exception:
       print("Exception logging message to admin, halting as to avoid loop")
       print(format_exception(exception))
@@ -62,72 +60,45 @@ def log_report(scraper):
       print(format_exception(exception))
 
 
+def log_qa(report_text):
+  for error_handler in error_handlers:
+    try:
+      error_handler.log_qa(report_text)
+    except Exception as exception:
+      print(format_exception(exception))
+
+
+def log_http_error(e, url, scraper=None):
+  for error_handler in error_handlers:
+    try:
+      error_handler.log_http_error(e, url, scraper)
+    except Exception as exception:
+      print(format_exception(exception))
+
+
 def format_exception(exception):
   exc_type, exc_value, exc_traceback = sys.exc_info()
   return "\n".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+
+
+def parse_scraper_traceback():
+  exc_traceback = sys.exc_info()[2]
+  for filename, line_number, function_name, text in traceback.extract_tb(exc_traceback):
+    inspector_match = INSPECTOR_RE.match(filename)
+    if inspector_match:
+      return inspector_match.group(1), line_number, function_name
+  return None, None, None
 
 
 def copy_if_present(key, src, dst):
   if key in src:
     dst[key] = src[key]
 
-INSPECTOR_RE = re.compile('''File "\\.?inspectors(?:/|\\\\)([a-z]+)\\.py", line ([0-9]+), in ([^\n]+)\n''')
+INSPECTOR_RE = re.compile("^inspectors(?:/|\\\\)([a-z]+)\\.py$")
 HTTP_ERROR_RE = re.compile('''scrapelib\\.HTTPError: ([0-9]+) while retrieving ([^\n]+)\n''')
 TRACEBACK_STR = "Traceback (most recent call last):"
 
 class ErrorHandler(object):
-  def log(self, body):
-    if not self.options:
-      return
-    lines = body.split('\n')
-
-    # Scan up to the point where the traceback starts
-    index = 0
-    while index < len(lines) and lines[index].find(TRACEBACK_STR) != -1:
-      index = index + 1
-    # Skip the traceback
-    index = index + 1
-    # Scan until the first non-indented line, after the traceback
-    while index < len(lines) and (lines[index] == "" or lines[index][0] == " "):
-      index = index + 1
-    # If we ran off the end of the message because it's in an unexpected
-    # format, just use the whole thing
-    if index >= len(lines):
-      index = 0
-    # Take the remaining text as the exception message
-    exception_message = '\n'.join(lines[index:])
-    # Use one line only of the exception message as a fallback message for
-    # text-only clients
-    fallback = lines[index]
-
-    # The exception type should be the first thing after the traceback,
-    # followed by a colon
-    if exception_message.find(':') != -1:
-      class_name = exception_message[:exception_message.find(':')]
-    else:
-      class_name = None
-
-    scraper = None
-    line_num = None
-    function = None
-    scraper_matches = INSPECTOR_RE.findall(body)
-    if scraper_matches:
-      scraper = scraper_matches[-1][0]
-      line_num = scraper_matches[-1][1]
-      function = scraper_matches[-1][2]
-
-    http_error_match = HTTP_ERROR_RE.search(body)
-    if http_error_match:
-      self.log_http_error(http_error_match.group(1), http_error_match.group(2),
-                          fallback, body)
-    elif class_name and scraper and line_num and function:
-      self.log_exception(class_name, scraper, line_num, function,
-                         fallback, body)
-    elif body.startswith("QA results for"):
-      self.log_qa("\n".join(lines[1:]), fallback)
-    else:
-      self.log_fallback(str(body))
-
   def log_report(self, scraper):
     pass
 
@@ -139,6 +110,9 @@ class ErrorHandler(object):
       message = ("[%s] No date was found for %s, \"%s\" (%s)"
                  % (scraper, report_id, title, url.replace(" ", "%20")))
     self.log(message)
+
+  def log_exception(self, exception):
+    self.log(format_exception(exception))
 
 
 class ConsoleErrorHandler(ErrorHandler):
@@ -154,6 +128,15 @@ class ConsoleErrorHandler(ErrorHandler):
 
   def log(self, body):
     logging.error(body)
+
+  def log_http_error(self, exception, url, scraper):
+    # intentionally print instead of using logging,
+    # so that all 404s get printed at the end of the log
+    print("Error downloading %s:\n\n%s" % (url, format_exception(exception)))
+
+  def log_qa(self, text):
+    self.log(text)
+
 
 class EmailErrorHandler(ErrorHandler):
   def __init__(self):
@@ -190,6 +173,13 @@ class EmailErrorHandler(ErrorHandler):
 
     logging.info("Sent email to %s" % settings['to'])
 
+  def log_http_error(self, exception, url, scraper):
+    pass
+
+  def log_qa(self, text):
+    pass
+
+
 class SlackErrorHandler(ErrorHandler):
   def __init__(self):
     self.options = config.get("slack")
@@ -218,12 +208,16 @@ class SlackErrorHandler(ErrorHandler):
     request.add_header("Content-Type", "application/json; charset=utf-8")
     urllib.request.urlopen(request)
 
-  def log_http_error(self, http_status_code, url, fallback, body):
-    pretext = "%s error while downloading %s" % (http_status_code, url)
+  def log_http_error(self, exception, url, scraper):
+    http_status_code = exception.response.status_code
+    body = format_exception(exception)
+
+    pretext = ("[%s] %s error while downloading %s" %
+               (scraper, http_status_code, url))
     self.send_message({
       "attachments": [
         {
-          "fallback": fallback,
+          "fallback": pretext,
           "text": body,
           "color": "warning",
           "pretext": pretext
@@ -231,22 +225,28 @@ class SlackErrorHandler(ErrorHandler):
       ]
     })
 
-  def log_exception(self, class_name, scraper, line_num, function,
-                    fallback, body):
+  def log_exception(self, exception):
+    class_name = "%s.%s" % (exception.__module__, exception.__class__.__name__)
+    scraper, line_num, function = parse_scraper_traceback()
+    fallback = "%s.%s: %s" % (exception.__module__,
+                              exception.__class__.__name__,
+                              exception)
+
     pretext = ("%s was thrown while running %s.py (line %s, in function %s)" %
                (class_name, scraper, line_num, function))
     self.send_message({
       "attachments": [
         {
           "fallback": fallback,
-          "text": body,
+          "text": format_exception(exception),
           "color": "danger",
           "pretext": pretext
         }
       ]
     })
 
-  def log_qa(self, text, fallback):
+  def log_qa(self, text):
+    fallback = text.split("\n", 1)[0]
     self.send_message({
       "attachments": [
         {
@@ -275,11 +275,6 @@ class SlackErrorHandler(ErrorHandler):
       ]
     })
 
-  def log_fallback(self, body):
-    self.send_message({
-      "text": str(body)
-    })
-
 
 class DashboardErrorHandler(ErrorHandler):
   def __init__(self):
@@ -287,8 +282,20 @@ class DashboardErrorHandler(ErrorHandler):
     self.dashboard_data = {}
     atexit.register(self.dashboard_send)
 
-  def log_http_error(self, http_status_code, url, fallback, body):
-    pass  # self.dashboard_data[todo]
+  def log_http_error(self, exception, url, scraper):
+    if scraper is None:
+      return
+    http_status_code = exception.response.status_code
+
+    if scraper not in self.dashboard_data:
+      self.dashboard_data[scraper] = {}
+    if "http_errors" not in self.dashboard_data[scraper]:
+      self.dashboard_data[scraper]["http_errors"] = []
+    entry = {
+      "status_code": http_status_code,
+      "url": url
+    }
+    self.dashboard_data[scraper]["http_errors"].append(entry)
 
   def log_duplicate_id(self, scraper, report_id, msg):
     if scraper not in self.dashboard_data:
@@ -297,8 +304,10 @@ class DashboardErrorHandler(ErrorHandler):
       self.dashboard_data[scraper]["duplicate_ids"] = []
     self.dashboard_data[scraper]["duplicate_ids"].append(report_id)
 
-  def log_exception(self, class_name, scraper, line_num, function,
-                    fallback, body):
+  def log_exception(self, exception):
+    class_name = "%s.%s" % (exception.__module__, exception.__class__.__name__)
+    scraper, line_num, function = parse_scraper_traceback()
+
     if scraper not in self.dashboard_data:
       self.dashboard_data[scraper] = {}
     if "exceptions" not in self.dashboard_data[scraper]:
@@ -308,7 +317,7 @@ class DashboardErrorHandler(ErrorHandler):
       "filename": "inspectors/%s.py" % scraper,
       "line_num": line_num,
       "function": function,
-      "traceback": body
+      "traceback": format_exception(exception)
     }
     self.dashboard_data[scraper]["exceptions"].append(entry)
 
@@ -324,10 +333,7 @@ class DashboardErrorHandler(ErrorHandler):
     }
     self.dashboard_data[scraper]["missing_dates"].append(entry)
 
-  def log_qa(self, text, fallback):
-    pass
-
-  def log_fallback(self, body):
+  def log_qa(self, text):
     pass
 
   def dashboard_send(self):
@@ -341,12 +347,16 @@ class DashboardErrorHandler(ErrorHandler):
         severity = 1
       elif "missing_dates" in self.dashboard_data[scraper]:
         severity = 1
+      elif "http_errors" in self.dashboard_data[scraper]:
+        severity = 1
       else:
         severity = 0
       self.dashboard_data[scraper]["severity"] = severity
 
       if "duplicate_ids" in self.dashboard_data[scraper]:
         self.dashboard_data[scraper]["duplicate_ids"].sort()
+      if "report_count" not in self.dashboard_data[scraper]:
+        self.dashboard_data[scraper]["report_count"] = 0
 
     options = config["dashboard"]
     message_json = json.dumps(self.dashboard_data)

@@ -44,7 +44,7 @@ def save_report(report):
   elif report.get('unreleased', False) is True:
     logging.warn('\tno download/extraction of unreleased report')
   else:
-    report_path = download_report(report)
+    report_path = download_report(report, caller_scraper=caller_scraper)
     if not report_path:
       logging.warn("\terror downloading report: sadly, skipping.")
       return False
@@ -191,8 +191,7 @@ def check_uniqueness(inspector, report_id, report_year, scraper):
   under a different year, or whether a duplicate report_id has been saved this
   session, in the same year or any other year. The index of reports already
   saved is lazily built on the first call from each inspector. Duplicate
-  reports detected here will be collected, and a summary will be sent via
-  admin.notify().'''
+  reports detected here will be collected, and a summary will be logged.'''
 
   # Be conservative, don't allow report_id to only differ in case
   report_id = report_id.lower()
@@ -264,14 +263,15 @@ def slugify(report_id):
     copy = copy.replace(char, "-")
   return copy
 
-def download_report(report):
+def download_report(report, caller_scraper=None):
   report_path = path_for(report, report['file_type'])
   binary = (report['file_type'].lower() in ('pdf', 'doc', 'ppt', 'docx', 'xls'))
 
   result = utils.download(
     report['url'],
     os.path.join(utils.data_dir(), report_path),
-    {'binary': binary}
+    {'binary': binary},
+    scraper_slug=caller_scraper
   )
   if result:
     return report_path

@@ -79,7 +79,7 @@ def main():
     if successful:
       exit(0)
     else:
-      admin.notify(total_report)
+      admin.log_qa(total_report)
       exit(1)
 
 main()
