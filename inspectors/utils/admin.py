@@ -7,6 +7,7 @@ import yaml
 import logging
 import re
 import atexit
+import scrapelib
 
 import smtplib
 import email.utils
@@ -69,11 +70,15 @@ def log_qa(report_text):
 
 
 def log_http_error(e, url, scraper=None):
-  for error_handler in error_handlers:
-    try:
-      error_handler.log_http_error(e, url, scraper)
-    except Exception as exception:
-      print(format_exception(exception))
+  if isinstance(e, scrapelib.HTTPError):
+    for error_handler in error_handlers:
+      try:
+        error_handler.log_http_error(e, url, scraper)
+      except Exception as exception:
+        print(format_exception(exception))
+  else:
+    # fallback for connection errors, retry errors
+    log_exception(e)
 
 
 def format_exception(exception):
