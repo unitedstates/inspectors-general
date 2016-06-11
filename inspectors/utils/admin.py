@@ -389,4 +389,5 @@ if config:
   if config.get("slack"):
     error_handlers.append(SlackErrorHandler())
   if config.get("dashboard"):
-    error_handlers.append(DashboardErrorHandler())
+    if config["dashboard"].get("secret"):
+      error_handlers.append(DashboardErrorHandler())
