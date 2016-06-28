@@ -185,6 +185,13 @@ class EmailErrorHandler(ErrorHandler):
     pass
 
 
+def exception_name(exception):
+  try:
+    return "%s.%s" % (exception.__module__, exception.__class__.__name__)
+  except AttributeError:
+    return exception.__class__.__name__
+
+
 class SlackErrorHandler(ErrorHandler):
   def __init__(self):
     self.options = config.get("slack")
@@ -231,11 +238,9 @@ class SlackErrorHandler(ErrorHandler):
     })
 
   def log_exception(self, exception):
-    class_name = "%s.%s" % (exception.__module__, exception.__class__.__name__)
+    class_name = exception_name(exception)
     scraper, line_num, function = parse_scraper_traceback()
-    fallback = "%s.%s: %s" % (exception.__module__,
-                              exception.__class__.__name__,
-                              exception)
+    fallback = "%s: %s" % (class_name, exception)
 
     pretext = ("%s was thrown while running %s.py (line %s, in function %s)" %
                (class_name, scraper, line_num, function))
@@ -310,7 +315,7 @@ class DashboardErrorHandler(ErrorHandler):
     self.dashboard_data[scraper]["duplicate_ids"].append(report_id)
 
   def log_exception(self, exception):
-    class_name = "%s.%s" % (exception.__module__, exception.__class__.__name__)
+    class_name = exception_name(exception)
     scraper, line_num, function = parse_scraper_traceback()
 
     if scraper not in self.dashboard_data:
