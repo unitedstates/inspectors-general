@@ -45,7 +45,7 @@ def run(options):
   doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL)
   results = doc.select("td.text table tr")
   if not results:
-    raise inspector.NoReportsFoundError("National Science Foundation (audit reports")
+    raise inspector.NoReportsFoundError("National Science Foundation (audit reports)")
   for result in results:
     # ignore divider lines
     if result.select("img"): continue
