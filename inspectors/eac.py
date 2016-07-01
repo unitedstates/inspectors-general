@@ -6,7 +6,7 @@ import os
 import re
 from urllib.parse import urljoin, unquote
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # http://www.eac.gov/inspector_general/
 archive = 2005
@@ -171,7 +171,7 @@ def report_from(result, landing_url, report_type, year_range):
     except (AttributeError, ValueError):
       pass
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    admin.log_no_date("eac", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

@@ -69,7 +69,7 @@ def parse_result_from_js_url(url, format_slug, year, year_range, report_type):
   Given a link to a javascript file that has report data, add all of the reports
   """
 
-  body = utils.download(url)
+  body = utils.download(url, scraper_slug="tigta")
   # Pulling out javascript array values that look like:
   # arrid[0]=new AR("200720002","Stronger Management Oversight Is Required to Ensure Valuable Systems Modernization Expertise Is Received From the Federally Funded Research and Development Center Contractor","20061020","01",2,0,0,0);
   # Look in https://www.treasury.gov/tigta/oa_auditreports_fy14.js for some more examples.

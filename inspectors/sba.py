@@ -176,7 +176,7 @@ def report_from(result, year_range):
   if landing_url in DUPLICATE_LANDING_URLS:
     return
 
-  landing_body = utils.download(landing_url)
+  landing_body = utils.download(landing_url, scraper_slug="sba")
 
   if landing_body is None:
     logging.warn("Bad landing URL, downloaded None: %s" % landing_url)

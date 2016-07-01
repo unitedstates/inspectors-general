@@ -6,7 +6,7 @@ import os
 import re
 from urllib.parse import urljoin
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # http://www.sec.gov/about/offices/oig/inspector_general_reppubs_testimony.shtml
 archive = 1994
@@ -220,7 +220,7 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
   published_on_text = text_lines[0].split("through")[0].strip().replace(".", "")
   published_on = published_date_for_report(published_on_text, title, report_url, last_published_on, report_id)
   if not published_on:
-    inspector.log_no_date(title, report_id, report_url)
+    admin.log_no_date("sec", title, report_id, report_url)
     return None, None
 
   # Skip duplicate report

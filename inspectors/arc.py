@@ -5,7 +5,7 @@ import logging
 import os
 from urllib.parse import urljoin
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # http://www.arc.gov/oig
 archive = 2003
@@ -254,7 +254,7 @@ def report_from(result, landing_url, report_type, year_range):
       pass
 
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    admin.log_no_date("arc", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

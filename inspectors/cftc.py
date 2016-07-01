@@ -6,7 +6,7 @@ import os
 import re
 from urllib.parse import urljoin
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # http://www.cftc.gov/About/OfficeoftheInspectorGeneral/index.htm
 archive = 2000
@@ -116,7 +116,7 @@ def report_from(result, year_range, report_type=None):
     except AttributeError:
       pass
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    admin.log_no_date("cftc", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

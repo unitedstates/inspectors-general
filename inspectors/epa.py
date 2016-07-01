@@ -4,7 +4,7 @@ import datetime
 from urllib.parse import urljoin
 import re
 import os.path
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 archive = 1996
 
@@ -82,7 +82,7 @@ def run(options):
           except Exception:
             pass
         if not published_on_dt:
-          inspector.log_no_date(tds[2].text, tds[1].text)
+          admin.log_no_date("epa", tds[2].text, tds[1].text)
           continue
         if published_on_dt.year not in year_range:
           continue
@@ -101,7 +101,7 @@ def run(options):
           if href in REPORT_PUBLISHED_MAPPING:
             published_on_dt = REPORT_PUBLISHED_MAPPING[href]
         if not published_on_dt:
-          inspector.log_no_date(extract_url(li), li.a.text, href)
+          admin.log_no_date("epa", extract_url(li), li.a.text, href)
           continue
         if published_on_dt.year not in year_range:
           continue

@@ -6,7 +6,7 @@ import os
 import re
 import urllib
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # https://www.nlrb.gov/who-we-are/inspector-general
 archive = 1989
@@ -105,7 +105,7 @@ def report_from(result, report_type, base_url, year_range):
       except ValueError:
         pass
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    admin.log_no_date("nlrb", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:

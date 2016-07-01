@@ -6,7 +6,7 @@ import os
 import re
 from urllib.parse import urljoin
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # https://oig.usaid.gov
 archive = 1998
@@ -97,7 +97,7 @@ def report_from(result, landing_url, report_type, year_range):
       pass
 
   if not published_on:
-    inspector.log_no_date(report_url, title, report_url)
+    admin.log_no_date("usaid", report_url, title, report_url)
     return
 
   if published_on.year not in year_range:

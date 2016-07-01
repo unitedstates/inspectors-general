@@ -65,7 +65,7 @@ def run(options):
 
   # Pull the table of reports for each year
   for year in year_range:
-    html = utils.download(REPORTS_URL % year)
+    html = utils.download(REPORTS_URL % year, scraper_slug="osc")
     #  spaces appear as &#160; and \u200b .... fix that now
     html = html.replace('&#160;',' ').replace('\u200b',' ').replace('\u00a0',' ').replace('\r','').replace('\n','') 
     doc = BeautifulSoup(html, "lxml")

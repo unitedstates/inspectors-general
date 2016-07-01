@@ -5,7 +5,7 @@ import logging
 import os
 from urllib.parse import urljoin
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # http://www.fmc.gov/bureaus_offices/office_of_inspector_general.aspx
 archive = 2005
@@ -179,7 +179,7 @@ def report_from(result, landing_url, report_type, year_range):
       pass
 
   if not published_on:
-    inspector.log_no_date(report_id, title, report_url)
+    admin.log_no_date("fmc", report_id, title, report_url)
     return
 
   if published_on.year not in year_range:
