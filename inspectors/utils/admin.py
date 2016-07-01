@@ -129,7 +129,8 @@ class ConsoleErrorHandler(ErrorHandler):
     self.uniqueness_messages.append(msg)
 
   def print_duplicate_messages(self):
-    self.log("\n".join(self.uniqueness_messages))
+    if self.uniqueness_messages:
+      self.log("\n".join(self.uniqueness_messages))
 
   def log(self, body):
     logging.error(body)
@@ -152,7 +153,8 @@ class EmailErrorHandler(ErrorHandler):
     self.uniqueness_messages.append(msg)
 
   def print_duplicate_messages(self):
-    self.log("\n".join(self.uniqueness_messages))
+    if self.uniqueness_messages:
+      self.log("\n".join(self.uniqueness_messages))
 
   def log(self, body):
     settings = config['email']
