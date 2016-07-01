@@ -166,14 +166,15 @@ class EmailErrorHandler(ErrorHandler):
     msg['From'] = email.utils.formataddr((settings['from_name'], settings['from']))
     msg['Subject'] = settings['subject']
 
-    server = smtplib.SMTP(settings['hostname'])
+    server = smtplib.SMTP(settings['hostname'], settings.get('port', 0))
     try:
       server.ehlo()
       if settings['starttls'] and server.has_extn('STARTTLS'):
         server.starttls()
         server.ehlo()
 
-      server.login(settings['user_name'], settings['password'])
+      if 'user_name' in settings and 'password' in settings:
+        server.login(settings['user_name'], settings['password'])
       server.sendmail(settings['from'], [settings['to']], msg.as_string())
     finally:
       server.quit()
