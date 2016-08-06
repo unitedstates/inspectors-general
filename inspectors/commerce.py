@@ -172,7 +172,7 @@ def report_from(result, topic, topic_url, year_range):
     file_type = "aspx"
   # Some off-site links (i.e. to the FBI) don't have obvious file extensions
   elif (report_url and (report_url.startswith("http://www.fbi.gov/") or
-        report_url.startswith("http://www.justice.gov/")) and
+        re.match("^https?://www\\.justice\\.gov/", report_url)) and
         not os.path.splitext(os.path.basename(report_url))[1]):
     file_type = "html"
 

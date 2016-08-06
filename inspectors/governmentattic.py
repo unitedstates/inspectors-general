@@ -133,6 +133,9 @@ for line in GOVATTIC_MAPPING.splitlines():
   (ga_category,ga_agency,ig_short,ig_url,ig_slug) = line.strip().split(',')
   GOVATTIC_MAPPING_DICT[(ga_category,ga_agency)] = (ig_short,ig_url,ig_slug)
 
+DATE_RE = re.compile('\[(?:.*\s-?|)(\d{2})-+(\w{3,12})-+(\d{4})')
+
+
 def remove_linebreaks(s):
   #lots of weird tabs, etc. inside HTML strings. would replace all at once, but since utils.beautifulsoup_from_url
   #is taking the html straight to soup, we'll do it individually for the fields we need
@@ -182,10 +185,13 @@ def report_from(result, category_name, agency, year_range):
 
   title = remove_linebreaks(a.text).strip()
   text = remove_linebreaks(result.text)
-  r = re.compile('\[(?:.*\s-?|)(\d{2})-+(\w{3,12})-+(\d{4})')
-  datematch = r.search(text)
+  datematch = DATE_RE.search(text)
   published_on = None
   datestring = None
+  if report_id == "governmentattic.org-21docs-ComplaintsRcvdCFTC_CY2013-2014.pdf":
+    if title == "Commodity Futures Trading Commission (CFTC)":
+      # Copy-paste error, skip
+      return
   if datematch:
     datestring = '-'.join(datematch.groups()) #'01-Mar-2015
     datestring = datestring.replace("-Sept-", "-Sep-")
