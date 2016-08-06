@@ -43,9 +43,13 @@ def run(options):
   if not results:
     raise inspector.NoReportsFoundError("Tennessee Valley Authority (semiannual reports)")
   for result in results:
-    report = semiannual_report_from(result, year_range)
-    if report:
-      inspector.save_report(report)
+    if result.parent.parent["id"] == "archive":
+      for link in result.find_all("a"):
+        report = archive_semiannual_report_from(link, year_range)
+    else:
+      report = semiannual_report_from(result, year_range)
+      if report:
+        inspector.save_report(report)
 
   # Pull the peer review reports
   doc = utils.beautifulsoup_from_url(PEER_REVIEW_REPORTS_URL)
@@ -108,6 +112,33 @@ def audit_report_from(result, landing_url, year_range):
     report['unreleased'] = True
     report['missing'] = True
 
+  return report
+
+def archive_semiannual_report_from(link, year_range):
+  report_url = urljoin(SEMIANNUAL_REPORTS_URL, link["href"])
+  report_filename = os.path.basename(report_url)
+  report_id, _ = os.path.splitext(report_filename)
+
+  published_on_text = link.text.replace("\u00a0", " ").split(" \u2013 ")[1].strip()
+  published_on = datetime.datetime.strptime(published_on_text, "%B %d, %Y")
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  title = "Semiannual Report {}".format(published_on_text)
+
+  report = {
+    'inspector': 'tva',
+    'inspector_url': 'http://oig.tva.gov',
+    'agency': 'tva',
+    'agency_name': 'Tennessee Valley Authority',
+    'type': 'semiannual_report',
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
   return report
 
 def semiannual_report_from(result, year_range):
