@@ -35,6 +35,7 @@ REPORT_ID_RE = re.compile("\(([A-Z]{2}-[0-9]{2}-[0-9]{2})\)|Report Number\\s+((?
 
 REPORT_PUBLISHED_MAP = {
   # Quality Assurance Reviews
+  "ER-16-03": datetime.datetime(2016, 6, 22),
   "ER-15-03": datetime.datetime(2015, 6, 12),
   "ER-14-03": datetime.datetime(2014, 7, 2),
   "ER-13-03": datetime.datetime(2013, 8, 29),

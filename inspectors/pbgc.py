@@ -27,6 +27,7 @@ BASE_REPORT_URL = "http://oig.pbgc.gov/"
 HEADER_ROW_TEXT = [
   'Audits',
   'Evaluations',
+  'Special Reports',
   'Report Title',
   'Management Advisory Reports',
   'Announcements',

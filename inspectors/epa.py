@@ -177,6 +177,7 @@ def report_from_table(tds, published_on_dt, base_url):
       elif ("Response to Report" in text or
             "IG Comment on" in text and "Response" in text or
             "Response to OIG Report" in text or
+            "Response to Draft Report" in text or
             "Report Briefing with Gallery" in text or
             "Dispute Resolution" in text or
             "Materials Relating to" in text or

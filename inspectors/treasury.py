@@ -91,6 +91,9 @@ REPORT_PUBLISHED_MAP = {
   "OIG-CA-16-012": datetime.datetime(2016, 3, 30),
   "OIG-CA-16-014": datetime.datetime(2016, 4, 19),
   "Role of Non-Career Officials in Treasury FOIA Processing": datetime.datetime(2016, 3, 9),
+  "OIG-CA-16-028": datetime.datetime(2016, 6, 30),
+  "OIG-CA-16-033A": datetime.datetime(2016, 7, 29),
+  "OIG-CA-16-033B": datetime.datetime(2016, 7, 29),
 }
 
 def run(options):
