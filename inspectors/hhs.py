@@ -207,6 +207,9 @@ BLACKLIST_REPORT_URLS = [
   # Summary maps for report series
   'http://oig.hhs.gov/oas/jurisdiction-map/',
   'http://oig.hhs.gov/oas/map/',
+
+  # Interactive map with report
+  'http://oig.hhs.gov/oei/maps/ccdf',
 ]
 
 TITLE_NORMALIZATION = {
