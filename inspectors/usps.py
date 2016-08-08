@@ -150,6 +150,10 @@ def report_from(result):
   # get filename, use name as report ID, extension for type
   filename = os.path.basename(report_url)
   report['report_id'] = os.path.splitext(filename)[0]
+  if (report_url == "https://uspsoig.gov/sites/default/files/"
+      "document-library-files/2016/RARC-WP-16-001.pdf"):
+    # Fix typo
+    report['report_id'] = "RARC-WP-16-011"
 
   report['title'] = cells[1].a.text.strip()
 
