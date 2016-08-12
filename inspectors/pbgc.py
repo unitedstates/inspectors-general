@@ -126,7 +126,10 @@ def report_from(result, report_type, year_range):
   if report_id == "N-A":
     report_id = tds[0].text.strip().replace("/", "-").replace(" ", "-")
   if report_id == "":
-    report_id = os.path.splitext(os.path.basename(report_url))[0]
+    if report_url:
+      report_id = os.path.splitext(os.path.basename(report_url))[0]
+    else:
+      report_id = os.path.splitext(os.path.basename(landing_url))[0]
 
   if report_url:
     # OIG MAR-2012-10/PA-12-87 is posted under both Audits/Evaluations/MARs and
