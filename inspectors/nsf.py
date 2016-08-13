@@ -43,7 +43,7 @@ def run(options):
 
   # Pull the audit reports
   doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL)
-  results = doc.select("td.text table tr")
+  results = doc.select("#inner-content tr")
   if not results:
     raise inspector.NoReportsFoundError("National Science Foundation (audit reports)")
   for result in results:
@@ -56,7 +56,7 @@ def run(options):
 
   # Pull the semiannual reports
   doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
-  results = doc.select("td.text table tr")
+  results = doc.select("#inner-content li")
   if not results:
     raise inspector.NoReportsFoundError("National Science Foundation (semiannual reports)")
   for result in results:
@@ -72,7 +72,7 @@ def run(options):
     data=CASE_REPORTS_DATA,
   )
   doc = BeautifulSoup(response.content, "lxml")
-  results = doc.select("td.text table tr")
+  results = doc.select("#inner-content tr")
   if not results:
     raise inspector.NoReportsFoundError("National Science Foundation (case reports)")
   for index, result in enumerate(results):
@@ -84,7 +84,7 @@ def run(options):
 
   # Pull the testimony
   doc = utils.beautifulsoup_from_url(TESTIMONY_REPORTS_URL)
-  results = doc.select("td.text table tr")
+  results = doc.select("#inner-content tr")
   if not results:
     raise inspector.NoReportsFoundError("National Science Foundation (testimony)")
   for result in results:
@@ -108,7 +108,7 @@ def report_from(result, report_type, year_range, base_url):
   title = " ".join(link.parent.text.split())
 
   try:
-    last_column_node = result.select("td.tabletext2")[-1]
+    last_column_node = result.select("td")[-1]
   except IndexError:
     last_column_node = result.select("td.tabletext")[-1]
 
