@@ -7,7 +7,7 @@ import urllib
 
 from utils import utils, inspector, admin
 
-# http://www.peacecorps.gov/about/inspgen/
+# https://www.peacecorps.gov/about/inspector-general/
 archive = 1989
 
 # options:
@@ -16,7 +16,7 @@ archive = 1989
 # Notes for IG's web team:
 #
 
-REPORTS_URL = "http://www.peacecorps.gov/about/inspgen/reports/"
+REPORTS_URL = "https://www.peacecorps.gov/about/inspector-general/reports/?page=%d"
 
 REPORT_PUBLISHED_MAPPING = {
   "Death_Inquiry_and_Assessment_of_Medical_Care_in_Peace_Corps_Morocco": datetime.datetime(2010,2,1),
@@ -180,51 +180,91 @@ REPORT_PUBLISHED_MAPPING = {
   "PC_South_Africa_Final_Evaluation-Report-IG-0702EA": datetime.datetime(2006, 10, 1),
   "Management_Advisory_Report-FOIA": datetime.datetime(2016, 3, 10),
   "Final_Report_Follow_Up_Evaluation_of_Issues_in_2010_PC_Morocco_Assessment_of_Medical_Care": datetime.datetime(2016, 3, 1),
+  "PCIG_Buller_Peace_Corps_IG_Statement_02_03": datetime.datetime(2015, 2, 3),
+  "PCIG_Buller_Peace_Corps_IG_Statement_9_10": datetime.datetime(2014, 9, 10),
+  "PCIG_Kathy_A_Buller_Testimony_PC_OIG_Jan-15-2014_Strengthen_OIG_Oversight": datetime.datetime(2014, 1, 15),
+  "buller_testimony_sfac_10_06_11": datetime.datetime(2011, 10, 6),
+  "IGAccess.JGlennLtr.072315": datetime.datetime(2015, 7, 23),
+  "CIGIE_Letter_to_HSGAC_HOGR_8-3-15": datetime.datetime(2015, 8, 3),
+  "PCIG_FY_2016_OIG_Annual_Plan": datetime.datetime(2015, 9, 1),
+  "PCIG_FY_2016-18_OIG_Strategic_Plan": datetime.datetime(2015, 8, 1),
+  "Strategic_Plan_FY_17-19_for_web": datetime.datetime(2016, 8, 1),
+  "Peace_Corps_Rwanda_-_Final_Evaluation_Report_IG-16-02-E": datetime.datetime(2016, 8, 11),
+  "Senegal_Final_Audit_Report_IG-16-04-A_xFYq3ir": datetime.datetime(2016, 7, 26),
+  "Indonesia_Final_Audit_Report_IG-16-03-A_Cz1wEbX": datetime.datetime(2016, 7, 17),
+  "Safety_and_security_weaknesses_in_PCCameroon_NEW": datetime.datetime(2016, 7, 31),
 }
 
 REPORT_TYPE_MAP = {
-  'Advisories': 'press',
-  'Annual and Strategic Plans': 'other',
-  'Semiannual Reports to Congress': 'semiannual_report',
-  'Special Reports and Reviews': 'other',
-  'Audit Reports': 'audit',
-  'Program Evaluation Reports': 'evaluation',
+  'Plan': 'other',
+  'Special Review': 'other',
+  'Audit': 'audit',
+  'None': 'other',
+  'Evaluation': 'evaluation',
+  'Annual Report': 'semiannual_report',
+  'Letter': 'other',
+  'Testimony': 'testimony',
+  'Management Advisory': 'other'
+}
+
+# Several consecutive reports appear twice on pages 4 and 5 at time of writing
+doubled_reports = {
+  "PCIG_Final_Program_Evaluation_of_Peace_Corps_SARRR_Training": 0,
+  "PCIG_South_Africa_Final_Audit_Report": 0,
+  "PCIG_Moldova_Final_Evaluation_Report": 0,
+  "PC_Final_Audit_Report_Jordan_IG1207": 0,
+  "PC_Ethiopia_Final_Program_Evaluation_Report_IG1102E": 0,
+  "PC_Ethiopia_Final_Audit_Report_IG1102A": 0,
+  "PC_Fiji_Final_Evaluation_Report_IG1201E": 0,
 }
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports
-  doc = utils.beautifulsoup_from_url(REPORTS_URL)
-  results = doc.select("li div li")
-  if not results:
-    raise inspector.NoReportsFoundError("Peace Corps")
-  for result in results:
-    report = report_from(result, year_range)
-    if report:
-      inspector.save_report(report)
+  page = 1
+  while True:
+    doc = utils.beautifulsoup_from_url(REPORTS_URL % page)
+    results = doc.select(".teaser")
+    if not results:
+      raise inspector.NoReportsFoundError("Peace Corps")
+    for result in results:
+      report = report_from(result, year_range)
+      if report:
+        inspector.save_report(report)
+    if doc.select(".pager__link--next"):
+      page += 1
+    else:
+      break
 
 def report_from(result, year_range):
   link = result.find("a")
-  report_url = link.get('href')
+  report_url = urllib.parse.unquote(link.get('href'))
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
   report_id = urllib.parse.unquote(report_id)
   title = link.text
 
-  topic_text = result.find_previous("h2").text.strip()
-  report_type = REPORT_TYPE_MAP.get(topic_text, 'other')
-
-  # This report has been uploaded twice, skip it
-  if report_id == "Advice_and_Assistance_PC_Vanuatu(SRF)":
-    return
+  report_type = None
+  tag_text = None
+  if "Semiannual Report to Congress" in title:
+    report_type = "semiannual_report"
+  else:
+    for tag in result.select(".ul--tags li"):
+      tag_text = tag.text.strip()
+      if tag_text in REPORT_TYPE_MAP:
+        report_type = REPORT_TYPE_MAP[tag_text]
+        break
+  if not report_type:
+    raise Exception("Unrecognized report type %s" % tag_text)
 
   published_on = None
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
   if not published_on:
     try:
-      published_on_text = title.split("–")[-1].strip()
+      published_on_text = title.split("-")[-1].strip()
+      published_on_text = published_on_text.replace("Sept.", "September")
       published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
     except ValueError:
       pass
@@ -232,13 +272,19 @@ def report_from(result, year_range):
     admin.log_no_date("peacecorps", report_id, title, report_url)
     return
 
+  if report_id in doubled_reports:
+    if doubled_reports[report_id] == 0:
+      doubled_reports[report_id] += 1
+    else:
+      return
+
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
   report = {
     'inspector': 'peacecorps',
-    'inspector_url': 'http://www.peacecorps.gov/about/inspgen/',
+    'inspector_url': 'https://www.peacecorps.gov/about/inspectors-general/',
     'agency': 'peacecorps',
     'agency_name': 'Peace Corps',
     'type': report_type,
