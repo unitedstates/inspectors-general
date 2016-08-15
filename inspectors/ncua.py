@@ -118,7 +118,7 @@ def report_from(result, report_type, year_range):
   return report
 
 
-OTHER_REPORT_RE = re.compile("^ *(.+) +((?:January|February|Feb\\.|March|April|May|June|July|August|September|October|November|December) [0-3]?[0-9], 20[0-9][0-9]) *$")
+OTHER_REPORT_RE = re.compile("^ *(.+) +((?:January|Jan\\.|February|Feb\\.|March|Mar\\.|April|Apr\\.|May|June|Jun\\.|July|Jul\\.|August|Aug\\.|September|Sep\\.|October|Oct\\.|November|Nov\\\.|December|Dec\\.) [0-3]?[0-9], 20[0-9][0-9]) *$")
 
 
 def other_report_from(result, year_range):
