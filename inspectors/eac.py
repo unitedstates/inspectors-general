@@ -34,6 +34,7 @@ REPORT_URLS = [
 ]
 
 REPORT_PUBLISHED_MAP = {
+  "US-EAC-OIG-2016-Peer-Review-Report": datetime.datetime(2016, 7, 20),
   "U.S.-Election-Assistance-Commission's-Financial-Statements-for-Fiscal-Years-2015-and-2014": datetime.datetime(2015, 11, 12),
   "Final-Report---EAC-Compliance-with-FISMA-2015": datetime.datetime(2015, 11, 13),
   "2014-financial-audit-web": datetime.datetime(2014, 11, 12),

@@ -63,6 +63,7 @@ REPORT_PUBLISHED_MAPPING = {
   "ThirdQtrFY2011FCSSurvey": datetime.datetime(2011, 9, 1),
   "SecondQtrFY2011FCSSurvey": datetime.datetime(2011, 6, 16),
   "FirstQtrFY2011FCSSurvey": datetime.datetime(2011, 3, 28),
+  "2016PeerReviewOIG": datetime.datetime(2016, 8, 2),
   "2013PeerReviewOIGAuditFunction": datetime.datetime(2013, 6, 26),
   "2010PeerReviewOIGAuditFunction": datetime.datetime(2011, 2, 4),
   "2007PeerReviewOIGInvestigativeFunction": datetime.datetime(2007, 12, 26),
