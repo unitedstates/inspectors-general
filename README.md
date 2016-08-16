@@ -18,7 +18,7 @@ From [one of the above pieces](https://sunlightfoundation.com/blog/2014/05/13/wh
 
 The initial round of writing scrapers for all 65 federal IGs has come to a close. However, there are two important areas we need help in:
 
-* **Keeping the scrapers working**. They're scrapers: they break. Check the [issues list](https://github.com/unitedstates/inspectors-general/issues) for scrapers in need of attention.
+* **Keeping the scrapers working**. They're scrapers: they break. Check the [Oversight.garden dashboard](https://oversight.garden/dashboard) for scrapers in need of attention, or check the [issues list](https://github.com/unitedstates/inspectors-general/issues) for other tasks.
 
 Ask [@konklone](https://twitter.com/konklone) for an invitation to the [project Slack](https://oversight.slack.com) if you want to talk with teammates and get involved.
 
