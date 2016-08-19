@@ -386,17 +386,6 @@ def odd_link(b, date, l, directory):
     # no date, one other entry, giving it the same date
     if date == "Georgia's Department of Corrections":
       return {"date_string": "November 1, 2000", "real_title":"United States Marshals Service Cost Proposal for the Intergovernmental Service Agreement for Detention Facilities with the City of Atlanta, Georgia’s Department of Corrections"}
-    # confirmed no dates for these
-    no_dates = ("Audit Report GR-40-99-014", "Audit Report GR-40-99-011", "Evaluation and Inspections Report I-2000-021", "Evaluation and Inspections Report I-2000-018", "Audit Report 99-03")
-    if date.strip() in no_dates:
-      date_string = datetime.now()
-      date_string = datetime.strftime(date_string, "%B %d, %Y")
-      return {"date_string": date_string, "real_title": text}
-    # Intergovernmental Agreements for Detention Space External Reports don't always have dates, not even on the documents, using today
-    if directory == "Intergovernmental Agreements for Detention Space (IGAs)":
-      date_string = datetime.now()
-      date_string = datetime.strftime(date_string, "%B %d, %Y")
-      return {"date_string": date_string, "real_title": text}
 
   # need to get rid of this to process
   if "Released Publicly" in text:
