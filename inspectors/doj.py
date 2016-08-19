@@ -146,13 +146,15 @@ def extract_info(content, directory, year_range):
       if "," not in date_string:
         date_test = date_string.replace(" ", " 1, ")
         try:
-          d = datetime.strptime(date_test, "%B %d, %Y")
+          datetime.strptime(date_test, "%B %d, %Y")
           date_string = date_test
         except ValueError:
           pass
 
     # going through each link in a paragraph
     for l in b.find_all("a"):
+      date = None
+      real_title = None
       # most cases pass this test
       try:
         date = datetime.strptime(date_string, "%B %d, %Y")
@@ -170,7 +172,7 @@ def extract_info(content, directory, year_range):
           date_string = date_string.replace(" ", " 1, ")
           date = datetime.strptime(date_string, "%B %d, %Y")
 
-      if 'date' not in locals():
+      if date is None:
         date = datetime.strptime(date_string, "%B %d, %Y")
 
       report_year = datetime.strftime(date, "%Y")
@@ -205,9 +207,8 @@ def extract_info(content, directory, year_range):
           title = string_title
 
         # in some cases the title is a heading a few elements up this gets passed in odd link
-        if "real_title" in locals():
-          if real_title != None:
-            title = real_title
+        if real_title is not None:
+          title = real_title
 
         if title == 'id="content" name="content">':
           title =  b.string
@@ -287,10 +288,11 @@ def extract_info(content, directory, year_range):
             report[doc_id]["categories"].append(directory)
 
           # add url if new
+          old_url = False
           for n in report[doc_id]["urls"]:
             if link in n:
               old_url = True
-          if not "old_url" in locals():
+          if not old_url:
             report[doc_id]["urls"].append({
               "url": link,
               "file_type": file_type,
@@ -357,13 +359,14 @@ def date_format(date):
 def odd_link(b, date, l, directory):
   text = b.get_text()
   # not links to docs
+  link = None
   try:
     link = l.get("href")
   except:
     pass
 
   # these are not documents
-  if "link" in locals():
+  if link:
     if link[-4:] == ".gov":
       return {"date_string":False, "real_title":False}
     elif link[-5:] == ".gov/" or link == "http://www.justice.gov/usao/eousa/":
