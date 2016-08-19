@@ -178,11 +178,6 @@ def extract_info(content, directory, year_range):
       report_year = datetime.strftime(date, "%Y")
       published_on = datetime.strftime(date, "%Y-%m-%d")
 
-      # if we're filtering on a year, and this isn't in it, skip it
-      if int(report_year) not in year_range:
-        # print("Skipping report for %s..." % report_year)
-        continue
-
       # trying to get the most descriptive title
       # I go from the best methods to fall back and override exceptions
       try:
@@ -273,6 +268,12 @@ def extract_info(content, directory, year_range):
           language = "English"
 
         report_count += 1
+
+        # if we're filtering on a year, and this isn't in it, skip it
+        if int(report_year) not in year_range:
+          # print("Skipping report for %s..." % report_year)
+          continue
+
         if doc_id in report:
           if file_type == "pdf":
             # current and previous file pdf
