@@ -20,6 +20,7 @@ from utils import utils, inspector
 import logging
 from urllib.parse import urljoin, urlparse, urlunparse
 import os
+from bs4 import Tag
 
 # accumulates information on reports as they're seen
 report = {}
@@ -98,13 +99,12 @@ def extract_info(content, directory, year_range):
     # this is the format of the newest entries and the easiest to get
     x = b.previous_sibling
     y = b.previous_sibling.previous_sibling
-    try:
-      if y['class'] == ['date']:
-        date_string = y.string
-      else:
-        date_string = None
-    except:
-       date_string = None
+    if isinstance(y, Tag) and y.get('class') == ['date']:
+      date_string = y.string
+    elif isinstance(x, Tag) and x.get('class') == ['date']:
+      date_string = x.string
+    else:
+      date_string = None
 
     # finding older dates that are at the end of the text
     if date_string == None:
