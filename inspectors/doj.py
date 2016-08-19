@@ -373,6 +373,9 @@ def odd_link(b, date, l, directory):
       return {"date_string":False, "real_title":False}
   text = b.get_text()
 
+  if " — PDF | HTML" in text:
+    text = text.replace(" — PDF | HTML", "")
+
   #section for documents without dates:
   if date != None:
     if date.strip() == "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995":
