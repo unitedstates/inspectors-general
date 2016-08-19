@@ -198,7 +198,7 @@ def extract_info(content, directory, year_range):
           title = l.text
         except:
           title = l.string
-        if title == "HTML" or title == "PDF":
+        if title in ("HTML", "PDF", "Executive Summary", "Full Report"):
           title = string_title
 
         # in some cases the title is a heading a few elements up this gets passed in odd link
