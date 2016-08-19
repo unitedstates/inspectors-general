@@ -18,7 +18,7 @@ import re
 from datetime import datetime
 from utils import utils, inspector
 import logging
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlunparse
 import os
 
 # accumulates information on reports as they're seen
@@ -89,6 +89,7 @@ def extract_info(content, directory, year_range):
 
   # there can be multiple reports per blurb
   blurbs = content[-1].find_all("p")
+  report_count = 0
 
   for b in blurbs:
     # date
@@ -193,6 +194,7 @@ def extract_info(content, directory, year_range):
           string_title = b.contents[0]
 
       link = l.get("href")
+      link = strip_url_fragment(link)
       if link != None:
         # title
         try:
@@ -269,6 +271,7 @@ def extract_info(content, directory, year_range):
         else:
           language = "English"
 
+        report_count += 1
         if doc_id in report:
           if file_type == "pdf":
             # current and previous file pdf
@@ -322,6 +325,12 @@ def extract_info(content, directory, year_range):
             "language": language,
           }
 
+  if report_count == 0:
+    raise inspector.NoReportsFoundError("DOJ (%s)" % directory)
+
+def strip_url_fragment(url):
+  scheme, netloc, path, params, query, fragment = urlparse(url)
+  return urlunparse((scheme, netloc, path, params, query, ""))
 
 def find_file_type(url):
   ext = os.path.splitext(url)[1]
