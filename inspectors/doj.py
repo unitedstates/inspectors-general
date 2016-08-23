@@ -18,8 +18,9 @@ import re
 from datetime import datetime
 from utils import utils, inspector
 import logging
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlunparse
 import os
+from bs4 import Tag
 
 # accumulates information on reports as they're seen
 report = {}
@@ -89,6 +90,7 @@ def extract_info(content, directory, year_range):
 
   # there can be multiple reports per blurb
   blurbs = content[-1].find_all("p")
+  report_count = 0
 
   for b in blurbs:
     # date
@@ -97,13 +99,12 @@ def extract_info(content, directory, year_range):
     # this is the format of the newest entries and the easiest to get
     x = b.previous_sibling
     y = b.previous_sibling.previous_sibling
-    try:
-      if y['class'] == ['date']:
-        date_string = y.string
-      else:
-        date_string = None
-    except:
-       date_string = None
+    if isinstance(y, Tag) and y.get('class') == ['date']:
+      date_string = y.string
+    elif isinstance(x, Tag) and x.get('class') == ['date']:
+      date_string = x.string
+    else:
+      date_string = None
 
     # finding older dates that are at the end of the text
     if date_string == None:
@@ -145,13 +146,15 @@ def extract_info(content, directory, year_range):
       if "," not in date_string:
         date_test = date_string.replace(" ", " 1, ")
         try:
-          d = datetime.strptime(date_test, "%B %d, %Y")
+          datetime.strptime(date_test, "%B %d, %Y")
           date_string = date_test
         except ValueError:
           pass
 
     # going through each link in a paragraph
     for l in b.find_all("a"):
+      date = None
+      real_title = None
       # most cases pass this test
       try:
         date = datetime.strptime(date_string, "%B %d, %Y")
@@ -169,16 +172,11 @@ def extract_info(content, directory, year_range):
           date_string = date_string.replace(" ", " 1, ")
           date = datetime.strptime(date_string, "%B %d, %Y")
 
-      if 'date' not in locals():
+      if date is None:
         date = datetime.strptime(date_string, "%B %d, %Y")
 
       report_year = datetime.strftime(date, "%Y")
       published_on = datetime.strftime(date, "%Y-%m-%d")
-
-      # if we're filtering on a year, and this isn't in it, skip it
-      if int(report_year) not in year_range:
-        # print("Skipping report for %s..." % report_year)
-        continue
 
       # trying to get the most descriptive title
       # I go from the best methods to fall back and override exceptions
@@ -193,19 +191,19 @@ def extract_info(content, directory, year_range):
           string_title = b.contents[0]
 
       link = l.get("href")
+      link = strip_url_fragment(link)
       if link != None:
         # title
         try:
           title = l.text
         except:
           title = l.string
-        if title == "HTML" or title == "PDF":
+        if title in ("HTML", "PDF", "Executive Summary", "Full Report"):
           title = string_title
 
         # in some cases the title is a heading a few elements up this gets passed in odd link
-        if "real_title" in locals():
-          if real_title != None:
-            title = real_title
+        if real_title is not None:
+          title = real_title
 
         if title == 'id="content" name="content">':
           title =  b.string
@@ -269,6 +267,13 @@ def extract_info(content, directory, year_range):
         else:
           language = "English"
 
+        report_count += 1
+
+        # if we're filtering on a year, and this isn't in it, skip it
+        if int(report_year) not in year_range:
+          # print("Skipping report for %s..." % report_year)
+          continue
+
         if doc_id in report:
           if file_type == "pdf":
             # current and previous file pdf
@@ -284,10 +289,11 @@ def extract_info(content, directory, year_range):
             report[doc_id]["categories"].append(directory)
 
           # add url if new
+          old_url = False
           for n in report[doc_id]["urls"]:
             if link in n:
               old_url = True
-          if not "old_url" in locals():
+          if not old_url:
             report[doc_id]["urls"].append({
               "url": link,
               "file_type": file_type,
@@ -322,6 +328,12 @@ def extract_info(content, directory, year_range):
             "language": language,
           }
 
+  if report_count == 0:
+    raise inspector.NoReportsFoundError("DOJ (%s)" % directory)
+
+def strip_url_fragment(url):
+  scheme, netloc, path, params, query, fragment = urlparse(url)
+  return urlunparse((scheme, netloc, path, params, query, ""))
 
 def find_file_type(url):
   ext = os.path.splitext(url)[1]
@@ -348,18 +360,22 @@ def date_format(date):
 def odd_link(b, date, l, directory):
   text = b.get_text()
   # not links to docs
+  link = None
   try:
     link = l.get("href")
   except:
     pass
 
   # these are not documents
-  if "link" in locals():
+  if link:
     if link[-4:] == ".gov":
       return {"date_string":False, "real_title":False}
     elif link[-5:] == ".gov/" or link == "http://www.justice.gov/usao/eousa/":
       return {"date_string":False, "real_title":False}
   text = b.get_text()
+
+  if " — PDF | HTML" in text:
+    text = text.replace(" — PDF | HTML", "")
 
   #section for documents without dates:
   if date != None:
@@ -370,17 +386,6 @@ def odd_link(b, date, l, directory):
     # no date, one other entry, giving it the same date
     if date == "Georgia's Department of Corrections":
       return {"date_string": "November 1, 2000", "real_title":"United States Marshals Service Cost Proposal for the Intergovernmental Service Agreement for Detention Facilities with the City of Atlanta, Georgia’s Department of Corrections"}
-    # confirmed no dates for these
-    no_dates = ("Audit Report GR-40-99-014", "Audit Report GR-40-99-011", "Evaluation and Inspections Report I-2000-021", "Evaluation and Inspections Report I-2000-018", "Audit Report 99-03")
-    if date.strip() in no_dates:
-      date_string = datetime.now()
-      date_string = datetime.strftime(date_string, "%B %d, %Y")
-      return {"date_string": date_string, "real_title": text}
-    # Intergovernmental Agreements for Detention Space External Reports don't always have dates, not even on the documents, using today
-    if directory == "Intergovernmental Agreements for Detention Space (IGAs)":
-      date_string = datetime.now()
-      date_string = datetime.strftime(date_string, "%B %d, %Y")
-      return {"date_string": date_string, "real_title": text}
 
   # need to get rid of this to process
   if "Released Publicly" in text:
