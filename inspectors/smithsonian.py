@@ -56,6 +56,7 @@ RSS_BROKEN_LINKS = {
 }
 
 REPORT_PUBLISHED_MAP = {
+  "FY16_CSA": datetime.datetime(2016, 8, 9),
   "A-15-06": datetime.datetime(2015, 12, 10),
   "A-13-07": datetime.datetime(2013, 7, 26),
   "A-13-03": datetime.datetime(2013, 2, 27),
