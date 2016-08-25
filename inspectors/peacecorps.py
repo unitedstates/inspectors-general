@@ -193,6 +193,8 @@ REPORT_PUBLISHED_MAPPING = {
   "Senegal_Final_Audit_Report_IG-16-04-A_xFYq3ir": datetime.datetime(2016, 7, 26),
   "Indonesia_Final_Audit_Report_IG-16-03-A_Cz1wEbX": datetime.datetime(2016, 7, 17),
   "Safety_and_security_weaknesses_in_PCCameroon_NEW": datetime.datetime(2016, 7, 31),
+  "MAR_Site_History_Files_2016": datetime.datetime(2016, 8, 24),
+  "Kathy_A._Buller_Inspector_General_Testimony": datetime.datetime(2011, 5, 11),
 }
 
 REPORT_TYPE_MAP = {
