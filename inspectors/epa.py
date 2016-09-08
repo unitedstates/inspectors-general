@@ -166,7 +166,9 @@ def report_from_table(tds, published_on_dt, base_url):
     for doc_link in doc_links:
       absolute_href = urljoin(report_url, doc_link["href"])
       text = doc_link.text
-      if "Report At A Glance" in text or "Report At a Glance" in text:
+      if ("Report At A Glance" in text or
+          "Report At a Glance" in text or
+          "Report at a Glance" in text):
         report['summary_url'] = absolute_href
       elif ("Full Report" in text or
             "Full Semiannual Report" in text or
