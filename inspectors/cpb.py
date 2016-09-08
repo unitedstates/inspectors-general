@@ -100,7 +100,7 @@ def report_from(result, landing_url, report_type, year_range):
   report_url = urljoin(landing_url, link['href'])
   report_id = os.path.basename(urlparse(report_url)[2]).rstrip('.pdf')
 
-  title = link.text
+  title = re.sub("\\s+", " ", link.text)
   if 'semiannual' in report_id:
     title = "Semi-Annual Report: %s" % title
 
