@@ -49,7 +49,7 @@ def run(options):
 
   # Pull the reports
   doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL)
-  rows = doc.select("div.content > div > div > div > div.row")
+  rows = doc.select("div.content > div > div > div > div > div.row")
   row_audits = rows[0]
 
   # Audit reports
