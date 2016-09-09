@@ -106,6 +106,15 @@ class Tls1HttpAdapter(requests.adapters.HTTPAdapter):
 
 scraper.mount("https://www.sba.gov/", Tls1HttpAdapter())
 
+# ARC also needs TLS 1.0, though not due to the length of the raw handshake
+# record. The ARC server or middlebox only supports one cipher suite,
+# DES-CBC3-SHA, and it also needs it to be sufficiently far forward in the
+# cipher suite list. Using TLS 1.0 cuts down on the number of available cipher
+# suites, thus ensuring that DES-CBC3-SHA is far enough forward.
+# (as of 9/8/2016)
+scraper.mount("https://www.arc.gov/", Tls1HttpAdapter())
+scraper.mount("http://www.arc.gov/", Tls1HttpAdapter())
+
 WHITELIST_INSECURE_DOMAINS = (
   "https://www.ignet.gov/",  # incomplete chain as of 1/25/2015
   "https://www.va.gov/",  # incomplete chain as of 12/6/2015
