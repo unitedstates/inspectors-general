@@ -7,6 +7,7 @@ import yaml
 import logging
 import re
 import atexit
+import requests
 import scrapelib
 
 import smtplib
@@ -76,6 +77,12 @@ def log_http_error(e, url, scraper=None):
         error_handler.log_http_error(e, url, scraper)
       except Exception as exception:
         print(format_exception(exception))
+  elif isinstance(e, requests.exceptions.ConnectionError):
+    for error_handler in error_handlers:
+      try:
+        error_handler.log_connection_error(e, url, scraper)
+      except Exception as exception:
+        print(format_exception(exception))
   else:
     # fallback for connection errors, retry errors
     log_exception(e)
@@ -140,6 +147,11 @@ class ConsoleErrorHandler(ErrorHandler):
     # so that all 404s get printed at the end of the log
     print("Error downloading %s:\n\n%s" % (url, format_exception(exception)))
 
+  def log_connection_error(self, exception, url, scraper):
+    # intentionally print instead of using logging,
+    # so that all connection errors get printed at the end of the log
+    print("Error downloading %s:\n\n%s" % (url, format_exception(exception)))
+
   def log_qa(self, text):
     self.log(text)
 
@@ -184,6 +196,9 @@ class EmailErrorHandler(ErrorHandler):
   def log_http_error(self, exception, url, scraper):
     pass
 
+  def log_connection_error(self, exception, url, scraper):
+    pass
+
   def log_qa(self, text):
     pass
 
@@ -193,6 +208,19 @@ def exception_name(exception):
     return "%s.%s" % (exception.__module__, exception.__class__.__name__)
   except AttributeError:
     return exception.__class__.__name__
+
+
+def unwrap_exception(e):
+  if isinstance(e, requests.exceptions.ConnectionError):
+    if len(e.args) > 0 and isinstance(e.args[0], BaseException):
+      return unwrap_exception(e.args[0])
+  if isinstance(e, requests.packages.urllib3.exceptions.MaxRetryError):
+    if isinstance(e.reason, BaseException):
+      return unwrap_exception(e.reason)
+  if isinstance(e, requests.packages.urllib3.exceptions.SSLError):
+    if len(e.args) > 0 and isinstance(e.args[0], BaseException):
+      return unwrap_exception(e.args[0])
+  return e
 
 
 class SlackErrorHandler(ErrorHandler):
@@ -229,6 +257,23 @@ class SlackErrorHandler(ErrorHandler):
 
     pretext = ("[%s] %s error while downloading %s" %
                (scraper, http_status_code, url))
+    self.send_message({
+      "attachments": [
+        {
+          "fallback": pretext,
+          "text": body,
+          "color": "warning",
+          "pretext": pretext
+        }
+      ]
+    })
+
+  def log_connection_error(self, exception, url, scraper):
+    body = format_exception(exception)
+
+    class_name = exception_name(unwrap_exception(exception))
+    pretext = ("[%s] %s while downloading %s" %
+               (scraper, class_name, url))
     self.send_message({
       "attachments": [
         {
@@ -307,6 +352,22 @@ class DashboardErrorHandler(ErrorHandler):
     entry = {
       "status_code": http_status_code,
       "url": url
+    }
+    self.dashboard_data[scraper]["http_errors"].append(entry)
+
+  def log_connection_error(self, exception, url, scraper):
+    if scraper is None:
+      return
+
+    if scraper not in self.dashboard_data:
+      self.dashboard_data[scraper] = {}
+    if "http_errors" not in self.dashboard_data[scraper]:
+      self.dashboard_data[scraper]["http_errors"] = []
+    class_name = exception_name(unwrap_exception(exception))
+    entry = {
+      "status_code": None,
+      "url": url,
+      "exception_name": class_name
     }
     self.dashboard_data[scraper]["http_errors"].append(entry)
 
