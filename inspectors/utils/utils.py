@@ -139,6 +139,42 @@ WHITELIST_SHA1_DOMAINS = (
   "https://www.house.gov/",
 )
 
+# Special case handling for governmentattic.org, va.gov, etc.:
+# These pages are served without an encoding in the HTTP headers,
+# and with the encoding specified in a <meta> tag inside the document.
+META_CHARSETS = {
+  "http://www.usda.gov/oig": "iso-8859-1",
+  "http://www.cftc.gov/": "utf-8",
+  "http://cftc.gov/": "utf-8",
+  "https://www.cftc.gov/": "utf-8",
+  "https://cftc.gov/": "utf-8",
+  "http://www.dodig.mil/": "utf-8",
+  "https://www.dodig.mil/": "utf-8",
+  "https://oig.justice.gov/": "utf-8",
+  "https://www.fca.gov/": "utf-8",
+  "https://fca.gov/": "utf-8",
+  "http://www.fec.gov/": "iso-8859-1",
+  "https://www.fec.gov/": "iso-8859-1",
+  "https://oig.federalreserve.gov/": "iso-8859-1",
+  "http://www.gao.gov/": "utf-8",
+  "http://gao.gov/": "utf-8",
+  "https://www.gao.gov/": "utf-8",
+  "https://gao.gov/": "utf-8",
+  "http://www.governmentattic.org/": "utf-8",
+  "http://governmentattic.org/": "utf-8",
+  "https://www.governmentattic.org/": "utf-8",
+  "https://governmentattic.org/": "utf-8",
+  "https://oig.nasa.gov/": "utf-8",
+  "http://www.nrc.gov/": "utf-8",
+  "https://www.nrc.gov/": "utf-8",
+  "http://oig.pbgc.gov/": "utf-8",
+  "https://oig.pbgc.gov/": "utf-8",
+  "https://www.treasury.gov/tigta/": "iso-8859-1",
+  "http://oig.tva.gov/": "utf-8",
+  "https://oig.tva.gov/": "utf-8",
+  "https://www.va.gov/oig/publications/report-summary.asp?": "utf-8",
+}
+
 # will pass correct options on to individual scrapers whether
 # run through ./igs or individually, because argv[1:] is the same
 def run(run_method, additional=None):
@@ -276,14 +312,10 @@ def download(url, destination=None, options=None, scraper_slug=None):
         admin.log_http_error(e, url, scraper_slug)
         return None
 
-      # Special case handling for governmentattic.org, va.gov, etc.:
-      # These pages are served without an encoding in the HTTP headers,
-      # and with utf-8 specified in a <meta> tag inside the document.
-      if (url.startswith("http://www.governmentattic.org/") or
-          url.startswith("https://www.va.gov/oig/publications"
-                         "/report-summary.asp?") or
-          url.startswith("https://oig.justice.gov/")):
-        response.encoding = "utf-8"
+      for prefix, charset in META_CHARSETS.items():
+        if url.startswith(prefix):
+          response.encoding = charset
+          break
 
       body = response.text
       if not isinstance(body, str): raise ValueError("Content not decoded.")
