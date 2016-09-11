@@ -142,6 +142,8 @@ WHITELIST_SHA1_DOMAINS = (
 # Special case handling for governmentattic.org, va.gov, etc.:
 # These pages are served without an encoding in the HTTP headers,
 # and with the encoding specified in a <meta> tag inside the document.
+# See https://gist.github.com/divergentdave/0985ae1f2fd2a7235ccef0d5bbb6aaa3
+# for data collection script.
 META_CHARSETS = {
   "http://www.usda.gov/oig": "iso-8859-1",
   "http://www.cftc.gov/": "utf-8",
