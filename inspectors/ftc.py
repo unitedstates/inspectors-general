@@ -26,6 +26,7 @@ REPORT_URLS = {
 }
 
 REPORT_PUBLISHED_MAP = {
+  "oig_redacted_report_on_ftc_covered_systems_required_by_the_cybersecurity_-_aug2016": datetime.datetime(2016, 8, 12),
   "oig-rpt-compliance-_ipera-fy2015": datetime.datetime(2016, 5, 13),
   "ftcfismarepor2015": datetime.datetime(2016, 2, 29),
   "ftcmgmtltrfy2015": datetime.datetime(2016, 1, 8),

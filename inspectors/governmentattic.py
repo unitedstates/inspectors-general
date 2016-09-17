@@ -184,6 +184,8 @@ def report_from(result, category_name, agency, year_range):
   report_id = inspector.slugify(report_url.replace('http://www.',''))
 
   title = remove_linebreaks(a.text).strip()
+  if not title:
+    return
   text = remove_linebreaks(result.text)
   datematch = DATE_RE.search(text)
   published_on = None

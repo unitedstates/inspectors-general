@@ -29,6 +29,7 @@ REPORT_URLS = {
 }
 
 REPORT_PUBLISHED_MAP = {
+  "OIG-MR-16-15": datetime.datetime(2016, 9, 13),
   "OIG-MR-16-14": datetime.datetime(2016, 8, 12),
   "OIG-ER-16-13": datetime.datetime(2016, 7, 25),
   "OIG-MR-16-12": datetime.datetime(2016, 5, 10),

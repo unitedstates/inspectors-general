@@ -195,6 +195,7 @@ REPORT_PUBLISHED_MAPPING = {
   "Safety_and_security_weaknesses_in_PCCameroon_NEW": datetime.datetime(2016, 7, 31),
   "MAR_Site_History_Files_2016": datetime.datetime(2016, 8, 24),
   "Kathy_A._Buller_Inspector_General_Testimony": datetime.datetime(2011, 5, 11),
+  "2015_FISMA_highlights_M26WqOS": datetime.datetime(2015, 11, 1),
 }
 
 REPORT_TYPE_MAP = {
