@@ -183,24 +183,40 @@ def validate_report(report):
 
   return True
 
-_uniqueness_storage_disk = {}
-_uniqueness_storage_runtime = {}
-def check_uniqueness(inspector, report_id, report_year, scraper):
-  '''Given the name of an inspector, the ID of a report, and the year of the
-  report, this function will check whether a duplicate report_id exists on-disk
-  under a different year, or whether a duplicate report_id has been saved this
-  session, in the same year or any other year. The index of reports already
-  saved is lazily built on the first call from each inspector. Duplicate
-  reports detected here will be collected, and a summary will be logged.'''
 
-  # Be conservative, don't allow report_id to only differ in case
-  report_id = report_id.lower()
+class CaseInsensitiveString:
+  def __init__(self, s):
+    self.s = s
+    self.l = s.lower()
 
-  # Lazily set up data structures and read existing IDs from disk
-  if inspector not in _uniqueness_storage_runtime:
-    _uniqueness_storage_runtime[inspector] = set()
-  if inspector not in _uniqueness_storage_disk:
-    _uniqueness_storage_disk[inspector] = {}
+  def __lt__(self, other):
+    return self.l < other.l
+
+  def __eq__(self, other):
+    return self.l == other.l
+
+  def __hash__(self):
+    return hash(self.l)
+
+  def __str__(self):
+    return self.s
+
+
+class ReportIdCache:
+  singleton = None
+
+  @classmethod
+  def get_cache(self):
+    if self.singleton is None:
+      self.singleton = ReportIdCache()
+    return self.singleton
+
+  def __init__(self):
+    self.disk = {}
+    self.runtime = {}
+
+  def scan_disk(self, inspector, scraper):
+    self.disk[inspector] = {}
     data_dir = utils.data_dir()
     inspector_path = os.path.join(data_dir, inspector)
     if os.path.isdir(inspector_path):
@@ -211,31 +227,50 @@ def check_uniqueness(inspector, report_id, report_year, scraper):
           for report_id_disk in os.listdir(year_path):
             report_path = os.path.join(year_path, report_id_disk)
             if os.path.isdir(report_path):
-              if report_id_disk in _uniqueness_storage_disk[inspector]:
+              if CaseInsensitiveString(report_id_disk) in self.disk[inspector]:
+                year_last = self.disk[inspector][CaseInsensitiveString(report_id_disk)],
                 msg = "[%s] Duplicate report_id: %s is saved under %d and %d" %\
-                        (inspector,
+                        (scraper,
                         report_id_disk,
-                        _uniqueness_storage_disk[inspector][report_id_disk],
+                        year_last,
                         year_disk)
                 print(msg)
                 admin.log_duplicate_id(scraper, report_id_disk, msg)
-              _uniqueness_storage_disk[inspector][report_id_disk] = year_disk
+              self.disk[inspector][CaseInsensitiveString(report_id_disk)] = year_disk
 
-  if report_id in _uniqueness_storage_runtime[inspector]:
-    msg = "[%s] Duplicate report_id: %s has been used twice this session" % \
-            (inspector, report_id)
-    print(msg)
-    admin.log_duplicate_id(scraper, report_id, msg)
-  elif report_id in _uniqueness_storage_disk[inspector]:
-    if report_year != _uniqueness_storage_disk[inspector][report_id]:
-      msg = "[%s] Duplicate report_id: %s is saved under %d and %d" % \
-              (inspector,
-              report_id,
-              _uniqueness_storage_disk[inspector][report_id],
-              report_year)
+  def add(self, inspector, report_id, report_year, scraper):
+    report_id = CaseInsensitiveString(report_id)
+    if inspector not in self.runtime:
+      self.runtime[inspector] = set()
+    if inspector not in self.disk:
+      self.scan_disk(inspector, scraper)
+    if report_id in self.runtime[inspector]:
+      msg = ("[%s] Duplicate report_id: %s has been used twice this session" %
+             (scraper, report_id))
       print(msg)
       admin.log_duplicate_id(scraper, report_id, msg)
-  _uniqueness_storage_runtime[inspector].add(report_id)
+    elif report_id in self.disk[inspector]:
+      if report_year != self.disk[inspector][report_id]:
+        msg = "[%s] Duplicate report_id: %s is saved under %d and %d" % \
+                (scraper,
+                report_id,
+                self.disk[inspector][report_id],
+                report_year)
+        print(msg)
+        admin.log_duplicate_id(scraper, report_id, msg)
+    self.runtime[inspector].add(report_id)
+
+
+def check_uniqueness(inspector, report_id, report_year, scraper):
+  '''Given the name of an inspector, the ID of a report, and the year of the
+  report, this function will check whether a duplicate report_id exists on-disk
+  under a different year, or whether a duplicate report_id has been saved this
+  session, in the same year or any other year. The index of reports already
+  saved is lazily built on the first call from each inspector. Duplicate
+  reports detected here will be collected, and a summary will be logged.'''
+
+  cache = ReportIdCache.get_cache()
+  cache.add(inspector, report_id, report_year, scraper)
 
 
 # run over common string fields automatically
