@@ -184,6 +184,7 @@ def report_from_table(tds, published_on_dt, base_url):
             "Dispute Resolution" in text or
             "Materials Relating to" in text or
             "Addendum" in text or
+            "Appendix" in text or
             "Press Statement" in text or
             "Detailed Comments" in text or
             text.startswith("Attachment") or
