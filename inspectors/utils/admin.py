@@ -376,7 +376,7 @@ class DashboardErrorHandler(ErrorHandler):
       self.dashboard_data[scraper] = {}
     if "duplicate_ids" not in self.dashboard_data[scraper]:
       self.dashboard_data[scraper]["duplicate_ids"] = []
-    self.dashboard_data[scraper]["duplicate_ids"].append(report_id)
+    self.dashboard_data[scraper]["duplicate_ids"].append(str(report_id))
 
   def log_exception(self, exception):
     class_name = exception_name(exception)
