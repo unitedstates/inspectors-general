@@ -226,9 +226,10 @@ class ReportIdCache:
         if os.path.isdir(year_path):
           for report_id_disk in os.listdir(year_path):
             report_path = os.path.join(year_path, report_id_disk)
+            report_id_disk = CaseInsensitiveString(report_id_disk)
             if os.path.isdir(report_path):
-              if CaseInsensitiveString(report_id_disk) in self.disk[inspector]:
-                year_last = self.disk[inspector][CaseInsensitiveString(report_id_disk)],
+              if report_id_disk in self.disk[inspector]:
+                year_last = self.disk[inspector][report_id_disk]
                 msg = "[%s] Duplicate report_id: %s is saved under %d and %d" %\
                         (scraper,
                         report_id_disk,
@@ -236,7 +237,7 @@ class ReportIdCache:
                         year_disk)
                 print(msg)
                 admin.log_duplicate_id(scraper, report_id_disk, msg)
-              self.disk[inspector][CaseInsensitiveString(report_id_disk)] = year_disk
+              self.disk[inspector][report_id_disk] = year_disk
 
   def add(self, inspector, report_id, report_year, scraper):
     report_id = CaseInsensitiveString(report_id)
