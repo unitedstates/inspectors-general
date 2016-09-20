@@ -67,6 +67,7 @@ REPORT_URL_TO_PUBLISHED_DATETIMES = {
   "https://www.sec.gov/about/offices/oig/reports/reppubs/other/sec_oig_pressrelease_1_13.pdf": datetime.datetime(2012, 1, 13),
   "https://www.sec.gov/about/offices/oig/reports/reppubs/other/oig_strategicplan2010-2015-9-1-10-508.pdf": datetime.datetime(2010, 9, 1),
   "https://www.sec.gov/oig/reportspubs/Review-of-the-SECs-Pay-Transition-Program-15-ONR-0281-R-1-27-2016.pdf": datetime.datetime(2016, 1, 27),
+  "https://www.sec.gov/oig/reportspubs/OIG-Strategic-Plan-for-Fiscal-Years-2017---2019.pdf": datetime.datetime(2016, 9, 19),
 }
 
 CANNED_REPORTS = [
@@ -220,7 +221,7 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
   published_on_text = text_lines[0].split("through")[0].strip().replace(".", "")
   published_on = published_date_for_report(published_on_text, title, report_url, last_published_on, report_id)
   if not published_on:
-    admin.log_no_date("sec", title, report_id, report_url)
+    admin.log_no_date("sec", report_id, title, report_url)
     return None, None
 
   # Skip duplicate report
