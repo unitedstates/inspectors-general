@@ -42,6 +42,7 @@ REPORT_PUBLISHED_MAP = {
   "508letterOIG2016": datetime.datetime(2016, 5, 27),
   "A16-01": datetime.datetime(2015, 11, 10),
   "A16-02": datetime.datetime(2015, 11, 12),
+  "A16-03": datetime.datetime(2016, 9, 9),
   "A15-01": datetime.datetime(2014, 11, 14),
   "A15-01A": datetime.datetime(2014, 12, 31),
   "A15-02": datetime.datetime(2014, 11, 14),
