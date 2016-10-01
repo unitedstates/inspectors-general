@@ -196,6 +196,10 @@ REPORT_PUBLISHED_MAPPING = {
   "MAR_Site_History_Files_2016": datetime.datetime(2016, 8, 24),
   "Kathy_A._Buller_Inspector_General_Testimony": datetime.datetime(2011, 5, 11),
   "2015_FISMA_highlights_M26WqOS": datetime.datetime(2015, 11, 1),
+  "MAR_Conference_Cost_Reporting_IG-16-03-SR": datetime.datetime(2016, 9, 20),
+  "Final_Audit_of_Peace_Corps_Colombia_IG-16-05-A_7OVJYcv": datetime.datetime(2016, 9, 23),
+  "Recurring_Issues_Report": datetime.datetime(2016, 9, 23),
+  "OIG_Annual_Plan_FY17": datetime.datetime(2016, 9, 30),
 }
 
 REPORT_TYPE_MAP = {
