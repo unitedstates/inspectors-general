@@ -269,6 +269,7 @@ def report_from(result, url, report_type, year_range):
     result_text = result.text.replace(",", "").replace("\n", " ")
     result_text = " ".join(result_text.split())  # Remove any double spaces
     result_text = result_text.replace("Decemver", "December").replace("Deccember", "December")  # See note to IG Web team
+    result_text = result_text.replace("//", "/")
     try:
       published_on_text = "/".join(re.search("(\d+)/(\d+)/(\d+)", result_text).groups())
       published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
