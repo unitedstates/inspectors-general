@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# https://www.cpsc.gov/en/About-CPSC/Inspector-General/
+# https://www.cpsc.gov/About-CPSC/Inspector-General/
 archive = 2003
 
 # options:
@@ -16,7 +16,7 @@ archive = 2003
 # Notes for IG's web team:
 # - Fix the links for BLACKLIST_REPORT_URLS
 
-REPORTS_URL = "https://www.cpsc.gov/en/About-CPSC/Inspector-General/"
+REPORTS_URL = "https://www.cpsc.gov/About-CPSC/Inspector-General/"
 
 BLACKLIST_REPORT_URLS = [
 ]
@@ -25,7 +25,7 @@ def run(options):
   year_range = inspector.year_range(options, archive)
 
   doc = utils.beautifulsoup_from_url(REPORTS_URL)
-  results = doc.select("ul.summary-list li")
+  results = doc.select(".table-responsive tbody tr")
   if not results:
     raise inspector.NoReportsFoundError("CPSC")
   for result in results:
@@ -68,8 +68,8 @@ def report_from(result, year_range):
   report_id, _ = os.path.splitext(report_filename)
 
   title = link.text
-  published_on_text = result.select("span.date")[0].text
-  published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+  published_on_text = result.select(".date-display-single")[0].text
+  published_on = datetime.datetime.strptime(published_on_text, '%A, %B %d, %Y')
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -79,7 +79,7 @@ def report_from(result, year_range):
 
   report = {
     'inspector': 'cpsc',
-    'inspector_url': 'https://www.cpsc.gov/en/About-CPSC/Inspector-General/',
+    'inspector_url': 'https://www.cpsc.gov/About-CPSC/Inspector-General/',
     'agency': 'cpsc',
     'agency_name': 'Consumer Product Safety Commission',
     'type': report_type,
