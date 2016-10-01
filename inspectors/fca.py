@@ -22,6 +22,8 @@ REPORT_ARCHIVE_URL = "https://www.fca.gov/home/inspector/oigarchive.html"
 SEMIANNUAL_REPORTS_URL = "https://www.fca.gov/home/inspector/semiannual.html"
 
 REPORT_PUBLISHED_MAPPING = {
+  "OversightofYBSPrograms": datetime.datetime(2016, 9, 28),
+  "PositionManagementandJobEvaluationProgram": datetime.datetime(2016, 9, 23),
   "BusinessContinuity": datetime.datetime(2016, 6, 1),
   "ControlseOPF": datetime.datetime(2016, 4, 21),
   "RegulatoryDevelopmentSurvey2002": datetime.datetime(2002, 10, 22),
