@@ -48,6 +48,12 @@ REPORT_PUBLISHED_MAP = {
   "16-16": datetime.datetime(2016, 6, 1),
   "16-17": datetime.datetime(2016, 6, 1),
   "16-18": datetime.datetime(2016, 6, 1),
+  "16-19": datetime.datetime(2016, 9, 29),
+  "16-20": datetime.datetime(2016, 9, 1),
+  "16-21": datetime.datetime(2016, 9, 29),
+  "16-22": datetime.datetime(2016, 9, 30),
+  "16-23": datetime.datetime(2016, 9, 23),
+  "16-24": datetime.datetime(2016, 9, 23),
   "15-01": datetime.datetime(2015, 1, 1),
   "15-02": datetime.datetime(2015, 3, 20),
   "15-03": datetime.datetime(2015, 2, 5),
@@ -238,7 +244,9 @@ def report_from(result, landing_url, report_type, year_range):
 
   report_id_match = REPORT_ID_RE.match(result.td.text.strip())
   if ("contains sensitive information" in title or
-      "This correspondence will not be posted" in title):
+      "This correspondence will not be posted" in title or
+      title == "Unscheduled and Unpaid Absenteeism in the Office of "
+      "Plant Operations"):
     unreleased = True
     report_url = None
     if report_id_match:
