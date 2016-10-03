@@ -112,7 +112,8 @@ def run(options):
     results = doc.find_all("tr", class_=["ms-rteTableOddRow-default",
                                          "ms-rteTableEvenRow-default"])
     if not results:
-      raise inspector.NoReportsFoundError("Treasury (%d)" % year)
+      if year != datetime.datetime.now().year + 1:
+        raise inspector.NoReportsFoundError("Treasury (%d)" % year)
     for result in results:
       report = audit_report_from(result, url, year_range)
       if report:
