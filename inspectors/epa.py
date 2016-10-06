@@ -178,6 +178,7 @@ def report_from_table(tds, published_on_dt, base_url):
         report['url'] = absolute_href
       elif ("Response to Report" in text or
             "IG Comment on" in text and "Response" in text or
+            "IG Comment of" in text and "Response" in text or
             "Response to OIG Report" in text or
             "Response to Draft Report" in text or
             "Report Briefing with Gallery" in text or
