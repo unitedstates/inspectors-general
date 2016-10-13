@@ -145,7 +145,7 @@ def run(options):
     if not doc:
       # Maybe page for current year hasn't been created yet
       continue
-    results = doc.select("div#content li")
+    results = doc.select("div.region-content li")
     if results:
       results_flag = True
     for result in results:
@@ -158,7 +158,7 @@ def run(options):
 
   # Pull the semiannual reports
   doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
-  results = doc.select("div#content li")
+  results = doc.select("div.region-content li")
   if not results:
     raise inspector.NoReportsFoundError("National Archives and Records Administration semiannual reports")
   for result in results:
@@ -168,7 +168,7 @@ def run(options):
 
   # Pull the Peer Review
   doc = utils.beautifulsoup_from_url(PEER_REVIEWS_URL)
-  result = doc.find("div", id='content').find("a", text=True)
+  result = doc.select("div.region-content")[0].find("a", text=True)
   report = peer_review_from(result, year_range)
   if report:
     inspector.save_report(report)
