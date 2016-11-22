@@ -198,7 +198,7 @@ BLACKLIST_REPORT_URLS = [
   'http://oig.hhs.gov/reports/region3/30700500.htm',
   'http://oig.hhs.gov/oas/reports/region5/50800067.asp',
 
-  #press release, format is completely inconsistent with everything else
+  # press release, format is inconsistent with everything else
   'http://oig.hhs.gov/newsroom/news-releases/2014/sar14fall.asp',
 
   # Duplicate report, uploaded in two regions

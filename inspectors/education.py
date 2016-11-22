@@ -217,7 +217,7 @@ def audit_url_for(year):
     year = 1998
 
   if year == 2001:
-    # This one needs a capital A. Yup.
+    # This one needs a capital A
     return "https://www2.ed.gov/about/offices/list/oig/Areports2001.html"
 
   if year == datetime.datetime.today().year:

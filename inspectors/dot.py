@@ -141,7 +141,7 @@ def report_from(result, year_range, topic, options):
     file_type = os.path.splitext(os.path.basename(report_url))[1][1:]
   except IndexError:
     if report_type in TYPES_WITHOUT_REPORTS:
-      # Some types just don't have reports(Announcements), ignore them
+      # Some types just don't have reports (Announcements), ignore them
       return
     elif (
         'For Official Use Only' in summary

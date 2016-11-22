@@ -277,7 +277,7 @@ def fetch_from_landing_page(landing_url):
   if not link:
     link = page.find('a', text=RE_PDF_BODY_MAYBE, href=RE_PDF_HREF)
 
-  # cases where .pdf is left off, ugh, e.g.
+  # cases where .pdf is left off, e.g.
   # http://www.dodig.mil/pubs/report_summary.cfm?id=849
   if not link:
     link = page.find('a', text=RE_PDF_LINK_TEXT, href=RE_BACKUP_PDF_HREF)
@@ -288,7 +288,7 @@ def fetch_from_landing_page(landing_url):
   if not link:
     link = page.find(pdf_test)
 
-  # before accepting *any* PDF, check for skippable offenses
+  # before accepting *any* PDF, skip reports based on title heuristics
   if not link and (RE_EXTERNALLY_HOSTED.search(table.text) or RE_RESCINDED.search(table.text) or RE_RETRACTED.search(table.text) or RE_UNUSED.search(table.text)):
     skip = True
 

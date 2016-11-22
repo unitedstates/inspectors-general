@@ -135,7 +135,7 @@ class LibraryOfCongressScraper(object):
       else:
         unreleased = True
         text = li.get_text()
-        # Annoying reports that aren't public (apparently) but not marked such.
+        # Reports that aren't public (apparently) but not marked such.
         logging.warning('Found report with no PDF link but not marked "Not for '
                         'Public Release": %s', text)
 
@@ -164,8 +164,6 @@ class LibraryOfCongressScraper(object):
         inspector.save_report(report)
 
   def get_uls_past_audit_header(self, doc):
-    # Yes there is mysteriously an extra space in the document before the word
-    # 'Reports'.
     header = doc.find_all(text=re.compile('Audits and Other +Reports'))
     return header[0].parent.find_next_siblings('ul')
 

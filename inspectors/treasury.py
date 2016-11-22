@@ -192,7 +192,7 @@ def audit_report_from(result, page_url, year_range):
       "Redemption Services and the Suitability of the Design and Operating " \
       "Effectiveness of its Controls for the Period August 1, 2013 to " \
       "July 31, 2014":
-    # This one is missing its ID on the index
+    # This one is missing its ID in the index
     report_id = "OIG-14-049"
     title = report_summary
   elif report_summary == "Correspondence related to the resolution of audit recommendation 1 OIG-16-001 OFAC Libyan Sanctions Case Study (Please read this correspondence in conjunction with the report.)":

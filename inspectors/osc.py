@@ -6,7 +6,7 @@ import logging
 from bs4 import BeautifulSoup
 from utils import utils, inspector
 
-#Office of Special Counsel investigates whistleblower retaliation at all agencies, so unlike most parsers in this project, agency will be different than inspector
+# Office of Special Counsel investigates whistleblower retaliation at all agencies, so unlike most parsers in this project, agency will be different from inspector
 
 # https://osc.gov/Pages/Resources-PublicFiles.aspx
 archive = 2009   #OSC began posting public files in 2009
@@ -15,7 +15,7 @@ archive = 2009   #OSC began posting public files in 2009
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
-# styling is all inline making for terribly bloated tables. use CSS classes.
+# Styling is all inline making for bloated tables. CSS classes would be a better solution.
 
 REPORTS_URL = 'https://osc.gov/Pages/PublicFiles-FY%s.aspx' # sub in a four-digit year for %s
 
@@ -90,8 +90,8 @@ def report_from(result, year, year_range,OUTCOME_CODES):
   """
   columns are:
   OSC File     #    part 1
-​​  OSC File     #    part 2
-​​  Agency       #   not standardized, may be formatted different ways or include subagency name in different ways
+  OSC File     #    part 2
+  Agency       #   not standardized, may be formatted different ways or include subagency name in different ways
   Location    
   Date Closed  #   03-27-2015
   Result Code  #   comma-separated numbers mapping to one or more OUTCOME_CODES above describing the results of the probe
@@ -216,7 +216,7 @@ def get_extra_descrip(pdf_link):
 
 def fix_partial_row(cells,previous_report):
   #deal with a few rows from very old years where colspans and rowspans are used, leaving seemingly orphaned PDFs.
-  #for these, the PDFs will (as they should) their metadata from the previous, full row.
+  #for these, the PDFs will (as they should) get their metadata from the previous full row.
 
   reports = []
   report = previous_report

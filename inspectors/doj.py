@@ -158,7 +158,7 @@ def extract_info(content, directory, year_range):
       # most cases pass this test
       try:
         date = datetime.strptime(date_string, "%B %d, %Y")
-      # these ones got to a coding purgatory called odd_link
+      # these ones require special handling in odd_link
       except ValueError:
         info = odd_link(b, date_string, l, directory, )
         # this should give better titles than "pdf" or "Press Release"
@@ -229,7 +229,7 @@ def extract_info(content, directory, year_range):
         # id
         doc_id = os.path.splitext(urlparse(link).path)[0]
 
-        #these docs are one report where the page has a table of contents with links to content
+        # these docs are one report where the page has a table of contents with links to content
         if "/index" in link:
           indexed = True
         else:
@@ -356,7 +356,6 @@ def date_format(date):
   date_string = date
   return date_string
 
-# said purgatory for odd links
 def odd_link(b, date, l, directory):
   text = b.get_text()
   # not links to docs
@@ -377,7 +376,7 @@ def odd_link(b, date, l, directory):
   if " — PDF | HTML" in text:
     text = text.replace(" — PDF | HTML", "")
 
-  #section for documents without dates:
+  # section for documents without dates:
   if date != None:
     if date.strip() == "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995":
       return {"date_string": "June 1, 1996", "real_title": "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995"}

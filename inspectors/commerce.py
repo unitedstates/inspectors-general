@@ -110,7 +110,7 @@ def report_from(result, topic, topic_url, year_range):
     except IndexError:
       # Some reports don't have report ids listed. Make a slug from the title and date
       report_id = "{}-{}".format(published_on_text, "-".join(title.split()))[:50]
-    landing_url = topic_url  # There are not dedicated landing pages for unreleased reports :(
+    landing_url = topic_url  # There are not dedicated landing pages for unreleased reports
   else:
     link = result.select("a")[0]
     landing_url = link.get('href')

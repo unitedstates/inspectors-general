@@ -184,7 +184,7 @@ def semiannual_report_from(result, year_range):
   if report_id in REPORT_PUBLISHED_MAPPING:
     published_on = REPORT_PUBLISHED_MAPPING[report_id]
   else:
-    # The location of the publication date move around too much so we search
+    # The location of the publication date moves around too much so we search
     # the entire page
     published_on_text = " ".join(re.search("Date Published:\s+(\w+),*\s+(\d{4})", landing_page.text).groups())
     published_on = datetime.datetime.strptime(published_on_text.strip(), '%B %Y')

@@ -14,7 +14,7 @@ REPORTS_URL = "https://www.opm.gov/our-inspector-general/reports/"
 
 #  Note: reports are only scraped from /our-inspector-general/reports/
 #  I think this is mostly just audit reports (other reports are scattered
-#  around the website
+#  around the website)
 
 #  options
 #    --since=[year] fetches all reports from that year to now
@@ -48,7 +48,7 @@ def run(options):
     except ValueError:
       continue
 
-    # gets each table entry and sends generates a report from it
+    # gets each table entry and generates a report from it
     listings = result.div.table.tbody.contents
     for item in listings:
       if type(item) is not bs4.element.Tag:
