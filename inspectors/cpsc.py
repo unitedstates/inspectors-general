@@ -5,7 +5,7 @@ import logging
 import os
 from urllib.parse import urljoin
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # https://www.cpsc.gov/About-CPSC/Inspector-General/
 archive = 2003
@@ -20,6 +20,24 @@ REPORTS_URL = "https://www.cpsc.gov/About-CPSC/Inspector-General/"
 
 BLACKLIST_REPORT_URLS = [
 ]
+
+REPORT_PUBLISHED_MAP = {
+    "SemiAnnualReporttoCongress10-1-15to3-31-16": datetime.datetime(2016, 4, 29),
+    "SARtoCongressAPR1SEP302015withForwardingMemo1": datetime.datetime(2015, 10, 30),
+    "SemiAnnualReport04242015_0": datetime.datetime(2015, 4, 30),
+    "SemiAnnualReport09302014": datetime.datetime(2014, 10, 30),
+    "SemiAnnualReport03312014": datetime.datetime(2014, 4, 30),
+    "SARFY13APR_SEPTRPRT": datetime.datetime(2013, 10, 30),
+    "OIGSemiReport2013a": datetime.datetime(2013, 4, 30),
+    "sar2012b": datetime.datetime(2012, 10, 30),
+    "SemiAnnualReport03312012": datetime.datetime(2012, 4, 30),
+    "sar2011a": datetime.datetime(2011, 4, 30),
+    "sar2010a": datetime.datetime(2010, 4, 30),
+    "sar2011b": datetime.datetime(2011, 10, 30),
+    "sar2010b": datetime.datetime(2010, 10, 30),
+    "sar2009b_0": datetime.datetime(2009, 10, 30),
+}
+
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -68,8 +86,16 @@ def report_from(result, year_range):
   report_id, _ = os.path.splitext(report_filename)
 
   title = link.text
-  published_on_text = result.select(".date-display-single")[0].text
-  published_on = datetime.datetime.strptime(published_on_text, '%A, %B %d, %Y')
+  if report_id in REPORT_PUBLISHED_MAP:
+    published_on = REPORT_PUBLISHED_MAP[report_id]
+  else:
+    date_spans = result.select(".date-display-single")
+    if date_spans:
+      published_on_text = date_spans[0].text
+      published_on = datetime.datetime.strptime(published_on_text, '%A, %B %d, %Y')
+    else:
+      admin.log_no_date("cpsc", report_id, title, report_url)
+      return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
