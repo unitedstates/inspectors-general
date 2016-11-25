@@ -3,11 +3,12 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
-# https://transition.fcc.gov/oig/oigreportsaudit.html
+# https://www.fcc.gov/inspector-general
 archive = 1994
 
 # options:
@@ -15,54 +16,91 @@ archive = 1994
 #
 # Notes for IG's web team:
 
-AUDIT_REPORTS_URL = "https://transition.fcc.gov/oig/oigreportsaudit.html"
-SEMIANNUAL_REPORTS_URL = "https://transition.fcc.gov/oig/oigreportssemiannual.html"
-OTHER_REPORTS_URL = "https://transition.fcc.gov/oig/oigreportsletters.html"
+AUDIT_REPORTS_URL = "https://www.fcc.gov/inspector-general/reports/general/audit-inspection-and-evaluation-reports-issued-office-inspector"
+SEMIANNUAL_REPORTS_URL = "https://www.fcc.gov/inspector-general/reports/general/semi-annual-reports-issued-office-inspector-general"
+OTHER_REPORTS_URL = "https://www.fcc.gov/general/office-inspector-general-news-written-statements-press-releases-and-peer-review-report"
 
-REPORT_URLS = {
-  "audit": AUDIT_REPORTS_URL,
-  "semiannual_report": SEMIANNUAL_REPORTS_URL,
-  "other": OTHER_REPORTS_URL,
-}
+DATE_FORMATS = [
+  "%m/%d/%Y",
+  "%m/%d/%y",
+]
+
+RE_EXTRA_FILES = re.compile("(?:Transmittal_(?:[Ll]etter|ltr|Memo)|"
+                            "CoverLetter|"
+                            "Attachment)")
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  for report_type, url in REPORT_URLS.items():
-    doc = utils.beautifulsoup_from_url(url)
-    results = doc.find_all("table", {"border": 2})[0].select("tr")
-    if not results:
-      raise inspector.NoReportsFoundError("FCC (%s)" % report_type)
-    for index, result in enumerate(results):
-      if index < 2:
-        # The first two rows are headers
-        continue
-      report = report_from(result, url, report_type, year_range)
-      if report:
-        inspector.save_report(report)
+  doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL)
+  results = doc.article.find_all("tr")
+  if not results:
+    raise inspector.NoReportsFoundError("FCC (audit reports)")
+  for result in results:
+    report = report_from(result, AUDIT_REPORTS_URL, year_range)
+    if report:
+      inspector.save_report(report)
 
-def report_from(result, page_url, report_type, year_range):
+  doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
+  results = doc.article.find_all("tr")
+  if not results:
+    raise inspector.NoReportsFoundError("FCC (semiannual reports)")
+  for result in results:
+    report = semiannual_report_from(result, SEMIANNUAL_REPORTS_URL, year_range)
+    if report:
+      inspector.save_report(report)
+
+  doc = utils.beautifulsoup_from_url(OTHER_REPORTS_URL)
+  results = doc.article.find_all("p")
+  if not results:
+    raise inspector.NoReportsFoundError("FCC (other)")
+  for result in results:
+    report = other_report_from(result, OTHER_REPORTS_URL, year_range)
+    if report:
+      inspector.save_report(report)
+
+def report_from(result, page_url, year_range):
+  tds = result.find_all("td")
+  if len(tds) == 1:
+    # Title row, with colspan="3"
+    return
+  if len(tds) == 0:
+    # Degenerate row
+    return
+  if tds[1]["align"] == "Center":
+    # Column headers
+    return
   if not result.text.strip():
-    # Nothing in the entire row, just an empty row
+    # Empty spacer row
     return
 
-  report_url = urljoin(page_url, result.select("td a")[0].get('href'))
-  report_filename = report_url.split("/")[-1]
+  if tds[1].p is not None:
+    title = tds[1].p.contents[0]
+  else:
+    title = tds[1].text
+  title = re.sub("\\s+", " ", title).strip()
+
+  links = [a["href"] for a in result.find_all("a")]
+  if len(links) > 1:
+    links = [link for link in links if not RE_EXTRA_FILES.search(link)]
+  if len(links) == 0:
+    raise Exception("Couldn't find link for {!r}".format(title))
+  if len(links) > 1:
+    raise Exception("Found multiple links for {!r}".format(title))
+  report_url = urljoin(page_url, links[0])
+  report_filename = os.path.basename(report_url)
   report_id, extension = os.path.splitext(report_filename)
 
-  published_on_text = result.select("td")[0].text.split("\r\n")[0].strip()
-
-  if len(result.select("td")) == 2:
-    # Semiannual report
-    published_on_text = published_on_text.split("to")[-1].split("through")[-1].strip()
-    published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
-    title = "Semi-Annual Report - {}".format(published_on_text)
-  else:
+  published_on_text = tds[0].text.strip()
+  for date_format in DATE_FORMATS:
     try:
-      published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%y')
+      published_on = datetime.datetime.strptime(published_on_text, date_format)
+      break
     except ValueError:
-      published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
-    title = result.select("td")[1].text.strip()
+      pass
+  else:
+    admin.log_no_date("fcc", report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
@@ -70,10 +108,97 @@ def report_from(result, page_url, report_type, year_range):
 
   report = {
     'inspector': 'fcc',
-    'inspector_url': 'https://fcc.gov/oig/',
+    'inspector_url': 'https://www.fcc.gov/inspector-general',
     'agency': 'fcc',
     'agency_name': "Federal Communications Commission",
-    'type': report_type,
+    'type': 'audit',
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  return report
+
+def semiannual_report_from(result, page_url, year_range):
+  tds = result.find_all("td")
+  if len(tds) == 1:
+    # Title row, with colspan
+    return
+  if tds[0]["align"] == "center":
+    # Column headers
+    return
+
+  if tds[0].br:
+    title = tds[0].contents[0].strip()
+  else:
+    title = tds[0].text.strip()
+  published_on_text = title.split("to")[-1].split("through")[-1].strip()
+  published_on = datetime.datetime.strptime(published_on_text, "%B %d, %Y")
+  title = "Semi-Annual Report - {}".format(title)
+
+  report_url = urljoin(page_url, result.a["href"])
+  report_filename = os.path.basename(report_url)
+  report_id, extension = os.path.splitext(report_filename)
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  report = {
+    'inspector': 'fcc',
+    'inspector_url': 'https://www.fcc.gov/inspector-general',
+    'agency': 'fcc',
+    'agency_name': "Federal Communications Commission",
+    'type': 'semiannual_report',
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+  return report
+
+def other_report_from(result, page_url, year_range):
+  if result.text.strip() in ["Written Statements", "Peer Review Report", "News / Press Releases"]:
+    # Headers
+    return
+  if not result.text.strip():
+    # Empty paragrpah
+    return
+
+  if result.strong:
+    title = result.strong.text.strip()
+  else:
+    title = result.find("span", class_="bodytextbold").text.strip()
+
+  links = [a["href"] for a in result.find_all("a")]
+  if len(links) == 0:
+    raise Exception("Couldn't find link for {!r}".format(title))
+  if len(links) > 1:
+    raise Exception("Found multiple links for {!r}".format(title))
+  report_url = urljoin(page_url, links[0])
+  report_filename = os.path.basename(report_url)
+  report_id, extension = os.path.splitext(report_filename)
+
+  if report_id == "USF_Low_Income_Indictment_040914":
+    published_on = datetime.datetime(2014, 4, 9)
+  else:
+    try:
+      published_on_text = result.find("span", class_="navlinksbody").text
+      published_on = datetime.datetime.strptime(published_on_text, "%m/%d/%Y")
+    except ValueError:
+      published_on_text = result.find("span", class_="navlinksbody").find("span", class_="navlinksbody").text
+      published_on = datetime.datetime.strptime(published_on_text, "%m/%d/%Y")
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  report = {
+    'inspector': 'fcc',
+    'inspector_url': 'https://www.fcc.gov/inspector-general',
+    'agency': 'fcc',
+    'agency_name': "Federal Communications Commission",
+    'type': 'other',
     'report_id': report_id,
     'url': report_url,
     'title': title,
