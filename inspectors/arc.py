@@ -200,6 +200,7 @@ REPORT_PUBLISHED_MAP = {
   "Report15-24-TN-17551and17551-C": datetime.datetime(2015, 7, 6),
   "Report15-25-AL-15573-C5andC6": datetime.datetime(2015, 6, 15),
   "Report15-26-AL-7805-C31-C32andC33": datetime.datetime(2015, 6, 15),
+  "Report15-37-HUD-Deobligations": datetime.datetime(2016, 11, 1),
 }
 
 def run(options):
