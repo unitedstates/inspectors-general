@@ -170,6 +170,9 @@ class EmailErrorHandler(ErrorHandler):
 
   def log(self, body):
     settings = config['email']
+    if (not settings.get('to') or not settings.get('from') or
+        not settings.get('from_name') or not settings.get('hostname')):
+      return
 
     # adapted from http://www.doughellmann.com/PyMOTW/smtplib/
     msg = MIMEText(body)
@@ -181,7 +184,7 @@ class EmailErrorHandler(ErrorHandler):
     server = smtplib.SMTP(settings['hostname'], settings.get('port', 0))
     try:
       server.ehlo()
-      if settings['starttls'] and server.has_extn('STARTTLS'):
+      if settings.get('starttls') and server.has_extn('STARTTLS'):
         server.starttls()
         server.ehlo()
 
