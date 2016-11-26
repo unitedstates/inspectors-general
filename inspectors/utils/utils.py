@@ -15,8 +15,11 @@ import docx
 import zipfile
 from urllib.parse import urljoin
 import inspect
+import pdfrw
 
 from . import admin
+
+logging.getLogger("pdfrw").setLevel(logging.CRITICAL)
 
 # scraper should be instantiated at class-load time, so that it can rate limit appropriately
 import scrapelib
@@ -419,6 +422,37 @@ def check_tool_present(*args):
     result = False
   _tool_present_cache[args] = result
   return result
+
+# read PDF's directory to determine if we need to decrypt it
+def check_pdf_decryption(pdf_path):
+  try:
+    doc = pdfrw.PdfReader(pdf_path)
+    return "/Encrypt" in doc
+  except:
+    return False
+
+# uses qpdf to decrypt a PDF
+def decrypt_pdf(source_path, destination_path):
+  if not check_tool_present("qpdf", "--version"):
+    logging.warn("Install qpdf to decrypt PDFs! "
+                 "The qpdf executable must be in a directory that is in "
+                 "your PATH environment variable.")
+    return False
+
+  try:
+    subprocess.check_call(["qpdf",
+                           "--decrypt",
+                           source_path,
+                           destination_path], shell=False)
+    return True
+  except subprocess.CalledProcessError as exc:
+    logging.warn("Error decrypting :\n\n%s" %
+                 (source_path, format_exception(exc)))
+    return False
+
+  if not os.path.exists(destination_path):
+    logging.warn("PDF not decrypted to %s" % destination_path)
+    return False
 
 # uses pdftotext to get text out of PDFs,
 # then writes it and returns the /data-relative path.

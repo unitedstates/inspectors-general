@@ -321,7 +321,16 @@ def extract_metadata(report):
 
   file_type_lower = report['file_type'].lower()
   if file_type_lower == "pdf":
-    metadata = utils.metadata_from_pdf(report_path)
+    real_report_path = os.path.abspath(os.path.expandvars(os.path.join(utils.data_dir(), report_path)))
+    if utils.check_pdf_decryption(real_report_path):
+      real_decrypted_path = real_report_path[:-4] + ".decrypted.pdf"
+      decrypted_path = report_path[:-4] + ".decrypted.pdf"
+      if os.path.isfile(real_decrypted_path) or utils.decrypt_pdf(real_report_path, real_decrypted_path):
+        metadata = utils.metadata_from_pdf(decrypted_path)
+      else:
+        metadata = None
+    else:
+      metadata = utils.metadata_from_pdf(report_path)
     if metadata:
       report['pdf'] = metadata
       return metadata
@@ -355,8 +364,14 @@ def extract_report(report):
 
   file_type_lower = report['file_type'].lower()
   if file_type_lower == "pdf":
-    utils.text_from_pdf(real_report_path, real_text_path)
-    return text_path
+    if utils.check_pdf_decryption(real_report_path):
+      real_decrypted_path = real_report_path[:-4] + ".decrypted.pdf"
+      if os.path.isfile(real_decrypted_path) or utils.decrypt_pdf(real_report_path, real_decrypted_path):
+        utils.text_from_pdf(real_decrypted_path, real_text_path)
+      return text_path
+    else:
+      utils.text_from_pdf(real_report_path, real_text_path)
+      return text_path
   elif file_type_lower == "doc":
     utils.text_from_doc(real_report_path, real_text_path)
     return text_path
