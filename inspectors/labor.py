@@ -131,6 +131,8 @@ def report_from(result, year_url):
     report['response_url'] = response_url
   if unreleased:
     report['unreleased'] = unreleased
+  if report_url and '/viewpdf.php?' in report_url:
+    report['file_type'] = 'pdf'
   return report
 
 def semiannual_report_from(result, year_range):
