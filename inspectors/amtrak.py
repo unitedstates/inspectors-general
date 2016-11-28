@@ -66,6 +66,9 @@ def report_from(result):
       report_id = "008-2015-challenges"
     else:
       report_id = "008-2015-msa"
+  if "/OIG-I-2016-517_0.pdf" in url or "/OIG-I-2016-525_0.pdf" in url:
+    # Second of two investigative summaries under this tracking number
+    report_id += "-2"
 
   if not report_id:
     report_id = url[url.rfind('/') + 1 : url.rfind('.')]
