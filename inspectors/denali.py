@@ -70,7 +70,7 @@ def report_from(result, year_range):
     category = "other"
 
   report_id = os.path.splitext(os.path.basename(result['href']))[0]
-  report_url = urljoin(REPORTS_URL, result['href'])
+  report_url = urljoin(REPORTS_URL, result['href'].strip())
   title = inspector.sanitize(result.text)
 
   # Each financial/performance report is linked twice, once for the IG's
