@@ -200,6 +200,8 @@ REPORT_PUBLISHED_MAPPING = {
   "Final_Audit_of_Peace_Corps_Colombia_IG-16-05-A_7OVJYcv": datetime.datetime(2016, 9, 23),
   "Recurring_Issues_Report": datetime.datetime(2016, 9, 23),
   "OIG_Annual_Plan_FY17": datetime.datetime(2016, 9, 30),
+  "FISMA_final_report": datetime.datetime(2016, 11, 10),
+  "406_highlights": datetime.datetime(2016, 8, 1),
 }
 
 REPORT_TYPE_MAP = {
