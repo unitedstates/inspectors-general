@@ -27,6 +27,7 @@ REPORT_PUBLISHED_MAPPING = {
   "BusinessContinuity": datetime.datetime(2016, 6, 1),
   "ControlseOPF": datetime.datetime(2016, 4, 21),
   "RegulatoryDevelopmentSurvey2002": datetime.datetime(2002, 10, 22),
+  "FinancialAuditReport16": datetime.datetime(2016, 11, 14),
   "FinancialAuditReport15": datetime.datetime(2015, 11, 9),
   "FinancialAuditReport14": datetime.datetime(2014, 11, 13),
   "FinancialAuditReport13": datetime.datetime(2013, 11, 20),
@@ -223,6 +224,13 @@ def report_from(result, landing_url, year_range):
     try:
       published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
     except ValueError:
+      pass
+
+  if not published_on:
+    try:
+      published_on_text = li.contents[1].strip().lstrip("(").rstrip(")")
+      published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+    except (IndexError, TypeError, ValueError):
       pass
 
   if not published_on:
