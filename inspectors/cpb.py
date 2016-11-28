@@ -37,7 +37,9 @@ REPORT_ID_DATE_EXTRACTION = [
 REPORT_PUBLISHED_MAP = {
   "606_EvaluationCPBResponse": datetime.datetime(2006, 6, 9),
   "602_cpb_ig_reportofreview": datetime.datetime(2005, 11, 15),
+  "CPB_OIG_2016_Peer_Review_System_Report": datetime.datetime(2016, 9, 7),
   "OIGPeerReview-2013-September": datetime.datetime(2013, 9, 27),
+  "annualplan17": datetime.datetime(2016, 10, 20),
   "annualplan16": datetime.datetime(2015, 10, 14),
   "annualplan15": datetime.datetime(2014, 10, 17),
   "annualplan14": datetime.datetime(2013, 9, 17),
