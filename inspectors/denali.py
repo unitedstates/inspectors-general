@@ -21,6 +21,7 @@ archive = 2006
 REPORTS_URL = "http://oig.denali.gov"
 
 REPORT_PUBLISHED_MAPPING = {
+  "DCOIG-17-002-A": datetime.datetime(2016, 11, 18),
   "DCOIG-16-001-A": datetime.datetime(2015, 11, 13),
   "FY-14-Denali-Commission-Financial-Performance-Report": datetime.datetime(2014, 11, 26),
   "FY-12-Denali-Commission-Financial-Report": datetime.datetime(2012, 11, 15),
