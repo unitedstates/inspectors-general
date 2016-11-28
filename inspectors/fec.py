@@ -40,6 +40,7 @@ REPORT_PUBLISHED_MAPPING = {
   "fmfia": datetime.datetime(2001, 6, 1),
   "internet": datetime.datetime(2001, 5, 1),
   "AuditoftheFECsTeleworkPrograms-June2016-OIG-15-03-Final": datetime.datetime(2016, 6, 1),
+  "FY2016FinancialStatementAuditReport-Final": datetime.datetime(2016, 11, 15),
   "FY2015FinancialStatementAuditReport-Final": datetime.datetime(2015, 11, 16),
   "FEC2014FinancialStatementAuditReport": datetime.datetime(2014, 11, 17),
   "FY2013FinancialStatementAuditReport": datetime.datetime(2013, 12, 13),
