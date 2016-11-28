@@ -40,6 +40,8 @@ BLACKLIST_REPORT_URLS = [
 
 REPORT_PUBLISHED_MAP = {
   "508letterOIG2016": datetime.datetime(2016, 5, 27),
+  "A17-01": datetime.datetime(2016, 11, 9),
+  "A17-02": datetime.datetime(2016, 11, 8),
   "A16-01": datetime.datetime(2015, 11, 10),
   "A16-02": datetime.datetime(2015, 11, 12),
   "A16-03": datetime.datetime(2016, 9, 9),
