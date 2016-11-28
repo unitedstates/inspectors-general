@@ -49,6 +49,9 @@ REPORT_PUBLISHED_MAP = {
   "QCR-02-01": datetime.datetime(2002, 4, 3),
 
   # Audit Reports
+  "AR-17-01": datetime.datetime(2016, 11, 15),
+  "AR-17-02": datetime.datetime(2016, 11, 16),
+  "Final---AUC-260-Letter": datetime.datetime(2016, 11, 15),
   "AR-16-01": datetime.datetime(2015, 11, 16),
   "AR-16-02": datetime.datetime(2015, 12, 14),
   "AR-16-03": datetime.datetime(2016, 1, 20),
@@ -84,6 +87,7 @@ REPORT_PUBLISHED_MAP = {
   "Audit-Report-FLRA-Use-of-Government-Vehicles-Nov-20-2003": datetime.datetime(2003, 11, 20),
 
   # Internal Reviews
+  "final-data-ac-t-reportfina-loct-17-2016-er-17-03": datetime.datetime(2016, 10, 17),
   "ER-16-02": datetime.datetime(2016, 2, 3),
   "ER-15-02": datetime.datetime(2015, 2, 6),
   "ER-14-02": datetime.datetime(2014, 2, 11),
