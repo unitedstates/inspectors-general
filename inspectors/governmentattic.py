@@ -133,7 +133,7 @@ for line in GOVATTIC_MAPPING.splitlines():
   (ga_category,ga_agency,ig_short,ig_url,ig_slug) = line.strip().split(',')
   GOVATTIC_MAPPING_DICT[(ga_category,ga_agency)] = (ig_short,ig_url,ig_slug)
 
-DATE_RE = re.compile('\[(?:.*\s-?|)(\d{2})-+(\w{3,12})-+(\d{4})')
+DATE_RE = re.compile('\[(?:.*\s-?|)(\d{2})[- ]+(\w{3,12})-+(\d{4})')
 
 
 def remove_linebreaks(s):
