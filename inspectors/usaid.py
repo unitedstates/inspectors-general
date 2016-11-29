@@ -40,6 +40,8 @@ def run(options):
     for page in range(0, 999):
       url = report_url_format.format(page=page)
       doc = utils.beautifulsoup_from_url(url)
+      if report_type == "audit" and page == 0 and not doc.select("div.views-field-field-auditreport-doc-1"):
+        raise Exception("Report number CSS class has changed")
       results = doc.select("li.views-row")
       if not results:
         if page == 0:
@@ -105,7 +107,7 @@ def report_from(result, landing_url, report_type, year_range):
     return
 
   try:
-    report_id_text = result.select("div.views-field-field-auditreport-doc-data")[0].text.strip()
+    report_id_text = result.select("div.views-field-field-auditreport-doc-1")[0].text.strip()
     report_id = "-".join(report_id_text.replace("/", "-").replace(":", "").split())
   except IndexError:
     report_id = None
