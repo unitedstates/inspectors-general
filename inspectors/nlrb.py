@@ -133,7 +133,8 @@ def semiannual_report_from(result, year_range):
 
   title = "Semiannual report - {}".format(link.text.strip())
 
-  published_on_text = link.text.split("-")[-1].strip().replace(".pdf", "")
+  link_text = inspector.sanitize(link.text)
+  published_on_text = link_text.split("-")[-1].strip().replace(".pdf", "")
   published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
   if published_on.year not in year_range:
