@@ -58,6 +58,7 @@ REPORT_PUBLISHED_MAPPING = {
   "financial06": datetime.datetime(2006, 11, 15),
   "financial05": datetime.datetime(2005, 11, 10),
   "financial04": datetime.datetime(2004, 12, 16),
+  "IGStatementonFECManagementandPerformanceChallenges-2016-Final": datetime.datetime(2016, 10, 19),
   "RootCausesofLowEmployeeMoraleStudy-FinalReport-OIG-15-06": datetime.datetime(2016, 7, 1),
   "ManagementandPerformanceChallenges-2015-FinalReport": datetime.datetime(2015, 10, 16),
   "ReviewofCompletedCorrectiveActionsofFY2014FinancialStatementAudit-December2014_000": datetime.datetime(2014, 12, 9),
@@ -127,7 +128,8 @@ def report_from(result, year_range, report_type, title_prefix=None):
   published_on = None
   if report_url.endswith(".pdf"):
     # Inline report
-    title = result.contents[0].strip().rstrip("-").strip()
+    title = inspector.sanitize(result.contents[0].strip().rstrip("-"))
+    title = re.sub("\\s+", " ", title)
     if title.endswith(" 200") or title.endswith(" 201"):
       # some years are split up by a <span> tag
       title = title + result.contents[1].text
@@ -141,6 +143,12 @@ def report_from(result, year_range, report_type, title_prefix=None):
       published_on_text = doc.select("h3")[1].text.strip()
     published_on_text = published_on_text.replace("Period ending ", "")
     published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
+
+  if title == "November 2016" and report_url == "http://www.fec.gov/fecig/documents/OIGSemiannualReporttoCongress-May2016-FinalPublicDistribution.pdf":
+    # Fix copy-paste error
+    report_url = "http://www.fec.gov/fecig/documents/OIGFall2016SARFINAL.pdf"
+    report_filename = report_url.split("/")[-1]
+    report_id, extension = os.path.splitext(report_filename)
 
   if not published_on:
     if report_id in REPORT_PUBLISHED_MAPPING:
