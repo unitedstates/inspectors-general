@@ -446,7 +446,7 @@ def decrypt_pdf(source_path, destination_path):
                            destination_path], shell=False)
     return True
   except subprocess.CalledProcessError as exc:
-    logging.warn("Error decrypting :\n\n%s" %
+    logging.warn("Error decrypting {}:\n\n%s" %
                  (source_path, format_exception(exc)))
     return False
 
