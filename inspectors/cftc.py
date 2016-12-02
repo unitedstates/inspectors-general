@@ -23,6 +23,7 @@ REPORT_PUBLISHED_MAPPING = {
   "oigocoaudit2014": datetime.datetime(2014, 5, 1),
   "oigcommentletter042214": datetime.datetime(2014, 4, 22),
   "oig_auditruleenforcementreview": datetime.datetime(2015, 8, 5),
+  "oig_rrcp2016": datetime.datetime(2016, 10, 11),
   "oig_ipera2015": datetime.datetime(2016, 5, 16),
   "oig_pensionawardsaudit": datetime.datetime(2015, 9, 24),
   "2016finstatementaudit": datetime.datetime(2016, 11, 17),
