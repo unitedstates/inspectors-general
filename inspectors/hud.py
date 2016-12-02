@@ -189,6 +189,9 @@ def run(options):
         # If two reports have the same number, and their landing pages differ
         # by only an extra -0 added at the end, take the one without the -0
         continue
+      dupe_key_2 = (key[0], key[1][:-2] + "-not")
+      if dupe_key_2 in all_reports:
+        continue
     inspector.save_report(report)
 
   archives_page = utils.beautifulsoup_from_url(ARCHIVES_URL)
