@@ -87,6 +87,9 @@ def report_from(result, report_type, base_url, year_range):
   if report_url == AUDIT_REPORTS_ARCHIVE_URL:
     return
 
+  if report_id == "OIG-F-21-17-01" and "Management Letter" in title:
+    report_id += "-Management-Letter"
+
   title = title.strip()
 
   published_on = None
