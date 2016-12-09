@@ -30,6 +30,7 @@ REPORT_URLS = {
 }
 
 REPORT_PUBLISHED_MAP = {
+  "17-01": datetime.datetime(2016, 12, 6),
   "16-01": datetime.datetime(2015, 10, 26),
   "16-02": datetime.datetime(2015, 10, 21),
   "16-03": datetime.datetime(2015, 12, 23),
