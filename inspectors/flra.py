@@ -87,6 +87,7 @@ REPORT_PUBLISHED_MAP = {
   "Audit-Report-FLRA-Use-of-Government-Vehicles-Nov-20-2003": datetime.datetime(2003, 11, 20),
 
   # Internal Reviews
+  "ER-17-02": datetime.datetime(2016, 12, 1),
   "final-data-ac-t-reportfina-loct-17-2016-er-17-03": datetime.datetime(2016, 10, 17),
   "ER-16-02": datetime.datetime(2016, 2, 3),
   "ER-15-02": datetime.datetime(2015, 2, 6),
