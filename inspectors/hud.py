@@ -408,6 +408,10 @@ def report_from_archive(result, state_name, landing_url, year_range):
   if not published_on:
     raise Exception("Could not find audit report date on %s\n%s" % (landing_url, result.contents[:5]))
 
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % landing_url)
+    return
+
   title_raw = re.sub("\s+", " ", result.h3.text)
   title = ARCHIVE_TITLE_RE.match(title_raw).group(1)
   summary = '\n'.join([re.sub("\s+", " ", p.text).strip()
