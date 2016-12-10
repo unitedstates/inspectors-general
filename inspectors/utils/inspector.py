@@ -231,12 +231,12 @@ class ReportIdCache:
               if report_id_disk in self.disk[inspector]:
                 year_last = self.disk[inspector][report_id_disk]
                 msg = "[%s] Duplicate report_id: %s is saved under %d and %d" %\
-                        (scraper,
+                        (inspector,
                         report_id_disk,
                         year_last,
                         year_disk)
                 print(msg)
-                admin.log_duplicate_id(scraper, report_id_disk, msg)
+                admin.log_duplicate_id(inspector, report_id_disk, msg)
               self.disk[inspector][report_id_disk] = year_disk
 
   def add(self, inspector, report_id, report_year, scraper):
