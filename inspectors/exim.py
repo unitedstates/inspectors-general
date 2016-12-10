@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 from datetime import datetime
 from urllib.parse import urljoin
 import os.path
@@ -11,7 +11,6 @@ archive = 2007
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  published_on = None
   for page_url in URLS:
     doc = utils.beautifulsoup_from_url(page_url)
 
@@ -44,17 +43,36 @@ def run(options):
       # Response letters don't get their own date heading -- keep date from
       # last report and reuse in those cases
       temp = DATE_RE.search(all_text)
+      published_on = None
       if temp:
         date_text = temp.group(0).replace("Sept ", "Sep ")
         try:
           published_on = datetime.strptime(date_text, '%B %d, %Y')
         except ValueError:
+          pass
+        if published_on is None:
+          try:
+            published_on = datetime.strptime(date_text, '%b %d, %Y')
+          except ValueError:
+            pass
+        if published_on is None:
+          try:
+            published_on = datetime.strptime(date_text, '%b %d,%Y')
+          except ValueError:
+            pass
+      if published_on is None:
+        date_text = paragraph.find_previous_sibling("p").text.strip()
+        date_text = date_text.replace("Sept ", "Sep ")
+        try:
           published_on = datetime.strptime(date_text, '%b %d, %Y')
-      if (published_on is None) or (published_on.year not in year_range):
+        except ValueError:
+          pass
+      if published_on and published_on.year not in year_range:
         continue
 
       report = report_from(all_text, a_text, a_href, page_url, published_on, paragraph)
-      inspector.save_report(report)
+      if report:
+        inspector.save_report(report)
 
 def report_from(all_text, link_text, link_url, page_url, published_on, paragraph):
   report = {
@@ -88,6 +106,10 @@ def report_from(all_text, link_text, link_url, page_url, published_on, paragraph
     raise Exception("No report ID found for %r" % link_text)
   # clip report_id if it gets too long
   report_id = report_id[:100]
+
+  if published_on is None:
+    admin.log_no_date("exim", report_id, link_text, link_url)
+    return
 
   if link_url.endswith(".pdf"):
     file_type = "pdf"
@@ -147,7 +169,7 @@ URLS = (
 DATE_RE = re.compile("(January|February|March|April|May|June|July|August|" +
                     "September|October|November|December|" +
                     "Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)" +
-                    "\\s+([123]?[0-9]),\\s+" +
+                    "\\s+([123]?[0-9]),\\s*" +
                     "(20[0-9][0-9])")
 
 IDENTIFIER_RE_TEXT = re.compile("\( ?(OIG[- ][A-Z]{2,3}-[0-9]{2}-[0-9]{2}[A-Z]?)\)")
