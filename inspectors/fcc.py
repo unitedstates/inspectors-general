@@ -121,8 +121,8 @@ def report_from(result, page_url, year_range):
 
 def semiannual_report_from(result, page_url, year_range):
   tds = result.find_all("td")
-  if len(tds) == 1:
-    # Title row, with colspan
+  if len(tds) <= 1:
+    # Title row, with colspan, or degenerate row
     return
   if tds[0]["align"] == "center":
     # Column headers
