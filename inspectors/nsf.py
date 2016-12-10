@@ -16,18 +16,14 @@ archive = 1989
 #   standard since/year options for a year range to fetch from.
 #
 # Notes for IG's web team:
-# - https://www.nsf.gov/oig/search/ encounters an error when using https.
-# while it works if just using http.
-
-# This needs to be HTTP, see note to IG Web team
-CASE_REPORTS_URL = "http://www.nsf.gov/oig/case-closeout/results.jsp"
 
 AUDIT_REPORTS_URL = "https://www.nsf.gov/oig/reports/reviews.jsp"
 SEMIANNUAL_REPORTS_URL = "https://www.nsf.gov/oig/reports/semiannual.jsp"
 TESTIMONY_REPORTS_URL = "https://www.nsf.gov/oig/testimony.jsp"
 
+CASE_REPORTS_URL = "https://www.nsf.gov/oig/case-closeout/results.jsp"
 CASE_REPORTS_DATA = {
-  'sortby': 'rpt_num',
+  'sortAll': 'cn',
   'sballfrm': 'Search',
 }
 
