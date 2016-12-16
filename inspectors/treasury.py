@@ -146,6 +146,7 @@ def clean_text(text):
 
 SUMMARY_RE = re.compile("(OIG|OIG-CA|EVAL) *-? *([0-9]+) *- *([0-9R]+) *[:,]? +([^ ].*)")
 SUMMARY_FALLBACK_RE = re.compile("([0-9]+)-(OIG)-([0-9]+) *:? *(.*)")
+FILENAME_RE = re.compile("^(OIG-[0-9]+-[0-9]+)\\.pdf")
 
 def audit_report_from(result, page_url, year_range):
   if not clean_text(result.text):
@@ -200,7 +201,12 @@ def audit_report_from(result, page_url, year_range):
     report_id = "OIG-16-001-resolution"
     title = report_summary
   else:
-    raise Exception("Couldn't parse report ID: %s" % repr(report_summary))
+    try:
+      filename_match = FILENAME_RE.match(os.path.basename(result.a["href"]))
+      report_id = filename_match.group(1)
+      title = report_summary
+    except (ValueError, IndexError, AttributeError):
+      raise Exception("Couldn't parse report ID: %s" % repr(report_summary))
 
   if report_id == 'OIG-15-015' and \
       'Financial Statements for hte Fiscal Years 2014 and 2013' in title:
