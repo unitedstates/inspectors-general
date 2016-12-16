@@ -26,6 +26,7 @@ REPORT_URLS = {
 }
 
 REPORT_PUBLISHED_MAP = {
+  "strengthening_the_ftc_ethics_program": datetime.datetime(2016, 9, 27),
   "final_oig_fy_2016_management_challenges_with_transmittal_memo_10-17-2016": datetime.datetime(2016, 10, 17),
   "oig_evaluation_of_ftcs_it_governance_practices_10-5-16": datetime.datetime(2016, 9, 30),
   "oig_redacted_report_on_ftc_covered_systems_required_by_the_cybersecurity_-_aug2016": datetime.datetime(2016, 8, 12),
