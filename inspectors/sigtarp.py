@@ -31,7 +31,7 @@ def run(options):
   # Pull the reports
   for report_type, report_url in REPORT_URLS:
     doc = utils.beautifulsoup_from_url(report_url)
-    results =  doc.select("td.mainInner div.ms-WPBody li")
+    results =  doc.select("td.mainInner div.ms-WPBody > div > ul > li")
 
     if not results:
       raise inspector.NoReportsFoundError("SIGTARP (%s)" % report_url)
@@ -52,8 +52,8 @@ def report_from(result, report_type, year_range):
   published_on_text = result.select("div.custom_date")[0].text.lstrip("-")
   if published_on_text == "":
     match = LINK_RE.match(result_link.text.strip())
-    title = match.group(1)
     published_on_text = match.group(2)
+    title = result.find("div", class_="groupheader").text.strip()
   published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
   if published_on.year not in year_range:
