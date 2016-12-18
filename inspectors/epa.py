@@ -218,6 +218,11 @@ def report_from_table(tds, published_on_dt, base_url):
   else:
     report['url'] = report_url
 
+  if report_id == "report-report-compliance-government-auditing-standards-audit-epas-fiscal":
+    if published_on == "2005-11-09":
+      # This report appears under both 2005 and 2006, skip this one
+      return
+
   return report
 
 def report_from_list(li, published_on_dt, base_url):
