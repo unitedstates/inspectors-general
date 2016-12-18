@@ -222,6 +222,10 @@ def report_from_table(tds, published_on_dt, base_url):
     if published_on == "2005-11-09":
       # This report appears under both 2005 and 2006, skip this one
       return
+  elif report_id == "2002-M-000013":
+    if published_on == "2002-06-06":
+      # There are two rows for this report, skip one
+      return
 
   return report
 
