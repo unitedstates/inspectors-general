@@ -3,6 +3,7 @@
 import datetime
 import logging
 import os
+import re
 
 from utils import utils, inspector
 
@@ -21,6 +22,8 @@ REPORT_URLS = [
   ("audit", "https://www.sigtarp.gov/pages/auditrc.aspx"),
   ("audit", "https://www.sigtarp.gov/pages/engmem.aspx"),
 ]
+
+LINK_RE = re.compile("^([A-Za-z ]+) \\(([A-Z][a-z]+ [0-9]+, [0-9]+)\\)$")
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -47,6 +50,10 @@ def report_from(result, report_type, year_range):
   report_id, extension = os.path.splitext(report_filename)
 
   published_on_text = result.select("div.custom_date")[0].text.lstrip("-")
+  if published_on_text == "":
+    match = LINK_RE.match(result_link.text.strip())
+    title = match.group(1)
+    published_on_text = match.group(2)
   published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
   if published_on.year not in year_range:
