@@ -49,6 +49,7 @@ REPORT_PUBLISHED_MAP = {
   "EvalMLSA": datetime.datetime(2005, 11, 1),
   "fraud-alert-16-01": datetime.datetime(2015, 10, 19),
   "15-029": datetime.datetime(2015, 9, 30),
+  "17-01": datetime.datetime(2016, 12, 20),
   "16-10": datetime.datetime(2016, 9, 30),
   "16-09": datetime.datetime(2016, 9, 27),
   "16-08": datetime.datetime(2016, 9, 28),
