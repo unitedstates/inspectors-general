@@ -81,7 +81,7 @@ By default, the `igs` script runs all scrapers. It takes the following arguments
 
 #### Using the data
 
-Reports are broken up by IG, and by year. So a USPS IG report from 2013 with a scraper-determined ID of `no-ar-13-010` will create the following files:
+Reports are broken up by IG and by year. So a USPS IG report from 2013 with a scraper-determined ID of `no-ar-13-010` will create the following files:
 
 ```
 /data/usps/2013/no-ar-13-010/report.json
