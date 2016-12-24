@@ -20,11 +20,11 @@ archive = 2009   #OSC began posting public files in 2009
 REPORTS_URL = 'https://osc.gov/Pages/PublicFiles-FY%s.aspx' # sub in a four-digit year for %s
 
 REPORT_TYPES = ( #there can be multiple files within each type. The integer is the index of the column these appear in the table.
-    (6,'Letter to President'), 
-    (7,'Analysis'), 
+    (6,'Letter to President'),
+    (7,'Analysis'),
     (8,'Agency Report'),
     (9,'Whistleblower Comments'),
-    (10,'Unknown'),   #These lines are a hack for 3 or 4 cases in 2009, when cells were sometimes sub-divided horizontally 
+    (10,'Unknown'),   #These lines are a hack for 3 or 4 cases in 2009, when cells were sometimes sub-divided horizontally
     (11,'Unknown'),   #instead of stacking multiple PDFs vertically with <br/>s. So this just handles a few cases where there are two
                       #extra columns that might have PDFs in them
 
@@ -41,7 +41,7 @@ OUTCOME_CODES = { #there can be several for each case
   '40':    'Referral of criminal matter to the Attorney General',
   '50':    'Other actions',
   '60':    'Totally unsubstantiated',
-  '70':    'Cost Savings to the Government',    
+  '70':    'Cost Savings to the Government',
   '80':    'Improved Health and/or Safety',
   '90':    'Special Counsel found report not reasonable'
 }
@@ -67,7 +67,7 @@ def run(options):
   for year in year_range:
     html = utils.download(REPORTS_URL % year, scraper_slug="osc")
     #  spaces appear as &#160; and \u200b .... fix that now
-    html = html.replace('&#160;',' ').replace('\u200b',' ').replace('\u00a0',' ').replace('\r','').replace('\n','') 
+    html = html.replace('&#160;',' ').replace('\u200b',' ').replace('\u00a0',' ').replace('\r','').replace('\n','')
     doc = BeautifulSoup(html, "lxml")
 
     OUTCOME_CODES = generate_outcome_codes(doc)
@@ -80,7 +80,7 @@ def run(options):
       for report in reports:
         if report['report_id'] not in keys_used:
           inspector.save_report(report)
-          keys_used.append(report['report_id'])    
+          keys_used.append(report['report_id'])
 
 previous_report = None #global variable to let us see the previous row in case the following one needs to reference it
 
@@ -92,7 +92,7 @@ def report_from(result, year, year_range,OUTCOME_CODES):
   OSC File     #    part 1
   OSC File     #    part 2
   Agency       #   not standardized, may be formatted different ways or include subagency name in different ways
-  Location    
+  Location
   Date Closed  #   03-27-2015
   Result Code  #   comma-separated numbers mapping to one or more OUTCOME_CODES above describing the results of the probe
   Ltr to Pres  #   One or more PDFs
@@ -109,7 +109,7 @@ def report_from(result, year, year_range,OUTCOME_CODES):
   case_num_short = cells[0].text.strip() #ID is sufficiently unique for one group of PDFs (row in the table)
 
   if len(cells)<10 or case_num_short=='': #there are a few gnarly colspan=2s that throw things off
-    return fix_partial_row(cells,previous_report)    
+    return fix_partial_row(cells,previous_report)
 
   case_num_long = cells[1].text.strip() #There can be one or more case_nums for one group of PDFs (row in the table) but they do not uniquely identify individual PDFs any better than ID
   agency_name = cells[2].text.strip()
@@ -122,7 +122,7 @@ def report_from(result, year, year_range,OUTCOME_CODES):
     published_on = datetime.datetime(year,1,1)
 
   results = cells[5].text
-  result_codes = [OUTCOME_CODES[x.strip()] for x in results.split(',') if x.strip() in OUTCOME_CODES] 
+  result_codes = [OUTCOME_CODES[x.strip()] for x in results.split(',') if x.strip() in OUTCOME_CODES]
 
   landing_url = REPORTS_URL % year
 
@@ -137,32 +137,32 @@ def report_from(result, year, year_range,OUTCOME_CODES):
   for (column_index,report_type) in REPORT_TYPES:
     if column_index>=len(cells): continue
     pdfs = cells[column_index].findAll('a')
-    #there might be multiple PDFs per cell (if whistleblowers gave comments in two parts, or there is a supplemental report, etc)    
+    #there might be multiple PDFs per cell (if whistleblowers gave comments in two parts, or there is a supplemental report, etc)
     for i,pdf_link in enumerate(pdfs):
       report_url = 'https://osc.gov%s' % pdf_link['href']
       if not main_letter_url: main_letter_url = report_url
       #extra_descrip is the short blurb of text that appears above the PDF icon when there is more than one PDF in a cell
-      extra_descrip = get_extra_descrip(pdf_link) 
+      extra_descrip = get_extra_descrip(pdf_link)
 
       #OSC reports don't have descriptive titles, so make one from the other fields
-      title = '%s | %s | %s | %s' % (agency_name, location, case_num_short, report_type) 
-      if extra_descrip!='': 
+      title = '%s | %s | %s | %s' % (agency_name, location, case_num_short, report_type)
+      if extra_descrip!='':
         try:
           title = title+' | '+extra_descrip
         except:
           pass
-      
+
       #make a unique id out of the PDF URL
       report_id = make_report_id(pdf_link['href'])
 
       report = {
-        'inspector': 'osc',                 
+        'inspector': 'osc',
         'inspector_url': 'https://osc.gov', # The IG's primary website URL.
         'agency': 'OSC',                    # This will always be OSC since the report's target investigation isn't standardized in any way
         'agency_name': agency_name,         # This, on the other hand, will be the name of the agency, department or office that the OSC report is about
-        'report_id': report_id,             
-        'url': report_url,                  
-        'title': title,                     
+        'report_id': report_id,
+        'url': report_url,
+        'title': title,
         'type': report_type,                # Letter to president, Analysis, etc., from tuple above
         'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),  # Date of publication
         'landing_url': landing_url,          # The OSC web page listing investigations for the year this one occurred
@@ -195,7 +195,7 @@ def get_extra_descrip(pdf_link):
     except:
       return False
 
-  extra_descrip = '' 
+  extra_descrip = ''
 
   previous_element = pdf_link
   keepchecking = True
@@ -206,8 +206,8 @@ def get_extra_descrip(pdf_link):
       keepchecking = False
       break
     element_string = str(previous_element).strip()
-    if element_string.startswith('<a '): 
-      keepchecking=False      
+    if element_string.startswith('<a '):
+      keepchecking=False
     elif element_string!='' and not element_string.startswith('<'):
       extra_descrip = element_string + ' ' + extra_descrip
 
@@ -222,19 +222,19 @@ def fix_partial_row(cells,previous_report):
   report = previous_report
 
   title_chunks = report['title'].split(' | ')
-  location = title_chunks[1] 
+  location = title_chunks[1]
 
   for cell in cells:
-    for a in cell.findAll('a'): 
+    for a in cell.findAll('a'):
       if not a['href'].upper().endswith('.PDF'): continue
 
-      title = '%s | %s | %s | %s' % (report['agency_name'], location, report['case_num_short'], 'Unknown')  
+      title = '%s | %s | %s | %s' % (report['agency_name'], location, report['case_num_short'], 'Unknown')
       report['url'] = 'https://osc.gov%s' % a['href']
       report['report_id'] = make_report_id(a['href'])
       report['type'] = 'Unknown'
       extra_descrip = get_extra_descrip(a)
 
-      if extra_descrip!='': 
+      if extra_descrip!='':
         try:
           title = title+' | '+extra_descrip
         except:
@@ -242,7 +242,7 @@ def fix_partial_row(cells,previous_report):
       report['title'] = title
 
       reports.append(report)
-      previous_report = report        
+      previous_report = report
 
   return reports
 

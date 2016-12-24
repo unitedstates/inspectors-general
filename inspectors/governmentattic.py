@@ -7,7 +7,7 @@ import re
 from utils import utils, inspector, admin
 
 """
-This file is different in that it doesn't scrape an IG's list of public documents, but rather scrapes the largest public 
+This file is different in that it doesn't scrape an IG's list of public documents, but rather scrapes the largest public
 repository of otherwise-secret IG reports that were obtained under FOIA -- governmentattic.org.
 
 This has the advantage of being a repeatable process that will sweep in PDFs that are otherwise collected
@@ -45,7 +45,7 @@ CATEGORIES_URL = 'http://www.governmentattic.org/DocumentsCat.html'
 
 #The below maps GovAttic's agency descriptors with inspectors-general's slugs.
 #It takes the format: ga_category,ga_agency,ig_short,ig_url,ig_slug
-#A GovAttic record will be ignored if it doesn't map to an IG that is in this repo. 
+#A GovAttic record will be ignored if it doesn't map to an IG that is in this repo.
 #This mapping was hand-coded based on this file:
 #https://raw.githubusercontent.com/konklone/oversight.garden/master/config/inspectors.json
 
@@ -153,7 +153,7 @@ def run(options):
     doc = utils.beautifulsoup_from_url(category_link['href'])
     agency = ''
     for result in doc.findAll('p'):
-      if result.font and result.font.get('color')=="#993333": 
+      if result.font and result.font.get('color')=="#993333":
         #this is an agency name
         agency = remove_linebreaks(result.font.text).strip()
       else:
@@ -161,7 +161,7 @@ def run(options):
         report = report_from(result, category_name, agency, year_range)
         if report:
           inspector.save_report(report)
-        
+
 
 # extract a dict of details that are ready for inspector.save_report().
 def report_from(result, category_name, agency, year_range):
@@ -174,7 +174,7 @@ def report_from(result, category_name, agency, year_range):
   (ig_short,ig_url,ig_slug) = GOVATTIC_MAPPING_DICT[(category_name,agency)]
 
   a = result.find('a')
-  if not a: 
+  if not a:
     #there's no link, so this must just be some explanatory text, such as the footer
     return
   report_url = a['href']
@@ -199,9 +199,9 @@ def report_from(result, category_name, agency, year_range):
     datestring = datestring.replace("-Sept-", "-Sep-")
     try:
       published_on = datetime.datetime.strptime(datestring, '%d-%b-%Y')
-    except:    
-      published_on = None    
-    if not published_on:    
+    except:
+      published_on = None
+    if not published_on:
       try:
         published_on = datetime.datetime.strptime(datestring, '%d-%B-%Y')
       except:
@@ -222,14 +222,14 @@ def report_from(result, category_name, agency, year_range):
 
   report = {
     'inspector': ig_slug,     # Store these with their natively-scraped counterparts, not in a govattic-specific place
-    'inspector_url': ig_url,  
+    'inspector_url': ig_url,
     'agency': ig_slug,        # Agency and IG slug will be the same
     'agency_name': ig_short,  # Take short name of the IG as the agency name. I think this should work.
-    'report_id': report_id,  
-    'url': report_url,  
-    'title': title,  
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
     'type': 'FOIA - GovernmentAttic.org', # Type of report (default to 'other')
-    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d") #date published to GovAttic, not released by IG  
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d") #date published to GovAttic, not released by IG
   }
 
   return report
