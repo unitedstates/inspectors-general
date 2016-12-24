@@ -7,6 +7,7 @@ sudo: false
 
 cache: pip
 install:
+  - pip install --upgrade pip wheel
   - pip install -r requirements.txt
   - pip install pyflakes pylint
 
