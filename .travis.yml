@@ -5,6 +5,7 @@ python:
 # use docker containers, faster
 sudo: false
 
+cache: pip
 install:
   - pip install -r requirements.txt
   - pip install pyflakes pylint
