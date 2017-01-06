@@ -21,9 +21,8 @@ RE_DATE = re.compile('(?:(?:Jan|January|JANUARY|Feb|February|FEBRUARY|Mar|'
                      '[0-9]{2}/[0-9]{2}/[0-9]{4}')
 BASE_URL = "https://www.epa.gov/office-inspector-general/"
 REPORTS_LATEST_URL = BASE_URL + "oig-reports"
-REPORTS_YEAR_URL_FORMAT = BASE_URL + "%d-reports"
+REPORTS_YEAR_URL_FORMAT = BASE_URL + "%d-oig-reports"
 REPORTS_1999_1996_URL = BASE_URL + "1999-1996-reports"
-REPORTS_2015_URL = BASE_URL + "2015-oig-reports"
 DATE_FORMATS = [
   '%b %d, %Y',
   '%B %d, %Y',
@@ -69,6 +68,8 @@ def run(options):
         if not tds:
           continue
         if RE_YEAR.match(tds[0].text):
+          continue
+        if "".join(td.text for td in tds).strip() == "":
           continue
         report_seen_flag = True
 
@@ -319,8 +320,6 @@ def years_to_index_urls(year_range):
   for year in year_range:
     if year <= 1999:
       urls.add(REPORTS_1999_1996_URL)
-    elif year == 2015:
-      urls.add(REPORTS_2015_URL)
     elif year >= _latest_year:
       pass
     else:
