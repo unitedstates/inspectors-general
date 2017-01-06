@@ -62,10 +62,19 @@ def generate_outcome_codes(doc):
 
 def run(options):
   year_range = inspector.year_range(options, archive)
+  report_flag = False
 
   # Pull the table of reports for each year
   for year in year_range:
-    html = utils.download(REPORTS_URL % year, scraper_slug="osc")
+    url = REPORTS_URL % year
+    html = utils.download(url, scraper_slug="osc")
+
+    if html is None:
+      if year == max(year_range):
+        continue
+      else:
+        raise Exception("Couldn't fetch reports page {}".format(url))
+
     #  spaces appear as &#160; and \u200b .... fix that now
     html = html.replace('&#160;',' ').replace('\u200b',' ').replace('\u00a0',' ').replace('\r','').replace('\n','')
     doc = BeautifulSoup(html, "lxml")
@@ -81,6 +90,10 @@ def run(options):
         if report['report_id'] not in keys_used:
           inspector.save_report(report)
           keys_used.append(report['report_id'])
+          report_flag = True
+
+  if not report_flag:
+    raise inspector.NoReportsFoundError("OSC")
 
 previous_report = None #global variable to let us see the previous row in case the following one needs to reference it
 
