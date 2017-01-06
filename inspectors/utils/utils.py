@@ -25,6 +25,7 @@ logging.getLogger("pdfrw").setLevel(logging.CRITICAL)
 import scrapelib
 scraper = scrapelib.Scraper(requests_per_minute=120, retry_attempts=3)
 scraper.user_agent = "unitedstates/inspectors-general (https://github.com/unitedstates/inspectors-general)"
+scraper.timeout = 60
 
 class Soft404HttpAdapter(requests.adapters.HTTPAdapter):
   """Transport adapter that checks all responses against a blacklist of "file
