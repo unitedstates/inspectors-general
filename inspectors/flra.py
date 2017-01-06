@@ -31,8 +31,8 @@ REPORT_URLS = [
   ("peer_review", PEER_REVIEWS_URL),
 ]
 
-REPORT_ID_RE_1 = re.compile("\\(([A-Z]{2}-[0-9]{2}-[0-9]{2})\\)|Report (?:Number|No\\.)\\s+((?:[A-Z]{2,3}-)?[0-9]{2}-[0-9]{2})")
-REPORT_ID_RE_2 = re.compile("^((?:[A-Z]{2,3}-)?[0-9]{2}-[0-9]{2})")
+REPORT_ID_RE_1 = re.compile("\\(([A-Z]{2}-[0-9]{2}-[0-9]{2}[A-Z]?)\\)|Report (?:Number|No\\.)\\s+((?:[A-Z]{2,3}-)?[0-9]{2}-[0-9]{2}[A-Z]?)")
+REPORT_ID_RE_2 = re.compile("^((?:[A-Z]{2,3}-)?[0-9]{2}-[0-9]{2}[A-Z]?)")
 
 REPORT_PUBLISHED_MAP = {
   # Peer Review Reports
@@ -139,6 +139,7 @@ REPORT_PUBLISHED_MAP = {
 
 def run(options):
   year_range = inspector.year_range(options, archive)
+  keys = set()
 
   # Pull the reports
   for report_type, url in REPORT_URLS:
@@ -148,7 +149,13 @@ def run(options):
       for result in results:
         report = report_from_list(result, url, report_type, year_range)
         if report:
-          inspector.save_report(report)
+          if report["url"]:
+            key = (report["report_id"], unquote(report["url"]))
+          else:
+            key = (report["report_id"], report["url"])
+          if key not in keys:
+            inspector.save_report(report)
+            keys.add(key)
     else:
       results = doc.select("section#content p")
       if not results:
@@ -156,9 +163,13 @@ def run(options):
       for result in results:
         report = report_from_paragraph(result, url, report_type, year_range)
         if report:
-          inspector.save_report(report)
+          key = (report["report_id"], report["url"])
+          if key not in keys:
+            inspector.save_report(report)
+            keys.add(key)
 
 def report_from_paragraph(result, landing_url, report_type, year_range):
+  missing = False
   text = result.text.strip()
   if not text:
     return
@@ -193,7 +204,9 @@ def report_from_paragraph(result, landing_url, report_type, year_range):
     report_id = "-".join(title.split())
     report_id = report_id.replace(":", "")
 
-  if 'Non-Public Report' in title:
+  if ('Non-Public Report' in title or
+      'Non -Public Report' in title or
+      'Non Public Report' in title):
     unreleased = True
 
   if result.a:
@@ -224,6 +237,11 @@ def report_from_paragraph(result, landing_url, report_type, year_range):
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
+  if published_on.year <= 2011 and not unreleased and not report_url:
+    # Some older reports aren't posted
+    unreleased = True
+    missing = True
+
   report = {
     'inspector': 'flra',
     'inspector_url': 'https://www.flra.gov/components-offices/offices/office-inspector-general',
@@ -241,9 +259,12 @@ def report_from_paragraph(result, landing_url, report_type, year_range):
   if unreleased:
     report['unreleased'] = unreleased
     report['landing_url'] = landing_url
+  if missing:
+    report['missing'] = missing
   return report
 
 def report_from_list(result, landing_url, report_type, year_range):
+  missing = False
   title = result.text.strip()
 
   report_id = None
@@ -265,6 +286,8 @@ def report_from_list(result, landing_url, report_type, year_range):
     # Some reports have incorrect relative paths
     relative_report_url = link.get('href').replace("../", "")
     report_url = urljoin(landing_url, relative_report_url)
+    if report_url == "https://www.flra.gov/system/files/webfm/Inspector%20General/FLRA%20IPERA%20Compliance%202011.pdf" and report_id == "ER-12-02":
+      report_url = "https://www.flra.gov/system/files/webfm/Inspector%20General/IPERA%20March%202012.pdf"
     if not report_id:
       report_filename = report_url.split("/")[-1]
       report_id, _ = os.path.splitext(report_filename)
@@ -288,6 +311,11 @@ def report_from_list(result, landing_url, report_type, year_range):
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
+  if published_on.year <= 2011 and not unreleased and not report_url:
+    # Some older reports aren't posted
+    unreleased = True
+    missing = True
+
   report = {
     'inspector': 'flra',
     'inspector_url': 'https://www.flra.gov/components-offices/offices/office-inspector-general',
@@ -305,6 +333,8 @@ def report_from_list(result, landing_url, report_type, year_range):
   if unreleased:
     report['unreleased'] = unreleased
     report['landing_url'] = landing_url
+  if missing:
+    report['missing'] = missing
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
