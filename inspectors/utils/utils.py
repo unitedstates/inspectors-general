@@ -5,7 +5,6 @@ import logging
 import yaml
 from bs4 import BeautifulSoup
 from datetime import datetime
-import ssl
 import requests
 import urllib.parse
 import io
@@ -90,34 +89,29 @@ scraper.mount("http://ncua.gov/", Soft404HttpAdapter())
 scraper.mount("http://www.si.edu/", Soft404HttpAdapter())
 scraper.mount("http://si.edu/", Soft404HttpAdapter())
 
-# Temporary workaround for versions of requests that don't support RC4 by
-# default, but have no API to change it.
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = ssl._DEFAULT_CIPHERS
+class CipherListAdapter(requests.adapters.HTTPAdapter):
+  def __init__(self, ciphers):
+    self.ciphers = ciphers
+    super(CipherListAdapter, self).__init__()
 
-class Tls1HttpAdapter(requests.adapters.HTTPAdapter):
-  """Transport adapter that forces use of TLS 1.0. The SBA server is behind a
-  broken F5 middlebox that can't handle TLS handshakes longer than 256 bytes
-  and shorter than 512 bytes. OpenSSL 1.0.1g includes a workaround, (the TLS
-  padding extension) but earlier versions will trigger the bug when using
-  TLS 1.2."""
+  def init_poolmanager(self, num_pools, maxsize, block=False, *args, **kwargs):
+    context = requests.packages.urllib3.util.ssl_.create_urllib3_context(
+        ciphers=self.ciphers
+    )
+    kwargs["ssl_context"] = context
+    self.poolmanager = requests.packages.urllib3.poolmanager.PoolManager(
+        num_pools=num_pools,
+        maxsize=maxsize,
+        block=block,
+        *args,
+        **kwargs
+    )
 
-  def init_poolmanager(self, connections, maxsize, block=False):
-    self.poolmanager = requests.packages.urllib3.poolmanager.PoolManager\
-      (num_pools=connections,
-       maxsize=maxsize,
-       block=block,
-       ssl_version=ssl.PROTOCOL_TLSv1)
-
-scraper.mount("https://www.sba.gov/", Tls1HttpAdapter())
-
-# ARC also needs TLS 1.0, though not due to the length of the raw handshake
-# record. The ARC server or middlebox only supports one cipher suite,
+# The ARC server or middlebox only supports one cipher suite,
 # DES-CBC3-SHA, and it also needs it to be sufficiently far forward in the
-# cipher suite list. Using TLS 1.0 cuts down on the number of available cipher
-# suites, thus ensuring that DES-CBC3-SHA is far enough forward.
+# cipher suite list.
 # (as of 9/8/2016)
-scraper.mount("https://www.arc.gov/", Tls1HttpAdapter())
-scraper.mount("http://www.arc.gov/", Tls1HttpAdapter())
+scraper.mount("https://www.arc.gov/", CipherListAdapter("DES-CBC3-SHA"))
 
 WHITELIST_INSECURE_DOMAINS = (
   "https://www.ignet.gov/",  # incomplete chain as of 1/25/2015

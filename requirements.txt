@@ -3,7 +3,7 @@ scrapelib>=0.10.0
 BeautifulSoup4
 pyyaml
 lxml
-requests>=2.5.3
+requests>=2.12.0
 certifi>=2015.11.20.1
 python-docx
 pdfrw
