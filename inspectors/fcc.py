@@ -170,7 +170,12 @@ def other_report_from(result, page_url, year_range):
   else:
     title = result.find("span", class_="bodytextbold").text.strip()
 
-  links = [a["href"] for a in result.find_all("a")]
+  links = result.find_all("a")
+  if len(links) > 1:
+    temp = [a for a in links if "Statement" in a.previous_sibling]
+    if len(temp) == 1:
+      links = temp
+  links = [a["href"] for a in links]
   if len(links) == 0:
     raise Exception("Couldn't find link for {!r}".format(title))
   if len(links) > 1:
