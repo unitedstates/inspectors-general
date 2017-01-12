@@ -209,6 +209,9 @@ def other_report_from(result, page_url, year_range):
     'title': title,
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
+  if not extension:
+    if report_url.startswith("https://www.fcc.gov/"):
+      report['file_type'] = "html"
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
