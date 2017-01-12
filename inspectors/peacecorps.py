@@ -19,6 +19,16 @@ archive = 1989
 REPORTS_URL = "https://www.peacecorps.gov/about/inspector-general/reports/?page=%d"
 
 REPORT_PUBLISHED_MAPPING = {
+  "Case_Study_-_PC_Philippines_-_2006": datetime.datetime(2006, 9, 1),
+  "Case_Study_-_PC_Panama_-_2006": datetime.datetime(2006, 9, 1),
+  "Case_Study_-_PC_Paraguay_-_2006": datetime.datetime(2006, 9, 1),
+  "Case_Study_-_The_Counterparts_Perspective": datetime.datetime(2006, 9, 1),
+  "Case_Study_-_PC_Ukraine_-_2006": datetime.datetime(2006, 9, 1),
+  "Case_Study_-_PC_Georgia_-_2006": datetime.datetime(2006, 9, 1),
+  "Case_Study_-_PC_Honduras_-_2006": datetime.datetime(2006, 9, 1),
+  "Case_Study_-_PC_Malawi_-_2006": datetime.datetime(2006, 9, 1),
+  "Case_Study_-_PC_Mauritania_-_2006": datetime.datetime(2006, 9, 1),
+  "Case_Study_-_PC_Niger_-_2006": datetime.datetime(2006, 9, 1),
   "Death_Inquiry_and_Assessment_of_Medical_Care_in_Peace_Corps_Morocco": datetime.datetime(2010,2,1),
   "Burkina_Faso_Medical_Supply_Management_Advisory_Report": datetime.datetime(2013, 3, 14),
   "PCIG_Final_MAR_Certification_of_Volunteer_Payments": datetime.datetime(2013, 9, 24),
