@@ -98,6 +98,7 @@ REPORT_PUBLISHED_MAP = {
   "AR-10-01": datetime.datetime(2009, 11, 13),
   "AR-10-02": datetime.datetime(2009, 11, 15),
   "ER-10-01": datetime.datetime(2010, 1, 1),
+  "MC-10-01": datetime.datetime(2009, 10, 1),
   "AR-09-01": datetime.datetime(2009, 8, 14),
   "AR-09-02": datetime.datetime(2009, 7, 9),
   "Financial-Statement-Audit-for-Fiscal-Year-2007": datetime.datetime(2008, 2, 8),
