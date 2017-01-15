@@ -5,7 +5,7 @@ import logging
 import os
 from urllib.parse import urljoin
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # https://www.fdicig.gov
 archive = 1998
@@ -26,6 +26,33 @@ REPORTS_URL = "https://www.fdicig.gov/Search-Engine.asp"
 
 # Reports with this URL should be designated as missing
 GENERIC_MISSING_REPORT_URL = 'https://www.fdicig.gov/notice.pdf'
+
+RECORD_TYPE_BLACKLIST = set([
+  "FDIC OIG Hotline",
+  "GPRA page",
+  "Contact the OIG",
+  "OIG Organization",
+  "OIG Goals",
+  "FOIA",
+  "The Inspector General",
+  "OIG Publications",
+  "OIG Home Page",
+  "OIG Employment page",
+  "OIG Web Privacy Statement",
+  "FDIC OIG Hotline Privacy Statement",
+  "recently posted items",
+  "MLR Reports Page",
+])
+
+REPORT_PUBLISHED_MAPPING = {
+  "99oigpp": datetime.datetime(1998, 8, 1),
+  "Y2Koigpp": datetime.datetime(1999, 10, 19),
+  "01pp": datetime.datetime(2000, 9, 12),
+  "99sp1": datetime.datetime(1998, 10, 1),
+  "Invoices-Submitted-by-Lockheed-Martin-Services,-In": datetime.datetime(2016, 12, 20),
+  "OIG-Hotline-Complaints-Regarding-Employee-Travel": datetime.datetime(2016, 12, 15),
+  "FDIC's-Efforts-to-Ensure-SLA-Recoveries-Are-Identi": datetime.datetime(2016, 12, 6),
+}
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -93,6 +120,11 @@ def report_from(result, year_range):
     # so we skip this entry
     return None
 
+  report_type_text = result.select("td")[0].text
+  if report_type_text in RECORD_TYPE_BLACKLIST:
+    return
+  report_type = type_for_report(report_type_text)
+
   if report_url and report_url != GENERIC_MISSING_REPORT_URL:
     report_filename = report_url.split("/")[-1]
     report_id, extension = os.path.splitext(report_filename)
@@ -103,19 +135,23 @@ def report_from(result, year_range):
     report_id = "-".join(title.split())[:50]
     report_id = report_id.replace(":", "")
 
-  published_on_text = result.select("td")[2].text
-  try:
-    published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
-  except ValueError:
-    logging.debug("[%s] Skipping since all real reports have published dates and this does not" % report_url)
-    return
+  if report_id in REPORT_PUBLISHED_MAPPING:
+    published_on = REPORT_PUBLISHED_MAPPING[report_id]
+  else:
+    published_on_text = result.select("td")[2].text
+    try:
+      published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%Y')
+    except ValueError:
+      print(result)
+      if report_url:
+        admin.log_no_date("fdic", report_id, title, report_url)
+      else:
+        admin.log_no_date("fdic", report_id, title)
+      return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
-
-  report_type_text = result.select("td")[0].text
-  report_type = type_for_report(report_type_text)
 
   missing = False
   if report_url == GENERIC_MISSING_REPORT_URL:
