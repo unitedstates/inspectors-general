@@ -99,7 +99,9 @@ def report_from(result, year_range, report_type=None):
   else:
     link = result.select("a")[-1]
 
-  report_url = urljoin(REPORTS_URL, link.get('href'))
+  href = link['href']
+  href = href.replace("file://///cftc.gov/home/dc/MWOODLAND/Desktop/", "")
+  report_url = urljoin(REPORTS_URL, href)
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
 
