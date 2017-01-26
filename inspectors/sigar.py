@@ -19,11 +19,13 @@ archive = 2008
 SPOTLIGHT_REPORTS_URL = "https://www.sigar.mil/Newsroom/spotlight/spotlight.xml"
 SPEECHES_REPORTS_URL = "https://www.sigar.mil/Newsroom/speeches/speeches.xml"
 TESTIMONY_REPORTS_URL = "https://www.sigar.mil/Newsroom/testimony/testimony.xml"
+PRESS_RELEASES_URL = "https://www.sigar.mil/Newsroom/pressreleases/press-releases.xml"
 
 REPORT_URLS = [
   ("other", SPOTLIGHT_REPORTS_URL),
   ("press", SPEECHES_REPORTS_URL),
   ("testimony", TESTIMONY_REPORTS_URL),
+  ("press", PRESS_RELEASES_URL),
   ("audit", "https://www.sigar.mil/audits/auditreports/reports.xml"),
   ("inspection", "https://www.sigar.mil/audits/inspectionreports/inspection-reports.xml"),
   ("audit", "https://www.sigar.mil/audits/financialreports/Financial-Audits.xml"),
@@ -92,6 +94,15 @@ def report_from(result, landing_url, report_type, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
 
+  if (report_url.startswith("https://www.justice.gov/") or
+      report_url.startswith("http://www.justice.gov/") or
+      report_url.startswith("https://www.fbi.gov/") or
+      report_url.startswith("http://www.fbi.gov/") or
+      report_url.startswith("https://www.usaid.gov/") or
+      report_url.startswith("http://www.usaid.gov/")):
+    if not os.path.splitext(report_url)[1]:
+      report['file_type'] = "html"
+
   return report
 
 def report_url_for_landing_page(relative_url, landing_url):
@@ -100,26 +111,39 @@ def report_url_for_landing_page(relative_url, landing_url):
 
   case SPOTLIGHT:
       Title = "Spotlight";
+      Link = Link.replace("../ReadFile.aspx", "../newsroom/ReadFile.aspx");
       Link = Link.replace("../../", "../");
       break;
   case SPEECHES:
       Title = "Speeches";
-      Link = Link.replace("../", "../newsroom/");
+      Link = Link.replace("../ReadFile.aspx", "../newsroom/ReadFile.aspx");
+      Link = Link.replace("../../", "../");
       break;
   case TESTIMONY:
       Title = "Testimony";
+      Link = Link.replace("../ReadFile.aspx", "../newsroom/ReadFile.aspx");
       Link = Link.replace("../../", "../");
+      break;
+  case PRESSRELEASES:
+      Link = Link.replace("../", "../newsroom/");
+      Link = Link.replace("../ReadFile.aspx", "../newsroom/ReadFile.aspx");
       break;
   """
 
   relative_url = relative_url.replace("â\x80\x93", "–")
 
   if landing_url == SPOTLIGHT_REPORTS_URL:
+    relative_url = relative_url.replace("../ReadFile.aspx", "../newsroom/ReadFile.aspx")
     relative_url = relative_url.replace("../../", "../")
   elif landing_url == SPEECHES_REPORTS_URL:
-    relative_url = relative_url.replace("../", "../newsroom/")
-  elif landing_url == TESTIMONY_REPORTS_URL:
+    relative_url = relative_url.replace("../ReadFile.aspx", "../newsroom/ReadFile.aspx")
     relative_url = relative_url.replace("../../", "../")
+  elif landing_url == TESTIMONY_REPORTS_URL:
+    relative_url = relative_url.replace("../ReadFile.aspx", "../newsroom/ReadFile.aspx")
+    relative_url = relative_url.replace("../../", "../")
+  elif landing_url == PRESS_RELEASES_URL:
+    relative_url = relative_url.replace("../", "../newsroom/")
+    relative_url = relative_url.replace("../ReadFile.aspx", "../newsroom/ReadFile.aspx")
 
   return urljoin(BASE_REPORT_URL, relative_url)
 
