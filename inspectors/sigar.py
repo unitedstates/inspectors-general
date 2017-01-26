@@ -72,6 +72,10 @@ def report_from(result, landing_url, report_type, year_range):
     # this report is posted in both "spotlight" and "special reports"
     return
 
+  if report_id == "SIGAR_CSIS_Speech" and published_on.year == 2017:
+    # There are two speeches with the same file name
+    report_id += "_2017"
+
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
