@@ -49,8 +49,6 @@ def run(options):
         inspector.save_report(report)
 
 def report_from(result, landing_url, report_type, year_range):
-  title = result.find("title").text.strip()
-
   report_url = report_url_for_landing_page(result.find("link").next.strip(), landing_url)
 
   if report_url in (
@@ -61,6 +59,11 @@ def report_from(result, landing_url, report_type, year_range):
 
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
+
+  if result.title:
+    title = result.title.text.strip()
+  else:
+    title = report_id
 
   published_on_text = result.find("pubdate").text.strip()
   published_on = datetime.datetime.strptime(published_on_text, '%A, %B %d, %Y')
