@@ -66,7 +66,7 @@ def report_from(result, landing_url, report_type, year_range):
     title = report_id
 
   published_on_text = result.find("pubdate").text.strip()
-  published_on = datetime.datetime.strptime(published_on_text, '%A, %B %d, %Y')
+  published_on = parse_date(published_on_text)
 
   if report_id == "SIGAR-14-42-AL" and title == "SIGAR 14-42-AL":
     # this report is posted in both "spotlight" and "special reports"
@@ -118,5 +118,19 @@ def report_url_for_landing_page(relative_url, landing_url):
     relative_url = relative_url.replace("../../", "../")
 
   return urljoin(BASE_REPORT_URL, relative_url)
+
+def parse_date(text):
+  for format in [
+      '%A, %B %d, %Y',
+      '%A, %B %dst, %Y',
+      '%A, %B %dnd, %Y',
+      '%A, %B %drd, %Y',
+      '%A, %B %dth, %Y'
+  ]:
+    try:
+      return datetime.datetime.strptime(text, format)
+    except ValueError:
+      pass
+  raise Exception("Couldn't parse date from {}".format(text))
 
 utils.run(run) if (__name__ == "__main__") else None
