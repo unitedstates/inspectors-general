@@ -214,6 +214,7 @@ REPORT_PUBLISHED_MAPPING = {
   "FISMA_final_report": datetime.datetime(2016, 11, 10),
   "406_highlights": datetime.datetime(2016, 8, 1),
   "Final_Evaluation_Report_on_the_Peace_Corps_Sexual_Assault_Risk_Reduction_and_Response_Program": datetime.datetime(2016, 11, 28),
+  "Final_Audit_of_Peace_Corps_China_IG-17-01-A": datetime.datetime(2017, 1, 23),
 }
 
 REPORT_TYPE_MAP = {
