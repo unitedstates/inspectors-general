@@ -29,6 +29,7 @@ REPORT_URLS = {
 }
 
 REPORT_PUBLISHED_MAP = {
+  "OIG-MR-17-09": datetime.datetime(2017, 1, 31),
   "OIG-MR-17-08": datetime.datetime(2017, 1, 6),
   "OIG-ML-17-07": datetime.datetime(2016, 12, 13),
   "OIG-MR-17-06": datetime.datetime(2016, 11, 10),
@@ -261,6 +262,8 @@ flag_inspection_report_01_01 = False
 def audit_report_from(year, result, landing_url, year_range):
   link = result.find("a", text=True)
   report_url = urljoin(landing_url, link.get('href'))
+  report_url = report_url.replace("http://wwwadmin.usitc.gov/",
+                                  "https://www.usitc.gov/")
   report_id = "-".join(link.text.split()).replace(':', '')
   result_text = [x for x in result.stripped_strings]
   title = " ".join(result_text[0].split())
