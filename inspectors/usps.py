@@ -192,8 +192,9 @@ def url_for(options, page, category_id):
   year_range = inspector.year_range(options, archive)
   year_start = min(year_range)
   year_end = max(year_range)
-  if category_id in ("94", "91", "93"):
-    # Always get all semiannual reports to congress, testimonies, and news
+  if category_id in ("94", "91", "93", "96"):
+    # Always get all semiannual reports to congress, testimonies, news, and
+    # "other" documents
     # This avoids false positives from the "no reports found" heuristic
     year_start = archive
 
