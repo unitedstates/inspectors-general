@@ -25,7 +25,7 @@ DATE_FORMATS = [
   "%m/%d/%y",
 ]
 
-RE_EXTRA_FILES = re.compile("(?:Transmittal_(?:[Ll]etter|ltr|Memo)|"
+RE_EXTRA_FILES = re.compile("(?:Transmittal_(?:[Ll]etter|[Ll]tr|Memo)|"
                             "CoverLetter|"
                             "Attachment)")
 
