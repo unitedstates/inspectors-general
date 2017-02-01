@@ -17,7 +17,8 @@ archive = 2009   #OSC began posting public files in 2009
 # Notes for IG's web team:
 # Styling is all inline making for bloated tables. CSS classes would be a better solution.
 
-REPORTS_URL = 'https://osc.gov/Pages/PublicFiles-FY%s.aspx' # sub in a four-digit year for %s
+REPORTS_URL_FORMAT = 'https://osc.gov/Pages/PublicFiles-FY%s.aspx'
+REPORTS_URL_2017 = 'https://osc.gov/Pages/FY-2017-Public-Files.aspx'
 
 REPORT_TYPES = ( #there can be multiple files within each type. The integer is the index of the column these appear in the table.
     (6,'Letter to President'),
@@ -59,6 +60,12 @@ def generate_outcome_codes(doc):
   return OUTCOME_CODES
 
 
+def url_for_year(year):
+  if year == 2017:
+    return REPORTS_URL_2017
+  else:
+    return REPORTS_URL_FORMAT % year
+
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -66,7 +73,7 @@ def run(options):
 
   # Pull the table of reports for each year
   for year in year_range:
-    url = REPORTS_URL % year
+    url = url_for_year(year)
     html = utils.download(url, scraper_slug="osc")
 
     if html is None:
@@ -85,7 +92,7 @@ def run(options):
 
     results = doc.findAll("table")[1].tbody.findAll('tr') #no ids on the tables, but it's the second one
     for result in results:
-      reports = report_from(result, year, year_range,OUTCOME_CODES)
+      reports = report_from(result, year, year_range, url, OUTCOME_CODES)
       for report in reports:
         if report['report_id'] not in keys_used:
           inspector.save_report(report)
@@ -99,7 +106,7 @@ previous_report = None #global variable to let us see the previous row in case t
 
 # takes a row in the table (one group of related PDFs) and extracts them into
 # a list of dicts of details that are ready for inspector.save_report().
-def report_from(result, year, year_range,OUTCOME_CODES):
+def report_from(result, year, year_range, landing_url, OUTCOME_CODES):
   """
   columns are:
   OSC File     #    part 1
@@ -136,8 +143,6 @@ def report_from(result, year, year_range,OUTCOME_CODES):
 
   results = cells[5].text
   result_codes = [OUTCOME_CODES[x.strip()] for x in results.split(',') if x.strip() in OUTCOME_CODES]
-
-  landing_url = REPORTS_URL % year
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % id)
