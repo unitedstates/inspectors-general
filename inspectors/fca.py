@@ -34,6 +34,7 @@ REPORT_PUBLISHED_MAPPING = {
   "FinancialAuditReport12": datetime.datetime(2012, 11, 5),
   "FinancialAuditReport11": datetime.datetime(2011, 11, 8),
   "FinancialAuditReport10": datetime.datetime(2010, 11, 8),
+  "TravelCardProgram-2017": datetime.datetime(2017, 1, 31),
   "S&OPP17-18": datetime.datetime(2016, 9, 14),
   "S&OPP16-17": datetime.datetime(2015, 9, 16),
   "S&OPP15-16": datetime.datetime(2014, 9, 30),
@@ -208,6 +209,9 @@ def report_from(result, landing_url, year_range):
 
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
+
+  if report_url == "https://www.fca.gov/Download/InspectorGeneral/Inspectionrpts/TravelCardProgram.pdf":
+    report_id = "TravelCardProgram-2017"
 
   published_on = None
   if report_id in REPORT_PUBLISHED_MAPPING:
