@@ -215,6 +215,7 @@ REPORT_PUBLISHED_MAPPING = {
   "406_highlights": datetime.datetime(2016, 8, 1),
   "Final_Evaluation_Report_on_the_Peace_Corps_Sexual_Assault_Risk_Reduction_and_Response_Program": datetime.datetime(2016, 11, 28),
   "Final_Audit_of_Peace_Corps_China_IG-17-01-A": datetime.datetime(2017, 1, 23),
+  "PC_IG_Kathy_A._Buller_Written_Statement_Feb_1_2017": datetime.datetime(2017, 2, 1),
 }
 
 REPORT_TYPE_MAP = {
