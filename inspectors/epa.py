@@ -60,7 +60,7 @@ def run(options):
     index = utils.beautifulsoup_from_url(url)
     tables = index.find_all("table")
     lis = index.select("ul.field li")
-    if len(tables) == 1:
+    if len(tables) >= 1:
       table = tables[0]
       trs = table.select('tr')
       for tr in trs:
