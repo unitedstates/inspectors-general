@@ -174,9 +174,11 @@ def run(options):
     inspector.save_report(report)
 
 def audit_report_from(result, landing_url, year, year_range):
+  if not result.text.strip():
+    return
   link = result.find("a")
 
-  report_url = urljoin(landing_url, link.get('href'))
+  report_url = urljoin(landing_url, link['href'])
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
 
@@ -243,7 +245,7 @@ def audit_report_from(result, landing_url, year, year_range):
 def semiannual_report_from(result, year_range):
   link = result.find("a")
 
-  report_url = urljoin(SEMIANNUAL_REPORTS_URL, link.get('href'))
+  report_url = urljoin(SEMIANNUAL_REPORTS_URL, link['href'])
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
   title = result.text.strip()
@@ -267,7 +269,7 @@ def semiannual_report_from(result, year_range):
   return report
 
 def peer_review_from(result, year_range):
-  report_url = urljoin(PEER_REVIEWS_URL, result.get('href'))
+  report_url = urljoin(PEER_REVIEWS_URL, result['href'])
   report_filename = report_url.split("/")[-1]
   report_id, _ = os.path.splitext(report_filename)
 
