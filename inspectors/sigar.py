@@ -94,12 +94,12 @@ def report_from(result, landing_url, report_type, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
 
-  if (report_url.startswith("https://www.justice.gov/") or
-      report_url.startswith("http://www.justice.gov/") or
-      report_url.startswith("https://www.fbi.gov/") or
-      report_url.startswith("http://www.fbi.gov/") or
-      report_url.startswith("https://www.usaid.gov/") or
-      report_url.startswith("http://www.usaid.gov/")):
+  if report_url.startswith(("https://www.justice.gov/",
+                            "http://www.justice.gov/",
+                            "https://www.fbi.gov/",
+                            "http://www.fbi.gov/",
+                            "https://www.usaid.gov/",
+                            "http://www.usaid.gov/")):
     if not os.path.splitext(report_url)[1]:
       report['file_type'] = "html"
 

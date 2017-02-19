@@ -124,10 +124,10 @@ def report_from(result, topic, topic_url, year_range):
 
     landing_page = utils.beautifulsoup_from_url(landing_url)
     try:
-      if landing_url.endswith("/Top-Management-Challenges-FY-2011.aspx") or \
-                landing_url.endswith("/Observations-and-Address-Listers-" \
-                "Reports-Provide-Serious-Indications-That-Important-Address-" \
-                "Canvassing.aspx"):
+      if landing_url.endswith(("/Top-Management-Challenges-FY-2011.aspx",
+                "/Observations-and-Address-Listers-"
+                "Reports-Provide-Serious-Indications-That-Important-Address-"
+                "Canvassing.aspx")):
         # Testimony on these landing pages already show up elsewhere, so we pick
         # the report instead
         report_url_relative = landing_page.select("div.oig_Publications a")\

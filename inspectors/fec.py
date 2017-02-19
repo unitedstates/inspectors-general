@@ -130,7 +130,7 @@ def report_from(result, year_range, report_type, title_prefix=None):
     # Inline report
     title = inspector.sanitize(result.contents[0].strip().rstrip("-"))
     title = re.sub("\\s+", " ", title)
-    if title.endswith(" 200") or title.endswith(" 201"):
+    if title.endswith((" 200", " 201")):
       # some years are split up by a <span> tag
       title = title + result.contents[1].text
   else:

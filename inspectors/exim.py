@@ -115,7 +115,7 @@ def report_from(all_text, link_text, link_url, page_url, published_on, paragraph
     file_type = "pdf"
   elif link_url.endswith(".docx"):
     file_type = "docx"
-  elif link_url.endswith(".htm") or link_url.endswith(".html"):
+  elif link_url.endswith((".htm", ".html")):
     file_type = "htm"
   elif link_url.endswith(".cfm"):
     file_type = "htm"

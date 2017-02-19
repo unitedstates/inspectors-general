@@ -520,8 +520,8 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
 def filter_links(link_list, base_url):
   href_list = [element.get('href') for element in link_list]
   for i in range(len(href_list)):
-    while (href_list[i].startswith("http://go.usa.gov/") or
-        href_list[i].startswith("https://go.usa.gov/")):
+    while href_list[i].startswith(("http://go.usa.gov/",
+                                   "https://go.usa.gov/")):
       href_list[i] = utils.resolve_redirect(href_list[i])
   href_list = [urldefrag(urljoin(base_url, href))[0] for href in href_list]
   filtered_list = [href for href in href_list

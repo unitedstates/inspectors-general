@@ -173,7 +173,7 @@ def semiannual_report_from(result, year_range):
   link = result.find("a")
   report_url = urljoin(SEMIANNUAL_REPORTS_URL, link['href'])
 
-  if not report_url.endswith(".pdf") and not report_url.endswith(".txt"):
+  if not report_url.endswith((".pdf", ".txt")):
     landing_url = report_url
 
     # Since this page redirects sometimes, we need to see where it redirects
