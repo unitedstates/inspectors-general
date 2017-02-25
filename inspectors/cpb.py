@@ -44,6 +44,7 @@ REPORT_PUBLISHED_MAP = {
   "annualplan15": datetime.datetime(2014, 10, 17),
   "annualplan14": datetime.datetime(2013, 9, 17),
   "Strategic-Plan-2014-2018": datetime.datetime(2013, 8, 22),
+  "CPB_Issues": datetime.datetime(2016, 4, 21),
 }
 
 def run(options):
@@ -102,7 +103,7 @@ def report_from(result, landing_url, report_type, year_range):
   report_url = urljoin(landing_url, link['href'])
   report_id = os.path.basename(urlparse(report_url)[2]).rstrip('.pdf')
 
-  title = re.sub("\\s+", " ", link.text)
+  title = re.sub("\\s+", " ", link.text).strip()
   if 'semiannual' in report_id:
     title = "Semi-Annual Report: %s" % title
 
