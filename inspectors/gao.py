@@ -38,7 +38,7 @@ def report_from(result, year_range):
   title = link.text
   landing_url = urljoin(REPORTS_URL, link.get('href'))
   report_url_node, publication_info_node = result.select("div.release_info")
-  publication_info = publication_info_node.text.split(":")
+  publication_info = publication_info_node.select("span.productNumberAndDate")[0].text.split(":")
   report_id = publication_info[0].strip().replace(",", "")
   published_on = datetime.datetime.strptime(publication_info[1].strip(), '%b %d, %Y')
 
