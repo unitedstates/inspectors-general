@@ -161,7 +161,7 @@ def extract_info(content, directory, year_range):
         date = datetime.strptime(date_string, "%B %d, %Y")
       # these ones require special handling in odd_link
       except ValueError:
-        info = odd_link(b, date_string, l, directory, )
+        info = odd_link(b, date_string, l, directory)
         # this should give better titles than "pdf" or "Press Release"
         real_title = info["real_title"]
         date_string = info["date_string"]
@@ -362,7 +362,6 @@ def date_format(date):
 
 
 def odd_link(b, date, l, directory):
-  text = b.get_text()
   # not links to docs
   link = None
   try:
@@ -423,13 +422,11 @@ def odd_link(b, date, l, directory):
     return {"date_string": date, "real_title": text}
 
   if date is not None:
-    date = date.strip
-
     # case 1, date is wrong because it is in the paragraph and completely written out
     try:
-        date = b.string
-        date_string = date_format(date)
-        title = b.string
+      date = b.string
+      date_string = date_format(date)
+      title = b.string
     except:
       # these are lists of links that are different variants of the same report in a list
       # case where there is a list in a paragraph tag
@@ -462,18 +459,6 @@ def odd_link(b, date, l, directory):
     day = day.replace(" ", " 1, ")
     date_string = day
     title = b.text
-
-  # uncomment for debugging
-  # try:
-  #   date = datetime.strptime(date_string, "%B %d, %Y")
-  # except:
-  #   print('hit one')
-  #   print("b:  ", b.text)
-  #   print("l:  ", l)
-  #   print("date: ", date)
-  #   print("date string", date_string)
-  #   print("directory", directory)
-  #   exit()
 
   info = {"real_title": title, "date_string": date_string}
   return(info)
