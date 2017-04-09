@@ -421,6 +421,7 @@ def odd_link(b, date, l, directory):
       date = date.replace(" ", " 1, ")
     return {"date_string": date, "real_title": text}
 
+  try_again = False
   if date is not None:
     # case 1, date is wrong because it is in the paragraph and completely written out
     try:
@@ -439,6 +440,10 @@ def odd_link(b, date, l, directory):
         listy = b.parent.parent
         text = listy.previous_sibling.previous_sibling
         title = str(text)[3:-4]
+      if ("content-wrapper" in listy.get("class", []) or
+              listy.get("role") == "main" or
+              listy.get("id") == "content"):
+        try_again = True
       date = re.sub(r'\([^)]*\)', '', title)
       date = re.sub(r'\[[^)]*\]', '', date)
       date = date.rsplit(',')
@@ -448,7 +453,7 @@ def odd_link(b, date, l, directory):
         date_string = date_string.replace(" ", " 1, ")
 
   # for the DOJ combined page
-  if date_string == 'id="content" 1, name="content">':
+  if try_again:
     text = b.text
     text = re.sub(r'\([^)]*\)', '', text)
     chunks = text.split(",")
