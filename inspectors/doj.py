@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+import re
+from datetime import datetime
+from utils import utils, inspector
+import logging
+from urllib.parse import urljoin, urlparse, urlunparse
+import os
+from bs4 import Tag
+
 # - Some documents don't have dates, in that case today's date is used
 # - Some forms, marked index are one html document spread across several links,
 # I go through all the links so that we get the most descriptive agency name
@@ -13,14 +21,6 @@ archive = 1994
 # options:
 #   component - Any of the slugs in the `components` dict below,
 #               will be used to filter to a particular landing page.
-
-import re
-from datetime import datetime
-from utils import utils, inspector
-import logging
-from urllib.parse import urljoin, urlparse, urlunparse
-import os
-from bs4 import Tag
 
 # accumulates information on reports as they're seen
 report = {}
@@ -51,8 +51,8 @@ components = {
 }
 
 agency_decoder = {
-    "Department of Justice":["Department of Justice", "DOJ"],
-    "United States Marshals Service (USMS)": [ "United States Marshals Service", "USMS"],
+    "Department of Justice": ["Department of Justice", "DOJ"],
+    "United States Marshals Service (USMS)": ["United States Marshals Service", "USMS"],
     "Office of Justice Programs (OJP)": ["Office of Justice Programs", "OJP"],
     "Federal Bureau of Prisons (BOP)": ["Federal Bureau of Prisons", "BOP"],
     "Federal Bureau of Investigation (FBI)": ["Federal Bureau of Investigation", "FBI"],
@@ -75,6 +75,7 @@ not_agency = (
 
 YEAR_RE = re.compile("^(?:19|20)[0-9][0-9]/(.*)$")
 AG_RE = re.compile("http://www[.]justice[.]gov/archive/ag/annualreports/([^/]+)/(?:TableofContents|index)[.]html?")
+
 
 def extract_info(content, directory, year_range):
   # goes through each agency or content bucket
@@ -107,7 +108,7 @@ def extract_info(content, directory, year_range):
       date_string = None
 
     # finding older dates that are at the end of the text
-    if date_string == None:
+    if date_string is None:
       try:
         date_string = b.get_text()
       except:
@@ -165,7 +166,7 @@ def extract_info(content, directory, year_range):
         real_title = info["real_title"]
         date_string = info["date_string"]
         # these are links to things that are not reports
-        if real_title == False and date_string == False:
+        if real_title is False and date_string is False:
           break
         elif "," not in date_string:
           date_string = date_string.strip()
@@ -185,14 +186,14 @@ def extract_info(content, directory, year_range):
       except:
         string_title = b.string
 
-      if string_title == None:
+      if string_title is None:
         string_title = b.contents
         if "<a href=" in str(string_title):
           string_title = b.contents[0]
 
       link = l.get("href")
       link = strip_url_fragment(link)
-      if link != None:
+      if link is not None:
         # title
         try:
           title = l.text
@@ -206,8 +207,8 @@ def extract_info(content, directory, year_range):
           title = real_title
 
         if title == 'id="content" name="content">':
-          title =  b.string
-          if title == None:
+          title = b.string
+          if title is None:
             title = b.text
 
         try:
@@ -218,10 +219,10 @@ def extract_info(content, directory, year_range):
           pass
 
         file_type = find_file_type(link)
-        if file_type == None or title == False:
+        if file_type is None or title is False:
           break
 
-        if title == None:
+        if title is None:
           title = b.string
 
         # formating links consistently
@@ -237,7 +238,7 @@ def extract_info(content, directory, year_range):
 
         # creating ids
         # there may be a better way to do this but I am just taking out all the things that are not the id
-        url_extras = ( "/final", "/fullpdf", "/ins_response", "oig/special/", "USMS/", "plus/", "oig/grants/", "oig/reports/", "EOUSA/", "BOP/", "ATF/", "COPS/", "FBI/", "OJP/", "INS/", "DEA/", "OBD", "/analysis", "/report", "/PDF_list", "/full_report", "/full", "_redacted", "oig", "r-", "/response", "/listpdf", "/memo", "/fullreport", "/Final", "/extradition", "/oig", "/grants", "/index")
+        url_extras = ("/final", "/fullpdf", "/ins_response", "oig/special/", "USMS/", "plus/", "oig/grants/", "oig/reports/", "EOUSA/", "BOP/", "ATF/", "COPS/", "FBI/", "OJP/", "INS/", "DEA/", "OBD", "/analysis", "/report", "/PDF_list", "/full_report", "/full", "_redacted", "oig", "r-", "/response", "/listpdf", "/memo", "/fullreport", "/Final", "/extradition", "/oig", "/grants", "/index")
         for n in url_extras:
           if n in doc_id:
             doc_id = doc_id.replace(n, "")
@@ -258,7 +259,7 @@ def extract_info(content, directory, year_range):
         doc_id = doc_id.replace("/", "-")
 
         # some weird issues I hard coded
-        special_cases = {"a0118/au0118":"a0118", "a0207/0207":"a0207"}
+        special_cases = {"a0118/au0118": "a0118", "a0207/0207": "a0207"}
         if doc_id in special_cases:
           doc_id = special_cases[doc_id]
 
@@ -316,7 +317,7 @@ def extract_info(content, directory, year_range):
             "url": link,
             "title": title,
             "file_type": file_type,
-            "categories": [directory,],
+            "categories": [directory],
             "urls": [{
                 "url": link,
                 "file_type": file_type,
@@ -331,9 +332,11 @@ def extract_info(content, directory, year_range):
   if report_count == 0:
     raise inspector.NoReportsFoundError("DOJ (%s)" % directory)
 
+
 def strip_url_fragment(url):
   scheme, netloc, path, params, query, fragment = urlparse(url)
   return urlunparse((scheme, netloc, path, params, query, ""))
+
 
 def find_file_type(url):
   ext = os.path.splitext(url)[1]
@@ -347,6 +350,7 @@ def find_file_type(url):
     # these include a few navigation links
     return None
 
+
 def date_format(date):
   date = str(date)
   date = re.sub(r'\([^)]*\)', '', date)
@@ -355,6 +359,7 @@ def date_format(date):
   date = str(date[-2]).strip() + ", " + str(date[-1]).strip()
   date_string = date
   return date_string
+
 
 def odd_link(b, date, l, directory):
   text = b.get_text()
@@ -368,23 +373,23 @@ def odd_link(b, date, l, directory):
   # these are not documents
   if link:
     if link[-4:] == ".gov":
-      return {"date_string":False, "real_title":False}
+      return {"date_string": False, "real_title": False}
     elif link[-5:] == ".gov/" or link == "http://www.justice.gov/usao/eousa/":
-      return {"date_string":False, "real_title":False}
+      return {"date_string": False, "real_title": False}
   text = b.get_text()
 
   if " — PDF | HTML" in text:
     text = text.replace(" — PDF | HTML", "")
 
   # section for documents without dates:
-  if date != None:
+  if date is not None:
     if date.strip() == "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995":
       return {"date_string": "June 1, 1996", "real_title": "Alleged Deception of Congress: The Congressional Task Force on Immigration Reform's Fact-Finding Visit to the Miami District of INS in June 1995"}
     if date == "Audit Report GR-30-00-001":
-      return {"date_string": "November 1, 2000", "real_title":"McMechen, West Virginia Police Department, Audit Report GR-30-00-001"}
+      return {"date_string": "November 1, 2000", "real_title": "McMechen, West Virginia Police Department, Audit Report GR-30-00-001"}
     # no date, one other entry, giving it the same date
     if date == "Georgia's Department of Corrections":
-      return {"date_string": "November 1, 2000", "real_title":"United States Marshals Service Cost Proposal for the Intergovernmental Service Agreement for Detention Facilities with the City of Atlanta, Georgia’s Department of Corrections"}
+      return {"date_string": "November 1, 2000", "real_title": "United States Marshals Service Cost Proposal for the Intergovernmental Service Agreement for Detention Facilities with the City of Atlanta, Georgia’s Department of Corrections"}
 
   # need to get rid of this to process
   if "Released Publicly" in text:
@@ -417,12 +422,12 @@ def odd_link(b, date, l, directory):
       date = date.replace(" ", " 1, ")
     return {"date_string": date, "real_title": text}
 
-  if date != None:
+  if date is not None:
     date = date.strip
 
     # case 1, date is wrong because it is in the paragraph and completely written out
     try:
-        date =  b.string
+        date = b.string
         date_string = date_format(date)
         title = b.string
     except:
@@ -458,7 +463,7 @@ def odd_link(b, date, l, directory):
     date_string = day
     title = b.text
 
-  ## uncomment for debugging
+  # uncomment for debugging
   # try:
   #   date = datetime.strptime(date_string, "%B %d, %Y")
   # except:
@@ -472,6 +477,7 @@ def odd_link(b, date, l, directory):
 
   info = {"real_title": title, "date_string": date_string}
   return(info)
+
 
 # adding types based on the USPS
 def type_for(original_type):
@@ -488,6 +494,7 @@ def type_for(original_type):
     return "congress"
   else:
     return None
+
 
 def get_content(url):
   page = utils.beautifulsoup_from_url(url)
@@ -526,7 +533,6 @@ def run(options):
   for link in keys:
     content = get_content(link)
     extract_info(content, source_links[link], year_range)
-
 
   logging.info("Found %i reports, for year %i to %i" % (len(list(report.keys())), year_range[0], year_range[-1]))
 
