@@ -5,7 +5,7 @@ import logging
 import os
 import re
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # https://www.sigtarp.gov
 archive = 2009
@@ -16,14 +16,52 @@ archive = 2009
 # Notes for IG's web team:
 #
 
+AUDITS_URL = "https://www.sigtarp.gov/pages/audit.aspx"
+TESTIMONY_URL = "https://www.sigtarp.gov/pages/testimony.aspx"
+QUARTERLY_REPORTS_URL = "https://www.sigtarp.gov/pages/Reports-Testimony-Home.aspx"
+
 REPORT_URLS = [
-  ("semiannual_report", "https://www.sigtarp.gov/pages/quarterly.aspx"),
-  ("audit", "https://www.sigtarp.gov/pages/audit.aspx"),
-  ("audit", "https://www.sigtarp.gov/pages/auditrc.aspx"),
-  ("audit", "https://www.sigtarp.gov/pages/engmem.aspx"),
+  ("audit", AUDITS_URL),
+  ("testimony", TESTIMONY_URL),
 ]
 
 LINK_RE = re.compile("^([A-Za-z ]+) \\(([A-Z][a-z]+ [0-9]+, [0-9]+)\\)$")
+
+QUARTERLY_REPORT_DATES = {
+  "SIGTARP_Initial_Report_to_the_Congress": datetime.datetime(2009, 2, 6),
+  "April2009_Quarterly_Report_to_Congress": datetime.datetime(2009, 4, 21),
+  "July2009_Quarterly_Report_to_Congress": datetime.datetime(2009, 7, 21),
+  "October2009_Quarterly_Report_to_Congress": datetime.datetime(2009, 10, 21),
+  "January2010_Quarterly_Report_to_Congress": datetime.datetime(2010, 1, 30),
+  "April2010_Quarterly_Report_to_Congress": datetime.datetime(2010, 4, 20),
+  "July2010_Quarterly_Report_to_Congress": datetime.datetime(2010, 7, 21),
+  "October2010_Quarterly_Report_to_Congress": datetime.datetime(2010, 10, 26),
+  "January2011_Quarterly_Report_to_Congress": datetime.datetime(2011, 1, 26),
+  "April2011_Quarterly_Report_to_Congress": datetime.datetime(2011, 4, 28),
+  "July2011_Quarterly_Report_to_Congress": datetime.datetime(2011, 7, 28),
+  "October2011_Quarterly_Report_to_Congress": datetime.datetime(2011, 10, 27),
+  "January_26_2012_Report_to_Congress": datetime.datetime(2012, 1, 26),
+  "April_25_2012_Report_to_Congress": datetime.datetime(2012, 4, 25),
+  "July_25_2012_Report_to_Congress": datetime.datetime(2012, 7, 25),
+  "October_25_2012_Report_to_Congress": datetime.datetime(2012, 10, 25),
+  "January_30_2013_Report_to_Congress": datetime.datetime(2013, 1, 30),
+  "April_24_2013_Report_to_Congress": datetime.datetime(2013, 4, 24),
+  "July_24_2013_Report_to_Congress": datetime.datetime(2013, 7, 24),
+  "October_29_2013_Report_to_Congress": datetime.datetime(2013, 10, 29),
+  "January_29_2014_Report_to_Congress": datetime.datetime(2014, 1, 29),
+  "April_30_2014_Report_to_Congress": datetime.datetime(2014, 4, 30),
+  "July_30_2014_Report_to_Congress": datetime.datetime(2014, 7, 30),
+  "October_29_2014_Report_to_Congress": datetime.datetime(2014, 10, 29),
+  "January_28_2015_Report_to_Congress": datetime.datetime(2015, 1, 28),
+  "April_29_2015_Quarterly_Report_to_Congress": datetime.datetime(2015, 4, 29),
+  "July_29_2015_Report_to_Congress": datetime.datetime(2015, 7, 29),
+  "October_28_2015_Report_to_Congress": datetime.datetime(2015, 10, 28),
+  "January_28_2016_Report_to_Congress": datetime.datetime(2016, 1, 27),
+  "April_27_2016_Report_to_Congress": datetime.datetime(2016, 4, 27),
+  "July_27_2016_Report_To_Congress": datetime.datetime(2016, 7, 27),
+  "October_26_2016_Report_To_Congress": datetime.datetime(2016, 10, 26),
+}
+
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -31,15 +69,27 @@ def run(options):
   # Pull the reports
   for report_type, report_url in REPORT_URLS:
     doc = utils.beautifulsoup_from_url(report_url)
-    results =  doc.select("td.mainInner div.ms-WPBody > div > ul > li")
+    results = doc.select("td.mainInner div.ms-WPBody > div > ul > li")
 
     if not results:
-      raise inspector.NoReportsFoundError("SIGTARP (%s)" % report_url)
+      raise inspector.NoReportsFoundError("SIGTARP ({})".format(report_type))
 
     for result in results:
       report = report_from(result, report_type, year_range)
       if report:
         inspector.save_report(report)
+
+  doc = utils.beautifulsoup_from_url(QUARTERLY_REPORTS_URL)
+  results = doc.select("#MSOZoneCell_WebPartWPQ3 .s4-wpTopTable a")
+
+  if not results:
+    raise inspector.NoReportsFoundError("SIGTARP (quarterly reports)")
+
+  for result in results:
+    report = quarterly_report_from(result, year_range)
+    if report:
+      inspector.save_report(report)
+
 
 def report_from(result, report_type, year_range):
   result_link = result.find("a")
@@ -66,6 +116,40 @@ def report_from(result, report_type, year_range):
     'agency': 'sigtarp',
     'agency_name': "Special Inspector General for the Troubled Asset Relief Program",
     'type': report_type,
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
+
+  return report
+
+
+def quarterly_report_from(result, year_range):
+  report_url = result['href']
+  report_filename = report_url.split("/")[-1]
+  report_id, extension = os.path.splitext(report_filename)
+
+  groupheader = result.parent.parent.parent.parent.find("div", class_="groupheader")
+  year = int(groupheader.text.strip())
+  if year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  title = "Quarterly Report to Congress, {}, {}".format(year, result.text.strip())
+
+  if report_id in QUARTERLY_REPORT_DATES:
+    published_on = QUARTERLY_REPORT_DATES[report_id]
+  else:
+    admin.log_no_date("sigtarp", report_id, title, report_url)
+    return
+
+  report = {
+    'inspector': 'sigtarp',
+    'inspector_url': "https://www.sigtarp.gov",
+    'agency': 'sigtarp',
+    'agency_name': "Special Inspector General for the Troubled Asset Relief Program",
+    'type': 'quarterly',
     'report_id': report_id,
     'url': report_url,
     'title': title,
