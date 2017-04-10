@@ -8,7 +8,7 @@ from urllib.parse import urljoin, unquote
 
 from utils import utils, inspector, admin
 
-# http://www.eac.gov/inspector_general/
+# https://www.eac.gov/inspector-general/
 archive = 2005
 
 # options:
@@ -17,12 +17,12 @@ archive = 2005
 # Notes for IG's web team:
 #
 
-CONGRESSIONAL_TESTIMONY_URL = "http://www.eac.gov/inspector_general/congressional_testimony.aspx"
-HAVA_AUDITS_URL = "http://www.eac.gov/inspector_general/hava_funds_audits.aspx"
-EAC_AUDITS_URL = "http://www.eac.gov/inspector_general/eac_audits_and_evaluations.aspx"
-CONGRESSIONAL_REPORTS_URL = "http://www.eac.gov/inspector_general/congressional_reports.aspx"
-INVESTIGATIONS_URL = "http://www.eac.gov/inspector_general/investigation_reports.aspx"
-PEER_REVIEWS_URL = "http://www.eac.gov/inspector_general/peer_review_reports.aspx"
+CONGRESSIONAL_TESTIMONY_URL = "https://www.eac.gov/inspector-general/congressional-testimony/"
+HAVA_AUDITS_URL = "https://www.eac.gov/inspector-general/inspector-general/hava-fund-audits/"
+EAC_AUDITS_URL = "https://www.eac.gov/inspector-general/audits-evaluations-of-eac/"
+CONGRESSIONAL_REPORTS_URL = "https://www.eac.gov/inspector-general/congressional-reports/"
+INVESTIGATIONS_URL = "https://www.eac.gov/inspector-general/investigation-reports/"
+PEER_REVIEWS_URL = "https://www.eac.gov/inspector-general/peer-review-reports/"
 
 REPORT_URLS = [
   ("testimony", CONGRESSIONAL_TESTIMONY_URL),
@@ -37,21 +37,21 @@ REPORT_PUBLISHED_MAP = {
   "US-EAC-OIG-2016-Peer-Review-Report": datetime.datetime(2016, 7, 20),
   "USEAC-2016-Final-Financial-Audit-Report-I-PA-EAC-01-16": datetime.datetime(2016, 11, 10),
   "USEAC-2016-Final-FISMA-Report-I-PA-EAC-02-16": datetime.datetime(2016, 11, 10),
-  "U.S.-Election-Assistance-Commission's-Financial-Statements-for-Fiscal-Years-2015-and-20141": datetime.datetime(2015, 11, 12),
+  "U.S.-Election-Assistance-Commissions-Financial-Statements-for-Fiscal-Years-2015-and-20141": datetime.datetime(2015, 11, 12),
   "Final-Report---EAC-Compliance-with-FISMA-20151": datetime.datetime(2015, 11, 13),
   "2014-financial-audit-web": datetime.datetime(2014, 11, 12),
   "2014-FISMA-issued-report": datetime.datetime(2014, 11, 10),
-  "2013-final-internet": datetime.datetime(2013, 12, 16),
+  "2013-final-internet1": datetime.datetime(2013, 12, 16),
   "issued-final-report-FISMA-20213": datetime.datetime(2013, 9, 19),
   "issued-final-report": datetime.datetime(2013, 9, 12),
   "2012-Final-Internet": datetime.datetime(2012, 11, 14),
-  "Issued-EAC-Privacy-_FINAL_Report_Rev-5-8-13": datetime.datetime(2013, 5, 7),
-  "FIMA-Internet-Version-2011": datetime.datetime(2011, 10, 5),
+  "Issued-EAC-Privacy--FINAL-Report-Rev-5-8-131": datetime.datetime(2013, 5, 7),
+  "FIMA-Internet-Version-20111": datetime.datetime(2011, 10, 5),
   "FISMA-Executive-Summary-2012": datetime.datetime(2012, 9, 17),
   "final-internet": datetime.datetime(2011, 11, 15),
   "Management-Letter---accessible-internet-version": datetime.datetime(2010, 11, 15),
   "AFR-2010-November-12-2010---FINAL": datetime.datetime(2010, 11, 15),
-  "FISMA-2010---FINAL---Accessible": datetime.datetime(2010, 10, 27),
+  "FISMA-2010---FINAL---Accessible1": datetime.datetime(2010, 10, 27),
   "Evaluation-Report---Accessible": datetime.datetime(2010, 9, 28),
   "Assignment-No.-I-PA-EAC-01-09A": datetime.datetime(2009, 11, 13),
   "Assignment-No.-I-PA-EAC-01-09": datetime.datetime(2009, 11, 16),
@@ -61,7 +61,7 @@ REPORT_PUBLISHED_MAP = {
   "Privacy-Report---Accessible-Version": datetime.datetime(2009, 3, 4),
   "EAC-Internet-Usage-Evaluation-report-FINAL---Accessible": datetime.datetime(2009, 2, 17),
   "Audit-of-the-EAC-Fiscal-Year-2008-Financial-Statements": datetime.datetime(2008, 11, 17),
-  "FISMA_2008_-_Accessible": datetime.datetime(2008, 10, 31),
+  "FISMA-2008---Accessible1": datetime.datetime(2008, 10, 31),
   "Assessment-of-EAC's-Program-and-Financial-Operations": datetime.datetime(2008, 2, 25),
   "final-fisma-report---accessible-version": datetime.datetime(2007, 9, 28),
   "FISMA-2006---accessible": datetime.datetime(2006, 10, 2),
@@ -107,9 +107,9 @@ REPORT_PUBLISHED_MAP = {
   "mi-final-report---internet-version": datetime.datetime(2010, 4, 23),
   "Administration-of-Payments-Received-Under-the-Help-America-Vote-Act-by-the-Tennessee-Secretary-of-State\u2019s-Division-of-Elections": datetime.datetime(2010, 4, 9),
   "Administration-of-Payments-Received-Under-the-Help-America-Vote-Act-by-the-Arkansas-Secretary-of-State": datetime.datetime(2010, 2, 26),
-  "Administration-of-Payments-Received-Under-the-Help-America-Vote-Act-by-California's-Secretary-of-State": datetime.datetime(2009, 12, 14),
+  "Administration-of-Payments-Received-Under-the-Help-America-Vote-Act-by-Californias-Secretary-of-State": datetime.datetime(2009, 12, 14),
   "Administration-of-Payments-Received-Under-the-Help-America-Vote-Act-by-the-State-of-Rhode-Island-and-Providence-Plantations": datetime.datetime(2009, 9, 30),
-  "Administration-of-Payments-Recieved-Under-HAVA-by-Iowa-Secretary-of-State-2003-through-2008": datetime.datetime(2009, 9, 30),
+  "Administration-of-Payments-Received-Under-the-Help-America-Vote-Act-by-Iowa's-Secretary-of-State": datetime.datetime(2009, 9, 30),
   "Administration-of-Payments-Received-Under-the-Help-America-Vote-Act-by-the-State-of-Oregon": datetime.datetime(2009, 6, 22),
   "Administration-of-Payments-Received-Under-the-Help-America-Vote-Act-by-the-State-of-Florida": datetime.datetime(2008, 11, 17),
   "Administration-of-Payments-Received-Under-the-Help-America-Vote-Act-by-the-State-of-Washington-Secretary-of-State": datetime.datetime(2008, 11, 17),
@@ -132,13 +132,14 @@ REPORT_PUBLISHED_MAP = {
   "Assignment-No.E-HP-CA-01-06": datetime.datetime(2005, 12, 19),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
   # Pull the reports
   for report_type, url in REPORT_URLS:
     doc = utils.beautifulsoup_from_url(url)
-    results = doc.select("div.mainRegion p a")
+    results = doc.select("div.main-content p a")
     if not results:
       raise inspector.NoReportsFoundError("EAC (%s)" % url)
     for result in results:
@@ -146,8 +147,10 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+
 def clean_text(text):
   return text.replace('\xa0', ' ').strip()
+
 
 def report_from(result, landing_url, report_type, year_range):
   report_url = urljoin(landing_url, result.get('href'))
@@ -155,8 +158,11 @@ def report_from(result, landing_url, report_type, year_range):
   report_id, _ = os.path.splitext(report_filename)
   report_id = unquote(report_id)
   report_id = "-".join(report_id.split())
+  report_id = report_id.replace("_", "-")
 
   title = clean_text(result.text)
+  if not title:
+    return
 
   published_on = None
   if report_id in REPORT_PUBLISHED_MAP:
