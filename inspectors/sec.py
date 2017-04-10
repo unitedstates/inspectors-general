@@ -175,7 +175,7 @@ def run(options):
         all_results = doc.select("#bodyholder")[0]
         results = [x for x in all_results.select("ul li")]
       except IndexError:
-        results = doc.select("#main-content ul li")
+        results = doc.select(".main-content ul li")
     if not results:
       raise inspector.NoReportsFoundError("SEC (%s)" % topic)
 
