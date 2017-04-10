@@ -154,6 +154,7 @@ CANNED_REPORTS = [
   },
 ]
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
   topics = options.get('topics')
@@ -193,6 +194,7 @@ def run(options):
     if report_datetime.year in year_range:
       add_common_fields(canned_report)
       inspector.save_report(canned_report)
+
 
 def report_from(result, landing_url, topic, year_range, last_published_on):
   try:
@@ -253,11 +255,13 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
   add_common_fields(report)
   return report, published_on
 
+
 def add_common_fields(report):
   report['inspector'] = 'sec'
   report['inspector_url'] = 'http://www.sec.gov/about/offices/oig/inspector_general_investigations_reports.shtml'
   report['agency'] = 'sec'
   report['agency_name'] = 'Securities and Exchange Commission'
+
 
 def find_first_matching_datetime_format_from_text(text_datetime_format_tuples):
   for text, datetime_format in text_datetime_format_tuples:
@@ -265,6 +269,7 @@ def find_first_matching_datetime_format_from_text(text_datetime_format_tuples):
       return datetime.datetime.strptime(text, datetime_format)
     except ValueError:
       pass
+
 
 def published_date_for_report(published_on_text, title, report_url, last_published_on, report_id):
   "There are multiple different ways we try to extract the published date"
@@ -313,10 +318,10 @@ def published_date_for_report(published_on_text, title, report_url, last_publish
 
   return published_on
 
-DATE_RE_1 = re.compile('(?:January|Jan\\.?|February|Feb\\.?|March|Mar\\.?|' \
-                     'April|Apr\\.?|May\\.?|June|Jun\\.?|July|Jul\\.?|' \
-                     'August|Aug\\.?|September|Sept?\\.?|October|Oct\\.?|' \
-                     'November|Nov\\.?|December|Dec\\.?) [123]?[0-9], [0-9]{4}')
+DATE_RE_1 = re.compile('(?:January|Jan\\.?|February|Feb\\.?|March|Mar\\.?|'
+                       'April|Apr\\.?|May\\.?|June|Jun\\.?|July|Jul\\.?|'
+                       'August|Aug\\.?|September|Sept?\\.?|October|Oct\\.?|'
+                       'November|Nov\\.?|December|Dec\\.?) [123]?[0-9], [0-9]{4}')
 DATE_RE_2 = re.compile('[^0-9]([01][0-9][0-3][0-9][901][0-9])[^0-9]')
 
 utils.run(run) if (__name__ == "__main__") else None
