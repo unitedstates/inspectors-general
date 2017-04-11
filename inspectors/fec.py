@@ -119,9 +119,9 @@ def report_from(result, year_range, report_type, title_prefix=None):
   if report_url == "http://www.fec.gov/fecig/documents/Semi14a_000.pdf":
     report_url = "http://www.fec.gov/fecig/documents/Semi14a.pdf"
   if report_url == "http://www.fec.gov/fecig/documents/ReviewofOutstanding" \
-                    "RecommendationsasofJune2014_001.pdf":
+                   "RecommendationsasofJune2014_001.pdf":
     report_url = "http://www.fec.gov/general/documents/ReviewofOutstanding" \
-                  "RecommendationsasofJune2014.pdf"
+                 "RecommendationsasofJune2014.pdf"
 
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
