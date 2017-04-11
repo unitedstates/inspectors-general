@@ -133,6 +133,7 @@ REPORT_PUBLISHED_MAP = {
   "audit-memo-15-08": datetime.datetime(2015, 2, 12),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
   results_flag = False
@@ -173,6 +174,7 @@ def run(options):
   report = peer_review_from(result, year_range)
   if report:
     inspector.save_report(report)
+
 
 def audit_report_from(result, landing_url, year, year_range):
   if not result.text.strip():
@@ -243,6 +245,7 @@ def audit_report_from(result, landing_url, year, year_range):
     report['estimated_date'] = estimated_date
   return report
 
+
 def semiannual_report_from(result, year_range):
   link = result.find("a")
 
@@ -268,6 +271,7 @@ def semiannual_report_from(result, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def peer_review_from(result, year_range):
   report_url = urljoin(PEER_REVIEWS_URL, result['href'])
