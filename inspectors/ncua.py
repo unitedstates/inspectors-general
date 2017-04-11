@@ -40,7 +40,7 @@ def run(options):
     else:
       doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL.format(year=year))
 
-    if doc == None:
+    if doc is None:
       # Next year's audit page may not be published yet
       continue
 
@@ -88,8 +88,10 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+
 def clean_text(text):
   return re.sub("[ \n]+", " ", inspector.sanitize(text))
+
 
 def report_from(result, report_type, year_range):
   links = result.select("a[href]")
@@ -165,6 +167,7 @@ def other_report_from(result, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def semiannual_report_from(result, year_range):
   title = clean_text(result.text)
