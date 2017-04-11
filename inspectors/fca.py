@@ -131,6 +131,7 @@ REPORT_PUBLISHED_MAPPING = {
   "FISMAEvaluation03": datetime.datetime(2003, 9, 10),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -166,8 +167,10 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+
 def clean_text(text):
   return text.replace("Â\xa0", " ").strip()
+
 
 def type_for_report(text):
   if "Audit" in text:
@@ -186,6 +189,7 @@ def type_for_report(text):
     return "performance"
   else:
     return "other"
+
 
 def report_from(result, landing_url, year_range):
   report_url = urljoin(landing_url, result.get('href'))
@@ -268,6 +272,7 @@ def report_from(result, landing_url, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def semiannual_report_from(result, year_range):
   report_url = urljoin(SEMIANNUAL_REPORTS_URL, result.get('href'))
