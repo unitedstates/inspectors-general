@@ -25,6 +25,7 @@ REPORTS_URL = "http://www.fec.gov/fecig/fecig.shtml"
 
 REPORT_PUBLISHED_MAPPING = {
   "Final-QualityAssessmentAuditoftheFECAuditDivision-OIG-12-01": datetime.datetime(2012, 9, 1),
+  "FinalPeerReviewReport-FarmCreditAdmin": datetime.datetime(2017, 2, 15),
   "property": datetime.datetime(2010, 3, 1),
   "procurement": datetime.datetime(2009, 9, 1),
   "disclosure": datetime.datetime(2005, 12, 1),
