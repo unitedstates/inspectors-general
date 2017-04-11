@@ -29,7 +29,7 @@ REPORT_PUBLISHED_MAPPING = {
   "Case_Study_-_PC_Malawi_-_2006": datetime.datetime(2006, 9, 1),
   "Case_Study_-_PC_Mauritania_-_2006": datetime.datetime(2006, 9, 1),
   "Case_Study_-_PC_Niger_-_2006": datetime.datetime(2006, 9, 1),
-  "Death_Inquiry_and_Assessment_of_Medical_Care_in_Peace_Corps_Morocco": datetime.datetime(2010,2,1),
+  "Death_Inquiry_and_Assessment_of_Medical_Care_in_Peace_Corps_Morocco": datetime.datetime(2010, 2, 1),
   "Burkina_Faso_Medical_Supply_Management_Advisory_Report": datetime.datetime(2013, 3, 14),
   "PCIG_Final_MAR_Certification_of_Volunteer_Payments": datetime.datetime(2013, 9, 24),
   "MAR_Cost_Savings_Opportunity_on_Value_Added_Tax": datetime.datetime(2013, 2, 13),
@@ -242,6 +242,7 @@ doubled_reports = {
   "PC_Fiji_Final_Evaluation_Report_IG1201E": 0,
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -260,6 +261,7 @@ def run(options):
       page += 1
     else:
       break
+
 
 def report_from(result, year_range):
   link = result.find("a")
