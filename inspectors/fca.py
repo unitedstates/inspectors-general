@@ -22,6 +22,7 @@ REPORT_ARCHIVE_URL = "https://www.fca.gov/home/inspector/oigarchive.html"
 SEMIANNUAL_REPORTS_URL = "https://www.fca.gov/home/inspector/semiannual.html"
 
 REPORT_PUBLISHED_MAPPING = {
+  "AwardsProgram": datetime.datetime(2017, 2, 23),
   "OversightofYBSPrograms": datetime.datetime(2016, 9, 28),
   "PositionManagementandJobEvaluationProgram": datetime.datetime(2016, 9, 23),
   "BusinessContinuity": datetime.datetime(2016, 6, 1),
@@ -34,6 +35,7 @@ REPORT_PUBLISHED_MAPPING = {
   "FinancialAuditReport12": datetime.datetime(2012, 11, 5),
   "FinancialAuditReport11": datetime.datetime(2011, 11, 8),
   "FinancialAuditReport10": datetime.datetime(2010, 11, 8),
+  "PurchaseCardProgram-2017": datetime.datetime(2017, 3, 7),
   "TravelCardProgram-2017": datetime.datetime(2017, 1, 31),
   "S&OPP17-18": datetime.datetime(2016, 9, 14),
   "S&OPP16-17": datetime.datetime(2015, 9, 16),
@@ -46,6 +48,7 @@ REPORT_PUBLISHED_MAPPING = {
   "PerformanceReport10&11": datetime.datetime(2012, 1, 9),
   "PerformanceReport08-09": datetime.datetime(2010, 1, 20),
   "PerformanceReport06-07": datetime.datetime(2008, 2, 11),
+  "FirstQtrFY2017FCSSurvey": datetime.datetime(2017, 3, 22),
   "FourthQtrFY2016FCSSurvey": datetime.datetime(2017, 1, 5),
   "ThirdQtrFY2016FCSSurvey": datetime.datetime(2016, 9, 7),
   "SecondQtrFY2016FCSSurvey": datetime.datetime(2016, 6, 3),
@@ -216,6 +219,8 @@ def report_from(result, landing_url, year_range):
 
   if report_url == "https://www.fca.gov/Download/InspectorGeneral/Inspectionrpts/TravelCardProgram.pdf":
     report_id = "TravelCardProgram-2017"
+  if report_url == "https://www.fca.gov/Download/InspectorGeneral/Inspectionrpts/PurchaseCardProgram.pdf":
+    report_id = "PurchaseCardProgram-2017"
 
   published_on = None
   if report_id in REPORT_PUBLISHED_MAPPING:
