@@ -19,6 +19,7 @@ archive = 1999
 
 HOMEPAGE_URL = "https://www.ncua.gov/About/Pages/inspector-general.aspx"
 AUDIT_REPORTS_URL = "https://www.ncua.gov/About/Pages/inspector-general/audit-reports/{year}.aspx"
+LATEST_AUDIT_REPORTS_URL = "https://www.ncua.gov/About/Pages/inspector-general/audit-reports.aspx"
 SEMIANNUAL_REPORTS_URL = "https://www.ncua.gov/About/Pages/inspector-general/semiannual-reports.aspx"
 OTHER_REPORTS_URL = "https://www.ncua.gov/About/Pages/inspector-general/other-reports.aspx"
 PLANS_URL = "https://www.ncua.gov/About/Pages/inspector-general/performance-strategic-plans.aspx"
@@ -34,7 +35,10 @@ def run(options):
   for year in year_range:
     if year < 2002:  # The oldest page for audit reports
       continue
-    doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL.format(year=year))
+    if year == 2017:
+      doc = utils.beautifulsoup_from_url(LATEST_AUDIT_REPORTS_URL)
+    else:
+      doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL.format(year=year))
 
     if doc == None:
       # Next year's audit page may not be published yet
