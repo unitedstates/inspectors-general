@@ -223,6 +223,7 @@ REPORT_PUBLISHED_MAP = {
 REPORT_ID_RE = re.compile("[0-9]{2}-[0-9]{2}")
 DATE_RE = re.compile("[^0-9]([01][0-9]-[0123][0-9]-[0-9][0-9])[^0-9]")
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -236,15 +237,15 @@ def run(options):
       raise inspector.NoReportsFoundError("Government Publishing Office (%s)" % url)
     for result in results:
       if (not result.text.strip() or
-          result.find("th") or
-          result.find("strong") or
-          result.contents[1].text in HEADER_TITLES
-        ):
+              result.find("th") or
+              result.find("strong") or
+              result.contents[1].text in HEADER_TITLES):
         # Skip header rows
         continue
       report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
+
 
 def report_from(result, landing_url, report_type, year_range):
   title = result.select("td")[-1].text
@@ -252,9 +253,9 @@ def report_from(result, landing_url, report_type, year_range):
 
   report_id_match = REPORT_ID_RE.match(result.td.text.strip())
   if ("contains sensitive information" in title or
-      "This correspondence will not be posted" in title or
-      title == "Unscheduled and Unpaid Absenteeism in the Office of "
-      "Plant Operations"):
+          "This correspondence will not be posted" in title or
+          title == "Unscheduled and Unpaid Absenteeism in the Office of "
+          "Plant Operations"):
     unreleased = True
     report_url = None
     if report_id_match:
