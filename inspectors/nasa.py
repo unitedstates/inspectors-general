@@ -22,6 +22,7 @@ archive = 1998
 AUDITS_REPORTS_URL = "https://oig.nasa.gov/audits/reports/FY{}/tableData.html"
 OTHER_REPORT_URL = "https://oig.nasa.gov/investigations/reports.html"
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -49,6 +50,7 @@ def run(options):
     report = other_report_from(result, year_range)
     if report:
       inspector.save_report(report)
+
 
 def audit_report_from(result, landing_url, year_range):
   tds = result.find_all("td")
@@ -102,6 +104,7 @@ def audit_report_from(result, landing_url, year_range):
   if unreleased:
     report['unreleased'] = unreleased
   return report
+
 
 def other_report_from(result, year_range):
   result_link = result.find("a")
