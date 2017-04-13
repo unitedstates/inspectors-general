@@ -120,6 +120,7 @@ WHITELIST_INSECURE_DOMAINS = (
   "https://www.archives.gov/",  # incomplete chain as of 2/19/2016
   "https://www.arc.gov/",  # incomplete chain as of 8/24/2016
   "https://www.ncua.gov/",  # incomplete chain as of 12/10/2016
+  "https://www.oig.dot.gov/",  # incomplete chain as of 4/12/2017
 
   # The following domains will 301/302 redirect to the above domains, so
   # validate=False is needed for these cases as well
