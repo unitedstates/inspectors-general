@@ -70,6 +70,9 @@ def audit_report_from(result, landing_url, year_range):
     except ValueError:
       published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
+  if tds[3].text.strip() == "IG-17-002A.pdf":
+    report_id = "IG-17-002A"
+
   report_url = urljoin(landing_url, tds[3].text.strip())
   unreleased = "foia" in report_url.lower() or "not available*" in report_url.lower()
 
