@@ -115,6 +115,7 @@ REPORT_PUBLISHED_MAP = {
   "aging-analysis-redress-funds-held-account-memorandum-jodie-bernstein-director-bureau": datetime.datetime(1999, 11, 1),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -128,6 +129,7 @@ def run(options):
       report = report_from(result, url, report_type, year_range)
       if report:
         inspector.save_report(report)
+
 
 def report_from(result, landing_url, report_type, year_range):
   link = result.find("a")
