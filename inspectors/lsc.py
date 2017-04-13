@@ -202,6 +202,7 @@ BLACKLIST_REPORT_TITLES = [
   'Client Trust Fund Inspection Reports',
 ]
 
+
 def parse_year_accordion(content, landing_url, report_type, year_range):
   accordions = content.select("div.accordion-group")
   if not accordions:
@@ -222,14 +223,15 @@ def parse_year_accordion(content, landing_url, report_type, year_range):
       if report:
         inspector.save_report(report)
 
+
 def parse_investigation(content, landing_url, report_type, year_range):
   doj_flag = True
   doj_report_counter = 0
   other_report_counter = 0
   for child in content.children:
     if (isinstance(child, Tag) and
-        child.name == 'h3' and
-        child.text == 'Reports'):
+            child.name == 'h3' and
+            child.text == 'Reports'):
       doj_flag = False
       continue
     if doj_flag:
@@ -253,6 +255,7 @@ def parse_investigation(content, landing_url, report_type, year_range):
   if doj_report_counter == 0 or other_report_counter == 0:
     raise inspector.NoReportsFoundError("Legal Services Corporation (%s)" % landing_url)
 
+
 def parse_peer_reviews(content, landing_url, report_type, year_range):
   links = content.find_all("a")
   if len(links) <= 1:
@@ -264,6 +267,7 @@ def parse_peer_reviews(content, landing_url, report_type, year_range):
     report = report_from(result, landing_url, report_type, year_range)
     if report:
       inspector.save_report(report)
+
 
 def parse_mapping(content, landing_url, report_type, year_range):
   links = content.find_all("a")
@@ -317,6 +321,7 @@ REPORT_PAGES_INFO = [
   (MAPPING_PROJECT_ARCHIVE_GRANTEE_URL, "other", parse_mapping),
 ]
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -328,6 +333,7 @@ def run(options):
     parse_func(content, url, report_type, year_range)
 
 REPORT_NO_RE = re.compile("[0-9]{2}-[0-9]{2,3}[A-Z]?")
+
 
 def report_from(result, landing_url, report_type, year_range):
   if not result.text or result.text in BLACKLIST_REPORT_TITLES:
@@ -369,7 +375,7 @@ def report_from(result, landing_url, report_type, year_range):
     report_id, _ = os.path.splitext(report_filename)
     report_id = unquote(report_id)
   report_id = "-".join(report_id.split())
-  report_id = report_id.replace("\\", "") # strip backslashes
+  report_id = report_id.replace("\\", "")  # strip backslashes
 
   estimated_date = False
   published_on = None
