@@ -39,7 +39,7 @@ AGENCY_NAMES = {
   "esf": "Exchange Stabilization Fund",
   "ffb": "Federal Financing Bank",
   "fcen": "The Financial Crimes Enforcement Network",
-  "fincen": "The Financial Crimes Enforcement Network", # Another slug for the above
+  "fincen": "The Financial Crimes Enforcement Network",  # Another slug for the above
   "fms": "Financial Management Service",
   "gcerc": "Gulf Coast Ecosystem Restoration Council",
   "ia": "The Office of International Affairs",
@@ -101,6 +101,7 @@ REPORT_PUBLISHED_MAP = {
   "OIG-CA-17-013": datetime.datetime(2017, 3, 1),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
   if datetime.datetime.now().month >= 10:
@@ -145,6 +146,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+
 def clean_text(text):
   # A lot of text on this page has extra characters
   return text.replace('\u200b', '').replace('\ufffd', ' ').replace('\xa0', ' ').strip()
@@ -152,6 +154,7 @@ def clean_text(text):
 SUMMARY_RE = re.compile("(OIG|OIG-CA|EVAL) *-? *([0-9]+) *- *([0-9R]+) *[:,]? +([^ ].*)")
 SUMMARY_FALLBACK_RE = re.compile("([0-9]+)-(OIG)-([0-9]+) *:? *(.*)")
 FILENAME_RE = re.compile("^(OIG-[0-9]+-[0-9]+)\\.pdf")
+
 
 def audit_report_from(result, page_url, year_range):
   if not clean_text(result.text):
@@ -194,10 +197,10 @@ def audit_report_from(result, page_url, year_range):
     report_id = "IGATI %d" % published_on.year
     title = report_summary
   elif report_summary == "Report on the Bureau of the Fiscal Service Federal " \
-      "Investments Branch\u2019s Description of its Investment/" \
-      "Redemption Services and the Suitability of the Design and Operating " \
-      "Effectiveness of its Controls for the Period August 1, 2013 to " \
-      "July 31, 2014":
+          "Investments Branch\u2019s Description of its Investment/" \
+          "Redemption Services and the Suitability of the Design and Operating " \
+          "Effectiveness of its Controls for the Period August 1, 2013 to " \
+          "July 31, 2014":
     # This one is missing its ID in the index
     report_id = "OIG-14-049"
     title = report_summary
@@ -214,7 +217,7 @@ def audit_report_from(result, page_url, year_range):
       raise Exception("Couldn't parse report ID: %s" % repr(report_summary))
 
   if report_id == 'OIG-15-015' and \
-      'Financial Statements for hte Fiscal Years 2014 and 2013' in title:
+          'Financial Statements for hte Fiscal Years 2014 and 2013' in title:
     # This report is listed twice, once with a typo
     return
 
@@ -240,16 +243,15 @@ def audit_report_from(result, page_url, year_range):
   else:
     agency_slug = clean_text(agency_slug_text.split("&")[0]).lower()
 
-  if (report_id in UNRELEASED_REPORTS
-    or "If you would like a copy of this report" in report_summary
-    or "If you would like to see a copy of this report" in report_summary
-    or "have been removed from the OIG website" in report_summary
-    or "removed the auditors\u2019 reports from the" in report_summary
-    or "Classified Report" in report_summary
-    or "Classified Audit Report" in report_summary
-    or "Sensitive But Unclassified" in report_summary
-    or "To obtain further information, please contact the OIG" in report_summary
-    ):
+  if (report_id in UNRELEASED_REPORTS or
+          "If you would like a copy of this report" in report_summary or
+          "If you would like to see a copy of this report" in report_summary or
+          "have been removed from the OIG website" in report_summary or
+          "removed the auditors\u2019 reports from the" in report_summary or
+          "Classified Report" in report_summary or
+          "Classified Audit Report" in report_summary or
+          "Sensitive But Unclassified" in report_summary or
+          "To obtain further information, please contact the OIG" in report_summary):
     unreleased = True
     report_url = None
     landing_url = page_url
@@ -289,6 +291,7 @@ def audit_report_from(result, page_url, year_range):
     report['landing_url'] = landing_url
 
   return report
+
 
 def report_from(result, page_url, report_type, year_range):
   try:
@@ -357,6 +360,7 @@ def report_from(result, page_url, report_type, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def semiannual_report_from(result, page_url, year_range):
   published_on_text = clean_text(result.text)
