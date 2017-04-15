@@ -116,6 +116,7 @@ LOWER_PDF_REPORT_IDS = [
   "sarc1997_2",
 ]
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -126,20 +127,20 @@ def run(options):
     doc = utils.beautifulsoup_from_url(agency_url)
     results = doc.select("ul li")
     if not results:
-      results = [ancestor_tag_by_name(x, 'tr') for x in \
-        doc.select('img[src$="pdf-pic1.gif"]')]
+      results = [ancestor_tag_by_name(x, 'tr') for x in
+                 doc.select('img[src$="pdf-pic1.gif"]')]
     if not results:
       raise inspector.NoReportsFoundError("Department of Agriculture (%s)" % agency_slug)
     for result in results:
       report = report_from(result, agency_url, year_range,
-        report_type='audit', agency_slug=agency_slug)
+                           report_type='audit', agency_slug=agency_slug)
       if report:
         report_id = report["report_id"]
         title = report["title"]
         key = (report_id, title)
         if key in all_audit_reports:
           all_audit_reports[key]["agency"] = all_audit_reports[key]["agency"] \
-                + ", " + agency_slug.lower()
+              + ", " + agency_slug.lower()
         else:
           all_audit_reports[key] = report
 
@@ -157,6 +158,7 @@ def run(options):
         inspector.save_report(report)
 
 DATE_FORMATS = ['%m/%d/%Y', '%m/%Y']
+
 
 def report_from(result, page_url, year_range, report_type, agency_slug="agriculture"):
   published_on = None
@@ -214,39 +216,39 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
   # These entries on the IG page have the wrong URLs associated with them. The
   # correct URLs were guessed or retrieved from an earlier version of the page,
   # via the Internet Archive Wayback Machine.
-  if report_url == "http://www.usda.gov/oig/webdocs/IGtestimony110302.pdf" and \
-      title == "Statement Of Phyllis K. Fong Inspector General: Before The " \
-      "House Appropriations Subcommittee On Agriculture, Rural Development, " \
-      "Food And Drug Administration And Related Agencies":
+  if (report_url == "http://www.usda.gov/oig/webdocs/IGtestimony110302.pdf" and
+          title == "Statement Of Phyllis K. Fong Inspector General: Before "
+          "The House Appropriations Subcommittee On Agriculture, Rural "
+          "Development, Food And Drug Administration And Related Agencies"):
     report_url = "http://www.usda.gov/oig/webdocs/Testimonybudgt-2004.pdf"
-  elif report_url == "http://www.usda.gov/oig/webdocs/Ebt.PDF" and \
-      title == "Statement Of Roger C. Viadero: Before The U.S. House Of " \
-      "Representatives Committee On Agriculture Subcommittee On Department " \
-      "Operations, Oversight, Nutrition, And Forestry on the Urban Resources " \
-      "Partnership Program":
+  elif (report_url == "http://www.usda.gov/oig/webdocs/Ebt.PDF" and
+        title == "Statement Of Roger C. Viadero: Before The U.S. House Of "
+        "Representatives Committee On Agriculture Subcommittee On Department "
+        "Operations, Oversight, Nutrition, And Forestry on the Urban "
+        "Resources Partnership Program"):
     report_url = "http://www.usda.gov/oig/webdocs/URP-Testimony.PDF"
-  elif report_url == "http://www.usda.gov/oig/webdocs/foodaidasst.PDF" and \
-      title == "Testimony Of Roger C. Viadero: Before The United States " \
-      "Senate Committee On Agriculture, Nutrition, And Forestry On The " \
-      "Department's Processing Of Civil Rights Complaints":
+  elif (report_url == "http://www.usda.gov/oig/webdocs/foodaidasst.PDF" and
+        title == "Testimony Of Roger C. Viadero: Before The United States "
+        "Senate Committee On Agriculture, Nutrition, And Forestry On The "
+        "Department's Processing Of Civil Rights Complaints"):
     report_url = "http://www.usda.gov/oig/webdocs/IGstestimony.PDF"
-  elif report_url == "http://www.usda.gov/oig/webdocs/34601-10-TE.pdf" and \
-      title == "Rural Housing Service Single Family Housing Program - Maine":
+  elif (report_url == "http://www.usda.gov/oig/webdocs/34601-10-TE.pdf" and
+        title == "Rural Housing Service Single Family Housing Program - Maine"):
     report_url = "http://www.usda.gov/oig/webdocs/04004-05-Hy.pdf"
-  elif report_url == "http://www.usda.gov/oig/webdocs/04004-05-Hy.pdf" and \
-      title == "Rural Development\u2019s Processing of Loan Guarantees to " \
-      "Member of the Western Sugar Cooperative":
+  elif (report_url == "http://www.usda.gov/oig/webdocs/04004-05-Hy.pdf" and
+          title == "Rural Development\u2019s Processing of Loan Guarantees to "
+          "Member of the Western Sugar Cooperative"):
     report_url = "http://www.usda.gov/oig/webdocs/34601-03-Ch.pdf"
-  elif report_url == "http://www.usda.gov/oig/webdocs/60801-%7E1.pdf" and \
-      title == "Evaluation of the Office of Civil Rights\u2019 Efforts to " \
-      "Reduce the Backlog of Program Complaints":
+  elif (report_url == "http://www.usda.gov/oig/webdocs/60801-%7E1.pdf" and
+          title == "Evaluation of the Office of Civil Rights\u2019 Efforts to "
+          "Reduce the Backlog of Program Complaints"):
     report_url = "http://www.usda.gov/oig/webdocs/60801-1-HQ.pdf"
   elif report_url == "http://www.usda.gwebdocs/34703-0001-31.pdf":
     report_url = "http://www.usda.gov/oig/webdocs/34703-0001-31.pdf"
 
   # This report is listed twice on the same page with slightly different titles
   if title == "Animal and Plant Health Inspection Service Transition and " \
-      "Coordination of Border Inspection Activities Between USDA and DHS":
+          "Coordination of Border Inspection Activities Between USDA and DHS":
     return
 
   report_filename = report_url.split("/")[-1]
@@ -264,7 +266,7 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
     return
 
   if title == "American Recovery and Reinvestment Act - Emergency Watershed " \
-      "Protection Program Floodplain Easements" and report_id == "10703-1-KC":
+          "Protection Program Floodplain Easements" and report_id == "10703-1-KC":
     return
 
   # These are just summary versions of other reports. Skip for now.
@@ -307,6 +309,7 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def ancestor_tag_by_name(element, name):
   for parent in element.parents:
