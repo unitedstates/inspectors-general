@@ -51,6 +51,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+
 def report_type_from_title(title):
   if 'Audit' in title or 'Follow-Up Review' in title:
     return 'audit'
@@ -64,6 +65,7 @@ def report_type_from_title(title):
     return 'fisma'
   else:
     return 'other'
+
 
 def report_from(result, year_range):
   link = result.find("a")

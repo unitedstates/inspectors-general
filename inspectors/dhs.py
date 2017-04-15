@@ -15,6 +15,7 @@ archive = 2002
 #   limit: only download X number of reports (per component)
 #   report_id: use in conjunction with 'component' to get only one report
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -57,11 +58,10 @@ def run(options):
 
       key = (report["report_id"], report["title"])
       if key in all_audit_reports:
-        all_audit_reports[key]["agency"] = all_audit_reports[key]["agency"] + \
-                ", " + report["agency"]
-        all_audit_reports[key]["agency_name"] = \
-                all_audit_reports[key]["agency_name"] + ", " + \
-                report["agency_name"]
+        all_audit_reports[key]["agency"] = "{}, {}".format(all_audit_reports[key]["agency"],
+                                                           report["agency"])
+        all_audit_reports[key]["agency_name"] = "{}, {}".format(all_audit_reports[key]["agency_name"],
+                                                                report["agency_name"])
       else:
         all_audit_reports[key] = report
 
@@ -75,6 +75,7 @@ def run(options):
     inspector.save_report(report)
 
 PDF_DESCRIPTION_RE = re.compile("(.*)\\(PDF, [0-9]+ pages - [0-9.]+ ?[mMkK][bB]\\)")
+
 
 def report_from(result, component, url):
   report = {
@@ -130,19 +131,19 @@ def report_from(result, component, url):
 
   # Discard these results, both the URLs and the report numbesr are correctly
   # listed in other entries
-  if report_id == "OIG-13-48_2013" and report_url == "https://www.oig.dhs.gov" \
-        "/assets/Mgmt/2014/OIG_14-48_Mar14.pdf":
+  if (report_id == "OIG-13-48_2013" and report_url ==
+          "https://www.oig.dhs.gov/assets/Mgmt/2014/OIG_14-48_Mar14.pdf"):
     return
-  if report_id == "OIG-13-61_2013" and report_url == "https://www.oig.dhs.gov" \
-        "/assets/Mgmt/2014/OIG_14-61_Apr14.pdf":
+  if (report_id == "OIG-13-61_2013" and report_url ==
+          "https://www.oig.dhs.gov/assets/Mgmt/2014/OIG_14-61_Apr14.pdf"):
     return
-  if report_id == "OIG-13-86_2013" and report_url == "https://www.oig.dhs.gov" \
-        "/assets/Mgmt/2014/OIG_14-86_Apr14.pdf":
+  if (report_id == "OIG-13-86_2013" and report_url ==
+          "https://www.oig.dhs.gov/assets/Mgmt/2014/OIG_14-86_Apr14.pdf"):
     return
 
   # Fix typos in this report's date and number
-  if report_id == "OIG-12-105_2012" and report_url == "https://www.oig.dhs.gov"\
-        "/assets/Mgmt/OIG_11-105_Aug11.pdf":
+  if (report_id == "OIG-12-105_2012" and report_url ==
+          "https://www.oig.dhs.gov/assets/Mgmt/OIG_11-105_Aug11.pdf"):
     published_on = "2011-08-25"
     report['published_on'] = published_on
     report_id = "OIG-11-105_2011"

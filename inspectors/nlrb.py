@@ -75,6 +75,7 @@ def run(options):
 ARCHIVE_PREAMBLE_TEXT = ("The following audit reports were issued more than "
                          "10 years ago.")
 
+
 def report_from(result, report_type, base_url, year_range):
   link = result.find("a")
   if not link and result.text.strip() == ARCHIVE_PREAMBLE_TEXT:
@@ -127,6 +128,7 @@ def report_from(result, report_type, base_url, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def semiannual_report_from(result, year_range):
   link = result.find("a")

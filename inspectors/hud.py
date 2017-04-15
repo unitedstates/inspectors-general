@@ -150,6 +150,7 @@ DUPLICATE_LANDING_PAGES = (
   # Duplicate of https://www.hudoig.gov/reports-publications/audit-reports/city-of-fort-lauderdale-florida-did-not-properly-administer-its
 )
 
+
 def run(options):
   pages = options.get('pages', ALL_PAGES)
   year_range = inspector.year_range(options, archive)
@@ -175,7 +176,7 @@ def run(options):
       report = report_from(row, year_range)
       if report:
         key = (report["report_id"], report["landing_url"])
-        if not key in all_reports:
+        if key not in all_reports:
           all_reports[key] = report
         else:
           # If we get the exact same landing page twice, skip it, nothing new
@@ -216,13 +217,14 @@ def run(options):
         link_list = [link for link in link_list
                      if " ".join(link.text.split()) != "Auditee Reponse"]
         if len(link_list) > 1:
-          raise Exception("Found multiple links on %s, scraper may be broken" \
-              % state_url)
+          raise Exception("Found multiple links on %s, scraper may be broken"
+                          % state_url)
       report = report_from_archive(result, state_name, state_url, year_range)
       if report:
         inspector.save_report(report)
 
   do_canned_reports(year_range)
+
 
 def split_dom(doc, tree, split_tag_name):
   '''This function takes a BeautifulSoup document, a subtree of that document,
@@ -253,6 +255,7 @@ def split_dom(doc, tree, split_tag_name):
       accumulator.append(element)
   yield accumulator
 
+
 def type_from_report_type_text(report_type_text):
   if report_type_text in ["Audit Reports", 'Audit Guides']:
     return 'audit'
@@ -266,6 +269,7 @@ def type_from_report_type_text(report_type_text):
     return 'investigation'
   else:
     return 'other'
+
 
 def report_from(report_row, year_range):
   published_date_text = report_row.select('span.date-display-single')[0].text
@@ -379,6 +383,7 @@ ARCHIVE_TITLE_RE = re.compile("^ ?(?:Titl?e|Subjec ?t): (.*[^ ]) ?$")
 
 _seen_report_ids = set()
 
+
 def report_from_archive(result, state_name, landing_url, year_range):
   report_link = result.a
   if report_link:
@@ -459,6 +464,7 @@ def report_from_archive(result, state_name, landing_url, year_range):
     report['unreleased'] = True
   return report
 
+
 def url_for(year_range, page=1):
   start_year = year_range[0]
   end_year = year_range[-1]
@@ -467,7 +473,8 @@ def url_for(year_range, page=1):
     # requesting before that time, remove all date filters and we will later
     # filter the results in memory
     start_year, end_year = '', ''
-  return '%s?keys=&date_filter[min][year]=%s&date_filter[max][year]=%s&page=%i' % (BASE_URL, start_year, end_year, page-1)
+  return '%s?keys=&date_filter[min][year]=%s&date_filter[max][year]=%s&page=%i' % (BASE_URL, start_year, end_year, page - 1)
+
 
 def do_canned_reports(year_range):
   report = {

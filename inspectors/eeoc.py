@@ -89,6 +89,7 @@ REPORT_PUBLISHED_MAP = {
   "2016-oct-mar": datetime.datetime(2016, 5, 1),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -100,6 +101,7 @@ def run(options):
         report = report_from(result, year_range, report_type)
         if report:
           inspector.save_report(report)
+
 
 def report_from(result, year_range, report_type):
   path = result.get("href")
@@ -141,12 +143,14 @@ def report_from(result, year_range, report_type):
 
   return report
 
+
 def fiscal_year_parse(html_report):
   fiscal_year_text = (html_report
                       .find(class_="field-name-field-fiscal-year")
                       .find(class_="field-item")
                       .get_text())
   return int(fiscal_year_text)
+
 
 def filter_links(links):
   return [link["href"] for link in links

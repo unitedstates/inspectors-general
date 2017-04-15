@@ -19,6 +19,7 @@ archive = 2000
 AUDIT_REPORTS_URL = "http://www.neh.gov/about/oig/reviews"
 SEMIANNUAL_REPORTS_URL = "http://www.neh.gov/about/oig/semi-annual-reports"
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -44,6 +45,7 @@ def run(options):
 
 REPORT_ID_RE = re.compile("\\s*(OIG-[0-9]+-[0-9]+\\s+\\([A-Z]+\\))\\s*(?:\\((?:[0-9]+-page\\s+)?PDF\\))?\\s*")
 PL_NUMBER_RE = re.compile("(PL-[0-9]+-[0-9]+)\\s+\\(OIG\\)")
+
 
 def audit_report_from(result, year_range):
   if result.parent.name == 'thead':
@@ -100,6 +102,7 @@ def audit_report_from(result, year_range):
   if landing_url:
     report['landing_url'] = landing_url
   return report
+
 
 def semiannual_report_from(result, year_range):
   if result.parent.name == 'thead':

@@ -263,6 +263,7 @@ TITLE_NORMALIZATION = {
 
 BASE_URL = "http://oig.hhs.gov"
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -280,6 +281,7 @@ def run(options):
 
   deduplicate_finalize()
 
+
 def extract_reports_for_topic(topic, year_range, archives=False):
   if topic == "OE":
     extract_reports_for_oei(year_range)
@@ -296,6 +298,7 @@ def extract_reports_for_topic(topic, year_range, archives=False):
   for subtopic_name, subtopic_url in subtopic_map.items():
     logging.debug("## Processing subtopic %s" % subtopic_name)
     extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_name)
+
 
 def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_name):
   doc = utils.beautifulsoup_from_url(subtopic_url)
@@ -323,6 +326,7 @@ def extract_reports_for_subtopic(subtopic_url, year_range, topic_name, subtopic_
     report = report_from(result, year_range, topic_name, subtopic_url, subtopic_name)
     if report:
       deduplicate_save_report(report)
+
 
 def extract_reports_for_oei(year_range):
   topic_name = TOPIC_NAMES["OE"]
@@ -380,7 +384,7 @@ def extract_reports_for_oei(year_range):
 
         # See the notes at the top of this file, this is the wrong link
         if link_text == "Personnel Suitability and Security" and \
-            url == "http://oig.hhs.gov/oei/reports/oai-07-86-00079.pdf":
+                url == "http://oig.hhs.gov/oei/reports/oai-07-86-00079.pdf":
           continue
 
         # These landing pages are actually for two different reports, use the
@@ -403,6 +407,7 @@ def extract_reports_for_oei(year_range):
     report = report_from(result, year_range, topic_name, subtopic_url, subtopic_name)
     if report:
       deduplicate_save_report(report)
+
 
 def report_from(result, year_range, topic, subtopic_url, subtopic=None):
   # Ignore links to other subsections
@@ -440,14 +445,13 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
 
   # Fix copy-paste error in link
   if (title == "Medicare Compliance Review of Altru Hospital for "
-      "2012 and 2013" and
-      report_url == "http://oig.hhs.gov/oas/reports/region4/41408036.asp"):
+          "2012 and 2013" and
+          report_url == "http://oig.hhs.gov/oas/reports/region4/41408036.asp"):
     report_url = "http://oig.hhs.gov/oas/reports/region7/71505070.asp"
 
   # Ignore reports from other sites
   if BASE_URL not in report_url:
     return
-
 
   if report_url in BLACKLIST_REPORT_URLS:
     return
@@ -460,7 +464,6 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
 
   if report_filename == "11302505.pdf":
     report_id = report_id + "_early_alert"
-
 
   # Try a quick check from the listing page to see if we can bail out based on
   # the year
@@ -475,8 +478,8 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
     return
 
   # This report is listed twice, once with the wrong date
-  if published_on and published_on.year == 2012 and published_on.month == 1 \
-      and published_on.date == 12 and report_id == "20901002":
+  if published_on and published_on.year == 2012 and published_on.month == 1 and \
+          published_on.date == 12 and report_id == "20901002":
     return
 
   if report_id in REPORT_PUBLISHED_MAPPING:
@@ -517,6 +520,7 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
     result['subtopic'] = subtopic
   return result
 
+
 def filter_links(link_list, base_url):
   href_list = [element.get('href') for element in link_list]
   for i in range(len(href_list)):
@@ -525,11 +529,12 @@ def filter_links(link_list, base_url):
       href_list[i] = utils.resolve_redirect(href_list[i])
   href_list = [urldefrag(urljoin(base_url, href))[0] for href in href_list]
   filtered_list = [href for href in href_list
-      if href and href not in BLACKLIST_REPORT_URLS and
-      not href.startswith("mailto:") and
-      not href.endswith(".jpg")]
+                   if href and href not in BLACKLIST_REPORT_URLS and
+                   not href.startswith("mailto:") and
+                   not href.endswith(".jpg")]
   filtered_list = list(set(filtered_list))
   return filtered_list
+
 
 def report_from_landing_url(report_url):
   doc = utils.beautifulsoup_from_url(report_url)
@@ -570,8 +575,10 @@ def report_from_landing_url(report_url):
 
   return report_url, published_on
 
+
 def clean_published_text(published_text):
   return published_text.strip().replace(" ", "").replace("\xa0", "")
+
 
 def get_published_date_from_tag(possible_tag):
   try:
@@ -601,6 +608,7 @@ def get_published_date_from_tag(possible_tag):
       return datetime.datetime.strptime(published_text, date_format)
     except (ValueError, TypeError, IndexError):
       pass
+
 
 def published_on_from_inline_link(result, report_filename, title, report_id, report_url):
   published_on = None
@@ -651,6 +659,7 @@ def published_on_from_inline_link(result, report_filename, title, report_id, rep
         # Fall back to the Last-Modified header
   return published_on
 
+
 def get_subtopic_map(topic_url):
   doc = utils.beautifulsoup_from_url(topic_url)
 
@@ -671,11 +680,14 @@ def get_subtopic_map(topic_url):
 
   return subtopic_map
 
+
 def strip_url_fragment(url):
   scheme, netloc, path, params, query, fragment = urlparse(url)
   return urlunparse((scheme, netloc, path, params, query, ""))
 
 _report_storage = {}
+
+
 def deduplicate_save_report(report):
   global _report_storage
   key = (report['title'], report['url'], report['published_on'])
@@ -692,6 +704,7 @@ def deduplicate_save_report(report):
         _report_storage[key]['subtopic'] = report['subtopic']
   else:
     _report_storage[key] = report
+
 
 def deduplicate_finalize():
   global _report_storage

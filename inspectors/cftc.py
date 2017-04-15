@@ -59,6 +59,7 @@ REPORT_PUBLISHED_MAPPING = {
 
 REPORTS_URL = "http://www.cftc.gov/About/OfficeoftheInspectorGeneral/index.htm"
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -81,6 +82,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+
 def extract_report_type(text):
   if 'Peer Review' in text:
     return "peer_review"
@@ -92,6 +94,7 @@ def extract_report_type(text):
     return "inspection"
   elif 'Management Challenges' in text:
     return "management_challenges"
+
 
 def report_from(result, year_range, report_type=None):
   if result.name == 'a':

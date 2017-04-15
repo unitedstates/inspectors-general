@@ -30,6 +30,7 @@ BASE_URL = "https://oig.state.gov/reports?page={page}"
 TESTIMONY_BASE_URL = "https://oig.state.gov/testimony-news?page={page}"
 ALL_PAGES = 1000
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
   pages = options.get('pages', ALL_PAGES)
@@ -50,6 +51,7 @@ def run(options):
     if not results:
       break
 
+
 def extract_reports_for_page(url, page_number, year_range, listing_xpath):
   doc = utils.beautifulsoup_from_url(url)
   results = doc.select(listing_xpath)
@@ -63,6 +65,7 @@ def extract_reports_for_page(url, page_number, year_range, listing_xpath):
     if report:
       inspector.save_report(report)
   return results
+
 
 def report_from(result, year_range):
   title = result.find("h1").text

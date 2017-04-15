@@ -32,6 +32,7 @@ DATE_RE = re.compile("(:?January|February|March|April|May|June|July|"
                      "August|September|October|November|December) [0-9]{2}, "
                      "[0-9]{4}")
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -69,6 +70,7 @@ MISMATCHED_REPORT_URLS = (
   "https://oig.usaid.gov/sites/default/files/audit-reports/7-641-03-002-p.pdf",
   "https://oig.usaid.gov/sites/default/files/audit-reports/b-118-05-002-p_0.pdf"
 )
+
 
 def report_from(result, landing_url, report_type, year_range):
   link = result.find("a")
@@ -125,12 +127,12 @@ def report_from(result, landing_url, report_type, year_range):
     report_id = report_id + "-follow-up"
 
   if report_url == "https://oig.usaid.gov/sites/default/files/audit-reports/" \
-        "0-000-12-001-s_0.pdf":
+          "0-000-12-001-s_0.pdf":
     # Two versions of this report have been uploaded
     report_id = report_id + "_final"
 
   if report_url == "https://oig.usaid.gov/sites/default/files/audit-reports/" \
-        "1-520-01-010-p_0.pdf":
+          "1-520-01-010-p_0.pdf":
     # This file has been uploaded twice, once with "_0" and once without
     return None
 
@@ -157,6 +159,7 @@ def report_from(result, landing_url, report_type, year_range):
     report['landing_url'] = landing_url
     del report['url']
   return report
+
 
 def semiannual_report_from(result, year_range):
   link = result.find("a")

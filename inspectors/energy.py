@@ -75,7 +75,7 @@ TOPIC_TO_URL = {
 # comprehensive.
 # These are tuples of the topic code and the report_type that should be used
 # when scraping reports of that topic
-ADDITIONAL_TOPICS= [
+ADDITIONAL_TOPICS = [
   ('PR', 'peer_review'),
   ('DOED', 'doe_directive'),
   ('P', 'performance_plan'),
@@ -93,6 +93,7 @@ RE_NOT_AVAILABLE_3 = re.compile('official use only', re.I)
 RE_NOT_AVAILABLE_4 = re.compile('to obtain a copy of this report please email', re.I)
 RE_WITHDRAWN = re.compile('report is temporarily unavailable', re.I)
 RE_CLASSIFIED = re.compile('report is classified', re.I)
+
 
 class EnergyScraper(object):
   def run(self, options):
@@ -218,12 +219,12 @@ class EnergyScraper(object):
     else:
       summary = inspector.sanitize(summary)
 
-    if (summary and (RE_NOT_AVAILABLE.search(summary)
-                     or RE_NOT_AVAILABLE_2.search(summary)
-                     or RE_NOT_AVAILABLE_3.search(summary)
-                     or RE_NOT_AVAILABLE_4.search(summary)
-                     or RE_WITHDRAWN.search(summary)
-                     or RE_CLASSIFIED.search(summary))):
+    if (summary and (RE_NOT_AVAILABLE.search(summary) or
+                     RE_NOT_AVAILABLE_2.search(summary) or
+                     RE_NOT_AVAILABLE_3.search(summary) or
+                     RE_NOT_AVAILABLE_4.search(summary) or
+                     RE_WITHDRAWN.search(summary) or
+                     RE_CLASSIFIED.search(summary))):
       unreleased = True
 
     report_url = None
@@ -237,7 +238,7 @@ class EnergyScraper(object):
 
   def urls_for(self):
     only = self.options.get('topics')
-    if only: # if only...
+    if only:
       only = set(only.split(','))
       only = [(o, TOPIC_TO_REPORT_TYPE[o]) if o in TOPIC_TO_REPORT_TYPE else o
               for o in only]
@@ -270,7 +271,6 @@ class EnergyScraper(object):
           next_page = utils.beautifulsoup_from_url(next_url)
           for link in next_page.select('li.pager-item a'):
             yield urljoin(BASE_URL, link['href'])
-
 
   def urls_for_topics(self, topics):
     for topic in topics:
@@ -316,6 +316,7 @@ class EnergyScraper(object):
       if cur_date < self.first_date:
         return True
     return False
+
 
 def run(options):
   EnergyScraper().run(options)

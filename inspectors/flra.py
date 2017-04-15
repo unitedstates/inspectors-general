@@ -141,6 +141,7 @@ REPORT_PUBLISHED_MAP = {
   "Evaluation-of-the-FLRA-FY99-Annual-Performance-Plan-Submission": datetime.datetime(2000, 11, 1),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
   keys = set()
@@ -171,6 +172,7 @@ def run(options):
           if key not in keys:
             inspector.save_report(report)
             keys.add(key)
+
 
 def report_from_paragraph(result, landing_url, report_type, year_range):
   missing = False
@@ -209,8 +211,8 @@ def report_from_paragraph(result, landing_url, report_type, year_range):
     report_id = report_id.replace(":", "")
 
   if ('Non-Public Report' in title or
-      'Non -Public Report' in title or
-      'Non Public Report' in title):
+          'Non -Public Report' in title or
+          'Non Public Report' in title):
     unreleased = True
 
   if result.a:
@@ -266,6 +268,7 @@ def report_from_paragraph(result, landing_url, report_type, year_range):
   if missing:
     report['missing'] = missing
   return report
+
 
 def report_from_list(result, landing_url, report_type, year_range):
   missing = False

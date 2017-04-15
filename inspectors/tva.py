@@ -21,6 +21,7 @@ AUDIT_REPORTS_URL = "http://oig.tva.gov/reports.html"
 SEMIANNUAL_REPORTS_URL = "http://oig.tva.gov/sar_reports.html"
 PEER_REVIEW_REPORTS_URL = "http://oig.tva.gov/peer_reports.html"
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -60,6 +61,7 @@ def run(options):
     report = peer_review_report_from(result, year_range)
     if report:
       inspector.save_report(report)
+
 
 def audit_report_from(result, landing_url, year_range):
   header = result.select(".panel-heading")[0]
@@ -114,6 +116,7 @@ def audit_report_from(result, landing_url, year_range):
 
   return report
 
+
 def archive_semiannual_report_from(link, year_range):
   report_url = urljoin(SEMIANNUAL_REPORTS_URL, link["href"])
   report_filename = os.path.basename(report_url)
@@ -140,6 +143,7 @@ def archive_semiannual_report_from(link, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def semiannual_report_from(result, year_range):
   report_url = urljoin(SEMIANNUAL_REPORTS_URL, result.a["href"])
@@ -172,6 +176,7 @@ def semiannual_report_from(result, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def peer_review_report_from(result, year_range):
   report_url = urljoin(PEER_REVIEW_REPORTS_URL, result.a["href"])

@@ -22,6 +22,7 @@ REPORT_SEARCH_URL = ("https://www.doioig.gov/reports?keywords=&report_number="
                      "&report_date_op=%3E%3D&report_date[date]=01/01/{}"
                      "&page={}")
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
   min_year = min(year_range)
@@ -48,6 +49,7 @@ def run(options):
   if last_page == 0:
     raise Exception("Did not find last page link")
 
+
 def report_type_from_text(report_type_text):
   if report_type_text in ['Audit', 'External Audit']:
     return 'audit'
@@ -67,9 +69,9 @@ def report_from(result, year_range):
   title = result.header.text.strip()
 
   if (title == "Final Advisory Report on Costs Claimed by the State of Nevada, "
-      "Department of Conservation and Natural Resources, Division of Wildlife, "
-      "Under Federal Aid Grants from the U.S. Fish and Wildlife Service from "
-      "July 1, 1996 through June 30, 1997"):
+          "Department of Conservation and Natural Resources, Division of Wildlife, "
+          "Under Federal Aid Grants from the U.S. Fish and Wildlife Service from "
+          "July 1, 1996 through June 30, 1997"):
     return None
 
   landing_link = result.find("a", text="Summary")

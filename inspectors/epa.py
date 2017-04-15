@@ -40,15 +40,15 @@ DATE_FORMATS = [
 ]
 REPORT_PUBLISHED_MAPPING = {
   "https://www.epa.gov/sites/production/files/2015-09/documents/9p00210.pdf":
-    datetime.datetime(1999, 6, 30),
+  datetime.datetime(1999, 6, 30),
   "https://www.epa.gov/sites/production/files/2015-09/documents/20090806-09-p-0203.pdf":
-    datetime.datetime(2009, 8, 6),
+  datetime.datetime(2009, 8, 6),
 }
 REPORT_ID_MAPPING = {
   "https://www.epa.gov/sites/production/files/2015-09/documents/9p00210.pdf":
-    "99P00210",
+  "99P00210",
   "https://www.epa.gov/sites/production/files/2015-09/documents/20090806-09-p-0203.pdf":
-    "09-P-0203",
+  "09-P-0203",
 }
 
 
@@ -117,6 +117,7 @@ def run(options):
 
 RE_PDF = re.compile('PDF', re.I)
 
+
 def report_from_table(tds, published_on_dt, base_url):
   report = {
     'inspector': 'epa',
@@ -132,7 +133,6 @@ def report_from_table(tds, published_on_dt, base_url):
 
   if not report_url:
     raise Exception("Couldn't find a link for report!")
-
 
   report_id = re.sub("\s+", " ", tds[2].text).strip()
   # fix typo
@@ -168,8 +168,8 @@ def report_from_table(tds, published_on_dt, base_url):
       absolute_href = urljoin(report_url, doc_link["href"])
       text = doc_link.text
       if ("Report At A Glance" in text or
-          "Report At a Glance" in text or
-          "Report at a Glance" in text):
+              "Report At a Glance" in text or
+              "Report at a Glance" in text):
         report['summary_url'] = absolute_href
       elif ("Full Report" in text or
             "Full Semiannual Report" in text or
@@ -230,6 +230,7 @@ def report_from_table(tds, published_on_dt, base_url):
 
   return report
 
+
 def report_from_list(li, published_on_dt, base_url):
   report = {
     'inspector': 'epa',
@@ -277,6 +278,7 @@ def report_from_list(li, published_on_dt, base_url):
     report['url'] = report_url
 
   return report
+
 
 def extract_url(td):
   def filter_url(href):
@@ -328,6 +330,7 @@ def years_to_index_urls(year_range):
   urls = list(urls)
   urls.sort()
   return urls
+
 
 def parse_date(text):
   text = text.replace("Sept ", "Sep ")

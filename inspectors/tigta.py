@@ -32,6 +32,7 @@ MISSING_REPORT_IDS = [
   "201310018",
 ]
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
   if datetime.datetime.now().month >= 10:
@@ -64,6 +65,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+
 def parse_result_from_js_url(url, format_slug, year, year_range, report_type):
   """
   Given a link to a javascript file that has report data, add all of the reports
@@ -80,6 +82,7 @@ def parse_result_from_js_url(url, format_slug, year, year_range, report_type):
       inspector.save_report(report)
 
 saved_report_urls = set()
+
 
 def report_from(javascript_attributes, format_slug, year, year_range, report_type):
   # We are going to parse the script of javascript into a list of with the following strucutre:
@@ -124,6 +127,7 @@ def report_from(javascript_attributes, format_slug, year, year_range, report_typ
   }
   return report
 
+
 def congressional_testimony_report_from(result, year_range):
   report_url = urljoin(BASE_REPORT_URL, result.find("a").get('href'))
   report_filename = report_url.split("/")[-1]
@@ -149,6 +153,7 @@ def congressional_testimony_report_from(result, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def semiannual_report_from(result, year_range):
   report_url = urljoin(BASE_REPORT_URL, result.find("a").get('href'))
@@ -178,17 +183,20 @@ def semiannual_report_from(result, year_range):
   }
   return report
 
+
 def audit_report_url(year):
-  if year < 2004: ## The earliest year for these reports
+  if year < 2004:  # The earliest year for these reports
     return None
   last_year_digits = str(year)[2:]  # Grab the last two digits
   return AUDITS_REPORTS_URL.format(last_year_digits)
 
+
 def inspection_report_url(year):
-  if year < 2008: ## The earliest year for these reports
+  if year < 2008:  # The earliest year for these reports
     return None
   last_year_digits = str(year)[2:]  # Grab the last two digits
   return INSPECTIONS_REPORTS_URL.format(last_year_digits)
+
 
 def parse_fields(text):  # Taken from https://stackoverflow.com/a/4983565
     """

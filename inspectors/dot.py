@@ -55,6 +55,7 @@ LANDING_URLS_TO_REPORT_LINKS = {
 
 BASE_REPORT_PAGE_URL = BASE_REPORT_URL = "https://www.oig.dot.gov/"
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -89,9 +90,11 @@ def run(options):
   for report in all_reports.values():
     inspector.save_report(report)
 
+
 def urls_for(year_range, topic):
   topic_url = TOPIC_TO_URL[topic]
   return ["%s?date_filter[value][year]=%s" % (topic_url, year) for year in year_range]
+
 
 def report_from(result, year_range, topic, options):
   published_date_text = result.select('.date-display-single')[0].text
@@ -144,8 +147,8 @@ def report_from(result, year_range, topic, options):
       # Some types just don't have reports (Announcements), ignore them
       return
     elif (
-        'For Official Use Only' in summary
-        or report_id in UNRELEASED_REPORT_IDS
+        'For Official Use Only' in summary or
+        report_id in UNRELEASED_REPORT_IDS
       ):
       unreleased = True
       report_url = None

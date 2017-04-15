@@ -53,6 +53,7 @@ DUPLICATE_LANDING_URLS = (
 MAX_RETRIES = 10
 REPORTS_PER_PAGE = 10
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -99,9 +100,10 @@ def run(options):
         # We were expecting more new reports on this page, try again
         continue
       else:
-        raise AssertionError("Found %d new reports on page %d, too many!" % \
-            (len(rows_seen) - last_row_count, page))
+        raise AssertionError("Found %d new reports on page %d, too many!" %
+                             (len(rows_seen) - last_row_count, page))
     last_row_count = len(rows_seen)
+
 
 def beautifulsoup_from_page_index(page):
   data = {
@@ -119,6 +121,7 @@ def beautifulsoup_from_page_index(page):
   page_html = response.json()[1]['data']
   return BeautifulSoup(page_html, "lxml")
 
+
 def get_last_page_index():
   doc = beautifulsoup_from_page_index(0)
   last_page_link = doc.find("a", title="Go to last page")
@@ -126,6 +129,7 @@ def get_last_page_index():
   query = urlparse(href).query
   page = parse_qs(query)['page'][0]
   return int(page)
+
 
 def report_type_from_text(text):
   if text == 'Press Releases':
@@ -150,6 +154,7 @@ def report_type_from_text(text):
     return 'audit'
   else:
     return 'other'
+
 
 def report_from(result, year_range):
   published_on_text = result.select("td")[0].text.strip()

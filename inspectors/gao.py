@@ -19,6 +19,7 @@ archive = 2008
 REPORTS_URL = "http://www.gao.gov/about/workforce/ig_reports.html"
 SEMIANNUAL_REPORTS_URL = "http://www.gao.gov/about/workforce/ig_semiannual.html"
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -32,6 +33,7 @@ def run(options):
       report = report_from(result, year_range)
       if report:
         inspector.save_report(report)
+
 
 def report_from(result, year_range):
   link = result.select("a")[0]

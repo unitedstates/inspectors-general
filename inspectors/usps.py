@@ -29,6 +29,7 @@ archive = 1997
 MAX_RETRIES = 10
 REPORTS_PER_PAGE = 10
 
+
 def run(options):
   report_types = options.get('types')
   if not report_types:
@@ -58,15 +59,15 @@ def run(options):
 
     for retry in range(MAX_RETRIES):
       for page in pages_to_fetch:
-        logging.debug("## Downloading %s, page %i, attempt %i" % \
-                             (category_name, page, retry))
+        logging.debug("## Downloading %s, page %i, attempt %i" %
+                      (category_name, page, retry))
         url = url_for(options, page, category_id)
         doc = utils.beautifulsoup_from_url(url)
 
         results = doc.select("tr")
         if not results:
           if ("Still can't find what you are searching for?" in
-              doc.select(".content")[0].text):
+                  doc.select(".content")[0].text):
             # this search returned 0 results.
             pass
           else:
@@ -91,7 +92,7 @@ def run(options):
               date_to_pages[timestamp] = [page]
 
           row_key = (str(result.text), result.a['href'])
-          if not row_key in rows_seen:
+          if row_key not in rows_seen:
             rows_seen.add(row_key)
             timestamp = get_timestamp(result)
             date_unique_report_counts[timestamp] = \
@@ -110,14 +111,17 @@ def run(options):
       pages_to_fetch = list(pages_to_fetch)
       pages_to_fetch.sort()
 
+
 def get_last_page(options, category_id):
   url = url_for(options, 1, category_id)
   doc = utils.beautifulsoup_from_url(url)
   return last_page_for(doc)
 
+
 def get_timestamp(result):
   cells = result.select("td")
   return cells[0].text.strip()
+
 
 # extract fields from HTML, return dict
 def report_from(result):
@@ -151,13 +155,14 @@ def report_from(result):
   filename = os.path.basename(report_url)
   report['report_id'] = os.path.splitext(filename)[0]
   if (report_url == "https://uspsoig.gov/sites/default/files/"
-      "document-library-files/2016/RARC-WP-16-001.pdf"):
+          "document-library-files/2016/RARC-WP-16-001.pdf"):
     # Fix typo
     report['report_id'] = "RARC-WP-16-011"
 
   report['title'] = cells[1].a.text.strip()
 
   return report
+
 
 def type_for(original_type):
   original = original_type.lower()
@@ -177,6 +182,7 @@ def type_for(original_type):
     return "other"
   else:
     return None
+
 
 # get the last page number, from the first page of search results
 def last_page_for(doc):

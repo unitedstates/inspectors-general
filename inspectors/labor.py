@@ -29,6 +29,7 @@ UNRELEASED_REPORT_IDS = [
   "24-08-004-03-330",
 ]
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -70,6 +71,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+
 def report_from(result, year_url):
   title = result.contents[0]
   landing_url = year_url  # No real landing pages
@@ -108,8 +110,8 @@ def report_from(result, year_url):
     "This report will not be posted.",
     "This report contains Sensitive Information and will not be posted",
   ]
-  if (report_id in UNRELEASED_REPORT_IDS
-    or any(unreleased_text in result.text for unreleased_text in UNRELEASED_TEXTS)):
+  if (report_id in UNRELEASED_REPORT_IDS or
+          any(unreleased_text in result.text for unreleased_text in UNRELEASED_TEXTS)):
     unreleased = True
   else:
     unreleased = False
@@ -134,6 +136,7 @@ def report_from(result, year_url):
   if report_url and '/viewpdf.php?' in report_url:
     report['file_type'] = 'pdf'
   return report
+
 
 def semiannual_report_from(result, year_range):
   published_on_text = result.text.split("-")[-1].strip()
@@ -160,6 +163,7 @@ def semiannual_report_from(result, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def url_for(year, page_number):
   offset = page_number * 20  # 20 items per page

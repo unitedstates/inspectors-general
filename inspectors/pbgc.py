@@ -35,6 +35,7 @@ HEADER_ROW_TEXT = [
 ]
 PDF_REGEX = re.compile("\.pdf")
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -64,7 +65,7 @@ def run(options):
 
   # Pull the semiannual reports
   doc = utils.beautifulsoup_from_url(SEMIANNUAL_REPORTS_URL)
-  results =  doc.select("div.holder a")
+  results = doc.select("div.holder a")
   if not results:
     raise inspector.NoReportsFoundError("Pension Benefit Guaranty Corporation (semiannual reports)")
   for result in results:
@@ -74,7 +75,7 @@ def run(options):
 
   # Pull the congressional testimony
   doc = utils.beautifulsoup_from_url(CONGRESSIONAL_TESTIMONY_URL)
-  results =  doc.select("div.holder a")
+  results = doc.select("div.holder a")
   if not results:
     raise inspector.NoReportsFoundError("Pension Benefit Guaranty Corporation (congressional testimony)")
   for result in results:
@@ -83,6 +84,7 @@ def run(options):
       inspector.save_report(report)
 
 saved_report_urls = set()
+
 
 def report_from(result, report_type, year_range):
   tds = result.select("td")
@@ -158,12 +160,13 @@ def report_from(result, report_type, year_range):
     report['landing_url'] = landing_url
   return report
 
+
 def semiannual_report_from(result, year_range):
   # This will look like "toggleReport('SARC-47-49');" and we want to pull out
   # the SARC-47-49
   report_id_javascript = result.get('onclick')
   report_id = re.search("'(.*)'", report_id_javascript).groups()[0]
-  landing_url  = "http://oig.pbgc.gov/sarc/{report_id}.html".format(report_id=report_id)
+  landing_url = "http://oig.pbgc.gov/sarc/{report_id}.html".format(report_id=report_id)
   landing_page = utils.beautifulsoup_from_url(landing_url)
 
   title = " ".join(landing_page.select("h3")[0].text.split())
@@ -200,6 +203,7 @@ def semiannual_report_from(result, year_range):
   if landing_url:
     report['landing_url'] = landing_url
   return report
+
 
 def testimony_report_from(result, year_range):
   title = result.text

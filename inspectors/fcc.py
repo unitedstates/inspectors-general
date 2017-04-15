@@ -29,6 +29,7 @@ RE_EXTRA_FILES = re.compile("(?:Transmittal_(?:[Ll]etter|[Ll]tr|Memo)|"
                             "CoverLetter|"
                             "Attachment)")
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -58,6 +59,7 @@ def run(options):
     report = other_report_from(result, OTHER_REPORTS_URL, year_range)
     if report:
       inspector.save_report(report)
+
 
 def report_from(result, page_url, year_range):
   tds = result.find_all("td")
@@ -119,6 +121,7 @@ def report_from(result, page_url, year_range):
   }
   return report
 
+
 def semiannual_report_from(result, page_url, year_range):
   tds = result.find_all("td")
   if len(tds) <= 1:
@@ -156,6 +159,7 @@ def semiannual_report_from(result, page_url, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def other_report_from(result, page_url, year_range):
   if result.text.strip() in ["Written Statements", "Peer Review Report", "News / Press Releases"]:

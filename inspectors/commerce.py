@@ -46,6 +46,7 @@ BASE_TOPIC_URL = "https://www.oig.doc.gov/Pages/{}.aspx"
 
 all_reports = {}
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -60,6 +61,7 @@ def run(options):
 
   for report in all_reports.values():
     inspector.save_report(report)
+
 
 def extract_reports_for_topic(topic, year_range):
   global all_reports
@@ -77,10 +79,11 @@ def extract_reports_for_topic(topic, year_range):
     if report:
       key = (report["report_id"], report["title"])
       if key in all_reports:
-        all_reports[key]["type"] = all_reports[key]["type"] + ", " + \
-                report["type"]
+        all_reports[key]["type"] = "{}, {}".format(all_reports[key]["type"],
+                                                   report["type"])
       else:
         all_reports[key] = report
+
 
 def url_for(year_range):
   return "%s?YearStart=01/01/%s&YearEnd=12/31/%s" % (BASE_TOPIC_URL, year_range[0], year_range[-1])
@@ -124,20 +127,20 @@ def report_from(result, topic, topic_url, year_range):
 
     landing_page = utils.beautifulsoup_from_url(landing_url)
     try:
-      if landing_url.endswith(("/Top-Management-Challenges-FY-2011.aspx",
-                "/Observations-and-Address-Listers-"
-                "Reports-Provide-Serious-Indications-That-Important-Address-"
-                "Canvassing.aspx")):
+      if landing_url.endswith("/Top-Management-Challenges-FY-2011.aspx",
+                              "/Observations-and-Address-Listers-"
+                              "Reports-Provide-Serious-Indications-That-"
+                              "Important-Address-Canvassing.aspx"):
         # Testimony on these landing pages already show up elsewhere, so we pick
         # the report instead
-        report_url_relative = landing_page.select("div.oig_Publications a")\
-            [-2].get('href')
+        report_url_relative = (landing_page.select("div.oig_Publications a")
+                               [-2].get('href'))
       else:
-        report_url_relative = landing_page.select("div.oig_Publications a")\
-            [-1].get('href')
+        report_url_relative = (landing_page.select("div.oig_Publications a")
+                               [-1].get('href'))
       if report_url_relative == "http://www.oig.doc.gov/Pages/FOIA-Electronic-Reading-Room.aspx":
-        report_url_relative = landing_page.select("div.oig_Publications a")\
-            [0].get('href')
+        report_url_relative = (landing_page.select("div.oig_Publications a")
+                               [0].get('href'))
     except IndexError:
       # If there is no linked report, this page is the report. We know that
       # these are not unreleased reports or we would have caught them above

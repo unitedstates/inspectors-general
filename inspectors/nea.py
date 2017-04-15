@@ -89,6 +89,7 @@ REPORT_PUBLISHED_MAP = {
   "LS-16-02-NASAA-Final-Report": datetime.datetime(2016, 2, 29),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -111,6 +112,7 @@ def run(options):
           continue
 
         inspector.save_report(report)
+
 
 def report_from(result, landing_url, report_type, year_range):
   link = result.find("a")

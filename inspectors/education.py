@@ -52,6 +52,7 @@ REPORT_PUBLISHED_MAP = {
   "oigqualitystandardsforalternativeproducts": datetime.datetime(2010, 3, 11),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -116,6 +117,7 @@ def run(options):
 
 audit_reports_seen = set()
 
+
 def audit_report_from(result, page_url, year_range):
   if not result.text.strip():
     # Just an empty row
@@ -125,8 +127,8 @@ def audit_report_from(result, page_url, year_range):
   if title == "Enterprise Architecture.":
     title = "Audit of Enterprise Architecture."
   if title == "The Department of Education's process for identifying and " \
-        "Monitoring High-Risk Contracts that Support Office of Educational " \
-        "Research and Improvement Programs.":
+          "Monitoring High-Risk Contracts that Support Office of Educational " \
+          "Research and Improvement Programs.":
     title = "Audit of The Department of Education's process for identifying " \
         "and Monitoring High-Risk Contracts that Support Office of " \
         "Educational Research and Improvement (OERI) Programs."
@@ -211,6 +213,7 @@ def audit_report_from(result, page_url, year_range):
 
   return report
 
+
 def audit_url_for(year):
   if year < 1998:
     # This is the first listed year
@@ -225,6 +228,7 @@ def audit_url_for(year):
     return AUDIT_REPORTS_URL.format("")
   else:
     return AUDIT_REPORTS_URL.format(year)
+
 
 def semiannual_report_from(result, page_url, year_range):
   report_url = urljoin(page_url, result.select("a")[0].get('href'))
@@ -256,6 +260,7 @@ def semiannual_report_from(result, page_url, year_range):
   return report
 
 other_reports_seen = set()
+
 
 def report_from(result, url, report_type, year_range):
   report_url = urljoin(url, result.select("a")[0].get('href'))
@@ -293,7 +298,7 @@ def report_from(result, url, report_type, year_range):
     return None
 
   if (report_id in ("x13j0003", "x19k0008", "x05j0019") and
-      url == OTHER_REPORTS_URL):
+          url == OTHER_REPORTS_URL):
     # These reports are also posted on the audit report pages, so we skip the
     # copy on the other reports page
     return None

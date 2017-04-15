@@ -29,9 +29,23 @@ PEER_REVIEW_2012 = {
   "landing_url": "https://www.cncsoig.gov/2012-investigations-peer-review",
   "url": "https://www.cncsoig.gov/sites/default/files/peer_review.pdf",
   "published_on": datetime.datetime(2012, 9, 19),
-  "title": "Quality Assessment Review of the Investigative Operations of the Office of Inspector General for the Corporation for National and Community Service Investigative Operations",
-  "summary": "Review of the system of internal safeguards and management procedures for the investigative functions of the Office of Inspector General (OIG) for the Corporation for National and Community Service (CNCS) in effect during the period May 1, 2011, through May 18, 2012. Our review was conducted in conformity with the Quality Standards for Investigations and the Quality Assessment Review Guidelines for Investigative Operations of Federal Offices of Inspector General established by the Council of the Inspectors General on Integrity and Efficiency (CIGIE) and the Attorney General's Guidelines for Office of Inspectors General with Statutory Law Enforcement Authority, as applicable."
+  "title": "Quality Assessment Review of the Investigative Operations of the "
+           "Office of Inspector General for the Corporation for National and "
+           "Community Service Investigative Operations",
+  "summary": "Review of the system of internal safeguards and management "
+             "procedures for the investigative functions of the Office of "
+             "Inspector General (OIG) for the Corporation for National and "
+             "Community Service (CNCS) in effect during the period May 1, "
+             "2011, through May 18, 2012. Our review was conducted in "
+             "conformity with the Quality Standards for Investigations and "
+             "the Quality Assessment Review Guidelines for Investigative "
+             "Operations of Federal Offices of Inspector General established "
+             "by the Council of the Inspectors General on Integrity and "
+             "Efficiency (CIGIE) and the Attorney General's Guidelines for "
+             "Office of Inspectors General with Statutory Law Enforcement "
+             "Authority, as applicable."
 }
+
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -43,7 +57,7 @@ def run(options):
   for (reports_page, report_type) in REPORTS_URLS:
 
     page = start
-    last_page = options.get("end") # reset for each area
+    last_page = options.get("end")  # reset for each area
     while True:
       url = url_for(reports_page, page)
       doc = utils.beautifulsoup_from_url(url)
@@ -75,8 +89,10 @@ def run(options):
   # one hardcoded peer review, just always do it
   inspector.save_report(do_peer_review())
 
+
 def url_for(base, page):
   return "%s?p=%i" % (base, page)
+
 
 def last_page_from(doc):
   last = doc.select("#pager a#last")
@@ -85,6 +101,7 @@ def last_page_from(doc):
   else:
     last = last[0]
     return int(last['href'].split("=")[-1])
+
 
 def report_from(result, reports_page, report_type, year_range):
   unreleased = False
@@ -143,7 +160,6 @@ def report_from(result, reports_page, report_type, year_range):
 
     title = str.join(" ", stamps)
 
-
   elif report_type == "case":
     report_type = "investigation"
     title = result.select("div")[0].text
@@ -162,11 +178,11 @@ def report_from(result, reports_page, report_type, year_range):
         if text.lower().strip("-").strip().startswith("case id"):
           id_text = text
     if not id_text:
-      raise Exception("Could not find Case ID for an investigation\n%s" % \
-                        result.text)
+      raise Exception("Could not find Case ID for an investigation\n%s" %
+                      result.text)
 
-    #note that some cases have more than one id. We are taking only the last id.
-    report_id = re.sub(r'\([^)]*\)','',id_text).strip().split(" ")[-1]
+    # note that some cases have more than one id. We are taking only the last id.
+    report_id = re.sub(r'\([^)]*\)', '', id_text).strip().split(" ")[-1]
 
     landing_url = reports_page
     unreleased = True
@@ -206,6 +222,7 @@ def report_from(result, reports_page, report_type, year_range):
 
   return report
 
+
 def do_peer_review():
   return {
     'inspector': 'cncs',
@@ -220,6 +237,7 @@ def do_peer_review():
     'summary': PEER_REVIEW_2012['summary'],
     'published_on': datetime.datetime.strftime(PEER_REVIEW_2012['published_on'], "%Y-%m-%d"),
   }
+
 
 # gets URL and summary from a report's landing page
 def extract_from_release_page(landing_url):

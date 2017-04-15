@@ -27,6 +27,7 @@ REPORTS_URL = "https://www.opm.gov/our-inspector-general/reports/"
 # previously ignored: 4A-CI-00-14-015
 BLACKLIST = ()
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
   only_id = options.get('report_id')
@@ -65,9 +66,11 @@ def run(options):
 
       inspector.save_report(report)
 
+
 def url_for():
   cache_buster = str(int(time.time()))
   return "%s?t=%s" % (REPORTS_URL, cache_buster)
+
 
 #  generates the report item from a table item
 def report_from(item):

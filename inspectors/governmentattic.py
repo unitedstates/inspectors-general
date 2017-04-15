@@ -32,7 +32,7 @@ IG_REPORTS_ONLY = True
 
 # <oig_url>
 archive = 1930
-#govattic page structure isn't based on year
+# govattic page structure isn't based on year
 
 # options:
 #   standard since/year options for a year range to fetch from.
@@ -40,14 +40,14 @@ archive = 1930
 # Notes for IG's web team:
 # GovernmentAttic's website seems to be hand-coded HTML with no CSS classes, but seems to be updated in a consistent enough way.
 
-#Landing page where GovAttic breaks government agencies down into several groups
+# Landing page where GovAttic breaks government agencies down into several groups
 CATEGORIES_URL = 'http://www.governmentattic.org/DocumentsCat.html'
 
-#The below maps GovAttic's agency descriptors with inspectors-general's slugs.
-#It takes the format: ga_category,ga_agency,ig_short,ig_url,ig_slug
-#A GovAttic record will be ignored if it doesn't map to an IG that is in this repo.
-#This mapping was hand-coded based on this file:
-#https://raw.githubusercontent.com/konklone/oversight.garden/master/config/inspectors.json
+# The below maps GovAttic's agency descriptors with inspectors-general's slugs.
+# It takes the format: ga_category,ga_agency,ig_short,ig_url,ig_slug
+# A GovAttic record will be ignored if it doesn't map to an IG that is in this repo.
+# This mapping was hand-coded based on this file:
+# https://raw.githubusercontent.com/konklone/oversight.garden/master/config/inspectors.json
 
 GOVATTIC_MAPPING = """Department of Defense Documents,Department of Defense (DoD),Department of Defense,http://www.dodig.mil/,dod
 Department of Defense Documents,Office of the Inspector General (OIG),Department of Defense,http://www.dodig.mil/,dod
@@ -127,37 +127,38 @@ State Records / Miscellaneous Records / Interagency Records,Records of State/CIT
 State Records / Miscellaneous Records / Interagency Records,Miscellaneous Records,,,
 State Records / Miscellaneous Records / Interagency Records,Smithsonian Institution (SI),Smithsonian Institute,http://www.si.edu/OIG,smithsonian"""
 
-#store this as tuples above for ease of editing, but turn it into a dict for use.
+# store this as tuples above for ease of editing, but turn it into a dict for use.
 GOVATTIC_MAPPING_DICT = {}
 for line in GOVATTIC_MAPPING.splitlines():
-  (ga_category,ga_agency,ig_short,ig_url,ig_slug) = line.strip().split(',')
-  GOVATTIC_MAPPING_DICT[(ga_category,ga_agency)] = (ig_short,ig_url,ig_slug)
+  (ga_category, ga_agency, ig_short, ig_url, ig_slug) = line.strip().split(',')
+  GOVATTIC_MAPPING_DICT[(ga_category, ga_agency)] = (ig_short, ig_url, ig_slug)
 
 DATE_RE = re.compile('\[(?:.*\s-?|)(\d{2})[- ]+(\w{3,12})-+(\d{4})')
 
 
 def remove_linebreaks(s):
-  #lots of weird tabs, etc. inside HTML strings. would replace all at once, but since utils.beautifulsoup_from_url
-  #is taking the html straight to soup, we'll do it individually for the fields we need
-  return inspector.sanitize(s.replace('\n','').replace('\t','').replace('\r',''))
+  # lots of weird tabs, etc. inside HTML strings. would replace all at once, but since utils.beautifulsoup_from_url
+  # is taking the html straight to soup, we'll do it individually for the fields we need
+  return inspector.sanitize(s.replace('\n', '').replace('\t', '').replace('\r', ''))
+
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  #loop through sections (Executive Branch Departments A-M, etc)
+  # loop through sections (Executive Branch Departments A-M, etc)
   category_doc = utils.beautifulsoup_from_url(CATEGORIES_URL)
   category_links = category_doc.findAll('a')
   for category_link in category_links:
-    #these are the detail pages with lots of PDFs. they are grouped according to agency name
+    # these are the detail pages with lots of PDFs. they are grouped according to agency name
     category_name = remove_linebreaks(category_link.text).strip()
     doc = utils.beautifulsoup_from_url(category_link['href'])
     agency = ''
     for result in doc.findAll('p'):
-      if result.font and result.font.get('color')=="#993333":
-        #this is an agency name
+      if result.font and result.font.get('color') == "#993333":
+        # this is an agency name
         agency = remove_linebreaks(result.font.text).strip()
       else:
-        #this is a report from that agency
+        # this is a report from that agency
         report = report_from(result, category_name, agency, year_range)
         if report:
           inspector.save_report(report)
@@ -166,22 +167,22 @@ def run(options):
 # extract a dict of details that are ready for inspector.save_report().
 def report_from(result, category_name, agency, year_range):
 
-  #ignore if it's not in our agency string->slug mapping or if it's in our mapping and has null instead of a slug.
-  #that means it doesn't come from an agency whose IG we track; it may be a document from a
-  #local government, etc.
-  if (category_name,agency) not in GOVATTIC_MAPPING_DICT or GOVATTIC_MAPPING_DICT[(category_name,agency)][-1]=='':
+  # ignore if it's not in our agency string->slug mapping or if it's in our mapping and has null instead of a slug.
+  # that means it doesn't come from an agency whose IG we track; it may be a document from a
+  # local government, etc.
+  if (category_name, agency) not in GOVATTIC_MAPPING_DICT or GOVATTIC_MAPPING_DICT[(category_name, agency)][-1] == '':
     return
-  (ig_short,ig_url,ig_slug) = GOVATTIC_MAPPING_DICT[(category_name,agency)]
+  (ig_short, ig_url, ig_slug) = GOVATTIC_MAPPING_DICT[(category_name, agency)]
 
   a = result.find('a')
   if not a:
-    #there's no link, so this must just be some explanatory text, such as the footer
+    # there's no link, so this must just be some explanatory text, such as the footer
     return
   report_url = a['href']
 
-  #these will be stored in folders with documents scraped by the official IG scrapers, so
-  #use the governmentattic url as slug to assure no conflict.
-  report_id = inspector.slugify(report_url.replace('http://www.',''))
+  # these will be stored in folders with documents scraped by the official IG scrapers, so
+  # use the governmentattic url as slug to assure no conflict.
+  report_id = inspector.slugify(report_url.replace('http://www.', ''))
 
   title = remove_linebreaks(a.text).strip()
   if not title:
@@ -195,7 +196,7 @@ def report_from(result, category_name, agency, year_range):
       # Copy-paste error, skip
       return
   if datematch:
-    datestring = '-'.join(datematch.groups()) #'01-Mar-2015
+    datestring = '-'.join(datematch.groups())  # '01-Mar-2015
     datestring = datestring.replace("-Sept-", "-Sep-")
     try:
       published_on = datetime.datetime.strptime(datestring, '%d-%b-%Y')
@@ -214,8 +215,8 @@ def report_from(result, category_name, agency, year_range):
     logging.debug("[%s] Skipping, not in requested range." % report_url)
     return
 
-  #ignore documents that are interesting FOIAs but are not IG reports.
-  #if you want to scrape IG and agency documents, set IG_REPORTS_ONLY=False
+  # ignore documents that are interesting FOIAs but are not IG reports.
+  # if you want to scrape IG and agency documents, set IG_REPORTS_ONLY=False
   if IG_REPORTS_ONLY and 'OIG' not in title and 'inspector general' not in title.lower():
     logging.debug("[%s] Skipping, not an IG report." % title)
     return
@@ -228,13 +229,10 @@ def report_from(result, category_name, agency, year_range):
     'report_id': report_id,
     'url': report_url,
     'title': title,
-    'type': 'FOIA - GovernmentAttic.org', # Type of report (default to 'other')
-    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d") #date published to GovAttic, not released by IG
+    'type': 'FOIA - GovernmentAttic.org',  # Type of report (default to 'other')
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d")  # date published to GovAttic, not released by IG
   }
 
   return report
 
 utils.run(run) if (__name__ == "__main__") else None
-
-
-

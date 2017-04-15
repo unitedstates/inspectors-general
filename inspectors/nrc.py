@@ -23,11 +23,11 @@ ARCHIVED_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/a
 PRIOR_PENDING_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/prior-pending.html"
 SEMIANNUAL_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr1415/index.html"
 OTHER_REPORT_URLS = [
-# These brochures have been taken off of the website as of April 7, 2015
-#  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0304/",
-#   "NUREG-BR-0304-"),
-#  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0272/",
-#   "NUREG-BR-0272-")
+  # These brochures have been taken off of the website as of April 7, 2015
+  #  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0304/",
+  #   "NUREG-BR-0304-"),
+  #  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0272/",
+  #   "NUREG-BR-0272-")
 ]
 
 BASE_REPORT_URL = "http://www.nrc.gov"
@@ -46,6 +46,7 @@ REPORT_PUBLISHED_MAPPING = {
 }
 
 PDF_REGEX = re.compile("pdf")
+
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -96,6 +97,7 @@ def run(options):
       report = other_report_from(result, year_range, id_prefix, reports_url)
       if report:
         inspector.save_report(report)
+
 
 def audit_report_from(result, landing_url, year_range):
   title = " ".join(result.contents[1].text.split())
@@ -157,6 +159,7 @@ def audit_report_from(result, landing_url, year_range):
     report['file_type'] = file_type
   return report
 
+
 def semiannual_report_from(result, year_range):
   report_link = result.find("a")
   landing_url = urljoin(SEMIANNUAL_REPORTS_URL, report_link.get('href'))
@@ -210,6 +213,7 @@ def semiannual_report_from(result, year_range):
   if file_type:
     report['file_type'] = file_type
   return report
+
 
 def other_report_from(result, year_range, id_prefix, index_url):
   report_link = result.find("a")

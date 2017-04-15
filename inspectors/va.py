@@ -53,6 +53,7 @@ MAX_ATTEMPTS = 5
 ERROR_TEXT_SUMMARY = 'This report summary cannnot be displayed at this time.'
 ERROR_TEXT_LIST = 'Reports are not available at this time.'
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -98,6 +99,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+
 def report_type_from_topic(topic):
   if "Audit" in topic or topic in ["CAP Reviews", "CBOC Reports"]:
     return 'audit'
@@ -109,6 +111,7 @@ def report_type_from_topic(topic):
     return 'fisma'
   else:
     return 'other'
+
 
 def report_from(result, year_range):
   link = result.select("a")[0]
@@ -125,8 +128,7 @@ def report_from(result, year_range):
 
   # This landing page is a copy of another one, except it has a broken
   # report link.
-  if landing_url == \
-        'https://www.va.gov/oig/publications/report-summary.asp?id=2491':
+  if landing_url == 'https://www.va.gov/oig/publications/report-summary.asp?id=2491':
     return
 
   # These pages occassionally return text indicating there was a temporary
@@ -165,10 +167,10 @@ def report_from(result, year_range):
 
   # Fix a typo
   if report_id == "11-04130-192" and \
-      report_url == "https://www.va.gov/oig/pubs/VAOIG-11-04130-192.pdf":
+          report_url == "https://www.va.gov/oig/pubs/VAOIG-11-04130-192.pdf":
     report_url = "https://www.va.gov/oig/pubs/VAOIG-12-04130-192.pdf"
   elif report_id == "15-00138-392" and \
-      report_url == "https://www.va.gov/oig/pubs/VAOIG-15-000138-392.pdf":
+          report_url == "https://www.va.gov/oig/pubs/VAOIG-15-000138-392.pdf":
     report_url = "https://www.va.gov/oig/pubs/VAOIG-15-00138-392.pdf"
 
   agency_slug = None
@@ -202,6 +204,7 @@ def report_from(result, year_range):
     report['location'] = location
   return report
 
+
 def semiannual_report_from(result, year_range):
   report_url = result.select("a")[0].get('href')
   report_filename = report_url.split("/")[-1]
@@ -231,6 +234,7 @@ def semiannual_report_from(result, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def br_to_newline(subtree):
   br = subtree.find("br")

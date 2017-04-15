@@ -34,6 +34,7 @@ REPORT_ID_DATE_EXTRACTION = [
   re.compile('^Strategic-Plan-(?P<year>\d{4})-\d{4}$'),
 ]
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -47,6 +48,7 @@ def run(options):
       report = report_from(result, url, year_range)
       if report:
         inspector.save_report(report)
+
 
 def report_from(result, landing_url, year_range):
   report_url = urljoin(landing_url, result.get('href'))

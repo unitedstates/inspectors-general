@@ -107,6 +107,7 @@ REPORT_PUBLISHED_MAP = {
   "A06-04": datetime.datetime(2006, 10, 2),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -151,6 +152,7 @@ def run(options):
     report = report_from(result.parent, AUDIT_REPORTS_URL, report_type='semiannual_report', year_range=year_range)
     if report:
       inspector.save_report(report)
+
 
 def report_from(result, landing_url, report_type, year_range):
   link = result.find("a")

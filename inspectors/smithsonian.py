@@ -123,6 +123,7 @@ URL_BLACKLIST = [
 
 report_ids_seen = set()
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -166,6 +167,7 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+
 def report_type_from_url(report_url):
   if 'Audit' in report_url or 'Announcements' in report_url:
     return 'audit'
@@ -179,6 +181,7 @@ def report_type_from_url(report_url):
     return 'press'
   else:
     return 'other'
+
 
 def rss_report_from(result, year_range):
   report_url = result.find("link").next_sibling.strip()
@@ -249,6 +252,7 @@ def rss_report_from(result, year_range):
   if file_type:
     report['file_type'] = file_type
   return report
+
 
 def report_from(result, year_range):
   report_url = urljoin(RECENT_AUDITS_URL, result.get('href'))
@@ -325,8 +329,8 @@ def report_from(result, year_range):
     report['estimated_date'] = estimated_date
   return report
 
-MONTH_YEAR_RE = re.compile('(?:January|February|March|April|May|June|July|' \
-                           'August|September|October|November|December)\s+' \
+MONTH_YEAR_RE = re.compile('(?:January|February|March|April|May|June|July|'
+                           'August|September|October|November|December)\s+'
                            '[0-9]{4}')
 
 utils.run(run) if (__name__ == "__main__") else None

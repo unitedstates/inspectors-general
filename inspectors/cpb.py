@@ -47,6 +47,7 @@ REPORT_PUBLISHED_MAP = {
   "CPB_Issues": datetime.datetime(2016, 4, 21),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -149,6 +150,7 @@ def report_from(result, landing_url, report_type, year_range):
   }
 
   return report
+
 
 def extract_date_from_report_id(report_id):
   published_on = ''

@@ -8,6 +8,7 @@ import re
 
 archive = 2007
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -74,6 +75,7 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+
 def report_from(all_text, link_text, link_url, page_url, published_on, paragraph):
   report = {
     'inspector': 'exim',
@@ -135,6 +137,7 @@ def report_from(all_text, link_text, link_url, page_url, published_on, paragraph
 
   return report
 
+
 def type_for(page_url, text, paragraph):
   if page_url == PRESS_RELEASES_URL:
     return "press"
@@ -167,10 +170,10 @@ URLS = (
 )
 
 DATE_RE = re.compile("(January|February|March|April|May|June|July|August|" +
-                    "September|October|November|December|" +
-                    "Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)" +
-                    "\\s+([123]?[0-9]),\\s*" +
-                    "(20[0-9][0-9])")
+                     "September|October|November|December|" +
+                     "Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)" +
+                     "\\s+([123]?[0-9]),\\s*" +
+                     "(20[0-9][0-9])")
 
 IDENTIFIER_RE_TEXT = re.compile("\( ?(OIG[- ][A-Z]{2,3}-[0-9]{2}-[0-9]{2}[A-Z]?)\)")
 IDENTIFIER_RE_URL = re.compile("(OIG-[A-Z]{2,3}-[0-9]{2}-[0-9]{2}[A-Z]?)")

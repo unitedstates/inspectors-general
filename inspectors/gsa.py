@@ -21,9 +21,11 @@ INDEX_URLS = [
   "https://www.gsaig.gov/Peer-Review-Reports",
 ]
 
+
 def run(options):
   for url in INDEX_URLS:
     crawl_index(url, options)
+
 
 def crawl_index(base_url, options):
   year_range = inspector.year_range(options, archive)
@@ -73,8 +75,10 @@ def crawl_index(base_url, options):
     if not done:
       logging.info('Moving to next page (%d)' % page)
 
-def url_for(base_url, page = 1):
+
+def url_for(base_url, page=1):
   return "%s?page=%d" % (base_url, page - 1)
+
 
 def report_from(result, base_url):
   report = {
@@ -149,6 +153,7 @@ def report_from(result, base_url):
   report['title'] = title.strip()
 
   return report
+
 
 def type_for(base_url):
   if "Audit-Reports" in base_url:

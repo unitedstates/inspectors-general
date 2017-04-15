@@ -31,6 +31,7 @@ REPORT_PUBLISHED_MAPPING = {
 
 DATE_RE = re.compile("(20[0-9][0-9]\\.[01][0-9])(?: *- *(.*))?")
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -49,14 +50,15 @@ def run(options):
     if report:
       inspector.save_report(report)
 
+
 def report_from(result, year_range):
   # walk backwards through the doc to find the header title
   for element in result.previous_elements:
     if element and \
-        isinstance(element, Tag) and \
-        element.name == "span" and \
-        element.has_attr("class") and \
-        "collapseomatic" in element["class"]:
+            isinstance(element, Tag) and \
+            element.name == "span" and \
+            element.has_attr("class") and \
+            "collapseomatic" in element["class"]:
       header = element.text.strip().lower()
       break
   else:
@@ -78,7 +80,7 @@ def report_from(result, year_range):
   # the IG's "Perspective on Management and Performance Challenges."
   # Skip the first one and save the second
   if "IG's Transmittal Letter and Independent Auditor's Report" in title \
-      and "(pages" in title:
+          and "(pages" in title:
     return None
   elif title == "Hotline Poster":
     return None

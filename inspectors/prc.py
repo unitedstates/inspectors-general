@@ -15,6 +15,7 @@ archive = 2007
 
 REPORTS_URL = "http://www.prc.gov/oig-reports?page="
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -36,6 +37,7 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+
 def type_from_title(title):
   if 'Semiannual Report' in title:
     return 'semiannual_report'
@@ -45,6 +47,7 @@ def type_from_title(title):
     return 'inspection'
   else:
     return 'other'
+
 
 def report_from(result, year_range):
   published_on_text = result.select("td")[0].text.strip()

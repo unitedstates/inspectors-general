@@ -79,8 +79,8 @@ LESSONS_LEARNED_DATA = [
   (
     "http://cybercemetery.unt.edu/archive/sigir/20131001084013/http://www.sigir.mil/publications/lessonsLearnedInAuditing.html",
     "http://cybercemetery.unt.edu/archive/sigir/20131001084013/http://www.sigir.mil/files/lessonslearned/AuditingLessonsLearned.pdf",
-   "Lessons from Auditing U.S.-funded Stabilization and Reconstruction Activities",
-   datetime.datetime(2012, 10, 30)
+    "Lessons from Auditing U.S.-funded Stabilization and Reconstruction Activities",
+    datetime.datetime(2012, 10, 30)
   ),
 ]
 
@@ -105,6 +105,7 @@ SPECIAL_REPORTS_DATA = [
 HEADER_RE = re.compile("Title: +(.*)[ \n]+\((.*)\)")
 DATE_RE = re.compile("Date: +(.* +[0-9]+, +[0-9]{4})")
 DESCRIPTION_RE = re.compile("Description: +(.*)")
+
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -177,6 +178,7 @@ def run(options):
           report_id = None
           summary = None
 
+
 def quarterly_report_from(result, year_range):
   tds = result.find_all("td")
   if len(tds) == 0:
@@ -209,6 +211,7 @@ def quarterly_report_from(result, year_range):
   })
   return report
 
+
 def lessons_learned_report_from(result, year_range):
   if result[3].year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % result[1])
@@ -225,6 +228,7 @@ def lessons_learned_report_from(result, year_range):
   })
   return report
 
+
 def special_report_from(result, year_range):
   if result[2].year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % result[0])
@@ -239,6 +243,7 @@ def special_report_from(result, year_range):
     "published_on": datetime.datetime.strftime(result[2], "%Y-%m-%d"),
   })
   return report
+
 
 def report_from(result, year_range, base_url, report_type):
   tds = result.find_all("td")
@@ -276,6 +281,7 @@ def report_from(result, year_range, base_url, report_type):
     "published_on": datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   })
   return report
+
 
 def testimony_from(url, published_on_text, title, report_id, summary,
                    year_range):

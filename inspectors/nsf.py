@@ -34,6 +34,7 @@ REPORT_PUBLISHED_MAP = {
 REPORT_LINK_TEXT = re.compile("Entire.+Document", re.DOTALL)
 REPORT_LEADIN_TEXT = re.compile("Available\s+Formats:")
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -44,7 +45,8 @@ def run(options):
     raise inspector.NoReportsFoundError("National Science Foundation (audit reports)")
   for result in results:
     # ignore divider lines
-    if result.select("img"): continue
+    if result.select("img"):
+      continue
 
     report = report_from(result, report_type='audit', year_range=year_range, base_url=AUDIT_REPORTS_URL)
     if report:
@@ -89,6 +91,7 @@ def run(options):
     report = report_from(result, report_type='testimony', year_range=year_range, base_url=TESTIMONY_REPORTS_URL)
     if report:
       inspector.save_report(report)
+
 
 def report_from(result, report_type, year_range, base_url):
   link = result.find("a")
@@ -168,6 +171,7 @@ def case_report_from(result, landing_url, year_range):
     'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
   }
   return report
+
 
 def semiannual_report_from(result, year_range):
   link = result.find("a")

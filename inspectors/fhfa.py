@@ -32,6 +32,7 @@ OTHER_REPORT_URLS = {
   "semiannual_report": SEMIANNUAL_REPORTS_URL,
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
   pages = options.get('pages', ALL_PAGES)
@@ -64,6 +65,7 @@ def run(options):
       report = report_from(result, year_range, report_type)
       if report:
         inspector.save_report(report)
+
 
 def report_from(result, year_range, report_type):
   link = result.find("a")

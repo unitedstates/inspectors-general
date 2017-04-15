@@ -36,6 +36,7 @@ OTHER_REPORT_URLS = {
 
 BASE_REPORT_URL = "https://oig.ssa.gov/"
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -62,6 +63,7 @@ def run(options):
         else:
           break
 
+
 def reports_from_page(url_format, page, report_type, year_range, year=''):
   url = url_format.format(page=page, year=year)
   doc = utils.beautifulsoup_from_url(url)
@@ -82,6 +84,7 @@ def reports_from_page(url_format, page, report_type, year_range, year=''):
 
 visited_landing_urls = set()
 
+
 def report_from(result, report_type, year_range):
   landing_page_link = result.find("a")
   title = landing_page_link.text.strip()
@@ -94,7 +97,7 @@ def report_from(result, report_type, year_range):
 
   # This landing page is a duplicate of another one
   if landing_url == "https://oig.ssa.gov/physical-security-office-disability-" \
-        "adjudication-and-reviews-headquarters-building-limited-0":
+          "adjudication-and-reviews-headquarters-building-limited-0":
     return
 
   published_on_text = result.select("span.date-display-single")[0].text.strip()
@@ -111,8 +114,8 @@ def report_from(result, report_type, year_range):
 
   # This report has the wrong report number entered
   if landing_url == "https://oig.ssa.gov/audits-and-investigations/" \
-        "audit-reports/congressional-response-report-internet-claim-" \
-        "applications-0":
+          "audit-reports/congressional-response-report-internet-claim-" \
+          "applications-0":
     report_id = "A-07-10-20166"
 
   landing_page = utils.beautifulsoup_from_url(landing_url)

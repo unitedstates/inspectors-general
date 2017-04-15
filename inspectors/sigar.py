@@ -36,6 +36,7 @@ REPORT_URLS = [
 
 BASE_REPORT_URL = "https://www.sigar.mil/allreports/index.aspx"
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -50,13 +51,12 @@ def run(options):
       if report:
         inspector.save_report(report)
 
+
 def report_from(result, landing_url, report_type, year_range):
   report_url = report_url_for_landing_page(result.find("link").next.strip(), landing_url)
 
-  if report_url in (
-      "https://www.sigar.mil/pdf/audits/Financial_Audits/SIGAR _14-15\u2013FA.pdf",
-      "https://www.sigar.mil/pdf/audits/Financial_Audits/SIGAR_14-14\u2013FA.pdf",
-      ):
+  if report_url in ("https://www.sigar.mil/pdf/audits/Financial_Audits/SIGAR _14-15\u2013FA.pdf",
+                    "https://www.sigar.mil/pdf/audits/Financial_Audits/SIGAR_14-14\u2013FA.pdf"):
     report_url = report_url.replace("\u2013", "-")
 
   report_filename = report_url.split("/")[-1]
@@ -105,6 +105,7 @@ def report_from(result, landing_url, report_type, year_range):
 
   return report
 
+
 def report_url_for_landing_page(relative_url, landing_url):
   """
   We need to mimic the logic used in https://www.sigar.mil/js/AllReports.js
@@ -146,6 +147,7 @@ def report_url_for_landing_page(relative_url, landing_url):
     relative_url = relative_url.replace("../ReadFile.aspx", "../newsroom/ReadFile.aspx")
 
   return urljoin(BASE_REPORT_URL, relative_url)
+
 
 def parse_date(text):
   for format in [

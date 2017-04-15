@@ -44,6 +44,7 @@ REPORT_PUBLISHED_MAPPING = {
   "SAR_final_10_27_11": datetime.datetime(2011, 10, 27),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -129,6 +130,7 @@ def report_from(result, year_range):
   if unreleased:
     report['unreleased'] = unreleased
   return report
+
 
 def semiannual_report_from(report_url, year_range):
   report_filename = report_url.split("/")[-1]

@@ -19,6 +19,7 @@ archive = 1995
 REPORTS_URL = "http://www.rrb.gov/oig/Library.asp"
 AUDIT_REPORTS_URL = "http://www.rrb.gov/oig/reports/FY{year}reports.asp"
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -59,6 +60,7 @@ def run(options):
         inspector.save_report(report)
 
 saved_report_urls = set()
+
 
 def report_from(result, landing_url, report_type, year_range):
   title = " ".join(result.select("td")[0].text.strip().split())
@@ -106,6 +108,7 @@ def report_from(result, landing_url, report_type, year_range):
     report['unreleased'] = unreleased
     report['landing_url'] = landing_url
   return report
+
 
 def semiannual_report_from(result, year_range):
   relative_report_url = result.get('value')

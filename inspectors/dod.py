@@ -66,36 +66,43 @@ RE_RESCINDED = re.compile('This report was rescinded', re.I)
 RE_RETRACTED = re.compile('Report Retracted', re.I)
 RE_UNUSED = re.compile('NUMBER NOT USED', re.I)
 
+
 # more invasive/slow search for a link, needed when link has html inside,
 # e.g. http://www.dodig.mil/programs/guam/index_detail.cfm?id=4933
 def pdf_test(tag):
   is_link = (tag.name == 'a') and tag.has_attr('href')
-  if not is_link: return False
+  if not is_link:
+    return False
 
   is_pdf = (RE_PDF_HREF.search(tag['href']) or RE_BACKUP_PDF_HREF.search(tag['href']))
-  if not is_pdf: return False
+  if not is_pdf:
+    return False
 
   text = tag.text
   basic_match = (RE_PDF_CLICK_TEXT.search(text) or RE_PDF_LINK_TEXT.search(text) or RE_PDF_SARC_TEXT.search(text) or RE_PDF_BODY_MAYBE.search(text))
-  if basic_match: return True
+  if basic_match:
+    return True
 
   # looser check - "here" is accepted, if it's also a statement
   simple_match = (RE_PDF_STATEMENT_TEXT.search(text) and RE_PDF_STATEMENT_HREF.search(tag['href']))
-  if simple_match: return True
+  if simple_match:
+    return True
 
   return False
+
 
 # any PDF
 def any_pdf_test(tag):
   is_link = (tag.name == 'a') and tag.has_attr('href')
-  if not is_link: return False
+  if not is_link:
+    return False
 
   is_pdf = (RE_PDF_HREF.search(tag['href']) or RE_BACKUP_PDF_HREF.search(tag['href']))
   return is_pdf
 
 RE_OFFICIAL = re.compile('For\\s+Official\\s+Use\\s+Only', re.I)
 RE_CLASSIFIED = re.compile('Classified', re.I)
-RE_INTEL = re.compile('-INTEL-') # case-sensitive
+RE_INTEL = re.compile('-INTEL-')  # case-sensitive
 RE_FOIA = re.compile('Freedom\\s+(?:of|on)\\s+Information\\s+Act', re.I)
 RE_RESTRICTED = re.compile('Restricted', re.I)
 RE_AFGHANISTAN = re.compile('Provided\\s+to\\s+the\\s+Security\\s+Forces\\s+of\\s+Afghanistan', re.I)
@@ -136,6 +143,7 @@ LANDING_PAGE_BLACKLIST = [
   )
 ]
 
+
 def run(options):
   only = options.get('topics')
   if only:
@@ -156,6 +164,7 @@ def run(options):
       report = report_from(tds, options)
       if report:
         inspector.save_report(report)
+
 
 def report_from(tds, options):
   report = {
@@ -317,13 +326,14 @@ def fetch_from_landing_page(landing_url):
 
   return (href, summary, maybe_unreleased, skip)
 
+
 def urls_for(options, only):
   year_range = inspector.year_range(options, archive)
   for office in only:
     # there's always a first year, and it defaults to current year
     params = {}
     params['searchdate1'] = '01/01/%s' % year_range[0]
-    params['searchdate2'] = '12/31/%s' % year_range[-1] # could be the same year
+    params['searchdate2'] = '12/31/%s' % year_range[-1]  # could be the same year
     params['office'] = OFFICES[office]
     params['sort'] = 'report_number'
     params['order'] = 'desc'
@@ -336,6 +346,7 @@ def urls_for(options, only):
 
     for url in get_pagination_urls(page):
       yield url
+
 
 def get_pagination_urls(page):
   """Find the pagination links on the page and yield them all.

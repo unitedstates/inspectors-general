@@ -54,6 +54,7 @@ REPORT_PUBLISHED_MAPPING = {
   "FDIC's-Efforts-to-Ensure-SLA-Recoveries-Are-Identi": datetime.datetime(2016, 12, 6),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -69,6 +70,7 @@ def run(options):
     report = report_from(result, year_range)
     if report:
       inspector.save_report(report)
+
 
 def type_for_report(text):
   if text == 'audit report':
@@ -88,6 +90,7 @@ def type_for_report(text):
   else:
     return "other"
 
+
 def report_from(result, year_range):
   title = result.find("em").text.strip()
   landing_url = REPORTS_URL
@@ -102,20 +105,20 @@ def report_from(result, year_range):
     report_url = None
 
   if report_url == "https://www.fdicig.gov/semi-reports/sar2003mar/" \
-        "oigsemi-03-09.pdf":
+          "oigsemi-03-09.pdf":
     # This URL is a typo, results in 404
     report_url = "https://www.fdicig.gov/semi-reports/Semi2003OCT/sarOCT03.shtml"
 
   if report_url == "https://www.fdicig.gov/semi-reports/sar2009mar/" \
-        "oigsemi-03-09.pdf" and \
-        title == "FDIC Office of Inspector General's Semiannual Report to " \
-        "the Congress 4/1/2009 - 9/30/2009":
+          "oigsemi-03-09.pdf" and \
+          title == "FDIC Office of Inspector General's Semiannual Report to " \
+          "the Congress 4/1/2009 - 9/30/2009":
     # This URL points to the wrong report
     report_url = "https://www.fdicig.gov/semi-reports/SAROCT09/" \
         "OIGSemi_FDIC_09-9-09.pdf"
 
   if report_url == "https://www.fdicig.gov/press/pr-08-24-12.shtml" and \
-        title == "Bank President Imprisoned for Embezzlement":
+          title == "Bank President Imprisoned for Embezzlement":
     # The title and URL don't match, and both were copied from other reports,
     # so we skip this entry
     return None

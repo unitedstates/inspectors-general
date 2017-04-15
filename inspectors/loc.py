@@ -43,6 +43,7 @@ RE_LONG_DATE = re.compile(r'%s \d\d,? +\d\d\d\d' % PARTS_MONTH)
 RE_OWLC = re.compile('Open +World +Leadership +Center')
 RE_JMCF = re.compile('James +Madison +Council +Fund')
 
+
 def generate_id(title, published_on=None):
   """Generates a report id given the report title and published date.
 
@@ -162,7 +163,8 @@ class LibraryOfCongressScraper(object):
           report['landing_url'] = REPORTS_BY_YEAR_URL
 
           # Check for duplicate and discard
-          if report_id == "JMCFFY2FSM2-2009-03-01": continue
+          if report_id == "JMCFFY2FSM2-2009-03-01":
+            continue
 
         inspector.save_report(report)
 
@@ -202,7 +204,6 @@ class LibraryOfCongressScraper(object):
 
     raise ValueError('Found report with no listed and no hardcoded date: '
                      '%s <%s>' % (title, report_url))
-
 
   def report_from(self, report_id, report_url, title, published_on):
     if published_on.year not in self.year_range:
