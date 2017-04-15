@@ -258,6 +258,11 @@ def report_from(result, page_url, year_range, report_type, agency_slug="agricult
   elif report_url == "http://www.usda.gov/oig/webdocs/34099-12-Te.pdf":
     report_id = "34099-12-Te_2"
 
+  # Skip duplicate report entry
+  if (report_url == "http://www.usda.gov/oig/webdocs/02007-0001-31.pdf" and
+          title == "ARS: U.S. Meat Animal Research Center Review - Interim Report"):
+    return
+
   if title == "American Recovery and Reinvestment Act - Emergency Watershed " \
       "Protection Program Floodplain Easements" and report_id == "10703-1-KC":
     return
