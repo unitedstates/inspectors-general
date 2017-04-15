@@ -16,6 +16,7 @@ REPORT_PUBLISHED_MAP = {
   "003-2016": datetime(2015, 12, 21),
 }
 
+
 def run(options):
   year_range = inspector.year_range(options, archive)
 
@@ -34,12 +35,14 @@ def run(options):
     if report_count == 0:
       raise inspector.NoReportsFoundError("Amtrak (%s)" % index.split("/")[-1])
 
+
 def url_for(options, index, year=None):
   if year:
     year = str(year)
   else:
     year = ''
   return "%s?sort_by=field_issue_date_value&field_issue_date_value[value][year]=%s&items_per_page=All" % (index, year)
+
 
 def report_from(result):
   report = {
@@ -73,7 +76,7 @@ def report_from(result):
       report_id += "-2"
 
   if not report_id:
-    report_id = url[url.rfind('/') + 1 : url.rfind('.')]
+    report_id = url[url.rfind('/') + 1:url.rfind('.')]
 
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
@@ -85,6 +88,7 @@ def report_from(result):
   report['title'] = title
 
   return report
+
 
 def type_for(category):
   original = category.lower()
