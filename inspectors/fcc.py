@@ -27,7 +27,8 @@ DATE_FORMATS = [
 
 RE_EXTRA_FILES = re.compile("(?:Transmittal_(?:[Ll]etter|[Ll]tr|Memo)|"
                             "CoverLetter|"
-                            "Attachment)")
+                            "Attachment|"
+                            "purchase_card_update)")
 
 
 def run(options):
