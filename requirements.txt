@@ -1,5 +1,5 @@
 ipython
-scrapelib>=0.10.0
+scrapelib>=1.0.2
 BeautifulSoup4
 pyyaml
 lxml
