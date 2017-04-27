@@ -178,6 +178,10 @@ def report_from(result, reports_page, report_type, year_range):
         if text.lower().strip("-").strip().startswith("case id"):
           id_text = text
     if not id_text:
+      match = re.search("Case ID: ([0-9]{4}-[0-9]{3})", title)
+      if match:
+        id_text = match.group(1)
+    if not id_text:
       raise Exception("Could not find Case ID for an investigation\n%s" %
                       result.text)
 
