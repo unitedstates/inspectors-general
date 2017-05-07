@@ -123,7 +123,10 @@ def semiannual_report_from(result, year_range):
   report_id, _ = os.path.splitext(report_filename)
 
   published_on_text = result.text.split(",")[0].strip()
-  published_on = datetime.datetime.strptime(published_on_text, '%b %Y')
+  if published_on_text == "Open Audit Recommendations":
+    published_on = datetime.datetime(2017, 3, 31)
+  else:
+    published_on = datetime.datetime.strptime(published_on_text, '%b %Y')
   title = "Semiannual Report - {}".format(published_on_text)
 
   if published_on.year not in year_range:
