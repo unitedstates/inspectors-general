@@ -124,6 +124,7 @@ def report_from(result, year_range, report_type):
     published_on = REPORT_PUBLISHED_MAP[report_id]
   else:
     admin.log_no_date("eeoc", report_id, title, pdf_report_url)
+    return
 
   if fiscal_year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % pdf_report_url)
