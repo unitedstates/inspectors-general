@@ -19,7 +19,7 @@ archive = 2010
 
 AUDIT_REPORTS_URL = "http://fhfaoig.gov/Reports/AuditsAndEvaluations?page={page}"
 MANAGEMENT_ALERTS_URL = "http://fhfaoig.gov/Reports/AdditionalActionItems"
-CONGRESSIONAL_TESTIMONY_URL = "http://fhfaoig.gov/testimony"
+CONGRESSIONAL_TESTIMONY_URL = "http://fhfaoig.gov/reports/testimony"
 SEMIANNUAL_REPORTS_URL = "http://fhfaoig.gov/Reports/Semiannual"
 
 # This will actually get adjusted downwards on the fly, so pick a huge number.
