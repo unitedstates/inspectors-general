@@ -217,10 +217,11 @@ REPORT_PUBLISHED_MAPPING = {
   "Final_Audit_of_Peace_Corps_China_IG-17-01-A": datetime.datetime(2017, 1, 23),
   "PC_IG_Kathy_A._Buller_Written_Statement_Feb_1_2017": datetime.datetime(2017, 2, 1),
   "Audit_of_Peace_Corps_Georgia_IG-17-02-A": datetime.datetime(2017, 3, 28),
+  "Peace_Corps_Kosovo_Final_Evaluation_Report_IG-17-02-E": datetime.datetime(2017, 5, 12),
 }
 
 REPORT_TYPE_MAP = {
-  'Plan': 'other',
+  'Plans & Reports': 'other',
   'Special Review': 'other',
   'Audit': 'audit',
   'None': 'other',
