@@ -23,7 +23,7 @@ def run(options):
   if component:
     components = [component]
   else:
-    components = list(COMPONENTS.keys())
+    components = sorted(COMPONENTS.keys())
 
   report_id = options.get('report_id')
 
@@ -36,10 +36,7 @@ def run(options):
     url = url_for(options, component)
     doc = utils.beautifulsoup_from_url(url)
 
-    results = doc.select("table.contentpaneopen table[border=1] tr")
-    # accept only trs that look like body tr's (no 'align' attribute)
-    #   note: HTML is very inconsistent. cannot rely on thead or tbody
-    results = [x for x in results if x.get('align') is None]
+    results = doc.select("#content-area tbody tr")
     if not results:
       raise inspector.NoReportsFoundError("DHS (%s)" % component)
 
@@ -83,10 +80,9 @@ def report_from(result, component, url):
     'inspector_url': 'https://www.oig.dhs.gov/'
   }
 
-  link = result.select("td")[2].select("a")[0]
-  href = link['href'].replace("http://srvhq11c03-webs/", "/")
-  href = href.replace("/assets/mgmt/", "/assets/Mgmt/")
-  href = href.replace("/assets/mGMT/", "/assets/Mgmt/")
+  link = result.select("td")[1].select("a")[0]
+  href = link['href']
+  href = href.replace("/index.php/", "/")
   report_url = urllib.parse.urljoin(url, href)
   title = link.text.strip()
   title = title.replace("\xa0", " ")
@@ -107,46 +103,14 @@ def report_from(result, component, url):
   report['url'] = report_url
   report['title'] = title
 
-  timestamp = result.select("td")[0].text.strip()
+  timestamp = result.select("td")[2].text.strip()
 
-  # can actually be just monthly, e.g. 12/03 (Dec 2003)
-  if len(timestamp.split("/")) == 2:
-    timestamp = "%s/01/%s" % tuple(timestamp.split("/"))
-
-  # A date of '99' is also used when only the month and year are given
-  # and no accurate date is available.
-  if timestamp.split("/")[1] == "99":
-    timestamp = "%s/01/%s" % (timestamp.split("/")[0], timestamp.split("/")[2])
-
-  published_on = datetime.strptime(timestamp, "%m/%d/%y")
+  published_on = datetime.strptime(timestamp, "%m/%d/%Y")
   report['published_on'] = datetime.strftime(published_on, "%Y-%m-%d")
 
-  report_id = result.select("td")[1].text.strip()
-  # A couple reports have no ID (Boston Marathon Bombing reports)
-  if len(report_id) == 0:
-    filename = urllib.parse.urlparse(report['url']).path.split("/")[-1]
-    report_id = filename.split(".")[0]
+  report_id = result.select("td")[0].text.strip()
   # Audit numbers are frequently reused, so add the year to our ID
   report_id = "%s_%d" % (report_id, published_on.year)
-
-  # Discard these results, both the URLs and the report numbesr are correctly
-  # listed in other entries
-  if (report_id == "OIG-13-48_2013" and report_url ==
-          "https://www.oig.dhs.gov/assets/Mgmt/2014/OIG_14-48_Mar14.pdf"):
-    return
-  if (report_id == "OIG-13-61_2013" and report_url ==
-          "https://www.oig.dhs.gov/assets/Mgmt/2014/OIG_14-61_Apr14.pdf"):
-    return
-  if (report_id == "OIG-13-86_2013" and report_url ==
-          "https://www.oig.dhs.gov/assets/Mgmt/2014/OIG_14-86_Apr14.pdf"):
-    return
-
-  # Fix typos in this report's date and number
-  if (report_id == "OIG-12-105_2012" and report_url ==
-          "https://www.oig.dhs.gov/assets/Mgmt/OIG_11-105_Aug11.pdf"):
-    published_on = "2011-08-25"
-    report['published_on'] = published_on
-    report_id = "OIG-11-105_2011"
 
   report['report_id'] = report_id
 
@@ -156,47 +120,32 @@ def report_from(result, component, url):
     report['agency'] = 'dhs'
   else:
     report['agency'] = component
-  report['agency_name'] = COMPONENTS[component][2]
+  report['agency_name'] = COMPONENTS[component][1]
 
   return report
 
 
 def url_for(options, component):
-  base = "https://www.oig.dhs.gov/index.php?option=com_content&view=article"
-  return "%s&id=%s&Itemid=%s" % (base, COMPONENTS[component][0], COMPONENTS[component][1])
+  return ("https://www.oig.dhs.gov/reports/audits-inspections-and-evaluations"
+          "?field_dhs_agency_target_id={}"
+          "&field_oversight_area=All"
+          "&field_fy_value=All".format(COMPONENTS[component][0]))
 
 
-# Component handle, with associated ID and itemID query string params
-#   Note: I believe only the ID is needed.
+# Component handle, with associated ID query string param
 # Not every component is an agency. Some of these will be collapsed into 'dhs'
 #   for a report's 'agency' field.
 # Some additional info on DHS components: https://www.dhs.gov/department-components
 COMPONENTS = {
-  'secret_service': (58, 49, "U.S. Secret Service"),
-  'coast_guard': (19, 48, "U.S. Coast Guard"),
-  'uscis': (20, 47, "U.S. Citizenship and Immigration Services"),
-  'tsa': (22, 46, "Transportation Security Administration"),
-  'ice': (24, 44, "Immigration and Customs Enforcement"),
-  'fema': (25, 38, "Federal Emergency Management Agency"),
-  'cbp': (26, 37, "Customs & Border Protection"),
-  'dhs_other': (59, 50, "Department of Homeland Security"),
-  'dhs_mgmt': (23, 45, "Department of Homeland Security"),
-  'dhs_cigie': (168, 150, "Council of the Inspectors General on Integrity and Efficiency"),
-}
-
-# 'Oversight areas' as organized by DHS. This is unused now, but
-# could be used to run over the lists and associate a category with
-# reports previously identified when running over each component.
-# values are associated IT and itemID query strinhg params.
-#   Note: I believe only the ID is needed.
-AREAS = {
-  'Border Security': (60, 30),
-  'Counterterrorism': (61, 31),
-  'Cybersecurity': (62, 32),
-  'Disaster Preparedness, Response, Recovery': (63, 33),
-  'Immigration': (64, 34),
-  'Management': (33, 51),
-  'Transportation Security': (66, 35),
+  'secret_service': (8, "U.S. Secret Service"),
+  'coast_guard': (7, "U.S. Coast Guard"),
+  'uscis': (6, "U.S. Citizenship and Immigration Services"),
+  'tsa': (5, "Transportation Security Administration"),
+  'ice': (3, "Immigration and Customs Enforcement"),
+  'fema': (2, "Federal Emergency Management Agency"),
+  'cbp': (1, "Customs & Border Protection"),
+  'dhs_other': (9, "Department of Homeland Security"),
+  'dhs_mgmt': (4, "Department of Homeland Security"),
 }
 
 utils.run(run) if (__name__ == "__main__") else None
