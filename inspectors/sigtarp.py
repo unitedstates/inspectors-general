@@ -60,6 +60,7 @@ QUARTERLY_REPORT_DATES = {
   "April_27_2016_Report_to_Congress": datetime.datetime(2016, 4, 27),
   "July_27_2016_Report_To_Congress": datetime.datetime(2016, 7, 27),
   "October_26_2016_Report_To_Congress": datetime.datetime(2016, 10, 26),
+  "January_27_2017_Report_To_Congress": datetime.datetime(2017, 1, 27),
 }
 
 
