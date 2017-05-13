@@ -68,6 +68,8 @@ REPORT_URL_TO_PUBLISHED_DATETIMES = {
   "https://www.sec.gov/about/offices/oig/reports/reppubs/other/oig_strategicplan2010-2015-9-1-10-508.pdf": datetime.datetime(2010, 9, 1),
   "https://www.sec.gov/oig/reportspubs/Review-of-the-SECs-Pay-Transition-Program-15-ONR-0281-R-1-27-2016.pdf": datetime.datetime(2016, 1, 27),
   "https://www.sec.gov/oig/reportspubs/OIG-Strategic-Plan-for-Fiscal-Years-2017---2019.pdf": datetime.datetime(2016, 9, 19),
+  "https://www.sec.gov/files/Former-SEC-Employee-Pleads-Guilty-to-Making-False-Statements.pdf": datetime.datetime(2017, 5, 9),
+  "https://www.sec.gov/files/Connecticut%20Financial%20Advisor%20Sentenced%20for%20Obstructing%20SEC%20Investigation.pdf": datetime.datetime(2017, 4, 20),
 }
 
 CANNED_REPORTS = [
@@ -215,6 +217,7 @@ def report_from(result, landing_url, topic, year_range, last_published_on):
   logging.debug("### Processing report %s" % report_url)
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]
+  report_id = report_id.replace("%20", "-")
   title = report_link.text.strip()
   report_type = TOPIC_TO_REPORT_TYPE[topic]
 
