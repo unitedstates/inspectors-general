@@ -87,6 +87,7 @@ REPORT_PUBLISHED_MAP = {
   "LosReyesEvaluationReport": datetime.datetime(2008, 10, 2),
   "MusicTheatreGroup-Redacted-2008": datetime.datetime(2007, 11, 21),
   "LS-16-02-NASAA-Final-Report": datetime.datetime(2016, 2, 29),
+  "Letter-of-Comment-NEA-01-27-17": datetime.datetime(2017, 1, 27),
 }
 
 
