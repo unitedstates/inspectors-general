@@ -26,6 +26,7 @@ REPORT_URLS = {
 }
 
 REPORT_PUBLISHED_MAP = {
+  "ipera_2017_memo_to_chairman_5-1-2017": datetime.datetime(2017, 5, 1),
   "ftc_oig_independent_readiness_review_of_managements_implementation_of_": datetime.datetime(2017, 3, 1),
   "oig_fisma_evaluation_fy_2016_redacted": datetime.datetime(2017, 3, 1),
   "financial_statement_audit_for_fiscal_year_2016": datetime.datetime(2016, 12, 22),
