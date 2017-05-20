@@ -210,6 +210,9 @@ BLACKLIST_REPORT_URLS = [
 
   # Interactive map with report
   'http://oig.hhs.gov/oei/maps/ccdf',
+
+  # Report in brief, posted next to full report
+  "http://oig.hhs.gov/oas/reports/region3/31303002RIB.pdf",
 ]
 
 TITLE_NORMALIZATION = {
