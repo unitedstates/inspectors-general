@@ -76,7 +76,7 @@ def report_from(result):
       report_id += "-2"
 
   if not report_id:
-    report_id = url[url.rfind('/') + 1:url.rfind('.')]
+    report_id = url[url.rfind('/') + 1:url.rfind('.')][:80]
 
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
