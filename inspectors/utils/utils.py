@@ -175,7 +175,7 @@ META_CHARSETS = {
   "https://www.treasury.gov/tigta/": "iso-8859-1",
   "http://oig.tva.gov/": "utf-8",
   "https://oig.tva.gov/": "utf-8",
-  "https://www.va.gov/oig/publications/report-summary.asp?": "utf-8",
+  "https://www.va.gov/oig/": "utf-8",
 }
 
 # will pass correct options on to individual scrapers whether

@@ -6,7 +6,7 @@ import os
 import re
 import time
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
 # https://www.va.gov/oig/apps/info/OversightReports.aspx
 archive = 1996
@@ -211,10 +211,24 @@ def semiannual_report_from(result, year_range):
   report_id = os.path.splitext(report_filename)[0]
   summary = result.select("p")[0].text
   title = result.select("h4 > a")[0].text
+  published_on = None
   try:
     published_on = datetime.datetime.strptime(title.split("-")[-1].strip(), '%B %d, %Y')
   except ValueError:
-    published_on = datetime.datetime.strptime(title.split(" to ")[-1].strip(), '%B %d, %Y')
+    pass
+  if published_on is None:
+    try:
+      published_on = datetime.datetime.strptime(title.split(" to ")[-1].strip(), '%B %d, %Y')
+    except ValueError:
+      pass
+  if published_on is None:
+    try:
+      published_on = datetime.datetime.strptime(title.split("\u2013")[-1].strip(), '%B %d, %Y')
+    except ValueError:
+      pass
+  if published_on is None:
+    admin.log_no_date("va", report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_id)
