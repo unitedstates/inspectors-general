@@ -205,7 +205,15 @@ def report_from_table(tds, published_on_dt, base_url):
                                                       "What the Firm Found"])
     message_to_congress = landing_page.find("h2", text="Message to Congress")
     if what_we_found:
-      summary = what_we_found.parent.find_next_sibling("p").text.strip()
+      next_p = what_we_found.parent.find_next_sibling("p")
+      if next_p:
+        summary = next_p.text.strip()
+      else:
+        what_we_found_parent = what_we_found.parent
+        what_we_found.extract()
+        if what_we_found_parent.strong:
+          what_we_found_parent.strong.extract()
+        summary = what_we_found_parent.text.strip()
       report['summary'] = summary
     elif message_to_congress:
       summary = message_to_congress.find_next_sibling("p").text.strip()
