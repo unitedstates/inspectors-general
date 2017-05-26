@@ -229,7 +229,8 @@ REPORT_TYPE_MAP = {
   'Annual Report': 'semiannual_report',
   'Letter': 'other',
   'Testimony': 'testimony',
-  'Management Advisory': 'other'
+  'Management Advisory': 'other',
+  'Investigation': 'investigation',
 }
 
 # Several consecutive reports appear twice on pages 4 and 5 at time of writing
