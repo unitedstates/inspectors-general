@@ -22,6 +22,7 @@ REPORT_ARCHIVE_URL = "https://www.fca.gov/home/inspector/oigarchive.html"
 SEMIANNUAL_REPORTS_URL = "https://www.fca.gov/home/inspector/semiannual.html"
 
 REPORT_PUBLISHED_MAPPING = {
+  "ContractingActivities2017": datetime.datetime(2017, 5, 22),
   "AwardsProgram": datetime.datetime(2017, 2, 23),
   "OversightofYBSPrograms": datetime.datetime(2016, 9, 28),
   "PositionManagementandJobEvaluationProgram": datetime.datetime(2016, 9, 23),
