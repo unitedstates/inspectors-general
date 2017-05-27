@@ -70,6 +70,7 @@ REPORT_URL_TO_PUBLISHED_DATETIMES = {
   "https://www.sec.gov/oig/reportspubs/OIG-Strategic-Plan-for-Fiscal-Years-2017---2019.pdf": datetime.datetime(2016, 9, 19),
   "https://www.sec.gov/files/Former-SEC-Employee-Pleads-Guilty-to-Making-False-Statements.pdf": datetime.datetime(2017, 5, 9),
   "https://www.sec.gov/files/Connecticut%20Financial%20Advisor%20Sentenced%20for%20Obstructing%20SEC%20Investigation.pdf": datetime.datetime(2017, 4, 20),
+  "https://www.sec.gov/files/Virginia-Man-Arrested-And-Charged-With-%24100-Million-Market-Manipulation-Scheme-Involving-Fitbit-Stock.pdf": datetime.datetime(2017, 5, 19),
 }
 
 CANNED_REPORTS = [
