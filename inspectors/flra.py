@@ -247,6 +247,9 @@ def report_from_paragraph(result, landing_url, report_type, year_range):
           'Non -Public Report' in title or
           'Non Public Report' in title):
     unreleased = True
+    if report_id == "ER-17-01":
+      # This report is listed in two places, once with a PDF, once without
+      return
 
   if result.a:
     link = result.a

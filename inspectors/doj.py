@@ -82,7 +82,7 @@ def extract_info(content, directory, year_range):
   if directory in not_agency:
     agency = "doj"
     agency_name = "Department of Justice"
-  elif directory[:11] == "Immigration":
+  elif directory.startswith("Immigration"):
     agency = "ins"
     agency_name = "Immigration and Naturalization Service"
   else:
@@ -371,9 +371,9 @@ def odd_link(b, date, l, directory):
 
   # these are not documents
   if link:
-    if link[-4:] == ".gov":
+    if link.endswith((".gov", ".gov/")):
       return {"date_string": False, "real_title": False}
-    elif link[-5:] == ".gov/" or link == "http://www.justice.gov/usao/eousa/":
+    elif link == "http://www.justice.gov/usao/eousa/":
       return {"date_string": False, "real_title": False}
   text = b.get_text()
 
