@@ -212,9 +212,9 @@ def report_from_paragraph(result, landing_url, report_type, year_range):
   text = result.text.strip()
   if not text:
     return
-  if "The OIG conducts independent\u00a0audits and reviews of FLRA programs and activities." in text:
+  if "The Office of Inspector General conducts independent\u00a0audits and reviews of" in text:
     return
-  if "Offices of the Inspectors General (OIG)\u00a0performing audits are required to perform" in text:
+  if "Office of\u00a0Inspectors General (OIG)\u00a0performing audits are required to perform" in text:
     return
   if "Report\u00a0No." in text and "Report Title" in text:
     return
