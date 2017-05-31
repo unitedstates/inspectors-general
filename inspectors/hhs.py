@@ -210,9 +210,6 @@ BLACKLIST_REPORT_URLS = [
 
   # Interactive map with report
   'http://oig.hhs.gov/oei/maps/ccdf',
-
-  # Report in brief, posted next to full report
-  "http://oig.hhs.gov/oas/reports/region3/31303002RIB.pdf",
 ]
 
 TITLE_NORMALIZATION = {
@@ -525,6 +522,7 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
 
 
 def filter_links(link_list, base_url):
+  link_list = [link for link in link_list if "Report in Brief" not in link.text]
   href_list = [element.get('href') for element in link_list]
   for i in range(len(href_list)):
     while href_list[i].startswith(("http://go.usa.gov/",
