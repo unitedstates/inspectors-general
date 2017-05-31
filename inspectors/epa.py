@@ -200,9 +200,10 @@ def report_from_table(tds, published_on_dt, base_url):
     if report.get('summary_url') and not report.get('url'):
       report['summary_only'] = True
       report['unreleased'] = True
-    what_we_found = landing_page.find("strong", text=["What We Found",
-                                                      "What Was Found",
-                                                      "What the Firm Found"])
+    what_we_found = landing_page.find(
+        "strong",
+        text=re.compile("\\s*What\\s+(?:We|Was|the\\s+Firm)\\s+Found\\s*")
+    )
     message_to_congress = landing_page.find("h2", text="Message to Congress")
     if what_we_found:
       next_p = what_we_found.parent.find_next_sibling("p")
