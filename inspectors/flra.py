@@ -247,9 +247,6 @@ def report_from_paragraph(result, landing_url, report_type, year_range):
           'Non -Public Report' in title or
           'Non Public Report' in title):
     unreleased = True
-    if report_id == "ER-17-01":
-      # This report is listed in two places, once with a PDF, once without
-      return
 
   if result.a:
     link = result.a
@@ -308,7 +305,7 @@ def report_from_paragraph(result, landing_url, report_type, year_range):
 
 def report_from_list(result, landing_url, report_type, year_range):
   missing = False
-  title = result.text.strip()
+  title = re.sub("\\s+", " ", inspector.sanitize(result.text))
 
   report_id = None
   report_id_match = REPORT_ID_RE_1.search(title)
@@ -318,6 +315,10 @@ def report_from_list(result, landing_url, report_type, year_range):
   if 'Non-Public Report' in title:
     unreleased = True
     report_url = None
+    if report_id in ("ER-11-01", "ER-12-01", "ER-13-01", "ER-14-01",
+                     "ER-15-01", "ER-16-01", "ER-17-01"):
+      # These reports are listed in two places, once with a PDF, once without
+      return
     if not report_id:
       report_id = "-".join(title.split())
       report_id = report_id.replace(":", "")
