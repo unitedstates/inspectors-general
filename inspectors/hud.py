@@ -38,6 +38,10 @@ MISSING_REPORT_IDS = [
   "SAR 52",
 ]
 
+UNRELEASED_REPORT_IDS = [
+  "2017-FO-0004",
+]
+
 # These reports 404
 BAD_LINKS = [
   'ig021803',
@@ -346,6 +350,8 @@ def report_from(report_row, year_range):
   if not report_url and not unreleased:
     if report_id in MISSING_REPORT_IDS:
       missing = True
+      unreleased = True
+    elif report_id in UNRELEASED_REPORT_IDS:
       unreleased = True
     else:
       raise AssertionError("Report: %s did not have a report url and is not unreleased" % landing_url)
