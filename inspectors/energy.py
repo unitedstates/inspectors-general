@@ -136,14 +136,13 @@ class EnergyScraper(object):
       return
     published_on = published_on.strftime('%Y-%m-%d')
 
-    title_p = node.select('.field-item p')[0]
+    title_p = (node.select('.field-item') or node.select('.content p'))[0]
     title = title_p.text.strip()
 
     title_link = node.select('.title-link')[0]
     landing_url = urljoin(BASE_URL, title_link['href'])
 
-    title_link_span = title_link.select('span')[0]
-    md = RE_REPORT_ID.search(title_link_span.text)
+    md = RE_REPORT_ID.search(title_link.text)
     if md:
       report['sub_type'] = md.group(1).strip().replace(' ', '_').lower()
       report_id = md.group(2).strip().replace('/', '-')
