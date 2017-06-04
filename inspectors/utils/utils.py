@@ -122,6 +122,7 @@ WHITELIST_INSECURE_DOMAINS = (
   "https://www.ncua.gov/",  # incomplete chain as of 12/10/2016
   "https://www.oig.dot.gov/",  # incomplete chain as of 4/12/2017
   "https://www.oig.dhs.gov",  # incomplete chain as of 5/6/2017
+  "https://oig.eeoc.gov/",  # incomplete chain as of 6/3/2017
 
   # The following domains will 301/302 redirect to the above domains, so
   # validate=False is needed for these cases as well
