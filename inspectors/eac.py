@@ -34,6 +34,7 @@ REPORT_URLS = [
 ]
 
 REPORT_PUBLISHED_MAP = {
+  "OIG-Semi-Annual-Report-Letter-5-26-2017-MM-signed-ocr": datetime.datetime(2017, 5, 26),
   "US-EAC-OIG-2016-Peer-Review-Report": datetime.datetime(2016, 7, 20),
   "USEAC-2016-Final-Financial-Audit-Report-I-PA-EAC-01-16": datetime.datetime(2016, 11, 10),
   "USEAC-2016-Final-FISMA-Report-I-PA-EAC-02-16": datetime.datetime(2016, 11, 10),
