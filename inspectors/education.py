@@ -236,7 +236,7 @@ def semiannual_report_from(result, page_url, year_range):
   report_id, extension = os.path.splitext(report_filename)
   date_range_text = result.select("td")[1].text
   title = "Semiannual Report - {}".format(date_range_text)
-  published_on_text = date_range_text.split("-")[-1].strip()
+  published_on_text = date_range_text.split("through")[-1].strip()
   published_on = datetime.datetime.strptime(published_on_text, '%B %d, %Y')
 
   if published_on.year not in year_range:
