@@ -105,8 +105,11 @@
 # Federal Trade Commission
 - ftc
 
-# Government Accountability Office
+# Government Accountability Office OIG
 - gao
+
+# Government Accountability Office reports
+- gaoreports
 
 # Governmentattic.org
 - governmentattic
