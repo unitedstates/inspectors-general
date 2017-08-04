@@ -104,16 +104,32 @@ def run(options):
   for report_type, url in OTHER_REPORTS_URLS:
     doc = utils.beautifulsoup_from_url(url)
     results = doc.select("div.contentText ul li")
-    if not results:
-      raise inspector.NoReportsFoundError("Department of Education (%s)" % report_type)
-    for result in results:
-      report = report_from(result, url, report_type, year_range)
-      if report:
-        # optional: filter to a single report
-        if report_id and (report_id != report['report_id']):
-          continue
+    if results:
+      for result in results:
+        report = report_from_list(result, url, report_type, year_range)
+        if report:
+          # optional: filter to a single report
+          if report_id and (report_id != report['report_id']):
+            continue
 
-        inspector.save_report(report)
+          inspector.save_report(report)
+    else:
+      table = doc.find("table", {"border": 1})
+      if not table:
+        raise inspector.NoReportsFoundError("Department of Education (%s)" % report_type)
+      assert table.tr.find_all("td")[0].text.strip() == "Subject"
+      assert table.tr.find_all("td")[1].text.strip() == "Title"
+      assert "Date" in table.tr.find_all("td")[2].text
+      assert table.tr.find_all("td")[3].text.strip() == "Link to Report"
+      for index, result in enumerate(table.select("tr")):
+        if index == 0:
+          continue
+        report = report_from_table(result, url, report_type, year_range)
+        if report:
+          # optional: filter to a single report
+          if report_id and (report_id != report['report_id']):
+            continue
+          inspector.save_report(report)
 
 audit_reports_seen = set()
 
@@ -262,7 +278,7 @@ def semiannual_report_from(result, page_url, year_range):
 other_reports_seen = set()
 
 
-def report_from(result, url, report_type, year_range):
+def report_from_list(result, url, report_type, year_range):
   report_url = urljoin(url, result.select("a")[0].get('href'))
   report_filename = report_url.split("/")[-1]
   report_id, extension = os.path.splitext(report_filename)
@@ -303,6 +319,11 @@ def report_from(result, url, report_type, year_range):
     # copy on the other reports page
     return None
 
+  if (report_id in ("coveredsystems088152016", "scrareport02292016")) and url == OTHER_REPORTS_URL:
+    # These reports are also listed on the "Special Reports to Congress", so
+    # we skip the copy on the other reports page
+    return None
+
   key = (report_id, title, report_url)
   if key in other_reports_seen:
     return
@@ -326,6 +347,41 @@ def report_from(result, url, report_type, year_range):
     report['unreleased'] = True
     report['missing'] = True
     report['landing_url'] = url
+
+  return report
+
+def report_from_table(result, url, report_type, year_range):
+  tds = result.find_all("td")
+  report_url = urljoin(url, tds[3].a["href"])
+  report_filename = os.path.basename(report_url)
+  report_id, extension = os.path.splitext(report_filename)
+
+  title = tds[1].text.strip()
+  if report_id in REPORT_PUBLISHED_MAP:
+    published_on = REPORT_PUBLISHED_MAP[report_id]
+  else:
+    published_on = datetime.datetime.strptime(tds[2].text.strip(), "%m/%d/%Y")
+
+  if published_on.year not in year_range:
+    logging.debug("[%s] Skipping, not in requested range." % report_url)
+    return
+
+  key = (report_id, title, report_url)
+  if key in other_reports_seen:
+    return
+  other_reports_seen.add(key)
+
+  report = {
+    'inspector': 'education',
+    'inspector_url': 'https://www2.ed.gov/about/offices/list/oig/',
+    'agency': 'education',
+    'agency_name': "Department of Education",
+    'type': report_type,
+    'report_id': report_id,
+    'url': report_url,
+    'title': title,
+    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
+  }
 
   return report
 
