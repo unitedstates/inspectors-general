@@ -39,7 +39,7 @@ RE_PUBLIC_RELEASE = re.compile('Not for Public Release', re.I)
 RE_DATE = re.compile(r'%s +\d\d\d\d' % PARTS_MONTH)
 RE_SHORT_DATE = re.compile(r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sept|Oct|Nov|Dec)'
                            r' +\d\d\d\d')
-RE_LONG_DATE = re.compile(r'%s \d\d,? +\d\d\d\d' % PARTS_MONTH)
+RE_LONG_DATE = re.compile(r'%s \d\d?,? +\d\d\d\d' % PARTS_MONTH)
 RE_OWLC = re.compile('Open +World +Leadership +Center')
 RE_JMCF = re.compile('James +Madison +Council +Fund')
 
