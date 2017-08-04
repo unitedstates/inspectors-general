@@ -85,7 +85,7 @@ def audit_report_from(result, landing_url, year_range):
     report_url = None
   else:
     unreleased = False
-    link = result.find("a", href=lambda h: h and not h.startswith("#"))
+    link = result.find("a", href=lambda h: h and not h.startswith(("#", "-#")))
     report_url = urljoin(landing_url, link['href'])
 
   summary_text = result.find("div", class_="panel-body").text
