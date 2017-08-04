@@ -293,7 +293,8 @@ def extract_url(td):
   def filter_url(href):
     for string in ("/office-inspector-general/multimedia",
                    "/office-inspector-general/oig-multimedia",
-                   "informe-agua-potable-la-epa-necesita-adoptar-medidas"):
+                   "informe-agua-potable-la-epa-necesita-adoptar-medidas",
+                   "informe-estan-en-riesgo-mas-de-774-millones-en-fondos"):
       if string in href:
         return False
     return True
