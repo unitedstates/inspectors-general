@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 
 from utils import utils, inspector
 
-# http://www.nrc.gov/insp-gen.html
+# https://www.nrc.gov/insp-gen.html
 archive = 1995
 
 # options:
@@ -18,19 +18,19 @@ archive = 1995
 # - There are a few report pages which don't list published dates. See
 # REPORT_PUBLISHED_MAPPING
 
-AUDIT_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/{}/"
-ARCHIVED_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/archived.html"
-PRIOR_PENDING_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/insp-gen/prior-pending.html"
-SEMIANNUAL_REPORTS_URL = "http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr1415/index.html"
+AUDIT_REPORTS_URL = "https://www.nrc.gov/reading-rm/doc-collections/insp-gen/{}/"
+ARCHIVED_REPORTS_URL = "https://www.nrc.gov/reading-rm/doc-collections/insp-gen/archived.html"
+PRIOR_PENDING_REPORTS_URL = "https://www.nrc.gov/reading-rm/doc-collections/insp-gen/prior-pending.html"
+SEMIANNUAL_REPORTS_URL = "https://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr1415/index.html"
 OTHER_REPORT_URLS = [
   # These brochures have been taken off of the website as of April 7, 2015
-  #  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0304/",
+  #  ("https://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0304/",
   #   "NUREG-BR-0304-"),
-  #  ("http://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0272/",
+  #  ("https://www.nrc.gov/reading-rm/doc-collections/nuregs/brochures/br0272/",
   #   "NUREG-BR-0272-")
 ]
 
-BASE_REPORT_URL = "http://www.nrc.gov"
+BASE_REPORT_URL = "https://www.nrc.gov"
 
 UNRELEASED_TEXTS = [
   "not for public release",
@@ -142,7 +142,7 @@ def audit_report_from(result, landing_url, year_range):
 
   report = {
     'inspector': 'nrc',
-    'inspector_url': 'http://www.nrc.gov/insp-gen.html',
+    'inspector_url': 'https://www.nrc.gov/insp-gen.html',
     'agency': 'nrc',
     'agency_name': 'Nuclear Regulatory Commission',
     'type': 'audit',
@@ -171,7 +171,7 @@ def semiannual_report_from(result, year_range):
     relative_report_url = landing_page.find(href=PDF_REGEX).get('href')
   except AttributeError:
     # Some of these reports are published as HTML on the landing page
-    # Ex. http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr1415/v17n2/
+    # Ex. https://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr1415/v17n2/
     relative_report_url = landing_url
 
   file_type = None
@@ -180,7 +180,7 @@ def semiannual_report_from(result, year_range):
   if report_filename:
     report_id, extension = os.path.splitext(report_filename)
   else:
-    # HTML page with trailing slash. (http://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr1415/v17n2/)
+    # HTML page with trailing slash. (https://www.nrc.gov/reading-rm/doc-collections/nuregs/staff/sr1415/v17n2/)
     report_id = report_url.split("/")[-2]
     file_type = '.html'
 
@@ -200,7 +200,7 @@ def semiannual_report_from(result, year_range):
 
   report = {
     'inspector': 'nrc',
-    'inspector_url': 'http://www.nrc.gov/insp-gen.html',
+    'inspector_url': 'https://www.nrc.gov/insp-gen.html',
     'agency': 'nrc',
     'agency_name': 'Nuclear Regulatory Commission',
     'type': 'semiannual_report',
@@ -234,7 +234,7 @@ def other_report_from(result, year_range, id_prefix, index_url):
 
   report = {
     'inspector': 'nrc',
-    'inspector_url': 'http://www.nrc.gov/insp-gen.html',
+    'inspector_url': 'https://www.nrc.gov/insp-gen.html',
     'agency': 'nrc',
     'agency_name': 'Nuclear Regulatory Commission',
     'type': 'other',
