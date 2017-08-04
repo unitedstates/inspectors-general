@@ -15,8 +15,7 @@ INDEX_URLS = [
   "https://www.gsaig.gov/FOIA-Reading-Room",
   "https://www.gsaig.gov/Recovery-Act-Reports",
   "https://www.gsaig.gov/Other-Documents",
-  "https://www.gsaig.gov/Presentations",
-  "https://www.gsaig.gov/Semiannual-Reports-to-the-Congre",
+  "https://www.gsaig.gov/SAR",
   "https://www.gsaig.gov/Inspection-and-Evaluation-Report",
   "https://www.gsaig.gov/Peer-Review-Reports",
 ]
