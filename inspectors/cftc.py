@@ -57,6 +57,7 @@ REPORT_PUBLISHED_MAPPING = {
   "oig_transmittalmemo093016": datetime.datetime(2016, 11, 22),
   "oig_arc030617": datetime.datetime(2017, 3, 6),
   "oig_riskassess2016": datetime.datetime(2017, 4, 14),
+  "oigperfauditNFA063117": datetime.datetime(2017, 5, 31),
 }
 
 REPORTS_URL = "http://www.cftc.gov/About/OfficeoftheInspectorGeneral/index.htm"
