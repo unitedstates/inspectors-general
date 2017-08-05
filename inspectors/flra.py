@@ -33,9 +33,11 @@ REPORT_URLS = [
 
 REPORT_ID_RE_1 = re.compile("\\(([A-Z]{2}-[0-9]{2}-[0-9]{2}[A-Z]?)\\)|Report (?:Number|No\\.)\\s+((?:[A-Z]{2,3}-)?[0-9]{2}-[0-9]{2}[A-Z]?)")
 REPORT_ID_RE_2 = re.compile("^((?:[A-Z]{2,3}-)?[0-9]{2}-[0-9]{2}[A-Z]?)")
+REPORT_ID_RE_3 = re.compile("^OIG-[0-9]{4}-[0-9]{2}$")
 
 REPORT_PUBLISHED_MAP = {
   # Peer Review Reports
+  "OIG-2017-10": datetime.datetime(2017, 6, 30),
   "14-04": datetime.datetime(2014, 9, 22),
   "11-04": datetime.datetime(2011, 6, 9),
   "01-08": datetime.datetime(2008, 9, 16),
@@ -112,6 +114,7 @@ REPORT_PUBLISHED_MAP = {
   "ER-09-05": datetime.datetime(2009, 3, 3),
   "ER-09-06": datetime.datetime(2009, 8, 21),
   "ER-09-07": datetime.datetime(2009, 6, 10),
+  "ER-09-08": datetime.datetime(2009, 7, 22),
   "MC-09-01": datetime.datetime(2009, 3, 23),
   "AR-08-01": datetime.datetime(2008, 2, 8),
   "AR-08-02": datetime.datetime(2008, 2, 8),
@@ -214,7 +217,7 @@ def report_from_paragraph(result, landing_url, report_type, year_range):
     return
   if "The Office of Inspector General conducts independent\u00a0audits and reviews of" in text:
     return
-  if "Office of\u00a0Inspectors General (OIG)\u00a0performing audits are required to perform" in text:
+  if "Office of\u00a0Inspectors General (OIG)\u00a0performing audits\u00a0are required to perform" in text:
     return
   if "Report\u00a0No." in text and "Report Title" in text:
     return
@@ -233,6 +236,9 @@ def report_from_paragraph(result, landing_url, report_type, year_range):
     report_id_match = REPORT_ID_RE_2.match(chunks[0].strip())
     if report_id_match:
       report_id = report_id_match.group(1)
+    report_id_match = REPORT_ID_RE_3.match(chunks[0].strip())
+    if report_id_match:
+      report_id = report_id_match.group(0)
   if not report_id and result.a:
     title = text
     report_filename = result.a.get("href").split("/")[-1]
