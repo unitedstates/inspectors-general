@@ -40,27 +40,6 @@ QUARTERLY_REPORT_DATES = {
   "April2011_Quarterly_Report_to_Congress": datetime.datetime(2011, 4, 28),
   "July2011_Quarterly_Report_to_Congress": datetime.datetime(2011, 7, 28),
   "October2011_Quarterly_Report_to_Congress": datetime.datetime(2011, 10, 27),
-  "January_26_2012_Report_to_Congress": datetime.datetime(2012, 1, 26),
-  "April_25_2012_Report_to_Congress": datetime.datetime(2012, 4, 25),
-  "July_25_2012_Report_to_Congress": datetime.datetime(2012, 7, 25),
-  "October_25_2012_Report_to_Congress": datetime.datetime(2012, 10, 25),
-  "January_30_2013_Report_to_Congress": datetime.datetime(2013, 1, 30),
-  "April_24_2013_Report_to_Congress": datetime.datetime(2013, 4, 24),
-  "July_24_2013_Report_to_Congress": datetime.datetime(2013, 7, 24),
-  "October_29_2013_Report_to_Congress": datetime.datetime(2013, 10, 29),
-  "January_29_2014_Report_to_Congress": datetime.datetime(2014, 1, 29),
-  "April_30_2014_Report_to_Congress": datetime.datetime(2014, 4, 30),
-  "July_30_2014_Report_to_Congress": datetime.datetime(2014, 7, 30),
-  "October_29_2014_Report_to_Congress": datetime.datetime(2014, 10, 29),
-  "January_28_2015_Report_to_Congress": datetime.datetime(2015, 1, 28),
-  "April_29_2015_Quarterly_Report_to_Congress": datetime.datetime(2015, 4, 29),
-  "July_29_2015_Report_to_Congress": datetime.datetime(2015, 7, 29),
-  "October_28_2015_Report_to_Congress": datetime.datetime(2015, 10, 28),
-  "January_28_2016_Report_to_Congress": datetime.datetime(2016, 1, 27),
-  "April_27_2016_Report_to_Congress": datetime.datetime(2016, 4, 27),
-  "July_27_2016_Report_To_Congress": datetime.datetime(2016, 7, 27),
-  "October_26_2016_Report_To_Congress": datetime.datetime(2016, 10, 26),
-  "January_27_2017_Report_To_Congress": datetime.datetime(2017, 1, 27),
 }
 
 
@@ -142,6 +121,27 @@ def quarterly_report_from(result, year_range):
   if report_id in QUARTERLY_REPORT_DATES:
     published_on = QUARTERLY_REPORT_DATES[report_id]
   else:
+    published_on = None
+
+  if published_on is None:
+    try:
+      published_on = datetime.datetime.strptime(report_id, "%B_%d_%Y_Report_to_Congress")
+    except ValueError:
+      pass
+
+  if published_on is None:
+    try:
+      published_on = datetime.datetime.strptime(report_id, "%B_%d_%Y_Report_To_Congress")
+    except ValueError:
+      pass
+
+  if published_on is None:
+    try:
+      published_on = datetime.datetime.strptime(report_id, "%B_%d_%Y_Quarterly_Report_to_Congress")
+    except ValueError:
+      pass
+
+  if published_on is None:
     admin.log_no_date("sigtarp", report_id, title, report_url)
     return
 
