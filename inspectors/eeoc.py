@@ -88,6 +88,8 @@ REPORT_PUBLISHED_MAP = {
   "2016-apr-sep": datetime.datetime(2016, 11, 1),
   "2016-oct-mar": datetime.datetime(2016, 5, 1),
   "2017-003-aoig": datetime.datetime(2017, 3, 30),
+  "2017-004-aoig": datetime.datetime(2017, 5, 11),
+  "2017-oct-mar": datetime.datetime(2017, 6, 13),
 }
 
 
