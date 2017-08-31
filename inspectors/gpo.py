@@ -24,6 +24,16 @@ HEADER_TITLES = [
   'Date',
 ]
 
+UNPUBLISHED_REPORT_TITLES = (
+  "Unscheduled and Unpaid Absenteeism in the Office of Plant Operations",
+  "GPO Purchase Card Program Management Controls",
+  "Passport Security (FORTUNA System)",
+  "Blank Passport Product Integrity & Security",
+  "Smart Card/PKI Business Case",
+  "Review of GPO's Internal Control Program",
+  "PKI Compliance Audit",
+)
+
 REPORT_URLS = {
   "audit": AUDIT_REPORTS_URL,
   "semiannual_report": SEMIANNUAL_REPORTS_URL,
@@ -227,7 +237,7 @@ REPORT_PUBLISHED_MAP = {
   "04-01-335": datetime.datetime(2004, 3, 31),
 }
 
-REPORT_ID_RE = re.compile("[0-9]{2}-[0-9]{2}")
+REPORT_ID_RE = re.compile("(?:[0-9]{2}-[0-9]{2}|AI[0-9]{4})")
 DATE_RE = re.compile("[^0-9]([01][0-9]-[0123][0-9]-[0-9][0-9])[^0-9]")
 
 
@@ -261,8 +271,7 @@ def report_from(result, landing_url, report_type, year_range):
   report_id_match = REPORT_ID_RE.match(result.td.text.strip())
   if ("contains sensitive information" in title or
           "This correspondence will not be posted" in title or
-          title == "Unscheduled and Unpaid Absenteeism in the Office of "
-          "Plant Operations"):
+          title in UNPUBLISHED_REPORT_TITLES):
     unreleased = True
     report_url = None
     if report_id_match:
