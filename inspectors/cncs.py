@@ -46,6 +46,8 @@ PEER_REVIEW_2012 = {
              "Authority, as applicable."
 }
 
+DATE_RE = re.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}")
+
 
 def run(options):
   year_range = inspector.year_range(options, archive)
@@ -192,9 +194,13 @@ def report_from(result, reports_page, report_type, year_range):
     unreleased = True
     report_url = None
 
-    year = int(report_id.replace("\u2010", "-").split("-")[0])
-    published_on = datetime.date(year, 1, 1)
-    estimated_date = True
+    date_match = DATE_RE.match(result.text.replace(title, "").strip())
+    if date_match:
+      published_on = datetime.datetime.strptime(date_match.group(0), "%Y-%m-%d")
+    else:
+      year = int(report_id.replace("\u2010", "-").split("-")[0])
+      published_on = datetime.date(year, 1, 1)
+      estimated_date = True
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % report_url)
