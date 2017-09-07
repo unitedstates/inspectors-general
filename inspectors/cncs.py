@@ -169,16 +169,16 @@ def report_from(result, reports_page, report_type, year_range):
     for p in result.select("p"):
       text = inspector.sanitize(p.text.strip())
       summary += text + "\n\n"
-      if text.lower().strip("-").strip().startswith("case id"):
+      if text.lower().strip("-").strip().startswith(("case id", "case d")):
         id_text = text
     summary = summary.strip()
     if not id_text:
       for div in result.select("div"):
         text = inspector.sanitize(div.text.strip())
-        if text.lower().strip("-").strip().startswith("case id"):
+        if text.lower().strip("-").strip().startswith(("case id", "case d")):
           id_text = text
     if not id_text:
-      match = re.search("Case ID: ([0-9]{4}-[0-9]{3})", title)
+      match = re.search("Case I?D: ([0-9]{4}-[0-9]{3})", title)
       if match:
         id_text = match.group(1)
     if not id_text:
