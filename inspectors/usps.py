@@ -148,16 +148,23 @@ def report_from(result):
 
   landing_page = utils.beautifulsoup_from_url(landing_url)
   pdf_link = landing_page.find("a", text="View PDF")
-  report_url = pdf_link["href"]
-  report['url'] = report_url = pdf_link["href"]
+  if pdf_link is None:
+    if ("This report contains sensitive information and will not be posted" in
+        landing_page.select(".field-type-text-with-summary .field-item p")[0]
+        .text.strip()):
+      report['unreleased'] = True
+    report['report_id'] = cells[3].text.strip()
+  else:
+    report_url = pdf_link["href"]
+    report['url'] = report_url = pdf_link["href"]
 
-  # get filename, use name as report ID, extension for type
-  filename = os.path.basename(report_url)
-  report['report_id'] = os.path.splitext(filename)[0]
-  if (report_url == "https://uspsoig.gov/sites/default/files/"
-          "document-library-files/2016/RARC-WP-16-001.pdf"):
-    # Fix typo
-    report['report_id'] = "RARC-WP-16-011"
+    # get filename, use name as report ID, extension for type
+    filename = os.path.basename(report_url)
+    report['report_id'] = os.path.splitext(filename)[0]
+    if (report_url == "https://uspsoig.gov/sites/default/files/"
+            "document-library-files/2016/RARC-WP-16-001.pdf"):
+      # Fix typo
+      report['report_id'] = "RARC-WP-16-011"
 
   report['title'] = cells[1].a.text.strip()
 
