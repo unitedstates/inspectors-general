@@ -66,11 +66,11 @@ def run(options):
     url = "{}?RS={}".format(REPORTS_URL, page)
     for attempt in range(MAX_ATTEMPTS):
       doc = utils.beautifulsoup_from_url(url)
-      if doc.select(".content")[0].text.strip():
+      if doc.select(".layout-content_area")[0].text.strip():
         break
       time.sleep(30)
 
-    results = doc.select("div.leadin")
+    results = doc.select(".report")
     if not results:
       if page == 1:
         raise inspector.NoReportsFoundError("VA (audit reports)")
@@ -91,7 +91,7 @@ def run(options):
   if page_text == ERROR_TEXT_LIST:
     raise Exception("Could not retrieve semiannual reports list")
 
-  results = doc.select("div.leadin")
+  results = doc.select(".sar")
   if not results:
     raise inspector.NoReportsFoundError("VA (semiannual reports)")
   for result in results:
@@ -116,10 +116,10 @@ def report_type_from_topic(topic):
 def report_from(result, year_range):
   link = result.select("a")[0]
   title = link.text
-  landing_url = result.select("p.summary a")[0].get('href')
+  landing_url = result.select("p.report-summary a.report-summary-link")[0].get('href')
   landing_url = re.sub("^http://www.va.gov/", "https://www.va.gov/",
                        landing_url)
-  published_on_text = result.select("p.summary")[0].text.split("|")[0].strip()
+  published_on_text = result.select("p.report-summary")[0].text.split("|")[0].strip()
   published_on = datetime.datetime.strptime(published_on_text, "%m/%d/%Y")
 
   if published_on.year not in year_range:
@@ -135,7 +135,7 @@ def report_from(result, year_range):
   # error so we will retry if necessary.
   for attempt in range(MAX_ATTEMPTS):
     landing_page = utils.beautifulsoup_from_url(landing_url)
-    page_text = landing_page.select("div.report-summary")[0].text.strip()
+    page_text = landing_page.select(".report_summary-value")[0].text.strip()
     if page_text != ERROR_TEXT_SUMMARY:
       break
     time.sleep(30)
@@ -143,13 +143,13 @@ def report_from(result, year_range):
     raise Exception("Could not retrieve url %s" % landing_url)
 
   field_mapping = {}
-  for field in landing_page.select("div.report-summary tr"):
+  for field in landing_page.select(".report_summary tr"):
     field_name = field.select("th")[0].text.rstrip(":")
     br_to_newline(field.select("td")[0])
     field_value = field.select("td")[0].text.strip()
     field_mapping[field_name] = field_value
 
-  button_results = landing_page.select("div.big-green-button a")
+  button_results = landing_page.select("a.big_button-green")
   if len(button_results) == 1:
     report_url = button_results[0].get("href")
   else:
@@ -210,7 +210,7 @@ def semiannual_report_from(result, year_range):
   report_filename = report_url.split("/")[-1]
   report_id = os.path.splitext(report_filename)[0]
   summary = result.select("p")[0].text
-  title = result.select("h4 > a")[0].text
+  title = result.select("h2 > a")[0].text
   published_on = None
   try:
     published_on = datetime.datetime.strptime(title.split("-")[-1].strip(), '%B %d, %Y')
