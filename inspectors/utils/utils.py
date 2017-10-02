@@ -123,12 +123,14 @@ WHITELIST_INSECURE_DOMAINS = (
   "https://www.oig.dot.gov/",  # incomplete chain as of 4/12/2017
   "https://www.oig.dhs.gov",  # incomplete chain as of 5/6/2017
   "https://oig.eeoc.gov/",  # incomplete chain as of 6/3/2017
+  "https://www.cpb.org/",  # incomplete chain as of 10/1/2017
 
   # The following domains will 301/302 redirect to the above domains, so
   # validate=False is needed for these cases as well
   "http://www.ignet.gov/",
   "http://ignet.gov/",
   "http://www.arc.gov/",
+  "http://www.cpb.org/",
 )
 WHITELIST_SHA1_DOMAINS = (
   "https://www.sba.gov/",
