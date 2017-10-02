@@ -3,11 +3,12 @@
 import datetime
 import logging
 import os
+import re
 from urllib.parse import urljoin
 
-from utils import utils, inspector
+from utils import utils, inspector, admin
 
-# http://www.rrb.gov/oig/Default.asp
+# https://www.rrb.gov/OurAgency/InspectorGeneral
 archive = 1995
 
 # options:
@@ -16,82 +17,120 @@ archive = 1995
 # Notes for IG's web team:
 #
 
-REPORTS_URL = "http://www.rrb.gov/oig/Library.asp"
-AUDIT_REPORTS_URL = "http://www.rrb.gov/oig/reports/FY{year}reports.asp"
+REPORTS_URL = "https://www.rrb.gov/OurAgency/InspectorGeneral/Library?field_report_title_value={}&page={}"
+REPORT_TYPES = [
+  ("semiannual_report", "OIG Semiannual Reports"),
+  ("audit", "OIG Audit Reports"),
+  ("other", "OIG Strategic Plan"),
+  ("other", "OIG Special Reports"),
+  ("other", "OIG Budgetary Documents"),
+  ("other", "OIG Commercial Activities Report"),
+  ("peer_review", "OIG Office of Audit Peer Reviews"),
+  ("other", "OIG American Recovery and Reinvestment Act"),
+]
+DATE_RE = re.compile("Report Date: ([0-9]{2}/[0-9]{2}/[0-9]{4})")
+SAR_RE = re.compile("Semiannual Report - ([A-Z][a-z]+ [0-9]{4})")
+IE_DOWNLOAD_SUFFIX_RE = re.compile("%5B[0-9]+%5D")
+
+REPORT_ID_PUBLISHED_MAP = {
+  # Peer reviews
+  "2015_03": datetime.datetime(2015, 9, 23),
+  "2012_03": datetime.datetime(2012, 11, 21),
+  "2009_03": datetime.datetime(2009, 8, 24),
+  "2006_03": datetime.datetime(2006, 9, 25),
+  "2003_03": datetime.datetime(2003, 12, 10),
+
+  "OpenAuditRecommendations": datetime.datetime(2017, 3, 31),
+  "strategic_plan_2016-2020": datetime.datetime(2015, 9, 30),
+  "FY2017BudgetSub": datetime.datetime(2015, 9, 9),
+  "2017_senate": datetime.datetime(2016, 2, 5),
+  "FY2018BudgetJustification": datetime.datetime(2017, 5, 17),
+  "OIGFY2019budgetsubmission": datetime.datetime(2017, 9, 8),
+  "FY2006InventoryReport": datetime.datetime(2007, 8, 14),
+  "2007_Inv_Rprt": datetime.datetime(2009, 7, 13),
+  "2008_Inv_Rprt": datetime.datetime(2009, 7, 13),
+  "2009_Inv_Rprt": datetime.datetime(2009, 7, 13),
+  "oig_oversight_plan": datetime.datetime(2009, 3, 6),
+}
+
+REPORT_TITLE_PUBLISHED_MAP = {
+  "Audit of Controls to Safeguard Sensitive Personally Identifiable Information": datetime.datetime(2007, 1, 1),
+  "Review of Access Controls in the End-User Computing General Support System": datetime.datetime(2005, 1, 1),
+  "External Quality Assurance Review of the Corporation for National Service, Office of Inspector General": datetime.datetime(2001, 1, 1),
+  "Security Controls Analysis for the Office of Inspector General": datetime.datetime(2001, 1, 1),
+  "Site Security Assessment for the Office of Inspector General": datetime.datetime(2001, 1, 1),
+}
 
 
 def run(options):
   year_range = inspector.year_range(options, archive)
 
-  doc = utils.beautifulsoup_from_url(REPORTS_URL)
-
-  # Pull the semiannual reports
-  semiannul_results = doc.select("#AnnualManagementReports select")[0]
-  for result in semiannul_results.select("option"):
-    report = semiannual_report_from(result, year_range)
-    if report:
-      inspector.save_report(report)
-
-  # Pull the special reports
-  special_report_table = doc.find("table", attrs={"bordercolor": "#808080"})
-  for index, result in enumerate(special_report_table.select("tr")):
-    if not index:
-      # Skip the header row
-      continue
-    report = report_from(result, REPORTS_URL, report_type='other', year_range=year_range)
-    if report:
-      inspector.save_report(report)
-
-  # Pull the audit reports
-  for year in year_range:
-    if year < 2001:  # The oldest fiscal year page available
-      continue
-    year_url = AUDIT_REPORTS_URL.format(year=year)
-    doc = utils.beautifulsoup_from_url(year_url)
-    results = doc.select("#main table tr")
-    if not results:
-      raise inspector.NoReportsFoundError("Railroad Retirement Board (%d)" % year)
-    for index, result in enumerate(results):
-      if not index:
-        # Skip the header row
-        continue
-      report = report_from(result, year_url, report_type='audit', year_range=year_range)
-      if report:
-        inspector.save_report(report)
-
-saved_report_urls = set()
+  for report_type, report_title_key in REPORT_TYPES:
+    page = 0
+    while True:
+      url = REPORTS_URL.format(report_title_key, page)
+      doc = utils.beautifulsoup_from_url(url)
+      results = doc.select(".view-content table tbody tr")
+      if not results:
+        raise inspector.NoReportsFoundError("RRB")
+      for result in results:
+        report = report_from(result, url, report_type, year_range)
+        if report:
+          inspector.save_report(report)
+      if doc.select(".pager__item--next"):
+        page += 1
+      else:
+        break
 
 
 def report_from(result, landing_url, report_type, year_range):
-  title = " ".join(result.select("td")[0].text.strip().split())
+  td = result.select("td")[1]
+  link = td.a
 
-  published_on_text = result.select("td")[1].text.strip()
-  try:
-    published_on = datetime.datetime.strptime(published_on_text, '%m/%d/%y')
-  except ValueError:
-    published_on = datetime.datetime.strptime(published_on_text, '%m/%Y')
+  if link:
+    title = re.sub("\\s+", " ", link.text.strip())
+    unreleased = False
+    report_url = urljoin(landing_url, link.get('href'))
+    report_filename = report_url.split("/")[-1]
+    report_filename = IE_DOWNLOAD_SUFFIX_RE.sub("", report_filename)
+    report_id, _ = os.path.splitext(report_filename)
+  else:
+    title = re.sub("\\s+", " ", td.text.strip())
+    title = title.replace(" (Unavailable)", "")
+    unreleased = True
+    report_url = None
+
+  published_on = None
+  published_on_match = DATE_RE.search(td.text)
+  if published_on_match:
+    published_on_text = published_on_match.group(1)
+    published_on = datetime.datetime.strptime(published_on_text, "%m/%d/%Y")
+
+  if published_on is None and link is not None:
+    sar_match = SAR_RE.search(link.text)
+    if sar_match:
+      published_on = datetime.datetime.strptime(sar_match.group(1), "%B %Y")
+    else:
+      if report_id in REPORT_ID_PUBLISHED_MAP:
+        published_on = REPORT_ID_PUBLISHED_MAP[report_id]
+
+  if link is None and published_on is None:
+    if title in REPORT_TITLE_PUBLISHED_MAP:
+      published_on = REPORT_TITLE_PUBLISHED_MAP[title]
+    else:
+      admin.log_no_date("rrb", "?", title)
+      return
+
+  if link is None:
+    report_id = "{}-{}".format(published_on.strftime("%m-%d-%y"), "-".join(title.split()))[:50]
+
+  if published_on is None:
+    admin.log_no_date("rrb", report_id, title, report_url)
+    return
 
   if published_on.year not in year_range:
     logging.debug("[%s] Skipping, not in requested range." % title)
     return
-
-  link = result.find("a")
-  if link:
-    unreleased = False
-    report_url = urljoin(landing_url, link.get('href'))
-    report_filename = report_url.split("/")[-1]
-    report_id, _ = os.path.splitext(report_filename)
-
-    # Deduplicate using report_url, "Reinvention 2001" is posted in both the
-    # special reports table and the FY2001 audit reports
-    if report_url in saved_report_urls:
-      return
-    saved_report_urls.add(report_url)
-
-  else:
-    unreleased = True
-    report_url = None
-    report_id = "{}-{}".format(published_on_text.replace("/", "-"), "-".join(title.split()))[:50]
 
   report = {
     'inspector': 'rrb',
@@ -109,41 +148,5 @@ def report_from(result, landing_url, report_type, year_range):
     report['landing_url'] = landing_url
   return report
 
-
-def semiannual_report_from(result, year_range):
-  relative_report_url = result.get('value')
-  if not relative_report_url:
-    # Skip the header
-    return
-
-  # The links go up an extra level, not sure why.
-  relative_report_url = relative_report_url.replace("../", "", 1)
-  report_url = urljoin(REPORTS_URL, relative_report_url)
-  report_filename = report_url.split("/")[-1]
-  report_id, _ = os.path.splitext(report_filename)
-
-  published_on_text = result.text.split(",")[0].strip()
-  if published_on_text == "Open Audit Recommendations":
-    published_on = datetime.datetime(2017, 3, 31)
-  else:
-    published_on = datetime.datetime.strptime(published_on_text, '%b %Y')
-  title = "Semiannual Report - {}".format(published_on_text)
-
-  if published_on.year not in year_range:
-    logging.debug("[%s] Skipping, not in requested range." % report_url)
-    return
-
-  report = {
-    'inspector': 'rrb',
-    'inspector_url': "http://www.rrb.gov/oig/",
-    'agency': 'rrb',
-    'agency_name': "Railroad Retirement Board",
-    'type': 'semiannual_report',
-    'report_id': report_id,
-    'url': report_url,
-    'title': title,
-    'published_on': datetime.datetime.strftime(published_on, "%Y-%m-%d"),
-  }
-  return report
 
 utils.run(run) if (__name__ == "__main__") else None
