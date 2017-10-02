@@ -12,7 +12,7 @@ install:
   - pip install pyflakes pylint
 
 script:
-  - pyflakes .
+  - pyflakes inspectors/*.py inspectors/utils/*.py scripts/*.py igs qa backup
   - pylint --errors-only --disable=all --enable=duplicate-key inspectors/*.py inspectors/utils/*.py scripts/*.py igs qa backup
 
 notifications:
