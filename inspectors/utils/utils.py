@@ -536,24 +536,28 @@ PDF_KEYWORDS_RE = re.compile("Keywords: +([^\r\n]*)\r?\n")
 PDF_AUTHOR_RE = re.compile("Author: +([^\r\n]*)\r?\n")
 
 def parse_pdf_datetime(raw):
-    if raw.strip() == "":
-      return None
-    my_datetime = None
+  if raw.strip() == "":
+    return None
+  my_datetime = None
+
+  datetime_formats = [
+    '%m/%d/%y %H:%M:%S',
+    '%a %b %d %H:%M:%S %Y',
+    '%A, %B %d, %Y %I:%M:%S %p',
+    '%a %b %d %H:%M:%S %Y %Z'
+  ]
+  for datetime_format in datetime_formats:
     try:
-      my_datetime = datetime.strptime(raw, '%m/%d/%y %H:%M:%S')
+      my_datetime = datetime.strptime(raw, datetime_format)
+      break
     except ValueError:
-      try:
-        my_datetime = datetime.strptime(raw, '%a %b %d %H:%M:%S %Y')
-      except ValueError:
-        try:
-          my_datetime = datetime.strptime(raw, '%A, %B %d, %Y %I:%M:%S %p')
-        except ValueError:
-          pass
-    if my_datetime:
-      return datetime.strftime(my_datetime, '%Y-%m-%d')
-    else:
-      logging.warn('Could not parse PDF date: %s' % raw)
-      return None
+      pass
+
+  if my_datetime:
+    return datetime.strftime(my_datetime, '%Y-%m-%d')
+  else:
+    logging.warn('Could not parse PDF date: %s' % raw)
+    return None
 
 def metadata_from_pdf(pdf_path):
   if not check_tool_present("pdfinfo", "-v"):
