@@ -2,7 +2,8 @@
 
 from utils import utils, inspector
 from datetime import datetime
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
+import os.path
 
 archive = 2006
 
@@ -15,6 +16,8 @@ INDEX_URLS = [
 REPORT_PUBLISHED_MAP = {
   "009-2016": datetime(2015, 12, 23),
   "003-2016": datetime(2015, 12, 21),
+  "OIG-WS-2018-303": datetime(2017, 10, 25),
+  "OIG-WS-2018-302": datetime(2017, 10, 25),
 }
 
 
@@ -30,8 +33,9 @@ def run(options):
       results = doc.select("div.view-content div.views-row")
       for result in results:
         report = report_from(result, url)
-        inspector.save_report(report)
-        report_count = report_count + 1
+        if report:
+          inspector.save_report(report)
+          report_count = report_count + 1
 
     if report_count == 0:
       raise inspector.NoReportsFoundError("Amtrak (%s)" % index.split("/")[-1])
@@ -59,11 +63,15 @@ def report_from(result, base_url):
   category = category.strip()
   tracking = result.select("div.access div.track-num")[0].text.strip()
 
-  published_on = datetime.strptime(issued.strip(), '%B %d, %Y')
+  issued = issued.strip()
+  if issued:
+    published_on = datetime.strptime(issued, '%B %d, %Y')
+  else:
+    published_on = None
   report_type = type_for(category)
   report_id = tracking.strip()
 
-  if report_id and title.lower().startswith('closeout'):
+  if report_id and title.lower().startswith(('closeout', 'close-out')):
     report_id = report_id + "_closeout"
   if report_id == "008-2015":
     # This tracking number appears to be used for two different projects
@@ -76,9 +84,25 @@ def report_from(result, base_url):
     if url.endswith(filename):
       # Second of two investigative summaries under this tracking number
       report_id += "-2"
+  if url.endswith("OIG-I-2016-525_1.pdf"):
+    # Many files under this tracking number
+    report_id += "-3"
+  if url.endswith("OIG-I-2016-525_2.pdf"):
+    # Many files under this tracking number
+    report_id += "-4"
+  if url.endswith("OIG-I-2016-525_1_0.pdf"):
+    # Many files under this tracking number
+    report_id += "-5"
+
+  if url.endswith("/005-2013_termination_memo_26_mar_14_0.pdf"):
+    # file was uploaded twice
+    return
 
   if not report_id:
-    report_id = url[url.rfind('/') + 1:url.rfind('.')][:80]
+    report_id = os.path.splitext(os.path.basename(urlparse(url).path))[0][:80]
+
+  if not os.path.splitext(os.path.basename(urlparse(url).path))[1]:
+    report['file_type'] = 'html'
 
   if report_id in REPORT_PUBLISHED_MAP:
     published_on = REPORT_PUBLISHED_MAP[report_id]
