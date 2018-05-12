@@ -147,7 +147,7 @@ def run(options):
     if not doc:
       # Maybe page for current year hasn't been created yet
       continue
-    results = doc.select("div.region-content li")
+    results = doc.select("div.region-content li") or doc.select("div.region-content p")
     if results:
       results_flag = True
     for result in results:
