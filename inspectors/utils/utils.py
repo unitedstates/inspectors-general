@@ -89,30 +89,6 @@ scraper.mount("http://ncua.gov/", Soft404HttpAdapter())
 scraper.mount("http://www.si.edu/", Soft404HttpAdapter())
 scraper.mount("http://si.edu/", Soft404HttpAdapter())
 
-class CipherListAdapter(requests.adapters.HTTPAdapter):
-  def __init__(self, ciphers):
-    self.ciphers = ciphers
-    super(CipherListAdapter, self).__init__()
-
-  def init_poolmanager(self, num_pools, maxsize, block=False, *args, **kwargs):
-    context = requests.packages.urllib3.util.ssl_.create_urllib3_context(
-        ciphers=self.ciphers
-    )
-    kwargs["ssl_context"] = context
-    self.poolmanager = requests.packages.urllib3.poolmanager.PoolManager(
-        num_pools=num_pools,
-        maxsize=maxsize,
-        block=block,
-        *args,
-        **kwargs
-    )
-
-# The ARC server or middlebox only supports one cipher suite,
-# DES-CBC3-SHA, and it also needs it to be sufficiently far forward in the
-# cipher suite list.
-# (as of 9/8/2016)
-scraper.mount("https://www.arc.gov/", CipherListAdapter("DES-CBC3-SHA"))
-
 WHITELIST_INSECURE_DOMAINS = (
   "https://www.ignet.gov/",  # incomplete chain as of 1/25/2015
   "https://www.va.gov/",  # incomplete chain as of 12/6/2015
