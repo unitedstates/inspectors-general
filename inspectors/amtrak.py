@@ -2,6 +2,7 @@
 
 from utils import utils, inspector
 from datetime import datetime
+from urllib.parse import urljoin
 
 archive = 2006
 
@@ -28,7 +29,7 @@ def run(options):
 
       results = doc.select("div.view-content div.views-row")
       for result in results:
-        report = report_from(result)
+        report = report_from(result, url)
         inspector.save_report(report)
         report_count = report_count + 1
 
@@ -44,7 +45,7 @@ def url_for(options, index, year=None):
   return "%s?sort_by=field_issue_date_value&field_issue_date_value[value][year]=%s&items_per_page=All" % (index, year)
 
 
-def report_from(result):
+def report_from(result, base_url):
   report = {
     'inspector': 'amtrak',
     'inspector_url': 'https://www.amtrakoig.gov/',
@@ -53,6 +54,7 @@ def report_from(result):
   }
   title = result.select("div.details h3")[0].text.strip()
   url = result.select("div.access div.link a")[0].get("href")
+  url = urljoin(base_url, url)
   issued, category = result.select("div.details div.date")[0].text.split("|", maxsplit=2)
   category = category.strip()
   tracking = result.select("div.access div.track-num")[0].text.strip()
