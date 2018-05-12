@@ -152,6 +152,7 @@ def report_url_for_landing_page(relative_url, landing_url):
 def parse_date(text):
   for format in [
       '%A, %B %d, %Y',
+      '%A, %B %d ,%Y',
       '%A, %B %dst, %Y',
       '%A, %B %dnd, %Y',
       '%A, %B %drd, %Y',
