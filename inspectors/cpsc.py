@@ -3,7 +3,7 @@
 import datetime
 import logging
 import os
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse, urlunparse
 
 from utils import utils, inspector, admin
 
@@ -70,6 +70,7 @@ def report_type_from_title(title):
 def report_from(result, year_range):
   link = result.find("a")
   report_url = urljoin(REPORTS_URL, link.get('href'))
+  report_url = urlunparse(list(urlparse(report_url)[:4]) + ["", ""])
   if report_url in BLACKLIST_REPORT_URLS:
     return
 
