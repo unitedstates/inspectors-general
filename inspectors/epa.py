@@ -175,7 +175,8 @@ def report_from_table(tds, published_on_dt, base_url):
             "Full Semiannual Report" in text or
             "Full Compendium" in text or
             "Full Document" in text or
-            "Key Management Challenges Memorandum" in text):
+            "Key Management Challenges Memorandum" in text or
+            "Management Alert" in text):
         report['url'] = absolute_href
       elif ("Response to Report" in text or
             "IG Comment on" in text and "Response" in text or
