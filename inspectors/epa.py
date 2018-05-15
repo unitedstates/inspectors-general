@@ -193,7 +193,7 @@ def report_from_table(tds, published_on_dt, base_url):
             text.startswith("Attachment") or
             "In Response to" in text or
             "Full Resolution Materials" in text or
-            "Podcast Transcript" in text or
+            "Transcript" in text or
             "video transcript" in text):
         pass
       else:
