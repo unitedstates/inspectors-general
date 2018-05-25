@@ -251,7 +251,8 @@ def audit_report_from(result, page_url, year_range):
           "Classified Report" in report_summary or
           "Classified Audit Report" in report_summary or
           "Sensitive But Unclassified" in report_summary or
-          "To obtain further information, please contact the OIG" in report_summary):
+          "To obtain further information, please contact the OIG" in report_summary or
+          "Report is under compliance review" in report_summary):
     unreleased = True
     report_url = None
     landing_url = page_url
