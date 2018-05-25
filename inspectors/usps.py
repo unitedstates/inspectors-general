@@ -147,7 +147,7 @@ def report_from(result):
   report['landing_url'] = landing_url
 
   landing_page = utils.beautifulsoup_from_url(landing_url)
-  pdf_link = landing_page.find("a", text="View PDF")
+  pdf_link = landing_page.find("a", text=["View PDF", "Read full report"])
   if pdf_link is None:
     if ("This report contains sensitive information and will not be posted" in
         landing_page.select(".field-type-text-with-summary .field-item p")[0]
