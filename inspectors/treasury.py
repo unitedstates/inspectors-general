@@ -169,7 +169,7 @@ def audit_report_from(result, page_url, year_range):
   if published_on_text.strip() == "Date":
     return None
 
-  date_formats = ['%m/%d/%Y', '%m/%d%Y']
+  date_formats = ['%m/%d/%Y', '%m/%d%Y', '%m/%d/%y']
   published_on = None
   for date_format in date_formats:
     try:
