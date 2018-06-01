@@ -2,7 +2,7 @@ ipython
 scrapelib>=1.0.2
 BeautifulSoup4
 pyyaml
-lxml
+lxml!=4.2.0,!=4.2.1
 requests>=2.12.0
 certifi>=2015.11.20.1
 python-docx
