@@ -104,9 +104,14 @@ def run(options):
   # Pull the semiannual reports
   semiannual_header = doc.find("a", attrs={"name": 'Semiannual Reports'})
   results = semiannual_header.find_next("ul").select("li")
+  ul1 = semiannual_header.find_next("ul")
+  ul2 = ul1.find_next("ul")
+  results = ul1.select("li") + ul2.select("li")
   if not results:
     raise inspector.NoReportsFoundError("FEC (semiannual reports)")
   for result in results:
+    if not result.text:
+      continue
     report = report_from(result, year_range, report_type='semiannual_report', title_prefix="Semiannual Report - ")
     if report:
       inspector.save_report(report)
