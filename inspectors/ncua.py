@@ -35,7 +35,7 @@ def run(options):
   for year in year_range:
     if year < 2002:  # The oldest page for audit reports
       continue
-    if year == 2017:
+    if year == 2018:
       doc = utils.beautifulsoup_from_url(LATEST_AUDIT_REPORTS_URL)
     else:
       doc = utils.beautifulsoup_from_url(AUDIT_REPORTS_URL.format(year=year))
