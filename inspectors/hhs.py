@@ -209,6 +209,11 @@ BLACKLIST_REPORT_URLS = [
   'http://oig.hhs.gov/oas/map/',
   'http://oig.hhs.gov/oei/maps/ccdf',
   'http://oig.hhs.gov/oei/maps/nursing-home/',
+
+  # Landing pages
+  'http://oig.hhs.gov/fraud/',
+  'http://oig.hhs.gov/compliance/',
+  'http://oig.hhs.gov/exclusions/index.asp',
 ]
 
 TITLE_NORMALIZATION = {
@@ -521,7 +526,11 @@ def report_from(result, year_range, topic, subtopic_url, subtopic=None):
 
 
 def filter_links(link_list, base_url):
-  link_list = [link for link in link_list if "Report in Brief" not in link.text]
+  link_list = [link for link in link_list
+               if "Report in Brief" not in link.text
+               and "related audit" not in link.text
+               and "(OEI-04-15-00430)" not in link.text
+               and "this graphic" not in link.text]
   href_list = [element.get('href') for element in link_list]
   for i in range(len(href_list)):
     while href_list[i].startswith(("http://go.usa.gov/",
@@ -531,7 +540,7 @@ def filter_links(link_list, base_url):
   filtered_list = [href for href in href_list
                    if href and href not in BLACKLIST_REPORT_URLS and
                    not href.startswith("mailto:") and
-                   not href.endswith(".jpg")]
+                   not href.endswith((".jpg", ".xlsx"))]
   filtered_list = list(set(filtered_list))
   return filtered_list
 
@@ -569,7 +578,7 @@ def report_from_landing_url(report_url):
   if not url_list:
     url_list = filter_links(doc.select("#leftContentInterior p a"), report_url)
   if len(url_list) > 1:
-    raise Exception("Found multiple links on %s:\n%s" % (report_url, url_list))
+    raise Exception("Found multiple links on %s\n%s" % (report_url, url_list))
   elif len(url_list) == 1:
     report_url = url_list[0]
 
