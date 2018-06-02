@@ -9,7 +9,6 @@ import requests
 import urllib.parse
 import io
 import gzip
-import certifi
 import docx
 import zipfile
 from urllib.parse import urljoin
@@ -90,33 +89,7 @@ scraper.mount("http://www.si.edu/", Soft404HttpAdapter())
 scraper.mount("http://si.edu/", Soft404HttpAdapter())
 
 WHITELIST_INSECURE_DOMAINS = (
-  "https://www.ignet.gov/",  # incomplete chain as of 1/25/2015
-  "https://www.va.gov/",  # incomplete chain as of 12/6/2015
-  "https://origin.www.fhfaoig.gov/",  # incomplete chain as of 1/5/2016
-  "https://www.archives.gov/",  # incomplete chain as of 2/19/2016
-  "https://www.arc.gov/",  # incomplete chain as of 8/24/2016
   "https://www.ncua.gov/",  # incomplete chain as of 12/10/2016
-  "https://www.oig.dot.gov/",  # incomplete chain as of 4/12/2017
-  "https://www.oig.dhs.gov",  # incomplete chain as of 5/6/2017
-  "https://oig.eeoc.gov/",  # incomplete chain as of 6/3/2017
-  "https://www.cpb.org/",  # incomplete chain as of 10/1/2017
-
-  # The following domains will 301/302 redirect to the above domains, so
-  # validate=False is needed for these cases as well
-  "http://www.ignet.gov/",
-  "http://ignet.gov/",
-  "http://www.arc.gov/",
-  "http://www.cpb.org/",
-)
-WHITELIST_SHA1_DOMAINS = (
-  "https://www.sba.gov/",
-  "http://www.sba.gov/",
-  "http://sba.gov/",
-  "https://www.sigar.mil/",
-  "http://www.sigar.mil/",
-  "https://oig.nasa.gov/",
-  "https://www.gsaig.gov/",
-  "https://www.house.gov/",
 )
 
 # Special case handling for governmentattic.org, va.gov, etc.:
@@ -373,9 +346,6 @@ def text_from_html(real_html_path, real_text_path):
   write(text, real_text_path, binary=False)
 
 def domain_verify_options(url):
-  for domain in WHITELIST_SHA1_DOMAINS:
-    if url.startswith(domain):
-      return certifi.old_where()
   for domain in WHITELIST_INSECURE_DOMAINS:
     if url.startswith(domain):
       logging.warn("SKIPPING HTTPS VERIFICATION.")
