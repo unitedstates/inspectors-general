@@ -29,12 +29,8 @@ class Soft404HttpAdapter(requests.adapters.HTTPAdapter):
   """Transport adapter that checks all responses against a blacklist of "file
   not found" pages that are served with 200 status codes."""
 
-  SOFT_404_URLS_RE = re.compile(r"^(http://www\.dodig\.mil/errorpages/index\.html|http://www\.fec\.gov/404error\.shtml|http://www\.gpo\.gov/maintenance/error\.htm)$")
   SOFT_404_BODY_SIGNATURES = {
-    "cftc.gov": b"<title>404 Page Not Found - CFTC</title>",
-    "cpb.org": b"<title>CPB: Page Not Found</title>",
-    "ncua.gov": b"Redirect.aspx?404",
-    "si.edu": b"<title>Page Not Found Smithsonian</title>",
+    "si.edu": b"<title>Page Not FoundSmithsonian</title>",
   }
 
   def build_response(self, req, resp):
@@ -66,27 +62,14 @@ class Soft404HttpAdapter(requests.adapters.HTTPAdapter):
           result.status_code = 404 # tells scrapelib to not retry
           return result
 
-    redirect = resp.get_redirect_location()
     result = super(Soft404HttpAdapter, self).build_response(req, resp)
-    if redirect and self.SOFT_404_URLS_RE.match(redirect):
-      result.status_code = 404 # tells scrapelib to not retry
 
     return result
 
-scraper.mount("http://www.cftc.gov/", Soft404HttpAdapter())
-scraper.mount("http://cftc.gov/", Soft404HttpAdapter())
-scraper.mount("http://www.dodig.mil/", Soft404HttpAdapter())
-scraper.mount("http://dodig.mil/", Soft404HttpAdapter())
-scraper.mount("http://www.fec.gov/", Soft404HttpAdapter())
-scraper.mount("http://fec.gov/", Soft404HttpAdapter())
-scraper.mount("http://www.gpo.gov/", Soft404HttpAdapter())
-scraper.mount("http://gpo.gov/", Soft404HttpAdapter())
-scraper.mount("http://www.cpb.org/", Soft404HttpAdapter())
-scraper.mount("http://cpb.org/", Soft404HttpAdapter())
-scraper.mount("http://www.ncua.gov/", Soft404HttpAdapter())
-scraper.mount("http://ncua.gov/", Soft404HttpAdapter())
 scraper.mount("http://www.si.edu/", Soft404HttpAdapter())
 scraper.mount("http://si.edu/", Soft404HttpAdapter())
+scraper.mount("https://www.si.edu/", Soft404HttpAdapter())
+scraper.mount("https://si.edu/", Soft404HttpAdapter())
 
 WHITELIST_INSECURE_DOMAINS = (
   "https://www.ncua.gov/",  # incomplete chain as of 12/10/2016

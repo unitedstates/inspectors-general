@@ -6,21 +6,26 @@ from inspectors.utils import utils
 import logging
 import scrapelib
 
-PAGE_NOT_FOUND_PATTERN = b"(<title>(404 Page Not Found - CFTC|CPB: Page Not Found|DoD IG - Error Message|404: NOT FOUND|Page Not Found|Maintenance|Page Not Found Smithsonian|404)</title>|That page was not found\\.&#160; If possible we will redirect you to that content now\\.)"
+PAGE_NOT_FOUND_PATTERN = b"(<title>(404 Page Not Found - CFTC|CPB: Page Not Found|DoD IG - Error Message|404: NOT FOUND|Page Not Found|Maintenance|Page Not Found ?Smithsonian|404)</title>|That page was not found\\.&#160; If possible we will redirect you to that content now\\.)"
 PAGE_NOT_FOUND_BYTES_RE = re.compile(PAGE_NOT_FOUND_PATTERN)
 PAGE_NOT_FOUND_STRING_RE = re.compile(PAGE_NOT_FOUND_PATTERN.decode('ascii'))
 
 URLS = {
-  'cftc': 'http://www.cftc.gov/About/OfficeoftheInspectorGeneral/doesyour404work',
-  'cpb': 'http://www.cpb.org/oig/doesyour404work',
-  'dod': 'http://www.dodig.mil/doesyour404work',
-  'fec': 'http://www.fec.gov/fecig/doesyour404work',
-  'gpo': 'http://www.gpo.gov/oig/doesyour404work',
-  'ncua': 'http://www.ncua.gov/about/Leadership/Pages/doesyour404work',
-  'smithsonian': 'http://www.si.edu/OIG/doesyour404work',
+  'smithsonian': 'https://www.si.edu/OIG/doesyour404work',
 }
 
-IGS_WITH_BAD_404 = tuple(URLS.keys())
+IGS_WITH_BAD_404 = (
+  'cftc',
+  'cpb',
+  'dod',
+  'exim',
+  'fec',
+  'gpo',
+  'ncua',
+  'smithsonian',
+  'state',
+)
+
 
 def run(options):
 
@@ -33,7 +38,8 @@ def run(options):
       status_code_rewritten = False
       while True:
         try:
-          response = utils.scraper.get(url)
+          verify_options = utils.domain_verify_options(url)
+          response = utils.scraper.get(url, verify=verify_options)
           result = response.text
           break
         except scrapelib.HTTPError as e:
