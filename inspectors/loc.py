@@ -84,12 +84,12 @@ class LibraryOfCongressScraper(object):
 
     # Reports that are 'bare' on the page, listed explicitly
     (bare_report_ul_1,
-     bare_report_ul_2,
-     link_subpage_ul) = self.get_uls_past_audit_header(doc)
+     bare_report_ul_2) = self.get_uls_past_audit_header(doc)
     self.get_bare_reports(bare_report_ul_1)
     self.get_bare_reports(bare_report_ul_2)
 
     # Links on the page to audit reports from past fiscal years
+    link_subpage_ul = doc.select(".submenu-submenu")[0]
     for li in link_subpage_ul.find_all('li'):
       link = li.find('a')
       if link:
