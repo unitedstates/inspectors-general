@@ -32,6 +32,7 @@ AGENCY_NAMES = {
 UNRELEASED_TEXTS = [
   "our restricted report",
   "our reports in this area are generally restricted",
+  "our reports in this area generally are restricted",
   "the report will not be posted to the public",
   "report will not be made available to the public",
 ]
