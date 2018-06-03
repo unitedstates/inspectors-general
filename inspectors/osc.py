@@ -17,7 +17,8 @@ archive = 2009  # OSC began posting public files in 2009
 # Notes for IG's web team:
 # Styling is all inline making for bloated tables. CSS classes would be a better solution.
 
-REPORTS_URL_FORMAT = 'https://osc.gov/Pages/PublicFiles-FY%s.aspx'
+REPORTS_URL_FORMAT_1 = 'https://osc.gov/Pages/PublicFiles-FY%s.aspx'
+REPORTS_URL_FORMAT_2 = 'https://osc.gov/Pages/Public-Files-FY%s.aspx'
 
 REPORT_TYPES = (  # there can be multiple files within each type. The integer is the index of the column these appear in the table.
     (6, 'Letter to President'),
@@ -61,7 +62,9 @@ def generate_outcome_codes(doc):
 
 
 def url_for_year(year):
-  return REPORTS_URL_FORMAT % year
+  if year == 2018:
+    return REPORTS_URL_FORMAT_2 % year
+  return REPORTS_URL_FORMAT_1 % year
 
 
 def run(options):
