@@ -436,13 +436,18 @@ class DashboardErrorHandler(ErrorHandler):
         self.dashboard_data[scraper]["report_count"] = 0
 
     options = config["dashboard"]
-    message_json = json.dumps(self.dashboard_data)
-    message_bytes = message_json.encode("utf-8")
     url = options["url"] + "?secret=" + urllib.parse.quote(options["secret"])
-    request = urllib.request.Request(url, message_bytes)
-    request.add_header("Content-Type", "application/json; charset=utf-8")
-    request.get_method = lambda: "PUT"
-    urllib.request.urlopen(request)
+
+    for scraper, dashboard_slice in self.dashboard_data.items():
+      message_json = json.dumps({scraper: dashboard_slice})
+      message_bytes = message_json.encode("utf-8")
+      request = urllib.request.Request(url, message_bytes)
+      request.add_header("Content-Type", "application/json; charset=utf-8")
+      request.get_method = lambda: "PUT"
+      try:
+        urllib.request.urlopen(request)
+      except urllib.error.HTTPError as e:
+        print(format_exception(e))
 
   def log_report(self, scraper):
     if scraper not in self.dashboard_data:
